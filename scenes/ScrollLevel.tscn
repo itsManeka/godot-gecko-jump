@@ -1,0 +1,43 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://scenes/ScrollLevel.gd" type="Script" id=1]
+[ext_resource path="res://scenes/RuningPlatforms.tscn" type="PackedScene" id=2]
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 89.976, 8.09404 )
+
+[node name="ScrollLevel" type="Node2D"]
+script = ExtResource( 1 )
+
+[node name="RunningPlatforms" type="Node2D" parent="."]
+
+[node name="RuningPlatforms5" parent="RunningPlatforms" instance=ExtResource( 2 )]
+position = Vector2( 0, -10 )
+platform_type = 3
+
+[node name="RuningPlatforms4" parent="RunningPlatforms" instance=ExtResource( 2 )]
+position = Vector2( 0, 40 )
+platform_type = 3
+
+[node name="RuningPlatforms3" parent="RunningPlatforms" instance=ExtResource( 2 )]
+position = Vector2( 0, 90 )
+platform_type = 3
+
+[node name="RuningPlatforms2" parent="RunningPlatforms" instance=ExtResource( 2 )]
+position = Vector2( 0, 140 )
+platform_type = 4
+
+[node name="RuningPlatforms" parent="RunningPlatforms" instance=ExtResource( 2 )]
+position = Vector2( 0, 190 )
+
+[node name="CheckArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CheckArea"]
+position = Vector2( 89.794, 224 )
+shape = SubResource( 1 )
+
+[node name="VisibilityNotifier2D" type="VisibilityNotifier2D" parent="."]
+[connection signal="area_exited" from="CheckArea" to="." method="_on_CheckArea_area_exited"]
+[connection signal="screen_exited" from="VisibilityNotifier2D" to="." method="_on_VisibilityNotifier2D_screen_exited"]
