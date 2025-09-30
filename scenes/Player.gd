@@ -1,38 +1,48 @@
 extends KinematicBody2D
 
+# Sinal emitido quando o jogador ganha um ponto
 signal add_point
 
-const SPEED = 80
-const GRAVITY = 10
-const JUMP_POWER = -250
-const FLOOR = Vector2(0, -1)
+# Constantes de movimento e física
+const SPEED = 80                    # Velocidade horizontal do jogador
+const GRAVITY = 10                  # Força da gravidade aplicada por frame
+const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima)
+const FLOOR = Vector2(0, -1)        # Vetor que define a direção do chão
 
+# Cor atual do jogador (definida no editor)
 export(Enums.COLOR) var color
 
+# Referencias aos nós filhos
 onready var sprite = $Sprite
 onready var collision = $CollisionShape2D
 onready var detector = $DetectorPlataforma/CollisionShape2D
 onready var jumpaudio = $JumpAudio
 
-var velocity = Vector2()
-var on_ground = false
-var can_change_color = false
-var actual_platform : Platform = null
-var jumping = true
-var end = false
+# Variáveis de estado do jogador
+var velocity = Vector2()            # Velocidade atual do jogador
+var on_ground = false              # Se o jogador está no chão
+var can_change_color = false       # Se pode mudar de cor na próxima plataforma
+var actual_platform : Platform = null  # Plataforma atual em que o jogador está
+var jumping = true                 # Se o jogador está pulando
+var end = false                    # Se o jogo terminou para este jogador
 
+# Inicializa o jogador definindo sua cor inicial
 func _ready():
 	sprite.modulate = Enums.get_cor(color)
 
+# Processa a física e input do jogador a cada frame
 func _physics_process(_delta):
+	# Para o movimento se o jogo acabou ou não iniciou
 	if end || !Global.is_iniciado():
 		return
-		
+	
+	# Verifica se deve mudar de cor ao tocar uma nova plataforma
 	if is_on_floor() && can_change_color:
 		can_change_color = false
 		change_color_random()
 		emit_signal("add_point")
-		
+	
+	# Processa movimento horizontal
 	if Input.is_action_pressed("ui_right"):
 		velocity.x = SPEED
 		sprite.flip_h = false
@@ -48,18 +58,22 @@ func _physics_process(_delta):
 		if on_ground:
 			sprite.play("idle")
 	
+	# Limita o movimento às bordas da tela
 	if (position.x > 180 && velocity.x > 0) || \
 	   (position.x < 0 && velocity.x < 0):
 		velocity.x = 0
-		
+	
+	# Processa o pulo
 	if Input.is_action_pressed("jump"):
 		if on_ground:
 			jumpaudio.play()
 			velocity.y = JUMP_POWER
 			on_ground = false
-		
+	
+	# Aplica gravidade
 	velocity.y += GRAVITY
 	
+	# Gerencia estado de chão e animações
 	if is_on_floor():
 		on_ground = true
 		jumping = false
@@ -74,27 +88,34 @@ func _physics_process(_delta):
 			jumping = false
 			sprite.play("fall")
 	
+	# Aplica o movimento
 	velocity = move_and_slide(velocity, FLOOR)
 
+# Detecta quando o jogador entra em contato com uma plataforma
 func _on_DetectorPlataforma_body_entered(_body):
 	if _body is Platform:
 		actual_platform = _body
 		can_change_color = true
 
+# Define uma nova cor para o jogador e atualiza a visualização
 func set_color(new_color):
 	color = new_color
 	sprite.modulate = Enums.get_cor(color)
 	Global.player_color_changed(color, actual_platform)
-	
+
+# Muda a cor do jogador para uma cor aleatória
 func change_color_random():
 	set_color(Enums.get_random_color())
 
+# Retorna se o jogador está atualmente pulando
 func is_jumping() -> bool:
 	return jumping
 
+# Retorna se o jogo terminou para este jogador
 func is_end() -> bool:
 	return end
 
+# Termina o jogo para o jogador (quando perde)
 func lose_game():
 	end = true
 	collision.call_deferred("set_disabled", true)

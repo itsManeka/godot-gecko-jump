@@ -1,31 +1,141 @@
-# Gecko Jump
+# 🦎 Gecko Jump
 
+<div align="center">
 
-Gecko � um camale�o confuso.
+![Godot Engine](https://img.shields.io/badge/Godot-3.x-blue?logo=godot-engine&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-PC-orange.svg)
 
-Pule apenas nas plataformas que tiverem a mesma cor que o Gecko. Toda vez que pular em uma plataforma nova o Gecko ganha um ponto e muda de cor.
+*Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!*
 
-Comandos:
+[🎮 Como Jogar](#-como-jogar) • [📱 Download](#-download) • [🛠️ Tecnologias](#️-tecnologias-utilizadas) • [🌍 English](#-english-version)
 
-Espa�o, W ou Seta para cima: Pular
+</div>
 
-Setas Esquerda/Seta Direita ou A/D: Movimento
+## 📖 Descrição
 
-Obs.: N�o est� preparado para dispositivos m�veis.
+**Gecko Jump** é um jogo de plataforma onde você controla um camaleão confuso que muda de cor! 
+
+### 🎯 Objetivo
+- **Pular apenas nas plataformas da mesma cor** que o Gecko
+- **Ganhar pontos** a cada plataforma nova que tocar
+- **Mudar de cor automaticamente** após cada pulo bem-sucedido
+- **Sobreviver** o máximo de tempo possível descendo pelas plataformas
+
+## 🎮 Controles
+
+| Ação | Teclas |
+|------|--------|
+| **Pular** | `Espaço`, `W` ou `↑` |
+| **Mover para Esquerda** | `A` ou `←` |
+| **Mover para Direita** | `D` ou `→` |
+
+## 🚀 Como Jogar
+
+1. Pressione qualquer tecla de pulo para começar
+2. Use as setas ou WASD para mover o Gecko
+3. Pule apenas em plataformas da mesma cor que o Gecko
+4. Evite cair ou tocar plataformas de cores diferentes
+5. Tente alcançar a maior pontuação possível!
+
+## 📱 Download
+
+> 🚧 **Em desenvolvimento** - O jogo ainda não possui release oficial.
+
+Para jogar agora:
+1. Clone este repositório
+2. Abra o projeto no Godot Engine 3.x
+3. Execute a cena principal `scenes/Stage.tscn`
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Engine:** Godot Engine 3.x
+- **Linguagem:** GDScript
+- **Resolução:** 180x320 (modo retrato)
+- **Áudio:** Efeitos sonoros integrados
+
+## 📁 Estrutura do Projeto
+
+```
+godot-gecko-jump/
+├── assets/           # Sprites e recursos visuais
+├── scenes/          # Cenas do Godot (.tscn) e scripts (.gd)
+├── scripts/         # Scripts globais (Global.gd, Enums.gd)
+├── sounds/          # Efeitos sonoros
+├── fonts/           # Fontes personalizadas
+└── project.godot    # Arquivo de projeto do Godot
+```
+
+## 📱 Compatibilidade
+
+⚠️ **Aviso:** Este jogo foi desenvolvido para PC e não está otimizado para dispositivos móveis.
+
+**Requisitos:**
+- Godot Engine 3.x ou superior
+- Sistema operacional: Windows, Linux, macOS
+
+## 🤝 Contribuindo
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 🏆 Créditos
+
+Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - uma game jam focada em mecânicas baseadas em cores.
+
+### 👨‍💻 Autor
+
+**Emanuel Ozorio**
+- GitHub: [@itsManeka](https://github.com/itsManeka)
+- Email: [emanuel.ozoriodias@gmail.com](mailto:emanuel.ozoriodias@gmail.com)
 
 ---
 
-Gecko is a confused chameleon.
+## 🌍 English Version
 
-Only jump on platforms that have the same color as the Gecko. Every time you jump on a new platform, Gecko gets a point and changes color.
+**Gecko Jump** is a colorful and dynamic platform game developed in Godot Engine!
 
-Commands:
+### 📖 Description
 
-Space, W or Up Arrow: Jump
+**Gecko Jump** is a platform game where you control a confused chameleon that changes colors!
 
-Left Arrow/Right Arrow or A / D: Movement
+#### 🎯 Objective
+- **Jump only on platforms of the same color** as the Gecko
+- **Earn points** for each new platform you touch
+- **Change color automatically** after each successful jump
+- **Survive** as long as possible while descending through the platforms
 
-Note: It is not prepared for mobile devices.
+### 🎮 Controls
 
----
-Jogo feito na Godot Engine para a # [#1JAM Chroma](https://itch.io/jam/1jam-chroma)
+| Action | Keys |
+|--------|------|
+| **Jump** | `Space`, `W` or `↑` |
+| **Move Left** | `A` or `←` |
+| **Move Right** | `D` or `→` |
+
+### 🚀 How to Play
+
+1. Press any jump key to start
+2. Use arrows or WASD to move the Gecko
+3. Jump only on platforms of the same color as the Gecko
+4. Avoid falling or touching platforms of different colors
+5. Try to achieve the highest score possible!
+
+### 📱 Download
+
+> 🚧 **In development** - The game doesn't have an official release yet.
+
+To play now:
+1. Clone this repository
+2. Open the project in Godot Engine 3.x
+3. Run the main scene `scenes/Stage.tscn`
+
+### 📱 Compatibility
+
+⚠️ **Warning:** This game was developed for PC and is not optimized for mobile devices.
+
+**Requirements:**
+- Godot Engine 3.x or higher
+- Operating System: Windows, Linux, macOS

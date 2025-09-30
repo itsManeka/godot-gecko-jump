@@ -1,16 +1,26 @@
 extends Node
 
+# Script global que gerencia o estado do jogo
+
+# Lista de todas as plataformas ativas no jogo
 var platforms = []
+# Estado se o jogo foi iniciado
 var iniciado : bool = false
+# Melhor pontuação alcançada
 var bestscore : int = 0
+# Última pontuação obtida
 var lastscore : int = 0
 
+# Inicializa o gerador de números aleatórios
 func _ready():
 	randomize()
 
+# Adiciona uma nova plataforma à lista de plataformas ativas
 func add_platform(platform: Platform):
 	platforms.append(platform)
 
+# Notifica todas as plataformas sobre a mudança de cor do jogador
+# Ativa/desativa colisão baseado na cor
 func player_color_changed(player_color, actual_platform: Platform):
 	for platform in platforms:
 		if platform != actual_platform:
@@ -18,25 +28,36 @@ func player_color_changed(player_color, actual_platform: Platform):
 			if platform:
 				platform.player_color_changed(player_color)
 
+# Atualiza a plataforma atual quando o jogador muda de cor
 func att_actual_platform(player_color, actual_platform):
-	platforms[platforms.find(actual_platform, 0)].player_color_changed(player_color)
+	var platform_index = platforms.find(actual_platform, 0)
+	if platform_index != -1:
+		platforms[platform_index].player_color_changed(player_color)
 
+# Remove uma plataforma da lista (quando sai de tela)
 func remove_platform(platform):
-	platforms.remove(platforms.find(platform, 0))
+	var platform_index = platforms.find(platform, 0)
+	if platform_index != -1:
+		platforms.remove(platform_index)
 
+# Define se o jogo foi iniciado
 func set_iniciado(b: bool):
 	iniciado = b
 
+# Retorna se o jogo foi iniciado
 func is_iniciado() -> bool:
 	return iniciado
 
+# Define a pontuação atual e atualiza o recorde se necessário
 func set_score(score):
 	lastscore = score
 	if lastscore > bestscore:
 		bestscore = lastscore
 
+# Retorna a última pontuação obtida
 func get_last_score() -> int:
 	return lastscore
 
+# Retorna a melhor pontuação alcançada
 func get_best_score() -> int:
 	return bestscore
