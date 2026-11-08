@@ -1,4 +1,4 @@
-extends KinematicBody2D
+extends CharacterBody2D
 
 # Sinal emitido quando o jogador ganha um ponto
 signal add_point
@@ -10,13 +10,13 @@ const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima
 const FLOOR = Vector2(0, -1)        # Vetor que define a direção do chão
 
 # Cor atual do jogador (definida no editor)
-export(Enums.COLOR) var color
+@export var color # (Enums.COLOR)
 
 # Referencias aos nós filhos
-onready var sprite = $Sprite
-onready var collision = $CollisionShape2D
-onready var detector = $DetectorPlataforma/CollisionShape2D
-onready var jumpaudio = $JumpAudio
+@onready var sprite = $Sprite2D
+@onready var collision = $CollisionShape2D
+@onready var detector = $DetectorPlataforma/CollisionShape2D
+@onready var jumpaudio = $JumpAudio
 
 # Variáveis de estado do jogador
 var velocity = Vector2()            # Velocidade atual do jogador
@@ -89,7 +89,10 @@ func _physics_process(_delta):
 			sprite.play("fall")
 	
 	# Aplica o movimento
-	velocity = move_and_slide(velocity, FLOOR)
+	set_velocity(velocity)
+	set_up_direction(FLOOR)
+	move_and_slide()
+	velocity = velocity
 
 # Detecta quando o jogador entra em contato com uma plataforma
 func _on_DetectorPlataforma_body_entered(_body):

@@ -8,13 +8,13 @@ var points = -1
 var started = false
 
 # Referencias aos nós da interface e jogo
-onready var animation = $AnimationPlayer
-onready var pointslabel = $CanvasLayer/Pontos
-onready var player = $Node2D/Player
-onready var playbutton = $CanvasLayer/Play
-onready var lastscore = $CanvasLayer/Last
-onready var bestscore = $CanvasLayer/Best
-onready var loseaudio = $LoseAudio
+@onready var animation = $AnimationPlayer
+@onready var pointslabel = $CanvasLayer/Pontos
+@onready var player = $Node2D/Player
+@onready var playbutton = $CanvasLayer/Play
+@onready var lastscore = $CanvasLayer/Last
+@onready var bestscore = $CanvasLayer/Best
+@onready var loseaudio = $LoseAudio
 
 # Inicializa a tela do jogo
 func _ready():
@@ -25,7 +25,7 @@ func _ready():
 	# Configura estado inicial
 	Global.set_iniciado(false)
 	player.visible = false
-	player.connect("add_point", self, "_on_player_add_point")
+	player.connect("add_point", Callable(self, "_on_player_add_point"))
 
 # Processa input para iniciar o jogo
 func _process(delta):
@@ -43,7 +43,7 @@ func _on_CheckPlayer_body_exited(body):
 
 # Reinicia o jogo após a animação de perda
 func _on_animation_end():
-	get_tree().change_scene("res://scenes/Stage.tscn")
+	get_tree().change_scene_to_file("res://scenes/Stage.tscn")
 
 # Callback para quando o jogador ganha um ponto
 func _on_player_add_point():

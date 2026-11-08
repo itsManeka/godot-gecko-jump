@@ -1,15 +1,15 @@
-extends KinematicBody2D
+extends CharacterBody2D
 
 class_name Platform
 
 # Velocidade de movimento da plataforma (negativa = esquerda)
-export var speed = 0
+@export var speed = 0
 # Cor da plataforma (definida no editor)
-export(Enums.COLOR) var color
+@export var color # (Enums.COLOR)
 
 # Referencias aos nós filhos
-onready var sprite = $Sprite
-onready var shape = $CollisionShape2D
+@onready var sprite = $Sprite2D
+@onready var shape = $CollisionShape2D
 
 # Inicializa a plataforma
 func _ready():
@@ -21,10 +21,11 @@ func _physics_process(_delta):
 	if !Global.is_iniciado():
 		return
 	
-	move_and_slide(Vector2(-speed, 0))
+	set_velocity(Vector2(-speed, 0))
+	move_and_slide()
 
 # Define a velocidade de movimento da plataforma
-func set_speed(new_speed):
+func set_velocity(new_speed):
 	speed = new_speed
 
 # Define a cor da plataforma
