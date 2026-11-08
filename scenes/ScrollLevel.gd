@@ -3,7 +3,7 @@ extends Node2D
 # Sistema que gerencia o scroll infinito do level e geração de plataformas
 
 # Prefab do gerador de plataformas em movimento
-const pre_running_platform = preload("res://scenes/RuningPlatforms.tscn")
+const pre_running_platform = preload("res://scenes/RunningPlatforms.tscn")
 
 # Container que armazena todos os geradores de plataforma
 @onready var running_platforms = $RunningPlatforms

@@ -29,7 +29,7 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 ## Estrutura
 
 ```
-scenes/    Stage (fluxo, pontuacao), Player, Platform, RuningPlatforms (gerador; nome com erro, renomear na fase 3),
+scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
            ScrollLevel (scroll 20 px/s)
 scripts/   Global.gd (autoload: plataformas, estado, recorde), Enums.gd (cores e tipos de plataforma)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
