@@ -13,7 +13,7 @@ class_name Platform
 
 # Inicializa a plataforma
 func _ready():
-	# Godot 3: move_and_slide sem up_direction = movimento livre, sem logica de chao
+	# Movimento livre (MOTION_MODE_FLOATING), sem logica de chao: a plataforma so desliza no eixo X
 	motion_mode = MOTION_MODE_FLOATING
 	Global.add_platform(self)
 	sprite.modulate = Enums.get_cor(color)

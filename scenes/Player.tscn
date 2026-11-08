@@ -66,7 +66,7 @@ size = Vector2( 9.96012, 4.38558 )
 collision_mask = 2
 script = ExtResource( 2 )
 
-[node name="Sprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource( 7 )
 animation = "idle"
 playing = true

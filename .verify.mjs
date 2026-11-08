@@ -23,6 +23,10 @@ function run(bin, args, timeoutMs = 120_000) {
   return { status: r.status, out, error: r.error };
 }
 
+function warningsIn(out) {
+  return out.split(/\r?\n/).filter((l) => l.startsWith('WARNING:'));
+}
+
 function errorsIn(out) {
   return out.split(/\r?\n/).filter((l) => /(SCRIPT ERROR|^ERROR:|Parse Error)/.test(l));
 }
@@ -41,6 +45,7 @@ if (!bin || !fs.existsSync(bin)) {
 const failures = [];
 const step = (name, res) => {
   const errs = errorsIn(res.out);
+  for (const w of warningsIn(res.out)) console.log(`warn ${w}`);
   if (res.error) failures.push(`${name}: ${res.error.message}`);
   else if (errs.length) failures.push(`${name}:\n  ${errs.join('\n  ')}`);
   else console.log(`ok  ${name}`);

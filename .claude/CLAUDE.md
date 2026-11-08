@@ -33,7 +33,7 @@ scenes/    Stage (fluxo, pontuacao), Player, Platform, RuningPlatforms (gerador;
            ScrollLevel (scroll 20 px/s)
 scripts/   Global.gd (autoload: plataformas, estado, recorde), Enums.gd (cores e tipos de plataforma)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
-export/    saida de build (ignorada)
+export/    saida de build (ignorada; so o .gdignore e versionado, para o Godot nao importar o build)
 ```
 
 ## Convencoes

@@ -12,7 +12,7 @@ const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima
 @export var color: Enums.COLOR = Enums.COLOR.AMARELO
 
 # Referencias aos nós filhos
-@onready var sprite = $Sprite2D
+@onready var sprite = $AnimatedSprite2D
 @onready var collision = $CollisionShape2D
 @onready var detector = $DetectorPlataforma/CollisionShape2D
 @onready var jumpaudio = $JumpAudio
@@ -26,7 +26,7 @@ var end = false                    # Se o jogo terminou para este jogador
 
 # Inicializa o jogador definindo sua cor inicial
 func _ready():
-	# Mesma semantica do move_and_slide do Godot 3 com chao para cima: sem snap
+	# Chao para cima e sem snap ao chao (floor_snap_length = 0): o movimento vertical nao e corrigido ao pousar
 	up_direction = Vector2.UP
 	motion_mode = MOTION_MODE_GROUNDED
 	floor_snap_length = 0.0
