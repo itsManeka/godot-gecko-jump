@@ -73,6 +73,12 @@ godot-gecko-jump/
 - Godot Engine 3.x ou superior
 - Sistema operacional: Windows, Linux, macOS
 
+## 🗺️ Roadmap
+
+O jogo está sendo levado da versão da game jam para uma versão final para celular (Android) e web (itch.io).
+Plano e fases: [`docs/planejamento-implementacao.md`](docs/planejamento-implementacao.md). Decisões:
+[`docs/adr/`](docs/adr/README.md). Bugs e próximos passos: [issues](https://github.com/itsManeka/godot-gecko-jump/issues).
+
 ## 🤝 Contribuindo
 
 1. Faça um fork do projeto
