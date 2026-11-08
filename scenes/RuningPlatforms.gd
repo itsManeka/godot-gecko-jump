@@ -6,7 +6,7 @@ extends Node2D
 const pre_platform = preload("res://scenes/Platform.tscn")
 
 # Tipo de plataforma que este gerador cria (definido no editor)
-@export var platform_type = Enums.PLATFORM_TYPE.STATIC # (Enums.PLATFORM_TYPE)
+@export var platform_type: Enums.PLATFORM_TYPE = Enums.PLATFORM_TYPE.STATIC
 
 # Referencias aos nós filhos
 @onready var generate_timer = $Timer
@@ -60,7 +60,7 @@ func create_static_platforms():
 		var platform = pre_platform.instantiate()
 		platform.set_color(Enums.get_random_color())
 		platform.position.x = position_x
-		platform.set_velocity(0)  # Plataformas estáticas não se movem
+		platform.set_speed(0)  # Plataformas estáticas não se movem
 		add_child(platform)
 		position_x += 85
 
@@ -69,7 +69,7 @@ func new_platform():
 	var platform = pre_platform.instantiate()
 	platform.set_color(Enums.get_random_color())
 	platform.position.x = check_generate.position.x
-	platform.set_velocity(speed)
+	platform.set_speed(speed)
 	add_child(platform)
 
 # Inicia o timer para gerar próxima plataforma

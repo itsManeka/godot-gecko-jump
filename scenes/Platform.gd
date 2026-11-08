@@ -5,7 +5,7 @@ class_name Platform
 # Velocidade de movimento da plataforma (negativa = esquerda)
 @export var speed = 0
 # Cor da plataforma (definida no editor)
-@export var color # (Enums.COLOR)
+@export var color: Enums.COLOR = Enums.COLOR.AMARELO
 
 # Referencias aos nós filhos
 @onready var sprite = $Sprite2D
@@ -13,6 +13,8 @@ class_name Platform
 
 # Inicializa a plataforma
 func _ready():
+	# Godot 3: move_and_slide sem up_direction = movimento livre, sem logica de chao
+	motion_mode = MOTION_MODE_FLOATING
 	Global.add_platform(self)
 	sprite.modulate = Enums.get_cor(color)
 
@@ -21,11 +23,11 @@ func _physics_process(_delta):
 	if !Global.is_iniciado():
 		return
 	
-	set_velocity(Vector2(-speed, 0))
+	velocity = Vector2(-speed, 0)
 	move_and_slide()
 
 # Define a velocidade de movimento da plataforma
-func set_velocity(new_speed):
+func set_speed(new_speed):
 	speed = new_speed
 
 # Define a cor da plataforma

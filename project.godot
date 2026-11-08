@@ -9,22 +9,6 @@
 
 config_version=5
 
-_global_script_classes=[ {
-"base": "Node",
-"class": "Enums",
-"language": "GDScript",
-"path": "res://scripts/Enums.gd"
-}, {
-"base": "KinematicBody2D",
-"class": "Platform",
-"language": "GDScript",
-"path": "res://scenes/Platform.gd"
-} ]
-_global_script_class_icons={
-"Enums": "",
-"Platform": ""
-}
-
 [application]
 
 config/name="Gecko Jump"
@@ -41,31 +25,8 @@ window/size/viewport_width=180
 window/size/viewport_height=320
 window/size/window_width_override=360
 window/size/window_height_override=640
-window/stretch/mode="2d"
+window/stretch/mode="canvas_items"
 window/stretch/aspect="keep"
-
-[importer_defaults]
-
-texture={
-"compress/bptc_ldr": 0,
-"compress/hdr_mode": 0,
-"compress/lossy_quality": 0.7,
-"compress/mode": 0,
-"compress/normal_map": 0,
-"detect_3d": false,
-"flags/anisotropic": false,
-"flags/filter": false,
-"flags/mipmaps": false,
-"flags/repeat": 0,
-"flags/srgb": 2,
-"process/HDR_as_SRGB": false,
-"process/fix_alpha_border": true,
-"process/invert_color": false,
-"process/premult_alpha": false,
-"size_limit": 0,
-"stream": false,
-"svg/scale": 1.0
-}
 
 [input]
 
@@ -104,6 +65,6 @@ jump={
 
 [rendering]
 
-quality/2d/use_pixel_snap=true
-environment/defaults/default_clear_color=Color( 0.341176, 0.65098, 0.623529, 1 )
-environment/defaults/default_environment="res://default_env.tres"
+textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_vertices_to_pixel=true
+environment/defaults/default_clear_color=Color(0.341176, 0.65098, 0.623529, 1)

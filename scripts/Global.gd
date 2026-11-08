@@ -38,7 +38,7 @@ func att_actual_platform(player_color, actual_platform):
 func remove_platform(platform):
 	var platform_index = platforms.find(platform, 0)
 	if platform_index != -1:
-		platforms.remove(platform_index)
+		platforms.remove_at(platform_index)
 
 # Define se o jogo foi iniciado
 func set_iniciado(b: bool):

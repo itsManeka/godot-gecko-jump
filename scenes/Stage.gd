@@ -25,7 +25,7 @@ func _ready():
 	# Configura estado inicial
 	Global.set_iniciado(false)
 	player.visible = false
-	player.connect("add_point", Callable(self, "_on_player_add_point"))
+	player.add_point.connect(_on_player_add_point)
 
 # Processa input para iniciar o jogo
 func _process(delta):
