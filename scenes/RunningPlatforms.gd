@@ -19,20 +19,9 @@ var speed = 0
 func _ready():
 	speed = 60  # Velocidade fixa (antes era aleatória)
 	
-	# Resolve tipos de plataforma aleatórios
-	if platform_type == Enums.PLATFORM_TYPE.RANDOM_ALL:
-		var platform_types = [Enums.PLATFORM_TYPE.STATIC, 
-							  Enums.PLATFORM_TYPE.MOVE_TO_LEFT, 
-							  Enums.PLATFORM_TYPE.MOVE_TO_RIGHT]
-		platform_types.shuffle()
-		platform_type = platform_types.pop_front()
-	
-	if platform_type == Enums.PLATFORM_TYPE.RANDOM_DIRECTION:
-		var platform_types = [Enums.PLATFORM_TYPE.MOVE_TO_LEFT, 
-							  Enums.PLATFORM_TYPE.MOVE_TO_RIGHT]
-		platform_types.shuffle()
-		platform_type = platform_types.pop_front()
-	
+	# Resolve tipos de plataforma aleatórios (sorteio em PlatformTypePicker)
+	platform_type = PlatformTypePicker.resolve(platform_type)
+
 	# Configura comportamento baseado no tipo
 	match platform_type:
 		Enums.PLATFORM_TYPE.STATIC:
