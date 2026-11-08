@@ -11,24 +11,20 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ## Stack
 
-- **Hoje: Godot 3.6.3** (`config_version=4`, `KinematicBody2D`, `.import/`). Migracao para **Godot 4.7.2** e a
-  proxima fase; ate la, nada de sintaxe do 4 nos scripts.
+- **Godot 4.7.2** (`config_version=5`, `CharacterBody2D`). GDScript 4 (`@onready`, `@export`, tipagem).
 - GDScript, ~460 linhas em 7 scripts. Autoload `Global` (`scripts/Global.gd`). Sem addons.
-- Executaveis fora do PATH: `workspace-config.json` → `ecosystems.game-gecko.tools` (dev-workspace) ou env
-  `GODOT_PATH` (4) / `GODOT3_PATH` (3).
+- Executavel fora do PATH: `workspace-config.json` → `ecosystems.game-gecko.tools` (dev-workspace) ou env
+  `GODOT_PATH`.
 
 ## Comandos
 
-| Acao | Godot 3 (atual) | Godot 4 (pos-migracao) |
-|---|---|---|
-| Importar | `<godot3> --no-window --path . -e --quit` | `<godot> --headless --path . --import` |
-| Rodar sem janela | `<godot3> --no-window --path . --fixed-fps 60` (parar por timeout) | `<godot> --headless --path . --quit-after <frames>` |
-| Jogar (janela) | `<godot3> --path .` | `<godot> --path .` |
-| Oraculo completo | `node .verify.mjs <wave>` | idem (detecta a versao pelo `config_version`) |
-| Export web | — (sem templates do 3 instalados; export so pos-migracao) | `<godot> --headless --path . --export-release "Web" export/web/index.html` |
-
-O editor do Godot 3 reescreve `project.godot` ao importar (so reserializa); descarte com `git checkout -- project.godot`
-se nao houve mudanca intencional. O `.verify.mjs` ja faz isso.
+| Acao | Comando |
+|---|---|
+| Importar | `<godot> --headless --path . --import` |
+| Rodar sem janela | `<godot> --headless --path . --quit-after <frames>` |
+| Jogar (janela) | `<godot> --path .` |
+| Oraculo completo | `node .verify.mjs <wave>` |
+| Export web | `<godot> --headless --path . --export-release "Web" export/web/index.html` (sem threads; servir `export/web/` por servidor estatico, nao `file://`) |
 
 ## Estrutura
 
@@ -42,7 +38,7 @@ export/    saida de build (ignorada)
 
 ## Convencoes
 
-- Stack doc do workspace: `.claude/dev-stacks/godot.md` (convencoes GDScript 4, migracao 3→4, armadilhas de export).
+- Stack doc do workspace: `.claude/dev-stacks/godot.md` (convencoes GDScript 4, armadilhas de export).
 - Cena e script com o mesmo nome em PascalCase; funcoes/variaveis em `snake_case`; constantes em `UPPER_CASE`.
 - Comunicacao entre cenas por sinais; estado global so no autoload.
 - Recorde e configuracoes em `user://`, nunca em `res://`.

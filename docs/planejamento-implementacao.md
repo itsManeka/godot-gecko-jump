@@ -25,13 +25,12 @@ Restricoes que guiam as decisoes:
 | Item | Onde |
 |---|---|
 | Godot 4.7.2 (alvo) | `D:/Dev/.tools/godot-4.7.2/Godot_v4.7.2-stable_win64_console.exe` + templates em `%APPDATA%/Godot/export_templates/4.7.2.stable/` |
-| Godot 3.6.3 (so ate a migracao) | `D:/Dev/.tools/godot-3.6.3/Godot_v3.6.3-stable_win64.exe` |
 | Aseprite (fork pessoal) | `dev-workspace/ecossistemas/ferramentas/aseprite/build/bin/aseprite.exe` |
 | Android SDK / JDK | `D:/android/Sdk`; JDK 21 (Liberica) instalado — conferir a versao exigida pelo Godot 4.7 no build Android |
-| Oraculo do repo | `node .verify.mjs <wave>` (detecta Godot 3/4 pelo `config_version`) |
+| Oraculo do repo | `node .verify.mjs <wave>` |
 
-No dev-workspace, os caminhos ficam em `workspace-config.json` → `ecosystems.game-gecko.tools`; fora dele, use as
-env `GODOT_PATH` / `GODOT3_PATH`.
+No dev-workspace, os caminhos ficam em `workspace-config.json` → `ecosystems.game-gecko.tools`; fora dele, use a
+env `GODOT_PATH`.
 
 ## Roadmap
 
