@@ -29,6 +29,8 @@ static func get_cor(color) -> Color:
 			return Color("#ec4848")  # Vermelho
 	return Color("#ffffff")  # Branco como fallback
 
-# Retorna uma cor aleatória do enum COLOR
-static func get_random_color():
-	return COLOR.values()[randi() % COLOR.size()]
+# Retorna uma cor aleatória do enum COLOR. Sem rng usa randi() global; com rng (seed fixa nos testes) é determinístico.
+static func get_random_color(rng: RandomNumberGenerator = null):
+	if rng == null:
+		return COLOR.values()[randi() % COLOR.size()]
+	return COLOR.values()[rng.randi() % COLOR.size()]
