@@ -3,6 +3,12 @@
 Plataforma vertical infinita, tela retrato 180×320. O gecko so pisa nas plataformas da cor dele (4 cores); a cada
 pouso troca de cor e ganha 1 ponto. Prototipo da game jam #1JAM Chroma rumo a versao final (web/itch.io + Android).
 
+## Contexto obrigatorio
+
+Antes de tocar codigo: [`docs/planejamento-implementacao.md`](../docs/planejamento-implementacao.md) (roadmap, epic
+atual, regras de trabalho) e [`docs/adr/`](../docs/adr/README.md). Backlog e bugs conhecidos: issues do GitHub.
+Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
+
 ## Stack
 
 - **Hoje: Godot 3.6.3** (`config_version=4`, `KinematicBody2D`, `.import/`). Migracao para **Godot 4.7.2** e a
@@ -42,18 +48,6 @@ export/    saida de build (ignorada)
 - Recorde e configuracoes em `user://`, nunca em `res://`.
 - Paleta: `#f6db61`, `#79cf5a`, `#5987e9`, `#ec4848` (`scripts/Enums.gd`).
 - Assets: copiar o original para `assets/src/_orig/` antes de substituir.
-
-## Baseline (Fase 1, 2026-11-08)
-
-- Godot 3.6.3: importa e roda 10 s parado (sem input) sem erro de script. Aviso conhecido no import:
-  `Another resource is loaded from path 'res://assets/Gecko.png' (possible cyclic resource inclusion)`.
-- Partida real jogada: ~400 `SCRIPT ERROR: Trying to cast a deleted object` em `Global.gd:27`
-  (`player_color_changed` percorre plataformas ja liberadas) e `ObjectDB instances leaked at exit` ao fechar.
-  1a partida ok; apos reiniciar, o gecko pisa em qualquer cor: `change_scene` libera as plataformas sem tira-las
-  do `Global.platforms`, o erro aborta o loop nas antigas e as novas nunca recebem a cor (colisao fica ligada).
-  O `.verify.mjs` nao pega isso: sem input o gecko nunca pousa. Cobertura vem com testes GUT pos-migracao.
-- Pontos fracos conhecidos (fases seguintes): recorde nao persiste, dificuldade constante, so teclado, sem pausa/
-  opcoes/tutorial, lista `platforms` do `Global` pode guardar plataformas liberadas, cor inicial nao garantida.
 
 ## Git
 
