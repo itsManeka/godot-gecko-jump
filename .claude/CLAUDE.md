@@ -45,8 +45,11 @@ export/    saida de build (ignorada)
 
 ## Baseline (Fase 1, 2026-11-08)
 
-- Godot 3.6.3: importa e roda 10 s sem erro de script. Unico aviso conhecido no import:
+- Godot 3.6.3: importa e roda 10 s parado (sem input) sem erro de script. Aviso conhecido no import:
   `Another resource is loaded from path 'res://assets/Gecko.png' (possible cyclic resource inclusion)`.
+- Partida real jogada: ~400 `SCRIPT ERROR: Trying to cast a deleted object` em `Global.gd:27`
+  (`player_color_changed` percorre plataformas ja liberadas) e `ObjectDB instances leaked at exit` ao fechar.
+  O `.verify.mjs` nao pega isso: sem input o gecko nunca pousa. Cobertura vem com testes GUT pos-migracao.
 - Pontos fracos conhecidos (fases seguintes): recorde nao persiste, dificuldade constante, so teclado, sem pausa/
   opcoes/tutorial, lista `platforms` do `Global` pode guardar plataformas liberadas, cor inicial nao garantida.
 
