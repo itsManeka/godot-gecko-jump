@@ -3,10 +3,10 @@
 [ext_resource path="res://scenes/RuningPlatforms.gd" type="Script" id=1]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 30.151, 7.7247 )
+size = Vector2( 60.302, 15.4494 )
 
 [sub_resource type="RectangleShape2D" id=2]
-extents = Vector2( 90.2586, 8.0397 )
+size = Vector2( 180.5172, 16.0794 )
 
 [node name="RuningPlatforms" type="Node2D"]
 script = ExtResource( 1 )

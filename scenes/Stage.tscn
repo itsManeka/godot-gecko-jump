@@ -8,7 +8,7 @@
 [ext_resource path="res://sounds/lose.wav" type="AudioStream" id=6]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 91.4102, 10 )
+size = Vector2( 182.8204, 20 )
 
 [sub_resource type="Animation" id=2]
 resource_name = "lose_animation"
@@ -40,24 +40,6 @@ tracks/1/keys = {
 } ]
 }
 
-[sub_resource type="FontFile" id=3]
-size = 36
-outline_size = 2
-outline_color = Color( 0, 0, 0, 1 )
-font_data = ExtResource( 4 )
-
-[sub_resource type="FontFile" id=4]
-size = 26
-outline_size = 1
-outline_color = Color( 0, 0, 0, 1 )
-font_data = ExtResource( 4 )
-
-[sub_resource type="FontFile" id=5]
-size = 20
-outline_size = 1
-outline_color = Color( 0, 0, 0, 1 )
-font_data = ExtResource( 4 )
-
 [node name="Stage" type="Node2D"]
 script = ExtResource( 3 )
 
@@ -85,9 +67,12 @@ offset_left = 41.1225
 offset_top = -4.0
 offset_right = 178.122
 offset_bottom = 26.0
-theme_override_fonts/font = SubResource( 3 )
+theme_override_colors/font_outline_color = Color( 0, 0, 0, 1 )
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource( 4 )
+theme_override_font_sizes/font_size = 36
 text = "0"
-align = 2
+horizontal_alignment = 2
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -102,7 +87,10 @@ theme_override_styles/pressed = ExtResource( 5 )
 theme_override_styles/focus = ExtResource( 5 )
 theme_override_styles/disabled = ExtResource( 5 )
 theme_override_styles/normal = ExtResource( 5 )
-theme_override_fonts/font = SubResource( 4 )
+theme_override_colors/font_outline_color = Color( 0, 0, 0, 1 )
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource( 4 )
+theme_override_font_sizes/font_size = 26
 text = "Play"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -112,9 +100,12 @@ __meta__ = {
 offset_top = 230.0
 offset_right = 180.0
 offset_bottom = 247.0
-theme_override_fonts/font = SubResource( 5 )
+theme_override_colors/font_outline_color = Color( 0, 0, 0, 1 )
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource( 4 )
+theme_override_font_sizes/font_size = 20
 text = "Ultima pontuacao: 10"
-align = 1
+horizontal_alignment = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -123,9 +114,12 @@ __meta__ = {
 offset_top = 248.0
 offset_right = 180.0
 offset_bottom = 265.0
-theme_override_fonts/font = SubResource( 5 )
+theme_override_colors/font_outline_color = Color( 0, 0, 0, 1 )
+theme_override_constants/outline_size = 1
+theme_override_fonts/font = ExtResource( 4 )
+theme_override_font_sizes/font_size = 20
 text = "Melhor pontuacao: 10"
-align = 1
+horizontal_alignment = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }

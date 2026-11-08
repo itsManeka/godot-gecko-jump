@@ -4,7 +4,7 @@
 [ext_resource path="res://scenes/RuningPlatforms.tscn" type="PackedScene" id=2]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 89.976, 8.09404 )
+size = Vector2( 179.952, 16.18808 )
 
 [node name="ScrollLevel" type="Node2D"]
 script = ExtResource( 1 )

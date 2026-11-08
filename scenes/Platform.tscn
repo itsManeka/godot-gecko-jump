@@ -4,10 +4,10 @@
 [ext_resource path="res://scenes/Platform.gd" type="Script" id=2]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 29.737, 5.43131 )
+size = Vector2( 59.474, 10.86262 )
 
 [sub_resource type="RectangleShape2D" id=2]
-extents = Vector2( 30.1485, 5.12162 )
+size = Vector2( 60.297, 10.24324 )
 
 [node name="Platform" type="CharacterBody2D"]
 collision_layer = 2

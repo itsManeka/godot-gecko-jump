@@ -57,17 +57,17 @@ animations = [ {
 } ]
 
 [sub_resource type="RectangleShape2D" id=8]
-extents = Vector2( 5.13772, 14.2593 )
+size = Vector2( 10.27544, 28.5186 )
 
 [sub_resource type="RectangleShape2D" id=9]
-extents = Vector2( 4.98006, 2.19279 )
+size = Vector2( 9.96012, 4.38558 )
 
 [node name="Player" type="CharacterBody2D"]
 collision_mask = 2
 script = ExtResource( 2 )
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
-frames = SubResource( 7 )
+sprite_frames = SubResource( 7 )
 animation = "idle"
 playing = true
 
