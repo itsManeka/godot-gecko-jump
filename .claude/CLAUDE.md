@@ -49,6 +49,8 @@ export/    saida de build (ignorada)
   `Another resource is loaded from path 'res://assets/Gecko.png' (possible cyclic resource inclusion)`.
 - Partida real jogada: ~400 `SCRIPT ERROR: Trying to cast a deleted object` em `Global.gd:27`
   (`player_color_changed` percorre plataformas ja liberadas) e `ObjectDB instances leaked at exit` ao fechar.
+  1a partida ok; apos reiniciar, o gecko pisa em qualquer cor: `change_scene` libera as plataformas sem tira-las
+  do `Global.platforms`, o erro aborta o loop nas antigas e as novas nunca recebem a cor (colisao fica ligada).
   O `.verify.mjs` nao pega isso: sem input o gecko nunca pousa. Cobertura vem com testes GUT pos-migracao.
 - Pontos fracos conhecidos (fases seguintes): recorde nao persiste, dificuldade constante, so teclado, sem pausa/
   opcoes/tutorial, lista `platforms` do `Global` pode guardar plataformas liberadas, cor inicial nao garantida.
