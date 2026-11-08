@@ -6,10 +6,8 @@ extends Node
 var platforms = []
 # Estado se o jogo foi iniciado
 var iniciado : bool = false
-# Melhor pontuação alcançada
-var bestscore : int = 0
-# Última pontuação obtida
-var lastscore : int = 0
+# Pontuação da partida e recorde (regra em ScoreKeeper)
+var pontuacao: ScoreKeeper = ScoreKeeper.new()
 
 # Inicializa o gerador de números aleatórios
 func _ready():
@@ -50,14 +48,12 @@ func is_iniciado() -> bool:
 
 # Define a pontuação atual e atualiza o recorde se necessário
 func set_score(score):
-	lastscore = score
-	if lastscore > bestscore:
-		bestscore = lastscore
+	pontuacao.set_score(score)
 
 # Retorna a última pontuação obtida
 func get_last_score() -> int:
-	return lastscore
+	return pontuacao.last
 
 # Retorna a melhor pontuação alcançada
 func get_best_score() -> int:
-	return bestscore
+	return pontuacao.best
