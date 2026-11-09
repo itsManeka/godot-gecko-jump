@@ -10,10 +10,16 @@ var iniciado : bool = false
 # Publico de proposito (seam de teste): test/test_score_keeper.gd sobrescreve `Global.pontuacao` por atribuicao
 # em before_each/after_each. Trocar por reset explicito exige atualizar esse teste.
 var pontuacao: ScoreKeeper = ScoreKeeper.new()
+# Persistencia do recorde em user://, ligada ao `pontuacao` so no _ready (os keepers de teste nascem sem ligacao).
+# Mantido em membro para o store nao ser liberado ao fim do _ready.
+var _best_store: BestScoreStore
 
-# Inicializa o gerador de números aleatórios
+# Inicializa o gerador de números aleatórios e liga o recorde salvo ao ScoreKeeper
 func _ready():
 	randomize()
+	_best_store = BestScoreStore.new()
+	pontuacao.load_best(_best_store.load_best())
+	pontuacao.best_changed.connect(_best_store.save_best)
 
 # Adiciona uma nova plataforma à lista de plataformas ativas
 func add_platform(platform: Platform):
