@@ -37,3 +37,5 @@ static func get_random_color(rng: RandomNumberGenerator = null):
 	if rng == null:
 		return COLOR.values()[randi() % COLOR.size()]
 	return COLOR.values()[rng.randi() % COLOR.size()]
+
+func _prova_parse(:
