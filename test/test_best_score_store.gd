@@ -22,20 +22,26 @@ func before_all() -> void:
 
 
 func after_all() -> void:
-	_apagar(TEST_PATH)
-	_apagar(OTHER_PATH)
+	_limpar_arquivos()
 	_assert_default_intacto("C39 after_all")
 	assert_false(FileAccess.file_exists(TEST_PATH), "C43: user://test_best_score.cfg nao existe ao fim da suite")
+	assert_false(FileAccess.file_exists(TEST_PATH + ".tmp"), "F406: nenhum .tmp de TEST_PATH sobra ao fim da suite")
 
 
 func before_each() -> void:
-	_apagar(TEST_PATH)
-	_apagar(OTHER_PATH)
+	_limpar_arquivos()
 
 
 func after_each() -> void:
+	_limpar_arquivos()
+
+
+# Apaga os arquivos de teste e os .tmp de escrita atomica (save_best grava <path>.tmp antes do rename).
+func _limpar_arquivos() -> void:
 	_apagar(TEST_PATH)
+	_apagar(TEST_PATH + ".tmp")
 	_apagar(OTHER_PATH)
+	_apagar(OTHER_PATH + ".tmp")
 
 
 func _apagar(path: String) -> void:
@@ -184,3 +190,44 @@ func test_c43_higiene_arquivo_de_teste_nao_sobra() -> void:
 	assert_true(FileAccess.file_exists(TEST_PATH), "C43: fixture gravou o arquivo de teste")
 	_apagar(TEST_PATH)
 	assert_false(FileAccess.file_exists(TEST_PATH), "C43: arquivo de teste removido pela limpeza")
+
+
+# F406 (a): gravacao pelo fluxo atomico (tmp + rename) deixa o recorde em <path> e le de volta.
+func test_f406_a_grava_e_le_pelo_fluxo_atomico() -> void:
+	BestScoreStore.new(TEST_PATH).save_best(21)
+	assert_true(FileAccess.file_exists(TEST_PATH), "F406 a: o destino <path> existe apos gravar")
+	assert_eq(BestScoreStore.new(TEST_PATH).load_best(), 21, "F406 a: grava 21 e le 21 pelo fluxo novo")
+
+
+# F406 (b): gravacao bem-sucedida nao deixa <path>.tmp no disco.
+func test_f406_b_nenhum_tmp_sobra_apos_gravacao() -> void:
+	BestScoreStore.new(TEST_PATH).save_best(6)
+	assert_false(FileAccess.file_exists(TEST_PATH + ".tmp"), "F406 b: nenhum .tmp sobra apos gravacao")
+
+
+# F406 (c): .tmp orfao pre-existente (lixo) nao quebra load_best nem a gravacao seguinte, e some apos ela.
+func test_f406_c_tmp_orfao_nao_quebra_leitura_nem_gravacao() -> void:
+	_escrever_texto(TEST_PATH + ".tmp", "lixo orfao")
+	var store := BestScoreStore.new(TEST_PATH)
+	assert_eq(store.load_best(), 0, "F406 c: .tmp orfao sem <path> nao vale recorde; leitura vale 0")
+	store.save_best(4)
+	assert_eq(BestScoreStore.new(TEST_PATH).load_best(), 4, "F406 c: gravacao seguinte sobrescreve o lixo e grava 4")
+	assert_false(FileAccess.file_exists(TEST_PATH + ".tmp"), "F406 c: o .tmp orfao some apos a gravacao seguinte")
+
+
+# F406 (d): destino existente e substituido pelo valor novo (rename sobrescreve no Windows).
+func test_f406_d_destino_existente_e_substituido() -> void:
+	var store := BestScoreStore.new(TEST_PATH)
+	store.save_best(5)
+	store.save_best(12)
+	assert_eq(BestScoreStore.new(TEST_PATH).load_best(), 12, "F406 d: o valor novo (12) substitui o antigo (5)")
+	assert_false(FileAccess.file_exists(TEST_PATH + ".tmp"), "F406 d: nenhum .tmp sobra apos substituir")
+
+
+# F406 (e): diretorio inexistente falha em silencio sem criar <path> nem <path>.tmp.
+func test_f406_e_diretorio_inexistente_nao_cria_arquivo_nem_tmp() -> void:
+	var store := BestScoreStore.new(MISSING_DIR_PATH)
+	store.save_best(8)
+	assert_false(FileAccess.file_exists(MISSING_DIR_PATH), "F406 e: <path> nao existe")
+	assert_false(FileAccess.file_exists(MISSING_DIR_PATH + ".tmp"), "F406 e: <path>.tmp nao existe")
+	assert_eq(store.load_best(), 0, "F406 e: leitura continua 0 em silencio")
