@@ -84,6 +84,42 @@ godot-gecko-jump/
 - Godot Engine 4.7.2
 - Sistema operacional: Windows, Linux, macOS
 
+## 🔧 Desenvolvimento e CI
+
+Pull requests para `main` e pushes em `main` que mudem arquivos fora de Markdown e de `docs/` rodam o workflow
+[`CI`](.github/workflows/ci.yml), com tres jobs:
+
+- **verify**: roda o oraculo `node .verify.mjs ci` (import, compilacao dos scripts, testes GUT e execucao de 10 s) com o Godot 4.7.2.
+- **export-web**: exporta o preset `Web` (sem threads) para `export/web/` e confere que `index.html`, um `.wasm` e um `.pck` existem e nao estao vazios.
+- **CI**: agregador; falha se qualquer um dos dois jobs anteriores falhar.
+
+### Baixar o build web de um PR
+
+Na pagina do PR, abra o run do `CI` e baixe o artefato `export-web` na secao *Artifacts* (guardado por 7 dias).
+Descompacte e sirva a pasta por um servidor estatico, como na secao Download.
+
+### Rodar o oraculo localmente
+
+Aponte a variavel `GODOT_PATH` para o executavel do Godot 4.7.2 e rode na raiz do projeto:
+
+```
+GODOT_PATH=/caminho/para/Godot_v4.7.2-stable_linux.x86_64 node .verify.mjs ci
+```
+
+No Windows, defina `GODOT_PATH` com o caminho do executavel antes de rodar o mesmo comando.
+
+### Versao do Godot no CI
+
+O Godot 4.7.2 oficial e baixado do release `4.7.2-stable` do repositorio `godotengine/godot` pela action local
+`.github/actions/setup-godot/action.yml`. O arquivo baixado e conferido por soma SHA-512 fixada no proprio arquivo
+antes do uso, e o binario e os export templates web ficam em cache (a chave muda com a versao e a soma).
+As actions externas sao fixadas por SHA de commit e atualizadas mensalmente pelo Dependabot.
+
+Para trocar a versao do Godot, atualize em `.github/actions/setup-godot/action.yml` a versao, as duas somas
+SHA-512 (conferidas no `SHA512-SUMS.txt` do release) e os nomes de arquivo que contem a versao.
+
+Origem e decisoes do CI: issue [#28](https://github.com/itsManeka/godot-gecko-jump/issues/28).
+
 ## 🗺️ Roadmap
 
 O jogo está sendo levado da versão da game jam para uma versão final para celular (Android) e web (itch.io).

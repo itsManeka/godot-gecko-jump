@@ -15,6 +15,7 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 - GDScript. Autoload `Global` (`scripts/Global.gd`). Addon GUT v9.7.1 vendorizado em `addons/gut/` (plugin habilitado no `project.godot`).
 - Executavel fora do PATH: `workspace-config.json` → `ecosystems.game-gecko.tools` (dev-workspace) ou env
   `GODOT_PATH`.
+- CI: `.github/workflows/ci.yml` (jobs `verify`, `export-web` e agregador `CI`); Godot 4.7.2 vem da action `.github/actions/setup-godot` (trocar versao = atualizar la a versao, as somas SHA-512 e os nomes de arquivo com a versao).
 
 ## Comandos
 
