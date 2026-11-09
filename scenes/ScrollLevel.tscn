@@ -29,6 +29,7 @@ platform_type = 4
 
 [node name="RunningPlatforms" parent="RunningPlatforms" instance=ExtResource( 2 )]
 position = Vector2( 0, 190 )
+garantir_cor_inicial = true
 
 [node name="CheckArea" type="Area2D" parent="."]
 collision_layer = 0

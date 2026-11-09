@@ -9,7 +9,7 @@ const GRAVITY = 10                  # Força da gravidade aplicada por frame
 const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima)
 
 # Cor atual do jogador (definida no editor)
-@export var color: Enums.COLOR = Enums.COLOR.AMARELO
+@export var color: Enums.COLOR = Enums.COR_INICIAL
 
 # Referencias aos nós filhos
 @onready var sprite = $AnimatedSprite2D

@@ -8,6 +8,9 @@ const pre_platform = preload("res://scenes/Platform.tscn")
 # Tipo de plataforma que este gerador cria (definido no editor)
 @export var platform_type: Enums.PLATFORM_TYPE = Enums.PLATFORM_TYPE.STATIC
 
+# Só o gerador inicial liga: garante 1 estática com a cor inicial do jogador (Enums.COR_INICIAL)
+@export var garantir_cor_inicial: bool = false
+
 # Referencias aos nós filhos
 @onready var generate_timer = $Timer
 @onready var check_generate = $CheckGenerate
@@ -45,9 +48,12 @@ func _on_Timer_timeout():
 # Cria um conjunto de 3 plataformas estáticas
 func create_static_platforms():
 	var position_x = 5
+	var cores: Array = []
+	if garantir_cor_inicial:
+		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL)
 	for i in 3:
 		var platform = pre_platform.instantiate()
-		platform.set_color(Enums.get_random_color())
+		platform.set_color(cores[i] if garantir_cor_inicial else Enums.get_random_color())
 		platform.position.x = position_x
 		platform.set_speed(0)  # Plataformas estáticas não se movem
 		add_child(platform)
