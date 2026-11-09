@@ -204,6 +204,12 @@ To build the web version (no threads):
    ```
 3. Serve the `export/web/` folder with a local static server, for example `npx serve export/web`. Do not open `index.html` directly in the browser (`file://`): loading the `.wasm`/`.pck` fails.
 
+### Web build smoke
+
+The `test/smoke/gecko.smoke.json` script plays the web export in a headless browser (start, jump, die, restart,
+jump) and reports page errors, missing resources and a frozen screen. Run it against the export folder (`export/web/`)
+with the dev-workspace `game-smoke.mjs`: `node <dev-workspace>/.claude/scripts/game-smoke.mjs export/web --spec=test/smoke/gecko.smoke.json --out=<screenshots folder>`.
+
 ### 📱 Compatibility
 
 ⚠️ **Warning:** This game was developed for PC and is not optimized for mobile devices.
