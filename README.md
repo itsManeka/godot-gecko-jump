@@ -110,10 +110,11 @@ No Windows, defina `GODOT_PATH` com o caminho do executavel antes de rodar o mes
 
 ### Versao do Godot no CI
 
-O Godot 4.7.2 oficial e baixado do release `4.7.2-stable` do repositorio `godotengine/godot` pela action local
-`.github/actions/setup-godot/action.yml`. O arquivo baixado e conferido por soma SHA-512 fixada no proprio arquivo
-antes do uso, e o binario e os export templates web ficam em cache (a chave muda com a versao e a soma). A soma
-do binario e conferida em todo run, inclusive quando ele vem do cache. O cache de um PR so serve ao proprio PR: o
+O Godot oficial, na versao fixada em `GODOT_VERSION`, e baixado do release `<versao>-stable` do repositorio
+`godotengine/godot` pela action local `.github/actions/setup-godot/action.yml`. O arquivo baixado e conferido por
+soma SHA-512 fixada no proprio arquivo antes do uso, e o binario e os export templates web ficam em cache (a chave
+muda com a versao e a soma). A soma do binario e conferida em todo run, inclusive quando ele vem do cache; a dos
+templates, so no download, pois o cache deles so e gravado depois dessa conferencia. O cache de um PR so serve ao proprio PR: o
 primeiro run de cada PR baixa o Godot, e depois do CI verde na `main` o cache dela passa a servir os PRs.
 As actions externas sao fixadas por SHA de commit e atualizadas mensalmente pelo Dependabot.
 
