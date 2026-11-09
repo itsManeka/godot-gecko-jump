@@ -1,0 +1,28 @@
+{
+  "path": "index.html",
+  "viewport": [360, 640],
+  "boot_ms": 6000,
+  "steps": [
+    { "shots": 2, "every": 300, "name": "menu", "moving": false },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "shots": 4, "every": 200, "name": "partida1-inicio", "moving": true },
+    { "press": "Space" },
+    { "wait": 700 },
+    { "press": "Space" },
+    { "shots": 4, "every": 200, "name": "partida1-pulos", "moving": true },
+    { "wait": 8000 },
+    { "shots": 4, "every": 300, "name": "derrota", "moving": false },
+    { "wait": 2500 },
+    { "shots": 2, "every": 300, "name": "menu-last-score", "moving": false },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "shots": 4, "every": 200, "name": "partida2-inicio", "moving": true },
+    { "press": "Space" },
+    { "wait": 700 },
+    { "press": "Space" },
+    { "shots": 4, "every": 200, "name": "partida2-pulos", "moving": true }
+  ]
+}
