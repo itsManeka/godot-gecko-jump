@@ -53,7 +53,7 @@ func create_static_platforms():
 		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL)
 	for i in 3:
 		var platform = pre_platform.instantiate()
-		platform.set_color(cores[i] if garantir_cor_inicial else Enums.get_random_color())
+		platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color())
 		platform.position.x = position_x
 		platform.set_speed(0)  # Plataformas estáticas não se movem
 		add_child(platform)

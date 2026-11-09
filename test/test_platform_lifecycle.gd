@@ -68,6 +68,12 @@ func test_sinais_de_cor_ignoram_entrada_liberada() -> void:
 	Global.att_actual_platform(outra_cor, liberada)
 	assert_false(viva.shape.disabled, "att_actual_platform com atual liberada nao mexe na plataforma viva")
 
+	# Discrimina: com a atual valida (e a entrada liberada ainda na lista) a plataforma viva e atualizada.
+	var antes: bool = viva.shape.disabled
+	Global.att_actual_platform(outra_cor, viva)
+	assert_ne(viva.shape.disabled, antes, "att_actual_platform com atual valida muda shape.disabled da plataforma viva")
+	assert_true(viva.shape.disabled, "cor diferente da plataforma desativa a colisao")
+
 
 # C28: saida por screen_exited e depois liberada: removida uma vez, sem duplicata nem erro (idempotencia).
 func test_screen_exited_seguido_de_queue_free_remove_uma_vez() -> void:

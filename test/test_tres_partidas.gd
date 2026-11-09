@@ -2,6 +2,8 @@ extends GutTest
 
 # Verificacao do #4 (leaked at exit, nao reproduzido): 3 partidas seguidas com pouso simulado e reinicio
 # por troca de cena. Sem current_scene no GUT, o reinicio libera a Stage e instancia uma nova.
+# A prova do #4 (`leaked at exit`) e o log da janela real, nao este teste; este e so regressao
+# (Platform._exit_tree tira a plataforma de Global.platforms).
 const STAGE_SCENE := "res://scenes/Stage.tscn"
 const PARTIDAS := 3
 
@@ -62,3 +64,4 @@ func test_tres_partidas_seguidas_sem_referencia_liberada_em_global_platforms() -
 
 		for p in Global.platforms:
 			assert_true(is_instance_valid(p), "partida %d: Global.platforms sem referencia liberada ao fim da partida" % partida)
+		assert_true(Global.platforms.is_empty(), "partida %d: nenhuma plataforma da Stage liberada sobra em Global.platforms" % partida)

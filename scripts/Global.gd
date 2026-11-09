@@ -24,9 +24,9 @@ func add_platform(platform: Platform):
 func player_color_changed(player_color, actual_platform: Platform):
 	for platform in platforms:
 		if is_instance_valid(platform) and platform != actual_platform:
-			platform = platform as Platform
-			if platform:
-				platform.player_color_changed(player_color)
+			var p := platform as Platform
+			if p:
+				p.player_color_changed(player_color)
 
 # Atualiza a plataforma atual quando o jogador muda de cor
 func att_actual_platform(player_color, actual_platform):
