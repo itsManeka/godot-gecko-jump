@@ -67,7 +67,9 @@ Para gerar a versão web (sem threads):
 godot-gecko-jump/
 ├── assets/           # Sprites e recursos visuais
 ├── scenes/          # Cenas do Godot (.tscn) e scripts (.gd)
-├── scripts/         # Scripts globais (Global.gd, Enums.gd)
+├── scripts/         # Scripts globais e classes de logica (Global.gd, Enums.gd, ScoreKeeper.gd, PlatformTypePicker.gd)
+├── test/            # Testes automatizados (GUT)
+├── addons/          # Addon GUT (framework de testes)
 ├── sounds/          # Efeitos sonoros
 ├── fonts/           # Fontes personalizadas
 └── project.godot    # Arquivo de projeto do Godot

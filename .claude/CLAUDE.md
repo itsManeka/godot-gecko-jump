@@ -12,7 +12,7 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 ## Stack
 
 - **Godot 4.7.2** (`config_version=5`, `CharacterBody2D`). GDScript 4 (`@onready`, `@export`, tipagem).
-- GDScript, ~460 linhas em 7 scripts. Autoload `Global` (`scripts/Global.gd`). Sem addons.
+- GDScript. Autoload `Global` (`scripts/Global.gd`). Addon GUT v9.7.1 vendorizado em `addons/gut/` (plugin habilitado no `project.godot`).
 - Executavel fora do PATH: `workspace-config.json` → `ecosystems.game-gecko.tools` (dev-workspace) ou env
   `GODOT_PATH`.
 
@@ -23,7 +23,8 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 | Importar | `<godot> --headless --path . --import` |
 | Rodar sem janela | `<godot> --headless --path . --quit-after <frames>` |
 | Jogar (janela) | `<godot> --path .` |
-| Oraculo completo | `node .verify.mjs <wave>` |
+| Oraculo completo (import, compile, GUT, run de 10 s) | `node .verify.mjs <wave>` |
+| So os testes GUT | `<godot> --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit` |
 | Export web | `<godot> --headless --path . --export-release "Web" export/web/index.html` (sem threads; servir `export/web/` por servidor estatico, nao `file://`) |
 
 ## Estrutura
@@ -31,7 +32,10 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 ```
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
            ScrollLevel (scroll 20 px/s)
-scripts/   Global.gd (autoload: plataformas, estado, recorde), Enums.gd (cores e tipos de plataforma)
+scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores e tipos de plataforma),
+           ScoreKeeper.gd (recorde), PlatformTypePicker.gd (tipo do gerador, sem cena)
+test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` fica pendente (issue #3)
+addons/    GUT v9.7.1 (vendorizado; nao editar)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
 export/    saida de build (ignorada; so o .gdignore e versionado, para o Godot nao importar o build)
 ```
