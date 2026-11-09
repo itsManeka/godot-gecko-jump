@@ -6,7 +6,9 @@ extends Node
 var platforms = []
 # Estado se o jogo foi iniciado
 var iniciado : bool = false
-# Pontuação da partida e recorde (regra em ScoreKeeper)
+# Pontuação da partida e recorde (regra em ScoreKeeper).
+# Publico de proposito (seam de teste): test/test_score_keeper.gd sobrescreve `Global.pontuacao` por atribuicao
+# em before_each/after_each. Trocar por reset explicito exige atualizar esse teste.
 var pontuacao: ScoreKeeper = ScoreKeeper.new()
 
 # Inicializa o gerador de números aleatórios
