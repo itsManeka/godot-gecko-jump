@@ -38,6 +38,9 @@ func test_pontuacao_igual_nao_altera_recorde() -> void:
 func test_valor_inicial_e_zero() -> void:
 	assert_eq(Global.get_last_score(), 0, "ultima pontuacao inicial e 0")
 	assert_eq(Global.get_best_score(), 0, "recorde inicial e 0")
+	var novo := ScoreKeeper.new()
+	assert_eq(novo.last, 0, "ScoreKeeper novo comeca com last = 0")
+	assert_eq(novo.best, 0, "ScoreKeeper novo comeca com best = 0")
 
 
 func test_menos_um_grava_last_sem_alterar_recorde() -> void:

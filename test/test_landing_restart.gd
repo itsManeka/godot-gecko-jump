@@ -1,7 +1,7 @@
 extends GutTest
 
 # Cena: pouso -> reinicio -> pouso. Reproduz o bug #3 (Global.platforms guarda plataformas liberadas
-# apos o reinicio e Global.player_color_changed quebra em Global.gd:27).
+# apos o reinicio e Global.player_color_changed quebra em Global.gd:25).
 # Pendente ate a F4 (f402-gecko-bugs-base): a F4 remove a constante abaixo e o ramo de pending.
 const PENDENTE_ATE_F4 := true
 const STAGE_SCENE := "res://scenes/Stage.tscn"
@@ -68,7 +68,7 @@ func test_pouso_reinicio_pouso_mantem_colisao_por_cor_e_plataformas_validas() ->
 		p.set_color(Enums.COLOR.AMARELO if i % 2 == 0 else Enums.COLOR.VERDE)
 		i += 1
 
-	# 2o pouso (com o bug #3, Global.gd:27 acessa plataforma liberada)
+	# 2o pouso (com o bug #3, Global.gd:25 acessa plataforma liberada)
 	_pousar(_stage, atuais[0], Enums.COLOR.AMARELO)
 
 	# C24: colisao por cor

@@ -42,9 +42,9 @@ func test_get_random_color_sem_argumento_devolve_valor_valido() -> void:
 
 func test_get_random_color_sem_rng_so_devolve_valores_de_color() -> void:
 	var valores: Array = Enums.COLOR.values()
-	for _i in range(200):
-		var sorteada = Enums.get_random_color()
-		assert_true(valores.has(sorteada), "sorteio %d fora de COLOR" % _i)
+	for i in range(200):
+		var sorteada = Enums.get_random_color(null)
+		assert_true(valores.has(sorteada), "sorteio %d fora de COLOR" % i)
 
 
 func test_get_random_color_com_rng_cobre_as_4_cores() -> void:

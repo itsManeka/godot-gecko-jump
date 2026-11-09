@@ -23,8 +23,6 @@ func test_random_all_so_devolve_tipos_concretos():
 	]
 	for r in resultados:
 		assert_true(r in concretos, "RANDOM_ALL devolveu tipo nao concreto: %s" % r)
-		assert_ne(r, Enums.PLATFORM_TYPE.RANDOM_ALL)
-		assert_ne(r, Enums.PLATFORM_TYPE.RANDOM_DIRECTION)
 
 func test_random_all_sorteia_static():
 	var resultados := _sortear(Enums.PLATFORM_TYPE.RANDOM_ALL, N_SORTEIOS)

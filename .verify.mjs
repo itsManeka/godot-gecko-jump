@@ -55,16 +55,21 @@ step('import', run(bin, ['--headless', '--path', '.', '--import']));
 step('compile all .gd', run(bin, ['--headless', '--path', '.', '-s', 'res://.verify-compile.gd']));
 if (fs.existsSync(path.join(root, 'addons', 'gut'))) {
   const gut = run(bin, ['--headless', '--path', '.', '-s', 'addons/gut/gut_cmdln.gd', '-gdir=res://test', '-gexit'], 600_000);
-  // Resumo do GUT 9.x: linha "Tests   <N>" em "Totals" (com codigos ANSI no meio). Pending/risky vem em linhas
-  // proprias do resumo e nao casam com errorsIn; so exit != 0, erro de script ou N = 0 reprovam.
+  // Resumo do GUT 9.x: bloco "Totals" impresso por addons/gut/summary.gd (linhas "Tests   <N>" e, so se > 0,
+  // "Risky/Pending   <M>"), com codigos ANSI no meio. Pending/risky nao reprovam (o teste de cena e pending de
+  // proposito ate a F4): so entram na mensagem. Reprovam exit != 0, erro de script ou N = 0.
+  // A guarda N = 0 / "total nao encontrado" protege so contra mudanca de formato do resumo: `test/` vazia ja sai
+  // com exit 1 pelo proprio GUT.
   const gutPlain = gut.out.replace(/\x1b\[[0-9;]*m/g, '');
   const gutTotal = /^Tests\s+(\d+)\s*$/m.exec(gutPlain);
   const gutCount = gutTotal ? Number(gutTotal[1]) : null;
+  const gutPendingMatch = /^Risky\/Pending\s+(\d+)\s*$/m.exec(gutPlain);
+  const gutPending = gutPendingMatch ? Number(gutPendingMatch[1]) : 0;
   if (gut.error) failures.push(`gut: ${gut.error.message}`);
   else if (gut.status !== 0) failures.push(`gut: exit ${gut.status}\n${gutPlain.slice(-2000)}`);
   else if (errorsIn(gutPlain).length) step('gut', { ...gut, out: gutPlain });
   else if (!gutCount) failures.push(`gut: nenhum teste executado (total ${gutCount ?? 'nao encontrado na saida'})\n${gutPlain.slice(-1000)}`);
-  else step(`gut (${gutCount} tests)`, { ...gut, out: gutPlain });
+  else step(`gut (${gutCount} tests${gutPending ? `, ${gutPending} risky/pending` : ''})`, { ...gut, out: gutPlain });
 }
 step(`run ${RUN_SECONDS}s`, run(bin, ['--headless', '--path', '.', '--quit-after', String(RUN_SECONDS * 60)]));
 
