@@ -46,9 +46,9 @@ runs:
         } >> "$GITHUB_ENV"
         {
           echo "bin_dl_dir=$GODOT_DL_DIR"
-          echo "bin_key=godot-${GODOT_VERSION}-linux-zip-${GODOT_SHA512}"
+          echo "bin_key=godot-${GODOT_VERSION}-${RUNNER_OS}-${RUNNER_ARCH}-zip-${GODOT_SHA512}"
           echo "tpl_dir=$TEMPLATES_DIR"
-          echo "tpl_key=godot-templates-${GODOT_VERSION}-web-nothreads-${TEMPLATES_SHA512}"
+          echo "tpl_key=godot-templates-${GODOT_VERSION}-${RUNNER_OS}-${RUNNER_ARCH}-web-nothreads-${TEMPLATES_SHA512}"
         } >> "$GITHUB_OUTPUT"
 
     - name: Cache do binario (.zip)

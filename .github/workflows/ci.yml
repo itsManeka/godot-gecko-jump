@@ -62,8 +62,8 @@ jobs:
           "$GODOT_PATH" --headless --path . --import 2>&1 | tee "$RUNNER_TEMP/import.log"
           "$GODOT_PATH" --headless --path . --export-release "Web" export/web/index.html 2>&1 | tee "$RUNNER_TEMP/export.log"
           # O Godot nem sempre muda o exit code em erro de export: varrer o log tambem.
-          if grep -E '(^|[^A-Za-z])ERROR:' "$RUNNER_TEMP/export.log"; then
-            echo "::error::Export Web registrou ERROR no log"
+          if grep -E '(^|[^A-Za-z])ERROR:' "$RUNNER_TEMP/import.log" "$RUNNER_TEMP/export.log"; then
+            echo "::error::Import ou export Web registrou ERROR no log"
             exit 1
           fi
 
