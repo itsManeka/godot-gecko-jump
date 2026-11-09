@@ -6,11 +6,14 @@ extends Node2D
 const pre_platform = preload("res://scenes/Platform.tscn")
 
 # Tipo de plataforma que este gerador cria (definido no editor)
-export(Enums.PLATFORM_TYPE) var platform_type = Enums.PLATFORM_TYPE.STATIC
+@export var platform_type: Enums.PLATFORM_TYPE = Enums.PLATFORM_TYPE.STATIC
+
+# Só o gerador inicial liga: garante 1 estática com a cor inicial do jogador (Enums.COR_INICIAL)
+@export var garantir_cor_inicial: bool = false
 
 # Referencias aos nós filhos
-onready var generate_timer = $Timer
-onready var check_generate = $CheckGenerate
+@onready var generate_timer = $Timer
+@onready var check_generate = $CheckGenerate
 
 # Velocidade de movimento das plataformas geradas
 var speed = 0
@@ -19,20 +22,9 @@ var speed = 0
 func _ready():
 	speed = 60  # Velocidade fixa (antes era aleatória)
 	
-	# Resolve tipos de plataforma aleatórios
-	if platform_type == Enums.PLATFORM_TYPE.RANDOM_ALL:
-		var platform_types = [Enums.PLATFORM_TYPE.STATIC, 
-							  Enums.PLATFORM_TYPE.MOVE_TO_LEFT, 
-							  Enums.PLATFORM_TYPE.MOVE_TO_RIGHT]
-		platform_types.shuffle()
-		platform_type = platform_types.pop_front()
-	
-	if platform_type == Enums.PLATFORM_TYPE.RANDOM_DIRECTION:
-		var platform_types = [Enums.PLATFORM_TYPE.MOVE_TO_LEFT, 
-							  Enums.PLATFORM_TYPE.MOVE_TO_RIGHT]
-		platform_types.shuffle()
-		platform_type = platform_types.pop_front()
-	
+	# Resolve tipos de plataforma aleatórios (sorteio em PlatformTypePicker)
+	platform_type = PlatformTypePicker.resolve(platform_type)
+
 	# Configura comportamento baseado no tipo
 	match platform_type:
 		Enums.PLATFORM_TYPE.STATIC:
@@ -56,9 +48,12 @@ func _on_Timer_timeout():
 # Cria um conjunto de 3 plataformas estáticas
 func create_static_platforms():
 	var position_x = 5
+	var cores: Array = []
+	if garantir_cor_inicial:
+		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL)
 	for i in 3:
-		var platform = pre_platform.instance()
-		platform.set_color(Enums.get_random_color())
+		var platform = pre_platform.instantiate()
+		platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color())
 		platform.position.x = position_x
 		platform.set_speed(0)  # Plataformas estáticas não se movem
 		add_child(platform)
@@ -66,7 +61,7 @@ func create_static_platforms():
 
 # Cria uma nova plataforma em movimento
 func new_platform():
-	var platform = pre_platform.instance()
+	var platform = pre_platform.instantiate()
 	platform.set_color(Enums.get_random_color())
 	platform.position.x = check_generate.position.x
 	platform.set_speed(speed)

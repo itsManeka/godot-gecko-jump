@@ -6,14 +6,20 @@ extends Node
 var platforms = []
 # Estado se o jogo foi iniciado
 var iniciado : bool = false
-# Melhor pontuação alcançada
-var bestscore : int = 0
-# Última pontuação obtida
-var lastscore : int = 0
+# Pontuação da partida e recorde (regra em ScoreKeeper).
+# Publico de proposito (seam de teste): test/test_score_keeper.gd sobrescreve `Global.pontuacao` por atribuicao
+# em before_each/after_each. Trocar por reset explicito exige atualizar esse teste.
+var pontuacao: ScoreKeeper = ScoreKeeper.new()
+# Persistencia do recorde em user://, ligada ao `pontuacao` so no _ready (os keepers de teste nascem sem ligacao).
+# Mantido em membro para o store nao ser liberado ao fim do _ready.
+var _best_store: BestScoreStore
 
-# Inicializa o gerador de números aleatórios
+# Inicializa o gerador de números aleatórios e liga o recorde salvo ao ScoreKeeper
 func _ready():
 	randomize()
+	_best_store = BestScoreStore.new()
+	pontuacao.load_best(_best_store.load_best())
+	pontuacao.best_changed.connect(_best_store.save_best)
 
 # Adiciona uma nova plataforma à lista de plataformas ativas
 func add_platform(platform: Platform):
@@ -23,22 +29,22 @@ func add_platform(platform: Platform):
 # Ativa/desativa colisão baseado na cor
 func player_color_changed(player_color, actual_platform: Platform):
 	for platform in platforms:
-		if platform != actual_platform:
-			platform = platform as Platform
-			if platform:
-				platform.player_color_changed(player_color)
+		if is_instance_valid(platform) and platform != actual_platform:
+			var p := platform as Platform
+			if p:
+				p.player_color_changed(player_color)
 
 # Atualiza a plataforma atual quando o jogador muda de cor
 func att_actual_platform(player_color, actual_platform):
 	var platform_index = platforms.find(actual_platform, 0)
-	if platform_index != -1:
+	if platform_index != -1 and is_instance_valid(platforms[platform_index]):
 		platforms[platform_index].player_color_changed(player_color)
 
 # Remove uma plataforma da lista (quando sai de tela)
 func remove_platform(platform):
 	var platform_index = platforms.find(platform, 0)
 	if platform_index != -1:
-		platforms.remove(platform_index)
+		platforms.remove_at(platform_index)
 
 # Define se o jogo foi iniciado
 func set_iniciado(b: bool):
@@ -50,14 +56,12 @@ func is_iniciado() -> bool:
 
 # Define a pontuação atual e atualiza o recorde se necessário
 func set_score(score):
-	lastscore = score
-	if lastscore > bestscore:
-		bestscore = lastscore
+	pontuacao.set_score(score)
 
 # Retorna a última pontuação obtida
 func get_last_score() -> int:
-	return lastscore
+	return pontuacao.last
 
 # Retorna a melhor pontuação alcançada
 func get_best_score() -> int:
-	return bestscore
+	return pontuacao.best

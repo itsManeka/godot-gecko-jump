@@ -1,0 +1,5 @@
+{
+	"dirs": ["res://test/"],
+	"should_exit": true,
+	"pre_run_script": "res://test/gut_pre_run.gd"
+}

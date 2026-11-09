@@ -25,21 +25,20 @@ Restricoes que guiam as decisoes:
 | Item | Onde |
 |---|---|
 | Godot 4.7.2 (alvo) | `D:/Dev/.tools/godot-4.7.2/Godot_v4.7.2-stable_win64_console.exe` + templates em `%APPDATA%/Godot/export_templates/4.7.2.stable/` |
-| Godot 3.6.3 (so ate a migracao) | `D:/Dev/.tools/godot-3.6.3/Godot_v3.6.3-stable_win64.exe` |
 | Aseprite (fork pessoal) | `dev-workspace/ecossistemas/ferramentas/aseprite/build/bin/aseprite.exe` |
 | Android SDK / JDK | `D:/android/Sdk`; JDK 21 (Liberica) instalado — conferir a versao exigida pelo Godot 4.7 no build Android |
-| Oraculo do repo | `node .verify.mjs <wave>` (detecta Godot 3/4 pelo `config_version`) |
+| Oraculo do repo | `node .verify.mjs <wave>` |
 
-No dev-workspace, os caminhos ficam em `workspace-config.json` → `ecosystems.game-gecko.tools`; fora dele, use as
-env `GODOT_PATH` / `GODOT3_PATH`.
+No dev-workspace, os caminhos ficam em `workspace-config.json` → `ecosystems.game-gecko.tools`; fora dele, use a
+env `GODOT_PATH`.
 
 ## Roadmap
 
 | Fase | Conteudo | Issues | Estado |
 |---|---|---|---|
 | 1. Preparacao | `.gitignore`, oraculo headless, CLAUDE.md, baseline jogado | PR #2 | concluida (2026-11-08) |
-| 2. Migracao Godot 4 | Projeto, cenas e scripts no 4.7; export web pela CLI; rename do gerador | #8, #14 | epic 1 |
-| 3. Base solida | Testes GUT; bugs da lista de plataformas, vazamento, aviso de import, cor inicial; recorde salvo | #7, #3, #4, #5, #6, #9 | epic 1 |
+| 2. Migracao Godot 4 | Projeto, cenas e scripts no 4.7; export web pela CLI; rename do gerador | #8, #14 | epic 1, concluida (2026-11-09) |
+| 3. Base solida | Testes GUT; bugs da lista de plataformas, vazamento, aviso de import, cor inicial; recorde salvo | #7, #3, #4, #5, #6, #9 | epic 1, concluida (2026-11-09) |
 | 4. Gameplay e mobile | Tela mobile, controles de toque, dificuldade progressiva, pausa/opcoes/tutorial | #15, #11, #10, #12 | epic 2 |
 | 5. Conteudo | Power-ups, modos de jogo | #16, #17 | epic 3 |
 | 6. Arte e audio | Arte final em pixel art, sons e musica | #18, #13 | epic 3 ou 4 |
@@ -51,6 +50,11 @@ em que o dono joga (Godot e export web; Android quando existir).
 ## Epic 1 — Migracao e base solida
 
 Escopo: fases 2 e 3. **A mecanica fica igual a original** (velocidade 60, scroll 20 px/s, regra de cor).
+
+**Estado: concluido em 2026-11-09.** O dono jogou 3 partidas seguidas no Godot 4.7.2 e no export web, sem erro no
+console nem vazamento ao fechar, com o recorde mantido entre sessoes. O QA achou e corrigiu as plataformas moveis que
+saiam uma por linha (#22). Problemas de jogabilidade herdados da jam ficaram como issues para os proximos epics: #23
+(linha sem plataforma da cor do gecko), #24 (linha movel comeca vazia) e #25 (gecko sai pela lateral).
 
 1. Migracao 3.6 → 4.7 (#8): `KinematicBody2D`→`CharacterBody2D`, `onready`/`export`→`@onready`/`@export`,
    `change_scene`→`change_scene_to_file`, preset `HTML5`→`Web` sem threads, GDScript tipado. Atualizar o README

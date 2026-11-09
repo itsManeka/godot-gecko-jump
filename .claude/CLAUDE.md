@@ -11,38 +11,40 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ## Stack
 
-- **Hoje: Godot 3.6.3** (`config_version=4`, `KinematicBody2D`, `.import/`). Migracao para **Godot 4.7.2** e a
-  proxima fase; ate la, nada de sintaxe do 4 nos scripts.
-- GDScript, ~460 linhas em 7 scripts. Autoload `Global` (`scripts/Global.gd`). Sem addons.
-- Executaveis fora do PATH: `workspace-config.json` → `ecosystems.game-gecko.tools` (dev-workspace) ou env
-  `GODOT_PATH` (4) / `GODOT3_PATH` (3).
+- **Godot 4.7.2** (`config_version=5`, `CharacterBody2D`). GDScript 4 (`@onready`, `@export`, tipagem).
+- GDScript. Autoload `Global` (`scripts/Global.gd`). Addon GUT v9.7.1 vendorizado em `addons/gut/` (plugin habilitado no `project.godot`).
+- Executavel fora do PATH: `workspace-config.json` → `ecosystems.game-gecko.tools` (dev-workspace) ou env
+  `GODOT_PATH`.
 
 ## Comandos
 
-| Acao | Godot 3 (atual) | Godot 4 (pos-migracao) |
-|---|---|---|
-| Importar | `<godot3> --no-window --path . -e --quit` | `<godot> --headless --path . --import` |
-| Rodar sem janela | `<godot3> --no-window --path . --fixed-fps 60` (parar por timeout) | `<godot> --headless --path . --quit-after <frames>` |
-| Jogar (janela) | `<godot3> --path .` | `<godot> --path .` |
-| Oraculo completo | `node .verify.mjs <wave>` | idem (detecta a versao pelo `config_version`) |
-| Export web | — (sem templates do 3 instalados; export so pos-migracao) | `<godot> --headless --path . --export-release "Web" export/web/index.html` |
-
-O editor do Godot 3 reescreve `project.godot` ao importar (so reserializa); descarte com `git checkout -- project.godot`
-se nao houve mudanca intencional. O `.verify.mjs` ja faz isso.
+| Acao | Comando |
+|---|---|
+| Importar | `<godot> --headless --path . --import` |
+| Rodar sem janela | `<godot> --headless --path . --quit-after <frames>` |
+| Jogar (janela) | `<godot> --path .` |
+| Oraculo completo (import, compile, GUT, run de 10 s) | `node .verify.mjs <wave>` |
+| So os testes GUT | `<godot> --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit` (le o `.gutconfig.json`, cujo `pre_run_script` isola o recorde real; outro `-gconfig` sem ele grava no `user://best_score.cfg` de quem joga) |
+| Export web | `<godot> --headless --path . --export-release "Web" export/web/index.html` (sem threads; servir `export/web/` por servidor estatico, nao `file://`) |
 
 ## Estrutura
 
 ```
-scenes/    Stage (fluxo, pontuacao), Player, Platform, RuningPlatforms (gerador; nome com erro, renomear na fase 3),
+scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
            ScrollLevel (scroll 20 px/s)
-scripts/   Global.gd (autoload: plataformas, estado, recorde), Enums.gd (cores e tipos de plataforma)
+scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
+           ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd (recorde salvo em user://),
+           PlatformTypePicker.gd (tipo do gerador, sem cena),
+           StaticPlatformColors.gd (cores das estaticas iniciais, sem cena)
+test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
+addons/    GUT v9.7.1 (vendorizado; nao editar)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
-export/    saida de build (ignorada)
+export/    saida de build (ignorada; so o .gdignore e versionado, para o Godot nao importar o build)
 ```
 
 ## Convencoes
 
-- Stack doc do workspace: `.claude/dev-stacks/godot.md` (convencoes GDScript 4, migracao 3→4, armadilhas de export).
+- Stack doc do workspace: `.claude/dev-stacks/godot.md` (convencoes GDScript 4, armadilhas de export).
 - Cena e script com o mesmo nome em PascalCase; funcoes/variaveis em `snake_case`; constantes em `UPPER_CASE`.
 - Comunicacao entre cenas por sinais; estado global so no autoload.
 - Recorde e configuracoes em `user://`, nunca em `res://`.

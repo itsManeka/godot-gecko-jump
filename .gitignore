@@ -1,9 +1,8 @@
-# Godot 3 (cache de import, regenerado pelo editor)
-.import/
 # Godot 4 (cache de import e metadados do editor)
 .godot/
-# Saida de export (web, Android, desktop)
-export/
+# Saida de export (web, Android, desktop); .gdignore versionado para o Godot ignorar a pasta
+export/*
+!export/.gdignore
 *.apk
 *.aab
 # Mono/.NET (nao usado, mas o editor pode criar)

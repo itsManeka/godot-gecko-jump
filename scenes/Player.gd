@@ -1,4 +1,4 @@
-extends KinematicBody2D
+extends CharacterBody2D
 
 # Sinal emitido quando o jogador ganha um ponto
 signal add_point
@@ -7,19 +7,17 @@ signal add_point
 const SPEED = 80                    # Velocidade horizontal do jogador
 const GRAVITY = 10                  # Força da gravidade aplicada por frame
 const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima)
-const FLOOR = Vector2(0, -1)        # Vetor que define a direção do chão
 
 # Cor atual do jogador (definida no editor)
-export(Enums.COLOR) var color
+@export var color: Enums.COLOR = Enums.COR_INICIAL
 
 # Referencias aos nós filhos
-onready var sprite = $Sprite
-onready var collision = $CollisionShape2D
-onready var detector = $DetectorPlataforma/CollisionShape2D
-onready var jumpaudio = $JumpAudio
+@onready var sprite = $AnimatedSprite2D
+@onready var collision = $CollisionShape2D
+@onready var detector = $DetectorPlataforma/CollisionShape2D
+@onready var jumpaudio = $JumpAudio
 
 # Variáveis de estado do jogador
-var velocity = Vector2()            # Velocidade atual do jogador
 var on_ground = false              # Se o jogador está no chão
 var can_change_color = false       # Se pode mudar de cor na próxima plataforma
 var actual_platform : Platform = null  # Plataforma atual em que o jogador está
@@ -28,6 +26,10 @@ var end = false                    # Se o jogo terminou para este jogador
 
 # Inicializa o jogador definindo sua cor inicial
 func _ready():
+	# Chao para cima e sem snap ao chao (floor_snap_length = 0): o movimento vertical nao e corrigido ao pousar
+	up_direction = Vector2.UP
+	motion_mode = MOTION_MODE_GROUNDED
+	floor_snap_length = 0.0
 	sprite.modulate = Enums.get_cor(color)
 
 # Processa a física e input do jogador a cada frame
@@ -89,7 +91,7 @@ func _physics_process(_delta):
 			sprite.play("fall")
 	
 	# Aplica o movimento
-	velocity = move_and_slide(velocity, FLOOR)
+	move_and_slide()
 
 # Detecta quando o jogador entra em contato com uma plataforma
 func _on_DetectorPlataforma_body_entered(_body):

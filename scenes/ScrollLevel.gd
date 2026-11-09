@@ -3,10 +3,10 @@ extends Node2D
 # Sistema que gerencia o scroll infinito do level e geração de plataformas
 
 # Prefab do gerador de plataformas em movimento
-const pre_running_platform = preload("res://scenes/RuningPlatforms.tscn")
+const pre_running_platform = preload("res://scenes/RunningPlatforms.tscn")
 
 # Container que armazena todos os geradores de plataforma
-onready var running_platforms = $RunningPlatforms
+@onready var running_platforms = $RunningPlatforms
 
 # Distância total que o nível scrollou (para posicionar novas plataformas)
 var position_scrolled = 0
@@ -27,7 +27,7 @@ func _physics_process(delta):
 
 # Cria um novo gerador de plataformas acima da tela
 func create_new_running_platform():
-	var running_platform = pre_running_platform.instance()
+	var running_platform = pre_running_platform.instantiate()
 	running_platform.set_platform_type(Enums.PLATFORM_TYPE.RANDOM_ALL)
 	# Posiciona o gerador acima da área visível
 	running_platform.global_position = Vector2(0, (-10 - position_scrolled))

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Godot Engine](https://img.shields.io/badge/Godot-3.x-blue?logo=godot-engine&logoColor=white)
+![Godot Engine](https://img.shields.io/badge/Godot-4.7-blue?logo=godot-engine&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-PC-orange.svg)
 
 *Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!*
@@ -20,6 +20,7 @@
 - **Ganhar pontos** a cada plataforma nova que tocar
 - **Mudar de cor automaticamente** após cada pulo bem-sucedido
 - **Sobreviver** o máximo de tempo possível descendo pelas plataformas
+- **Bater o recorde**: a maior pontuação fica salva e continua lá quando você abre o jogo de novo
 
 ## 🎮 Controles
 
@@ -43,12 +44,20 @@
 
 Para jogar agora:
 1. Clone este repositório
-2. Abra o projeto no Godot Engine 3.x
+2. Abra o projeto no Godot Engine 4.7.2
 3. Execute a cena principal `scenes/Stage.tscn`
+
+Para gerar a versão web (sem threads):
+1. Instale os export templates do Godot 4.7.2 (`Web`, sem threads)
+2. Na raiz do projeto, rode o export substituindo `<godot>` pelo executável do Godot 4.7.2:
+   ```
+   <godot> --headless --path . --export-release "Web" export/web/index.html
+   ```
+3. Sirva a pasta `export/web/` por um servidor estático local, por exemplo `npx serve export/web`. Não abra o `index.html` direto pelo navegador (`file://`): o carregamento do `.wasm`/`.pck` falha.
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Engine:** Godot Engine 3.x
+- **Engine:** Godot Engine 4.7.2
 - **Linguagem:** GDScript
 - **Resolução:** 180x320 (modo retrato)
 - **Áudio:** Efeitos sonoros integrados
@@ -59,7 +68,9 @@ Para jogar agora:
 godot-gecko-jump/
 ├── assets/           # Sprites e recursos visuais
 ├── scenes/          # Cenas do Godot (.tscn) e scripts (.gd)
-├── scripts/         # Scripts globais (Global.gd, Enums.gd)
+├── scripts/         # Scripts globais e classes de logica (Global.gd, Enums.gd, ScoreKeeper.gd, BestScoreStore.gd, PlatformTypePicker.gd)
+├── test/            # Testes automatizados (GUT)
+├── addons/          # Addon GUT v9.7.1 (framework de testes; idêntico à tag v9.7.1, commit aeb5d4f3f7f0a6c9b5e178876d6c99b791fda605)
 ├── sounds/          # Efeitos sonoros
 ├── fonts/           # Fontes personalizadas
 └── project.godot    # Arquivo de projeto do Godot
@@ -70,7 +81,7 @@ godot-gecko-jump/
 ⚠️ **Aviso:** Este jogo foi desenvolvido para PC e não está otimizado para dispositivos móveis.
 
 **Requisitos:**
-- Godot Engine 3.x ou superior
+- Godot Engine 4.7.2
 - Sistema operacional: Windows, Linux, macOS
 
 ## 🗺️ Roadmap
@@ -112,6 +123,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 - **Earn points** for each new platform you touch
 - **Change color automatically** after each successful jump
 - **Survive** as long as possible while descending through the platforms
+- **Beat your best score**: it is saved and still there the next time you open the game
 
 ### 🎮 Controls
 
@@ -135,13 +147,21 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 
 To play now:
 1. Clone this repository
-2. Open the project in Godot Engine 3.x
+2. Open the project in Godot Engine 4.7.2
 3. Run the main scene `scenes/Stage.tscn`
+
+To build the web version (no threads):
+1. Install the Godot 4.7.2 export templates (`Web`, no threads)
+2. From the project root, run the export replacing `<godot>` with the Godot 4.7.2 executable:
+   ```
+   <godot> --headless --path . --export-release "Web" export/web/index.html
+   ```
+3. Serve the `export/web/` folder with a local static server, for example `npx serve export/web`. Do not open `index.html` directly in the browser (`file://`): loading the `.wasm`/`.pck` fails.
 
 ### 📱 Compatibility
 
 ⚠️ **Warning:** This game was developed for PC and is not optimized for mobile devices.
 
 **Requirements:**
-- Godot Engine 3.x or higher
+- Godot Engine 4.7.2
 - Operating System: Windows, Linux, macOS

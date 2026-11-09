@@ -7,6 +7,9 @@ class_name Enums
 # Enumeração das cores disponíveis no jogo
 enum COLOR {AMARELO, VERDE, AZUL, VERMELHO}
 
+# Cor com que o jogador começa (default de Player.color e cor garantida no gerador inicial)
+const COR_INICIAL := COLOR.AMARELO
+
 # Enumeração dos tipos de comportamento das plataformas
 enum PLATFORM_TYPE {
 	STATIC,             # Plataformas estáticas (não se movem)
@@ -29,6 +32,8 @@ static func get_cor(color) -> Color:
 			return Color("#ec4848")  # Vermelho
 	return Color("#ffffff")  # Branco como fallback
 
-# Retorna uma cor aleatória do enum COLOR
-static func get_random_color():
-	return COLOR.values()[randi() % COLOR.size()]
+# Retorna uma cor aleatória do enum COLOR. Sem rng usa randi() global; com rng (seed fixa nos testes) é determinístico.
+static func get_random_color(rng: RandomNumberGenerator = null):
+	if rng == null:
+		return COLOR.values()[randi() % COLOR.size()]
+	return COLOR.values()[rng.randi() % COLOR.size()]

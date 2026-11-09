@@ -1,13 +1,14 @@
 [remap]
 
 importer="wav"
-type="AudioStreamSample"
-path="res://.import/lose.wav-cb4e7670a5fe2d89b40e499c15bd8f1b.sample"
+type="AudioStreamWAV"
+uid="uid://1um8nv21ob2m"
+path="res://.godot/imported/lose.wav-cb4e7670a5fe2d89b40e499c15bd8f1b.sample"
 
 [deps]
 
 source_file="res://sounds/lose.wav"
-dest_files=[ "res://.import/lose.wav-cb4e7670a5fe2d89b40e499c15bd8f1b.sample" ]
+dest_files=["res://.godot/imported/lose.wav-cb4e7670a5fe2d89b40e499c15bd8f1b.sample"]
 
 [params]
 
@@ -17,5 +18,7 @@ force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false
 edit/normalize=false
-edit/loop=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
 compress/mode=0
