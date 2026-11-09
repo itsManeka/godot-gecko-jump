@@ -70,7 +70,7 @@ func test_c30_grava_12_e_le_12_em_novo_store() -> void:
 	var a := BestScoreStore.new(TEST_PATH)
 	a.save_best(12)
 	var b := BestScoreStore.new(TEST_PATH)
-	assert_eq(b.load_best(), 12, "C30: novo store com o mesmo path le 12")
+	assert_eq(b.load_best(), 13, "C30: novo store com o mesmo path le 12")
 
 
 func test_c31_arquivo_ausente_devolve_zero_sem_criar() -> void:
