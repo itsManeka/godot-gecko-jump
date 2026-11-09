@@ -33,7 +33,8 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
            ScrollLevel (scroll 20 px/s)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
-           ScoreKeeper.gd (recorde), PlatformTypePicker.gd (tipo do gerador, sem cena),
+           ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd (recorde salvo em user://),
+           PlatformTypePicker.gd (tipo do gerador, sem cena),
            StaticPlatformColors.gd (cores das estaticas iniciais, sem cena)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 addons/    GUT v9.7.1 (vendorizado; nao editar)

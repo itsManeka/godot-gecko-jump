@@ -67,7 +67,7 @@ Para gerar a versão web (sem threads):
 godot-gecko-jump/
 ├── assets/           # Sprites e recursos visuais
 ├── scenes/          # Cenas do Godot (.tscn) e scripts (.gd)
-├── scripts/         # Scripts globais e classes de logica (Global.gd, Enums.gd, ScoreKeeper.gd, PlatformTypePicker.gd)
+├── scripts/         # Scripts globais e classes de logica (Global.gd, Enums.gd, ScoreKeeper.gd, BestScoreStore.gd, PlatformTypePicker.gd)
 ├── test/            # Testes automatizados (GUT)
 ├── addons/          # Addon GUT v9.7.1 (framework de testes; idêntico à tag v9.7.1, commit aeb5d4f3f7f0a6c9b5e178876d6c99b791fda605)
 ├── sounds/          # Efeitos sonoros
