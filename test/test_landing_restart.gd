@@ -2,8 +2,6 @@ extends GutTest
 
 # Cena: pouso -> reinicio -> pouso. Reproduz o bug #3 (Global.platforms guarda plataformas liberadas
 # apos o reinicio e Global.player_color_changed quebra em Global.gd:25).
-# Pendente ate a F4 (f402-gecko-bugs-base): a F4 remove a constante abaixo e o ramo de pending.
-const PENDENTE_ATE_F4 := true
 const STAGE_SCENE := "res://scenes/Stage.tscn"
 
 var _stage: Node = null
@@ -15,16 +13,13 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	if is_instance_valid(_stage):
-		_stage.free()
 	_stage = null
 	Global.platforms = []
 	Global.iniciado = false
 
 
 func _novo_stage() -> Node:
-	var stage: Node = load(STAGE_SCENE).instantiate()
-	add_child(stage)
+	var stage: Node = add_child_autofree(load(STAGE_SCENE).instantiate())
 	await wait_frames(2)
 	return stage
 
@@ -46,10 +41,6 @@ func _pousar(stage: Node, alvo: Platform, cor: int) -> void:
 
 
 func test_pouso_reinicio_pouso_mantem_colisao_por_cor_e_plataformas_validas() -> void:
-	if PENDENTE_ATE_F4:
-		pending("issue #3 (Global.platforms guarda plataformas liberadas apos reiniciar) - pendente ate a F4 / f402-gecko-bugs-base")
-		return
-
 	# 1o pouso
 	_stage = await _novo_stage()
 	var primeiras := _plataformas_validas()
@@ -57,6 +48,7 @@ func test_pouso_reinicio_pouso_mantem_colisao_por_cor_e_plataformas_validas() ->
 	_pousar(_stage, primeiras[0], Enums.COLOR.AMARELO)
 
 	# Reinicio: Stage._on_animation_end troca de cena; sem current_scene no GUT, libera e instancia nova Stage.
+	remove_child(_stage)
 	_stage.free()
 	_stage = await _novo_stage()
 

@@ -34,7 +34,7 @@ scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador
            ScrollLevel (scroll 20 px/s)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores e tipos de plataforma),
            ScoreKeeper.gd (recorde), PlatformTypePicker.gd (tipo do gerador, sem cena)
-test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` fica pendente (issue #3)
+test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 addons/    GUT v9.7.1 (vendorizado; nao editar)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
 export/    saida de build (ignorada; so o .gdignore e versionado, para o Godot nao importar o build)
