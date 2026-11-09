@@ -1,0 +1,114 @@
+name: CI
+
+# paths-ignore: PR so de docs/markdown nao roda o CI. Se um dia o main exigir o check `CI` num ruleset,
+# um PR so de docs ficaria pendente para sempre (o check nunca e reportado); nesse caso remova o paths-ignore.
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Sem npm ci/cache npm: o repo nao tem package.json e o .verify.mjs nao tem dependencias.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - uses: ./.github/actions/setup-godot
+
+      # GODOT_PATH tem prioridade no .verify.mjs; o workspace-config.json nao existe no runner.
+      - name: Oraculo (import, compile, GUT, run)
+        run: node .verify.mjs ci
+
+  export-web:
+    name: export-web
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-godot
+        with:
+          templates: 'true'
+
+      - name: Exportar preset Web
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p export/web
+          "$GODOT_PATH" --headless --path . --import 2>&1 | tee "$RUNNER_TEMP/import.log"
+          "$GODOT_PATH" --headless --path . --export-release "Web" export/web/index.html 2>&1 | tee "$RUNNER_TEMP/export.log"
+          # O Godot nem sempre muda o exit code em erro de export: varrer o log tambem.
+          if grep -E '(^|[^A-Za-z])ERROR:' "$RUNNER_TEMP/export.log"; then
+            echo "::error::Export Web registrou ERROR no log"
+            exit 1
+          fi
+
+      - name: Conferir artefatos do export
+        shell: bash
+        run: |
+          set -euo pipefail
+          fail=0
+          check() {
+            if [ ! -s "$1" ]; then
+              echo "::error::Faltando ou vazio: $1"
+              fail=1
+            fi
+          }
+          check export/web/index.html
+          wasm=$(find export/web -maxdepth 1 -name '*.wasm' -size +0 | head -n 1)
+          pck=$(find export/web -maxdepth 1 -name '*.pck' -size +0 | head -n 1)
+          [ -n "$wasm" ] || { echo "::error::Nenhum .wasm nao vazio em export/web"; fail=1; }
+          [ -n "$pck" ] || { echo "::error::Nenhum .pck nao vazio em export/web"; fail=1; }
+          ls -l export/web
+          exit "$fail"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: export-web
+          path: export/web/
+          retention-days: 7
+          if-no-files-found: error
+
+  ci:
+    name: CI
+    needs: [verify, export-web]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Conferir resultado dos jobs
+        shell: bash
+        env:
+          VERIFY: ${{ needs.verify.result }}
+          EXPORT_WEB: ${{ needs.export-web.result }}
+        run: |
+          set -euo pipefail
+          echo "verify=$VERIFY export-web=$EXPORT_WEB"
+          if [ "$VERIFY" != "success" ] || [ "$EXPORT_WEB" != "success" ]; then
+            echo "::error::CI falhou (verify=$VERIFY, export-web=$EXPORT_WEB)"
+            exit 1
+          fi

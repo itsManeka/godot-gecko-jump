@@ -1,0 +1,80 @@
+name: Setup Godot
+description: >-
+  Instala o Godot 4.7.2 oficial (binario Linux) conferido por SHA-512 literal, com cache, e exporta GODOT_PATH.
+  Com templates=true instala tambem o template web (nothreads) usado pelo preset Web.
+
+inputs:
+  templates:
+    description: 'true para instalar o export template web 4.7.2'
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    # Versao e somas vem do SHA512-SUMS.txt oficial do release 4.7.2-stable
+    # (https://github.com/godotengine/godot/releases/tag/4.7.2-stable).
+    # Para trocar de versao: atualizar GODOT_VERSION e as duas somas abaixo (e as chaves de cache mudam sozinhas).
+    - name: Definir versao e somas
+      shell: bash
+      run: |
+        set -euo pipefail
+        {
+          echo "GODOT_VERSION=4.7.2"
+          echo "GODOT_ASSET=Godot_v4.7.2-stable_linux.x86_64.zip"
+          echo "GODOT_SHA512=9aa00f7a605200940bce3027a567b782f49bd8e940dd06ae9e987bd65aee1b1467edd56ed84fcdcbdd44354bf613bdbb4e5d2913e925850368e150c59ed54c65"
+          echo "TEMPLATES_ASSET=Godot_v4.7.2-stable_export_templates.tpz"
+          echo "TEMPLATES_SHA512=ca4d71c4d7b81dfc15d1a98baa07534aa95b03fdda78a0075b06672e1648d2e5f40980c9adc28d23e1b92e732ee7bf3461997aa804af74ec2fcd7a93ccb84079"
+          echo "GODOT_BASE_URL=https://github.com/godotengine/godot/releases/download/4.7.2-stable"
+          echo "GODOT_DIR=$HOME/godot-bin"
+          echo "TEMPLATES_DIR=$HOME/.local/share/godot/export_templates/4.7.2.stable"
+        } >> "$GITHUB_ENV"
+
+    - name: Cache do binario
+      id: cache-bin
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/godot-bin
+        key: godot-4.7.2-linux-9aa00f7a605200940bce3027a567b782f49bd8e940dd06ae9e987bd65aee1b1467edd56ed84fcdcbdd44354bf613bdbb4e5d2913e925850368e150c59ed54c65
+
+    - name: Baixar e conferir o binario
+      if: steps.cache-bin.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        zip="$RUNNER_TEMP/$GODOT_ASSET"
+        curl -fsSL --retry 3 -o "$zip" "$GODOT_BASE_URL/$GODOT_ASSET"
+        echo "$GODOT_SHA512  $zip" | sha512sum -c -
+        mkdir -p "$GODOT_DIR"
+        unzip -o -j "$zip" -d "$GODOT_DIR"
+        chmod +x "$GODOT_DIR/Godot_v4.7.2-stable_linux.x86_64"
+        rm -f "$zip"
+
+    - name: Exportar GODOT_PATH
+      shell: bash
+      run: |
+        set -euo pipefail
+        test -x "$GODOT_DIR/Godot_v4.7.2-stable_linux.x86_64"
+        echo "GODOT_PATH=$GODOT_DIR/Godot_v4.7.2-stable_linux.x86_64" >> "$GITHUB_ENV"
+
+    - name: Cache dos export templates
+      id: cache-tpl
+      if: inputs.templates == 'true'
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.local/share/godot/export_templates/4.7.2.stable
+        key: godot-templates-4.7.2-web-nothreads-ca4d71c4d7b81dfc15d1a98baa07534aa95b03fdda78a0075b06672e1648d2e5f40980c9adc28d23e1b92e732ee7bf3461997aa804af74ec2fcd7a93ccb84079
+
+    - name: Baixar, conferir e podar os export templates
+      if: inputs.templates == 'true' && steps.cache-tpl.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        tpz="$RUNNER_TEMP/$TEMPLATES_ASSET"
+        curl -fsSL --retry 3 -o "$tpz" "$GODOT_BASE_URL/$TEMPLATES_ASSET"
+        echo "$TEMPLATES_SHA512  $tpz" | sha512sum -c -
+        mkdir -p "$TEMPLATES_DIR"
+        # O preset Web usa so o template nothreads (thread_support=false, extensions_support=false).
+        unzip -o -j "$tpz" templates/version.txt templates/web_nothreads_release.zip -d "$TEMPLATES_DIR"
+        rm -f "$tpz"
+        ls -l "$TEMPLATES_DIR"
