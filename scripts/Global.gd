@@ -21,7 +21,7 @@ func add_platform(platform: Platform):
 # Ativa/desativa colisão baseado na cor
 func player_color_changed(player_color, actual_platform: Platform):
 	for platform in platforms:
-		if platform != actual_platform:
+		if is_instance_valid(platform) and platform != actual_platform:
 			platform = platform as Platform
 			if platform:
 				platform.player_color_changed(player_color)
@@ -29,7 +29,7 @@ func player_color_changed(player_color, actual_platform: Platform):
 # Atualiza a plataforma atual quando o jogador muda de cor
 func att_actual_platform(player_color, actual_platform):
 	var platform_index = platforms.find(actual_platform, 0)
-	if platform_index != -1:
+	if platform_index != -1 and is_instance_valid(platforms[platform_index]):
 		platforms[platform_index].player_color_changed(player_color)
 
 # Remove uma plataforma da lista (quando sai de tela)

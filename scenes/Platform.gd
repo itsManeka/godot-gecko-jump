@@ -18,6 +18,10 @@ func _ready():
 	Global.add_platform(self)
 	sprite.modulate = Enums.get_cor(color)
 
+# Sai de Global.platforms sempre que sai da arvore (queue_free do gerador, troca de cena, saida de tela)
+func _exit_tree():
+	Global.remove_platform(self)
+
 # Processa o movimento da plataforma
 func _physics_process(_delta):
 	if !Global.is_iniciado():
@@ -47,5 +51,4 @@ func player_color_changed(player_color):
 
 # Remove a plataforma quando sai da tela
 func _on_VisibilityNotifier2D_screen_exited():
-	Global.remove_platform(self)
 	queue_free()
