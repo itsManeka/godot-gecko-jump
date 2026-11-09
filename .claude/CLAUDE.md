@@ -24,7 +24,7 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 | Rodar sem janela | `<godot> --headless --path . --quit-after <frames>` |
 | Jogar (janela) | `<godot> --path .` |
 | Oraculo completo (import, compile, GUT, run de 10 s) | `node .verify.mjs <wave>` |
-| So os testes GUT | `<godot> --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit` |
+| So os testes GUT | `<godot> --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit` (le o `.gutconfig.json`, cujo `pre_run_script` isola o recorde real; outro `-gconfig` sem ele grava no `user://best_score.cfg` de quem joga) |
 | Export web | `<godot> --headless --path . --export-release "Web" export/web/index.html` (sem threads; servir `export/web/` por servidor estatico, nao `file://`) |
 
 ## Estrutura

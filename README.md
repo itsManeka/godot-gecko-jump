@@ -20,6 +20,7 @@
 - **Ganhar pontos** a cada plataforma nova que tocar
 - **Mudar de cor automaticamente** após cada pulo bem-sucedido
 - **Sobreviver** o máximo de tempo possível descendo pelas plataformas
+- **Bater o recorde**: a maior pontuação fica salva e continua lá quando você abre o jogo de novo
 
 ## 🎮 Controles
 
@@ -122,6 +123,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 - **Earn points** for each new platform you touch
 - **Change color automatically** after each successful jump
 - **Survive** as long as possible while descending through the platforms
+- **Beat your best score**: it is saved and still there the next time you open the game
 
 ### 🎮 Controls
 

@@ -152,6 +152,8 @@ func test_c39_pouso_real_nao_toca_o_arquivo_real_do_dono() -> void:
 	assert_eq(Global.get_best_score(), 7, "C39: pouso real registrou o recorde 7 em memoria")
 	_assert_default_intacto("C39")
 	assert_not_null(stage, "C39: Stage instanciada")
+	# Devolve o keeper compartilhado ao estado inicial (sem conexao), para nao vazar best = 7 aos testes seguintes
+	Global.pontuacao = ScoreKeeper.new()
 
 
 func test_c40_hook_deixa_global_pontuacao_sem_conexao() -> void:
@@ -168,15 +170,17 @@ func test_c41_paths_distintos_gravam_arquivos_distintos() -> void:
 	assert_eq(BestScoreStore.new().path, BestScoreStore.DEFAULT_PATH, "C41: DEFAULT_PATH so e o default do _init")
 
 
-func test_c43_higiene_arquivo_de_teste_nao_sobra() -> void:
-	BestScoreStore.new(TEST_PATH).save_best(3)
-	assert_true(FileAccess.file_exists(TEST_PATH), "C43: fixture gravou o arquivo de teste")
-	_apagar(TEST_PATH)
-	assert_false(FileAccess.file_exists(TEST_PATH), "C43: arquivo de teste removido pela limpeza")
-
-
 func test_c42_falha_de_escrita_e_silenciosa() -> void:
 	var store := BestScoreStore.new(MISSING_DIR_PATH)
 	store.save_best(8)
 	assert_eq(store.load_best(), 0, "C42: escrita em diretorio inexistente nao grava; leitura vale 0")
 	assert_false(FileAccess.file_exists(MISSING_DIR_PATH), "C42: arquivo nao existe")
+
+
+# C43: prova que o helper de limpeza usado por before_each/after_each remove o arquivo; a garantia de que
+# nada sobra ao fim da suite inteira e o assert do after_all.
+func test_c43_higiene_arquivo_de_teste_nao_sobra() -> void:
+	BestScoreStore.new(TEST_PATH).save_best(3)
+	assert_true(FileAccess.file_exists(TEST_PATH), "C43: fixture gravou o arquivo de teste")
+	_apagar(TEST_PATH)
+	assert_false(FileAccess.file_exists(TEST_PATH), "C43: arquivo de teste removido pela limpeza")
