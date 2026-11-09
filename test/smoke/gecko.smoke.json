@@ -21,7 +21,7 @@
     { "up": "Space" },
     { "shots": 3, "every": 250, "name": "queda", "moving": false },
     { "wait": 9000 },
-    { "shots": 2, "every": 300, "name": "menu-pos-derrota", "moving": false },
+    { "shots": 2, "every": 300, "name": "menu-pos-derrota", "still": true },
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
