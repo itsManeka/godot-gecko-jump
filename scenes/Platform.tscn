@@ -27,7 +27,7 @@ position = Vector2( 0.157669, 0.438627 )
 scale = Vector2( 3.2021, 0.570859 )
 
 [node name="AreaCheck" type="Area2D" parent="."]
-collision_layer = 0
+collision_layer = 4
 collision_mask = 4
 
 [node name="CollisionPolygon2D" type="CollisionShape2D" parent="AreaCheck"]
