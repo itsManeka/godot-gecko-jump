@@ -23,7 +23,7 @@ runs:
       run: |
         set -euo pipefail
         GODOT_VERSION=4.7.2
-        GODOT_SHA512=9aa00f7a605200940bce3027a567b782f49bd8e940dd06ae9e987bd65aee1b1467edd56ed84fcdcbdd44354bf613bdbb4e5d2913e925850368e150c59ed54c65
+        GODOT_SHA512=9aa00f7b605200940bce3027a567b782f49bd8e940dd06ae9e987bd65aee1b1467edd56ed84fcdcbdd44354bf613bdbb4e5d2913e925850368e150c59ed54c65
         TEMPLATES_SHA512=ca4d71c4d7b81dfc15d1a98baa07534aa95b03fdda78a0075b06672e1648d2e5f40980c9adc28d23e1b92e732ee7bf3461997aa804af74ec2fcd7a93ccb84079
         GODOT_ASSET="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
         GODOT_BIN="Godot_v${GODOT_VERSION}-stable_linux.x86_64"
