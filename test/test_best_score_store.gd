@@ -231,3 +231,16 @@ func test_f406_e_diretorio_inexistente_nao_cria_arquivo_nem_tmp() -> void:
 	assert_false(FileAccess.file_exists(MISSING_DIR_PATH), "F406 e: <path> nao existe")
 	assert_false(FileAccess.file_exists(MISSING_DIR_PATH + ".tmp"), "F406 e: <path>.tmp nao existe")
 	assert_eq(store.load_best(), 0, "F406 e: leitura continua 0 em silencio")
+
+
+# F406 (f): destino aberto por outro FileAccess faz o rename falhar no Windows; o .tmp nao fica no disco.
+# Em SO onde o rename passa com o destino aberto, o .tmp tambem some (renomeado), entao a assercao vale nos dois.
+func test_f406_f_rename_falho_nao_deixa_tmp() -> void:
+	var store := BestScoreStore.new(TEST_PATH)
+	store.save_best(5)
+	var aberto := FileAccess.open(TEST_PATH, FileAccess.READ)
+	assert_not_null(aberto, "F406 f: fixture abriu o destino para leitura")
+	store.save_best(9)
+	var tmp_sobrou := FileAccess.file_exists(TEST_PATH + ".tmp")
+	aberto.close()
+	assert_false(tmp_sobrou, "F406 f: rename falho remove o .tmp")
