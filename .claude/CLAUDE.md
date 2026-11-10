@@ -37,7 +37,8 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd (recorde salvo em user://),
            PlatformTypePicker.gd (tipo do gerador, sem cena),
            StaticPlatformColors.gd (cores das estaticas iniciais, sem cena),
-           InitialRows.gd (ys das linhas iniciais pela altura visivel, sem cena)
+           InitialRows.gd (ys das linhas iniciais pela altura visivel, sem cena),
+           MovingRowFill.gd (x pre-colocados das linhas moveis a partir do ponto de nascimento, sem cena)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 test/smoke/ roteiro `gecko.smoke.json` do game-smoke (export web): mudou input, fluxo de inicio/derrota ou tempos? ajuste-o
 addons/    GUT v9.7.1 (vendorizado; nao editar)
