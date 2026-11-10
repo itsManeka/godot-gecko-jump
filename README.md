@@ -33,7 +33,7 @@
 ## 🚀 Como Jogar
 
 1. Pressione qualquer tecla de pulo para começar
-2. Use as setas ou WASD para mover o Gecko
+2. Use as setas ou WASD para mover o Gecko; ao sair por uma lateral da tela, ele reaparece pela outra
 3. Pule apenas em plataformas da mesma cor que o Gecko
 4. Evite cair ou tocar plataformas de cores diferentes
 5. Tente alcançar a maior pontuação possível!
@@ -182,7 +182,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 ### 🚀 How to Play
 
 1. Press any jump key to start
-2. Use arrows or WASD to move the Gecko
+2. Use arrows or WASD to move the Gecko; leaving through one side of the screen brings it back on the other
 3. Jump only on platforms of the same color as the Gecko
 4. Avoid falling or touching platforms of different colors
 5. Try to achieve the highest score possible!

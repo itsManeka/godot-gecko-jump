@@ -16,6 +16,10 @@ func before_each() -> void:
 	Global.iniciado = true
 
 func after_each() -> void:
+	# A liberacao do Stage no teardown dispara body_exited; end evita o handler tocar audio fora da arvore,
+	# mesmo quando um assert falhou antes do fim do teste.
+	if is_instance_valid(_p):
+		_p.end = true
 	Input.action_release("ui_right")
 	Input.action_release("ui_left")
 	Global.platforms = []
@@ -91,8 +95,8 @@ func test_fantasma_sem_colisao_nem_pontuacao() -> void:
 	var nos: Array = [ghost]
 	nos.append_array(ghost.find_children("*", "", true, false))
 	for n in nos:
-		assert_false(n is CollisionObject2D, "%s nao pode ser CollisionObject2D" % n.name)
-		assert_false(n is CollisionShape2D, "%s nao pode ser CollisionShape2D" % n.name)
+		assert_false(n is CollisionObject2D, "Ghost e descendentes nao podem ser CollisionObject2D")
+		assert_false(n is CollisionShape2D, "Ghost e descendentes nao podem ser CollisionShape2D")
 	watch_signals(_p)
 	await _step(40)
 	assert_signal_not_emitted(_p, "add_point", "fantasma sobre plataforma de mesma cor nao pontua")
@@ -121,7 +125,6 @@ func test_checkplayer_sem_derrota_falsa_na_costura_direita() -> void:
 	assert_lt(_p.position.x, 10.0, "gecko teleportou para perto de x=0")
 	assert_signal_not_emitted(check, "body_exited", "teleporte nao sai da CheckPlayer")
 	assert_false(_p.is_end(), "sem derrota falsa na costura direita")
-	_p.end = true  # a liberacao do Stage no teardown dispara body_exited; end evita o handler tocar audio fora da arvore
 
 func test_checkplayer_sem_derrota_falsa_na_costura_esquerda() -> void:
 	_spawn_stage()
@@ -134,7 +137,6 @@ func test_checkplayer_sem_derrota_falsa_na_costura_esquerda() -> void:
 	assert_gt(_p.position.x, 170.0, "gecko teleportou para perto de x=180")
 	assert_signal_not_emitted(check, "body_exited", "teleporte nao sai da CheckPlayer")
 	assert_false(_p.is_end(), "sem derrota falsa na costura esquerda")
-	_p.end = true  # idem: evita o handler tocar audio fora da arvore no teardown
 
 # C59: contraprova, sair por baixo (y > 320.5) fora de pulo continua perdendo.
 func test_checkplayer_derrota_por_queda_preservada() -> void:
