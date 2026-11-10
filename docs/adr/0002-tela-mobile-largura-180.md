@@ -30,6 +30,10 @@ topo, dentro da safe area. Implementacao: issue #15.
 - Janela de desktop (`window_*_override`) continua 360x640: 2x inteiro, 9:16.
 - O HUD nao usa ancoras topo/direita do editor: a posicao e recalculada a partir da area visivel e da safe area a cada
   mudanca de tamanho da tela. O efeito e o mesmo de ancorar no topo.
+- O gerador cobre a altura visivel: ao iniciar o nivel, linhas a cada 50 px de y=-10 ate a borda inferior (320 tem 7,
+  400 tem 9, 462 tem 10). Durante a partida nasce uma linha a cada 50 px de scroll, sempre em y=-10, sem depender da
+  altura da tela; por isso espacamento e dificuldade sao os mesmos em qualquer aparelho. Redimensionar a janela no meio
+  da partida nao preenche a faixa nova.
 - O placar encosta no topo da safe area. Na versao da jam ele ficava 4 px acima da borda da tela; em 180x320 ele desce
   esses 4 px, porque subir sairia da safe area em aparelho com entalhe.
 

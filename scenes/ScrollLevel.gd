@@ -14,7 +14,9 @@ var position_scrolled = 0
 # Quantas linhas do fluxo já nasceram (uma a cada InitialRows.ESPACAMENTO px de scroll)
 var _rows_spawned: int = 0
 
-# Último y dos nós de linha do .tscn; abaixo dele nascem as linhas iniciais extras
+# Último y dos nós de linha do .tscn; abaixo dele nascem as linhas iniciais extras.
+# Espelha o position.y do último RunningPlatforms em scenes/ScrollLevel.tscn: mover o nó exige mudar aqui
+# (test_scroll_level_linhas_iniciais.gd acusa duplicata ou buraco pela contagem 7/9/10).
 const ULTIMA_LINHA_TSCN := 190.0
 const EPSILON := 0.0001
 
@@ -49,6 +51,7 @@ func _physics_process(delta):
 
 # Cria um novo gerador de plataformas no y local dado (filho de running_platforms).
 # Sem argumento (NAN): nasce em y global Y_TOPO, acima da área visível, descontando o scroll já feito.
+# O ramo NAN é usado por test/test_initial_color_stage.gd (chamada sem argumento): não remover.
 func create_new_running_platform(y_local: float = NAN):
 	var running_platform = pre_running_platform.instantiate()
 	running_platform.set_platform_type(Enums.PLATFORM_TYPE.RANDOM_ALL)

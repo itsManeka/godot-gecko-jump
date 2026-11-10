@@ -112,7 +112,7 @@ func _simular_scroll(ate: float) -> Dictionary:
 func test_cor_inicial_na_linha_do_gecko_em_180x320() -> void:
 	await _spawn(320)
 	var info := _info_flag()
-	assert_eq(info["ys"].count(190.0), 1, "C93180x320: exatamente 1 gerador garantir_cor_inicial, em y=190")
+	assert_eq(info["ys"].count(190.0), 1, "C93 180x320: exatamente 1 gerador garantir_cor_inicial, em y=190")
 	assert_eq(info["estaticas"], [3], "C93 180x320: o gerador garantido tem 3 estaticas")
 	assert_eq(info["com_cor"], [true], "C93 180x320: o gerador garantido tem uma estatica com Enums.COR_INICIAL")
 
@@ -121,7 +121,7 @@ func test_cor_inicial_na_linha_do_gecko_em_180x320() -> void:
 func test_cor_inicial_na_linha_do_gecko_em_180x400() -> void:
 	await _spawn(400)
 	var info := _info_flag()
-	assert_eq(info["ys"].count(190.0), 1, "C94180x400: exatamente 1 gerador garantir_cor_inicial, em y=190")
+	assert_eq(info["ys"].count(190.0), 1, "C94 180x400: exatamente 1 gerador garantir_cor_inicial, em y=190")
 	assert_eq(info["estaticas"], [3], "C94 180x400: o gerador garantido tem 3 estaticas")
 	assert_eq(info["com_cor"], [true], "C94 180x400: o gerador garantido tem uma estatica com Enums.COR_INICIAL")
 
@@ -130,7 +130,7 @@ func test_cor_inicial_na_linha_do_gecko_em_180x400() -> void:
 func test_cor_inicial_na_linha_do_gecko_em_180x462() -> void:
 	await _spawn(462)
 	var info := _info_flag()
-	assert_eq(info["ys"].count(190.0), 1, "C95180x462: exatamente 1 gerador garantir_cor_inicial, em y=190")
+	assert_eq(info["ys"].count(190.0), 1, "C95 180x462: exatamente 1 gerador garantir_cor_inicial, em y=190")
 	assert_eq(info["estaticas"], [3], "C95 180x462: o gerador garantido tem 3 estaticas")
 	assert_eq(info["com_cor"], [true], "C95 180x462: o gerador garantido tem uma estatica com Enums.COR_INICIAL")
 
