@@ -47,6 +47,8 @@ env `GODOT_PATH`.
 A divisao dos epics 2+ e proposta; confirmar com o dono ao abrir cada um. Todo epic termina com uma feature de QA
 em que o dono joga (Godot e export web; Android quando existir).
 
+Dificuldade da cor: `ReachableColors.K` (default 3) e o botao que controla quao rara fica a garantia da cor do gecko nas plataformas moveis; K maior = mais dificil, K = 1 = facil demais.
+
 ## Epic 1 — Migracao e base solida
 
 Escopo: fases 2 e 3. **A mecanica fica igual a original** (velocidade 60, scroll 20 px/s, regra de cor).
