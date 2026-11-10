@@ -98,3 +98,73 @@ func test_sem_rng_usa_sorteio_global_sem_erro() -> void:
 	assert_eq(cor_a, Enums.COLOR.AZUL, "candidata unica sem rng")
 	assert_eq(cor_b, COR_GECKO, "janela sem a cor forca sem rng")
 	assert_true(Enums.COLOR.values().has(sorteada), "fallback sem rng devolve cor valida")
+
+
+# --- (c) coleta da linha de cima (T3) ---
+
+const LARGURA := 180.0
+const Y_POUSO := 200.0
+const Y_CIMA := Y_POUSO - InitialRows.ESPACAMENTO
+
+
+func _entrada(y: float, x: float, cor: int) -> Dictionary:
+	return {"y": y, "x": x, "cor": cor}
+
+
+func _azul_e_verde() -> Array:
+	var esperado: Array = [Enums.COLOR.AZUL, Enums.COLOR.VERDE]
+	esperado.sort()
+	return esperado
+
+
+func test_coleta_so_a_linha_imediatamente_acima() -> void:
+	var entradas: Array = [
+		_entrada(Y_POUSO, 50.0, Enums.COLOR.AMARELO),
+		_entrada(Y_CIMA, 50.0, Enums.COLOR.AZUL),
+		_entrada(Y_CIMA + ReachableColors.TOLERANCIA_LINHA, 60.0, Enums.COLOR.VERDE),
+		_entrada(Y_POUSO + InitialRows.ESPACAMENTO, 50.0, Enums.COLOR.VERMELHO),
+		_entrada(Y_CIMA - InitialRows.ESPACAMENTO, 50.0, Enums.COLOR.AMARELO),
+	]
+	var cores: Array = ReachableColors.coletar_cores_linha_acima(entradas, Y_POUSO, LARGURA)
+	cores.sort()
+	assert_true(cores == _azul_e_verde(), "so a linha de cima entra; linha do pouso, abaixo e 2 acima ficam fora")
+
+
+func test_coleta_exclui_x_fora_da_faixa_e_inclui_as_bordas() -> void:
+	var entradas: Array = [
+		_entrada(Y_CIMA, -1.0, Enums.COLOR.VERMELHO),
+		_entrada(Y_CIMA, LARGURA + 1.0, Enums.COLOR.VERMELHO),
+		_entrada(Y_CIMA, 0.0, Enums.COLOR.AZUL),
+		_entrada(Y_CIMA, LARGURA, Enums.COLOR.VERDE),
+	]
+	var cores: Array = ReachableColors.coletar_cores_linha_acima(entradas, Y_POUSO, LARGURA)
+	cores.sort()
+	assert_true(cores == _azul_e_verde(), "x=0 e x=largura entram; fora da faixa nao")
+	var larga: Array = ReachableColors.coletar_cores_linha_acima(entradas, Y_POUSO, LARGURA + 10.0)
+	assert_eq(larga.size(), 3, "a largura vem do parametro, nao de literal")
+
+
+func test_entradas_ignoram_null_liberada_e_a_propria_atual() -> void:
+	var viva: Platform = _plataforma(Y_CIMA, 40.0, Enums.COLOR.AZUL)
+	var atual: Platform = _plataforma(Y_CIMA, 60.0, Enums.COLOR.VERDE)
+	var liberada: Platform = _plataforma(Y_CIMA, 80.0, Enums.COLOR.VERMELHO)
+	remove_child(liberada)
+	liberada.free()
+	var entradas: Array = ReachableColors.entradas_de_plataformas([null, liberada, viva, atual], atual)
+	assert_eq(entradas.size(), 1, "so a plataforma viva e diferente da atual entra")
+	assert_eq(entradas[0]["cor"], Enums.COLOR.AZUL, "a entrada restante e a viva")
+	assert_eq(entradas[0]["y"], Y_CIMA, "y global da plataforma")
+
+
+func test_pouso_sem_plataforma_atual_cai_no_fallback_valido() -> void:
+	var viva: Platform = _plataforma(Y_CIMA, 40.0, Enums.COLOR.AZUL)
+	for semente in range(1, 51):
+		var cor: int = ReachableColors.cor_no_pouso([viva], null, LARGURA, _rng(semente))
+		assert_true(Enums.COLOR.values().has(cor), "atual null -> cor valida de Enums")
+
+
+func _plataforma(y: float, x: float, cor: int) -> Platform:
+	var p: Platform = add_child_autofree(load("res://scenes/Platform.tscn").instantiate())
+	p.global_position = Vector2(x, y)
+	p.set_color(cor)
+	return p

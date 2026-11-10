@@ -74,6 +74,21 @@ func test_geradores_da_stage_nova_leem_a_cor_inicial_no_primeiro_preenchimento()
 	get_tree().node_added.connect(_on_node_added)
 	add_child_autofree(load(STAGE_SCENE).instantiate())
 	get_tree().node_added.disconnect(_on_node_added)
-	assert_gt(_cores_no_primeiro_gerador.size(), 0, "a Stage nova criou ao menos um gerador no _ready")
-	for cor in _cores_no_primeiro_gerador:
-		assert_eq(cor, Enums.COR_INICIAL, "gerador ve COR_INICIAL, nao a cor da partida anterior")
+	assert_gt(_geradores_vistos.size(), 0, "a Stage nova criou ao menos um gerador no _ready")
+	# Geradores moveis registram a cor do gecko que leram no 1o preencher_linha; os estaticos nao leem Global.
+	# Como o tipo do gerador e sorteado, um gerador movel explicito (mesmo estado da Stage nova) garante >= 1 leitura.
+	var gerador_movel: Node2D = load("res://scenes/RunningPlatforms.tscn").instantiate()
+	gerador_movel.platform_type = Enums.PLATFORM_TYPE.MOVE_TO_RIGHT
+	Global.set_iniciado(true)
+	add_child_autofree(gerador_movel)
+	_geradores_vistos.append(gerador_movel)
+	var leituras := 0
+	for gerador in _geradores_vistos:
+		if gerador.primeira_cor_gecko_lida >= 0:
+			leituras += 1
+			assert_eq(
+				gerador.primeira_cor_gecko_lida,
+				Enums.COR_INICIAL,
+				"gerador leu COR_INICIAL no 1o preencher_linha, nao a cor da partida anterior"
+			)
+	assert_gt(leituras, 0, "ao menos um gerador movel leu a cor do gecko no 1o preencher_linha")

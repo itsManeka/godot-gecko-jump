@@ -18,6 +18,15 @@ const pre_platform = preload("res://scenes/Platform.tscn")
 # Velocidade de movimento das plataformas geradas
 var speed = 0
 
+# Sorteio das moveis: null = randi() global; teste injeta um rng de seed fixa
+var rng: RandomNumberGenerator = null
+
+# Ultimas K-1 cores criadas por este gerador (historico da janela, ordem de criacao)
+var _cores_criadas: Array = []
+
+# Cor do gecko lida no 1o preenchimento (-1 = ainda nao leu); so leitura, para teste
+var primeira_cor_gecko_lida: int = -1
+
 # Inicializa o gerador de plataformas
 func _ready():
 	speed = 60  # Velocidade fixa (antes era aleatória)
@@ -72,10 +81,24 @@ func preencher_linha():
 func new_platform():
 	_criar_plataforma(check_generate.position.x)
 
+# Cor da proxima plataforma movel: garante a cor do gecko (Global) em toda janela de ReachableColors.K criadas por este
+# gerador; preencher_linha e new_platform passam por aqui, entao compartilham o historico
+func _cor_movel() -> int:
+	var cor_gecko: int = Global.cor_gecko
+	if primeira_cor_gecko_lida < 0:
+		primeira_cor_gecko_lida = cor_gecko
+	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, _cores_criadas, rng)
+	_cores_criadas.append(cor)
+	var maximo: int = maxi(ReachableColors.K - 1, 0)
+	while _cores_criadas.size() > maximo:
+		_cores_criadas.pop_front()
+	return cor
+
+
 # Instancia uma plataforma movel em x com cor sorteada
 func _criar_plataforma(x: float):
 	var platform = pre_platform.instantiate()
-	platform.set_color(Enums.get_random_color())
+	platform.set_color(_cor_movel())
 	platform.position.x = x
 	platform.set_speed(speed)
 	add_child(platform)

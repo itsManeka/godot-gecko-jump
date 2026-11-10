@@ -26,6 +26,7 @@ var actual_platform : Platform = null  # Plataforma atual em que o jogador está
 var jumping = true                 # Se o jogador está pulando
 var end = false                    # Se o jogo terminou para este jogador
 var screen_width: float = 180.0    # Largura visivel em px (VisibleArea): ponto unico do wrap e do fantasma
+var rng: RandomNumberGenerator = null  # Sorteio da cor no pouso; null usa o global (so teste fixa semente)
 
 # Relê a largura visivel do viewport do Player (chamado no _ready e no size_changed)
 func refresh_screen_width() -> void:
@@ -139,7 +140,7 @@ func set_color(new_color):
 
 # Muda a cor do jogador para uma cor aleatória
 func change_color_random():
-	set_color(Enums.get_random_color())
+	set_color(ReachableColors.cor_no_pouso(Global.platforms, actual_platform, screen_width, rng))
 
 # Retorna se o jogador está atualmente pulando
 func is_jumping() -> bool:
