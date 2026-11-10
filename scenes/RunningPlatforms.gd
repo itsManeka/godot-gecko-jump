@@ -32,9 +32,9 @@ func _ready():
 		Enums.PLATFORM_TYPE.MOVE_TO_LEFT:
 			check_generate.position.x = -30
 			speed *= -1  # Movimento para esquerda
-			start_generate_timer()
+			preencher_linha()
 		Enums.PLATFORM_TYPE.MOVE_TO_RIGHT:
-			start_generate_timer()
+			preencher_linha()
 
 # Define o tipo de plataforma que será gerada
 func set_platform_type(type):
@@ -59,11 +59,24 @@ func create_static_platforms():
 		add_child(platform)
 		position_x += 85
 
+# Linha movel nasce preenchida: plataformas pre-colocadas (posicoes em MovingRowFill) e a do ponto de nascimento
+# criada na hora, sem esperar o timer; o ciclo area_exited -> timer segue a partir dela
+func preencher_linha():
+	var spawn_x: float = check_generate.position.x
+	# Plataforma anda em direcao oposta ao sinal de speed (Platform.gd: velocity = -speed)
+	for x in MovingRowFill.initial_xs(spawn_x, speed > 0):
+		_criar_plataforma(x)
+	new_platform()
+
 # Cria uma nova plataforma em movimento
 func new_platform():
+	_criar_plataforma(check_generate.position.x)
+
+# Instancia uma plataforma movel em x com cor sorteada
+func _criar_plataforma(x: float):
 	var platform = pre_platform.instantiate()
 	platform.set_color(Enums.get_random_color())
-	platform.position.x = check_generate.position.x
+	platform.position.x = x
 	platform.set_speed(speed)
 	add_child(platform)
 
