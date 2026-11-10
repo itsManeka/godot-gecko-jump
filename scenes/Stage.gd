@@ -52,6 +52,7 @@ func _on_viewport_size_changed() -> void:
 
 # Posiciona a faixa de derrota logo abaixo da borda inferior visivel (topo em y = altura, espessura 20)
 # e com a largura visivel. Tamanho injetado: testavel sem janela. Chamavel de novo (resize em runtime).
+# Sobrescreve a shape e a posicao literais da CollisionShape2D do Stage.tscn (a cena guarda so o valor de 180x320).
 func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 	safe_area = safe
 	var shape := RectangleShape2D.new()
