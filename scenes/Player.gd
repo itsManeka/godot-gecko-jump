@@ -7,6 +7,7 @@ signal add_point
 const SPEED = 80                    # Velocidade horizontal do jogador
 const GRAVITY = 10                  # Força da gravidade aplicada por frame
 const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima)
+const SCREEN_WIDTH = 180            # Largura da tela em px: ponto unico do wrap (a F3 troca pela largura visivel)
 
 # Cor atual do jogador (definida no editor)
 @export var color: Enums.COLOR = Enums.COR_INICIAL
@@ -60,11 +61,6 @@ func _physics_process(_delta):
 		if on_ground:
 			sprite.play("idle")
 	
-	# Limita o movimento às bordas da tela
-	if (position.x > 180 && velocity.x > 0) || \
-	   (position.x < 0 && velocity.x < 0):
-		velocity.x = 0
-	
 	# Processa o pulo
 	if Input.is_action_pressed("jump"):
 		if on_ground:
@@ -92,6 +88,9 @@ func _physics_process(_delta):
 	
 	# Aplica o movimento
 	move_and_slide()
+
+	# Wrap horizontal: o centro que cruza uma borda reaparece do lado oposto (velocity intacta)
+	position.x = wrap_x(position.x, SCREEN_WIDTH)
 
 # Detecta quando o jogador entra em contato com uma plataforma
 func _on_DetectorPlataforma_body_entered(_body):
@@ -123,3 +122,11 @@ func lose_game():
 	collision.call_deferred("set_disabled", true)
 	detector.call_deferred("set_disabled", true)
 	sprite.play("lose")
+
+# Wrap horizontal puro: x > width volta por width; x < 0 entra por width; x em [0, width] nao muda
+static func wrap_x(x: float, width: float) -> float:
+	if x > width:
+		return x - width
+	if x < 0.0:
+		return x + width
+	return x
