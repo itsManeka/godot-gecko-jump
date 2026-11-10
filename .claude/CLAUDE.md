@@ -1,6 +1,6 @@
 # Gecko Jump
 
-Plataforma vertical infinita, tela retrato 180×320. O gecko so pisa nas plataformas da cor dele (4 cores); a cada
+Plataforma vertical infinita, tela retrato 180 px de largura com altura expandida (minimo 320, ADR 0002). O gecko so pisa nas plataformas da cor dele (4 cores); a cada
 pouso troca de cor e ganha 1 ponto. Prototipo da game jam #1JAM Chroma rumo a versao final (web/itch.io + Android).
 
 ## Contexto obrigatorio

@@ -21,7 +21,17 @@ topo, dentro da safe area. Implementacao: issue #15.
   (1080x2400 mostra 180x400). Tela alta mostra mais torre acima, o que ajuda num jogo de subida.
 - **Negativas / trade-offs:** o gerador de plataformas precisa cobrir a area visivel variavel; a dificuldade nao pode
   depender da altura da tela.
-- **Riscos aceitos:** larguras que nao dividem por 180 (ex.: 1170 no iPhone) ficam com barras laterais finas.
+- **Riscos aceitos:** larguras que nao dividem por 180 (ex.: 1170 no iPhone) ficam com barras finas. A escala cai para
+  o inteiro abaixo (1170 px: 6x, area de 1080x2337 em 1170x2532), entao as barras aparecem nas laterais e tambem em
+  cima e embaixo, nao so nas laterais. 720x1280 (4x) e 1080x2400 (6x) fecham sem barras.
+
+## Notas de implementacao (issue #15)
+
+- Janela de desktop (`window_*_override`) continua 360x640: 2x inteiro, 9:16.
+- O HUD nao usa ancoras topo/direita do editor: a posicao e recalculada a partir da area visivel e da safe area a cada
+  mudanca de tamanho da tela. O efeito e o mesmo de ancorar no topo.
+- O placar encosta no topo da safe area. Na versao da jam ele ficava 4 px acima da borda da tela; em 180x320 ele desce
+  esses 4 px, porque subir sairia da safe area em aparelho com entalhe.
 
 ## Alternativas consideradas
 

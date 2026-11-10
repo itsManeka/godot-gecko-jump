@@ -59,7 +59,7 @@ Para gerar a versão web (sem threads):
 
 - **Engine:** Godot Engine 4.7.2
 - **Linguagem:** GDScript
-- **Resolução:** 180x320 (modo retrato)
+- **Resolução:** retrato, 180 px de largura e altura que acompanha a tela do aparelho (mínimo 320), com escala inteira para manter o pixel quadrado
 - **Áudio:** Efeitos sonoros integrados
 
 ## 📁 Estrutura do Projeto
