@@ -7,9 +7,10 @@ const PLAYER := "res://scenes/Player.tscn"
 const PLATFORM := "res://scenes/Platform.tscn"
 const STAGE := "res://scenes/Stage.tscn"
 const PLAYER_SCRIPT := preload("res://scenes/Player.gd")
-# Faixa de derrota: topo na altura visivel (320), espessura 20; centro em altura + 10.
+# Faixa de derrota: topo na altura visivel (320), espessura 20 (y 320..340). O corpo do gecko tem 28,5 de altura
+# (meia 14,3): em y = altura + 16 ele fica dentro da faixa e fora de qualquer faixa deslocada para cima (<= 320).
 const VISIBLE_H := 320.0
-const CHECK_Y := VISIBLE_H + 10.0
+const CHECK_Y := VISIBLE_H + 16.0
 var _p: Node
 var _pl: Node
 var _stage: Node
@@ -63,6 +64,7 @@ func _place_in_check(px: float, py: float) -> void:
 	_p.position = Vector2(px, py)
 	_p.velocity = Vector2.ZERO
 	await wait_physics_frames(2)
+	assert_true(_stage.get_node("CheckPlayer").overlaps_body(_p), "gecko posicionado dentro da CheckPlayer")
 
 # C55: pouso so pela posicao real. Fantasma visivel em x=-2; plataforma so sob o fantasma nao segura o gecko.
 func test_pouso_so_pela_posicao_real() -> void:
@@ -145,10 +147,13 @@ func test_checkplayer_sem_derrota_falsa_na_costura_esquerda() -> void:
 # C59: contraprova, sair por baixo (y > 340) fora de pulo continua perdendo.
 func test_checkplayer_derrota_por_queda_preservada() -> void:
 	_spawn_stage()
+	var check: Area2D = _stage.get_node("CheckPlayer")
+	watch_signals(check)
 	await _place_in_check(90.0, CHECK_Y)
 	assert_false(_p.is_end(), "dentro da CheckPlayer ainda nao perdeu")
 	_p.set_physics_process(true)
 	await _step(30)
+	assert_signal_emitted(check, "body_exited", "a derrota vem da saida da CheckPlayer")
 	assert_true(_p.is_end(), "saiu por baixo sem pular: partida perdida")
 	assert_eq(_p.sprite.animation, "lose", "animacao de derrota tocada")
 
