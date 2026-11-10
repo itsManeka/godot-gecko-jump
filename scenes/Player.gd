@@ -41,6 +41,11 @@ func _ready():
 	floor_snap_length = 0.0
 	sprite.modulate = Enums.get_cor(color)
 
+# Partida acabou (Stage liberada): a cor guardada em Global volta ao inicio antes da Stage seguinte gerar plataformas.
+# O _ready do Player chegaria tarde: ScrollLevel/RunningPlatforms (antes dele na Stage) ja geram no proprio _ready.
+func _exit_tree() -> void:
+	Global.cor_gecko = Enums.COR_INICIAL
+
 # Atualiza o fantasma a cada frame (tambem apos game over, quando a animacao "lose" troca sem physics)
 func _process(_delta):
 	_sync_ghost()

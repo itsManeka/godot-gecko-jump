@@ -13,6 +13,9 @@ var pontuacao: ScoreKeeper = ScoreKeeper.new()
 # Persistencia do recorde em user://, ligada ao `pontuacao` so no _ready (os keepers de teste nascem sem ligacao).
 # Mantido em membro para o store nao ser liberado ao fim do _ready.
 var _best_store: BestScoreStore
+# Cor corrente do gecko (lida pelos geradores de plataforma). Volta a Enums.COR_INICIAL a cada partida nova:
+# o Player a reseta ao sair da arvore (Player._exit_tree), antes de a Stage seguinte gerar as plataformas.
+var cor_gecko: Enums.COLOR = Enums.COR_INICIAL
 
 # Inicializa o gerador de números aleatórios e liga o recorde salvo ao ScoreKeeper
 func _ready():
@@ -28,6 +31,7 @@ func add_platform(platform: Platform):
 # Notifica todas as plataformas sobre a mudança de cor do jogador
 # Ativa/desativa colisão baseado na cor
 func player_color_changed(player_color, actual_platform: Platform):
+	cor_gecko = player_color
 	for platform in platforms:
 		if is_instance_valid(platform) and platform != actual_platform:
 			var p := platform as Platform
