@@ -18,7 +18,7 @@
 ### 🎯 Objetivo
 - **Pular apenas nas plataformas da mesma cor** que o Gecko
 - **Ganhar pontos** a cada plataforma nova que tocar
-- **Mudar de cor automaticamente** após cada pulo bem-sucedido
+- **Mudar de cor automaticamente** após cada pulo bem-sucedido — a cor nova sempre existe numa plataforma da linha de cima
 - **Sobreviver** o máximo de tempo possível descendo pelas plataformas
 - **Bater o recorde**: a maior pontuação fica salva e continua lá quando você abre o jogo de novo
 
@@ -167,7 +167,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 #### 🎯 Objective
 - **Jump only on platforms of the same color** as the Gecko
 - **Earn points** for each new platform you touch
-- **Change color automatically** after each successful jump
+- **Change color automatically** after each successful jump — the new color is always on a platform in the row above
 - **Survive** as long as possible while descending through the platforms
 - **Beat your best score**: it is saved and still there the next time you open the game
 
