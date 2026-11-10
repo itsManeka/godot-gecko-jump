@@ -69,3 +69,68 @@ func test_sem_iniciado_ou_end_nao_faz_wrap() -> void:
 	Input.action_press("ui_right")
 	await wait_physics_frames(5)
 	assert_eq(_p.position.x, 200.0, "com end=true, x=200 permanece mesmo com input")
+
+# T2 (f412): sprite fantasma "Ghost" (sem colisor). Player sem processo proprio: a sincronizacao e chamada
+# direto (_process(0.0)), entao cada leitura e determinista.
+func _spawn_quieto(px: float) -> void:
+	_p = add_child_autofree(load(PLAYER).instantiate())
+	_p.set_physics_process(false)
+	_p.set_process(false)
+	_p.position = Vector2(px, 100.0)
+
+func _ghost() -> AnimatedSprite2D:
+	return _p.get_node("Ghost") as AnimatedSprite2D
+
+# C47: offset e visibilidade. x=10 -> fantasma em +180 (global 190); x=170 -> -180 (global -10); x=90 invisivel;
+# bordas da meia largura (16 px): 16 nao cruza, 15.9 cruza; 164 nao cruza, 164.1 cruza.
+func test_fantasma_offset_e_visibilidade_na_costura() -> void:
+	_spawn_quieto(10.0)
+	_p._process(0.0)
+	var g := _ghost()
+	assert_true(g.visible, "x=10 cruza a borda esquerda: fantasma visivel")
+	assert_almost_eq(g.global_position.x, 190.0, 0.0001, "x=10 -> fantasma em x=190 (offset +180)")
+	_p.position.x = 170.0
+	_p._process(0.0)
+	assert_true(g.visible, "x=170 cruza a borda direita: fantasma visivel")
+	assert_almost_eq(g.global_position.x, -10.0, 0.0001, "x=170 -> fantasma em x=-10 (offset -180)")
+	_p.position.x = 90.0
+	_p._process(0.0)
+	assert_false(g.visible, "x=90 longe das bordas: fantasma invisivel")
+	for caso in [[16.0, false], [15.9, true], [164.0, false], [164.1, true]]:
+		_p.position.x = caso[0]
+		_p._process(0.0)
+		assert_eq(g.visible, caso[1], "x=%s -> visivel=%s" % [caso[0], caso[1]])
+
+# C48: espelha animation, frame, flip_h e modulate (inclusive apos set_color e na "lose"); nao avanca sozinho.
+func test_fantasma_espelha_sprite_real() -> void:
+	_spawn_quieto(10.0)
+	var g := _ghost()
+	assert_false(g.is_playing(), "fantasma nao toca: is_playing() == false")
+	_p.sprite.animation = "run"
+	_p.sprite.frame = 1
+	_p.sprite.flip_h = true
+	_p._process(0.0)
+	assert_eq(g.animation, "run", "animacao espelhada")
+	assert_eq(g.frame, 1, "frame espelhado")
+	assert_true(g.flip_h, "flip_h espelhado")
+	await wait_process_frames(10)
+	assert_eq(g.frame, 1, "fantasma parado: nao avanca frames sozinho")
+	var cores: Array = Enums.COLOR.values()
+	var nova: int = cores[0] if cores[0] != Enums.COR_INICIAL else cores[1]
+	var cor_antes := g.modulate
+	_p.set_color(nova)
+	_p._process(0.0)
+	assert_eq(g.modulate, _p.sprite.modulate, "cor trocada por set_color espelhada")
+	assert_ne(g.modulate, cor_antes, "a cor do fantasma mudou junto")
+	_p.lose_game()
+	_p._process(0.0)
+	assert_eq(g.animation, "lose", "animacao lose espelhada")
+
+# C49: Player invisivel (menu) esconde o fantasma mesmo com x na zona de costura.
+func test_player_invisivel_esconde_fantasma() -> void:
+	_spawn_quieto(10.0)
+	_p._process(0.0)
+	assert_true(_ghost().is_visible_in_tree(), "controle: Player visivel e x=10 -> fantasma visivel na arvore")
+	_p.visible = false
+	_p._process(0.0)
+	assert_false(_ghost().is_visible_in_tree(), "Player invisivel: fantasma nao aparece na arvore")

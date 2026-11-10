@@ -8,6 +8,7 @@ const SPEED = 80                    # Velocidade horizontal do jogador
 const GRAVITY = 10                  # Força da gravidade aplicada por frame
 const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima)
 const SCREEN_WIDTH = 180            # Largura da tela em px: ponto unico do wrap (a F3 troca pela largura visivel)
+const GHOST_HALF_WIDTH = 16.0       # Meia largura visual do gecko (frame 32x32): o fantasma aparece quando ela cruza a borda
 
 # Cor atual do jogador (definida no editor)
 @export var color: Enums.COLOR = Enums.COR_INICIAL
@@ -17,6 +18,7 @@ const SCREEN_WIDTH = 180            # Largura da tela em px: ponto unico do wrap
 @onready var collision = $CollisionShape2D
 @onready var detector = $DetectorPlataforma/CollisionShape2D
 @onready var jumpaudio = $JumpAudio
+@onready var ghost = $Ghost
 
 # Variáveis de estado do jogador
 var on_ground = false              # Se o jogador está no chão
@@ -32,6 +34,26 @@ func _ready():
 	motion_mode = MOTION_MODE_GROUNDED
 	floor_snap_length = 0.0
 	sprite.modulate = Enums.get_cor(color)
+
+# Atualiza o fantasma a cada frame (tambem apos game over, quando a animacao "lose" troca sem physics)
+func _process(_delta):
+	_sync_ghost()
+
+# Copia animacao, frame, flip e cor do sprite real; o fantasma so aparece do outro lado da borda (sem colisao)
+func _sync_ghost() -> void:
+	if ghost.animation != sprite.animation:
+		ghost.animation = sprite.animation
+	ghost.frame = sprite.frame
+	ghost.flip_h = sprite.flip_h
+	ghost.modulate = sprite.modulate
+	if position.x < GHOST_HALF_WIDTH:
+		ghost.position = Vector2(SCREEN_WIDTH, 0.0)
+		ghost.visible = true
+	elif position.x > SCREEN_WIDTH - GHOST_HALF_WIDTH:
+		ghost.position = Vector2(-SCREEN_WIDTH, 0.0)
+		ghost.visible = true
+	else:
+		ghost.visible = false
 
 # Processa a física e input do jogador a cada frame
 func _physics_process(_delta):
