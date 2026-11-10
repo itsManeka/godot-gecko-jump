@@ -7,6 +7,9 @@ const PLAYER := "res://scenes/Player.tscn"
 const PLATFORM := "res://scenes/Platform.tscn"
 const STAGE := "res://scenes/Stage.tscn"
 const PLAYER_SCRIPT := preload("res://scenes/Player.gd")
+# Faixa de derrota: topo na altura visivel (320), espessura 20; centro em altura + 10.
+const VISIBLE_H := 320.0
+const CHECK_Y := VISIBLE_H + 10.0
 var _p: Node
 var _pl: Node
 var _stage: Node
@@ -49,6 +52,7 @@ func _spawn_stage() -> void:
 	var scroll: Node = _stage.get_node("ScrollLevel")
 	_stage.remove_child(scroll)
 	scroll.free()
+	_stage.apply_layout(Vector2(180.0, VISIBLE_H), Rect2(0.0, 0.0, 180.0, VISIBLE_H))
 	_p = _stage.get_node("Node2D/Player")
 	_p.set_physics_process(false)
 	_stage._on_Play_button_down()
@@ -118,7 +122,7 @@ func test_checkplayer_sem_derrota_falsa_na_costura_direita() -> void:
 	_spawn_stage()
 	var check: Area2D = _stage.get_node("CheckPlayer")
 	watch_signals(check)
-	await _place_in_check(180.9, 305.0)
+	await _place_in_check(180.9, CHECK_Y)
 	Input.action_press("ui_right")
 	_p.set_physics_process(true)
 	await wait_physics_frames(1)
@@ -130,7 +134,7 @@ func test_checkplayer_sem_derrota_falsa_na_costura_esquerda() -> void:
 	_spawn_stage()
 	var check: Area2D = _stage.get_node("CheckPlayer")
 	watch_signals(check)
-	await _place_in_check(0.9, 305.0)
+	await _place_in_check(0.9, CHECK_Y)
 	Input.action_press("ui_left")
 	_p.set_physics_process(true)
 	await wait_physics_frames(1)
@@ -138,10 +142,10 @@ func test_checkplayer_sem_derrota_falsa_na_costura_esquerda() -> void:
 	assert_signal_not_emitted(check, "body_exited", "teleporte nao sai da CheckPlayer")
 	assert_false(_p.is_end(), "sem derrota falsa na costura esquerda")
 
-# C59: contraprova, sair por baixo (y > 320.5) fora de pulo continua perdendo.
+# C59: contraprova, sair por baixo (y > 340) fora de pulo continua perdendo.
 func test_checkplayer_derrota_por_queda_preservada() -> void:
 	_spawn_stage()
-	await _place_in_check(90.0, 305.0)
+	await _place_in_check(90.0, CHECK_Y)
 	assert_false(_p.is_end(), "dentro da CheckPlayer ainda nao perdeu")
 	_p.set_physics_process(true)
 	await _step(30)

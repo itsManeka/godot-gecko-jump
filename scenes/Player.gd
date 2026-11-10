@@ -7,7 +7,6 @@ signal add_point
 const SPEED = 80                    # Velocidade horizontal do jogador
 const GRAVITY = 10                  # Força da gravidade aplicada por frame
 const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima)
-const SCREEN_WIDTH = 180            # Largura da tela em px: ponto unico do wrap (a F3 troca pela largura visivel)
 const GHOST_HALF_WIDTH = 16.0       # Meia largura visual do gecko (frame 32x32): o fantasma aparece quando ela cruza a borda
 
 # Cor atual do jogador (definida no editor)
@@ -26,9 +25,16 @@ var can_change_color = false       # Se pode mudar de cor na próxima plataforma
 var actual_platform : Platform = null  # Plataforma atual em que o jogador está
 var jumping = true                 # Se o jogador está pulando
 var end = false                    # Se o jogo terminou para este jogador
+var screen_width: float = 180.0    # Largura visivel em px (VisibleArea): ponto unico do wrap e do fantasma
+
+# Relê a largura visivel do viewport do Player (chamado no _ready e no size_changed)
+func refresh_screen_width() -> void:
+	screen_width = VisibleArea.visible_size(get_viewport()).x
 
 # Inicializa o jogador definindo sua cor inicial
 func _ready():
+	refresh_screen_width()
+	get_viewport().size_changed.connect(refresh_screen_width)
 	# Chao para cima e sem snap ao chao (floor_snap_length = 0): o movimento vertical nao e corrigido ao pousar
 	up_direction = Vector2.UP
 	motion_mode = MOTION_MODE_GROUNDED
@@ -47,10 +53,10 @@ func _sync_ghost() -> void:
 	ghost.flip_h = sprite.flip_h
 	ghost.modulate = sprite.modulate
 	if position.x < GHOST_HALF_WIDTH:
-		ghost.position = Vector2(SCREEN_WIDTH, 0.0)
+		ghost.position = Vector2(screen_width, 0.0)
 		ghost.visible = true
-	elif position.x > SCREEN_WIDTH - GHOST_HALF_WIDTH:
-		ghost.position = Vector2(-SCREEN_WIDTH, 0.0)
+	elif position.x > screen_width - GHOST_HALF_WIDTH:
+		ghost.position = Vector2(-screen_width, 0.0)
 		ghost.visible = true
 	else:
 		ghost.visible = false
@@ -112,7 +118,7 @@ func _physics_process(_delta):
 	move_and_slide()
 
 	# Wrap horizontal: o centro que cruza uma borda reaparece do lado oposto (velocity intacta)
-	position.x = wrap_x(position.x, SCREEN_WIDTH)
+	position.x = wrap_x(position.x, screen_width)
 
 # Detecta quando o jogador entra em contato com uma plataforma
 func _on_DetectorPlataforma_body_entered(_body):
