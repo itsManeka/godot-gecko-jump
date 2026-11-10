@@ -42,29 +42,36 @@ func _ys_globais() -> Array[float]:
 	return ys
 
 
-func _checa_altura(altura: int, esperado: int) -> void:
-	await _spawn(altura, false)
+func _ys_iguais(altura: int) -> bool:
 	var ys := _ys_globais()
 	var ys_regra := InitialRows.initial_row_ys(float(altura))
-	assert_eq(_linhas().size(), esperado, "altura %d: esperado %d linhas filhas de running_platforms" % [altura, esperado])
-	assert_eq(ys.size(), ys_regra.size(), "altura %d: contagem difere de initial_row_ys" % altura)
-	for i in mini(ys.size(), ys_regra.size()):
-		assert_almost_eq(ys[i], ys_regra[i], 0.001, "altura %d: y da linha %d fora de initial_row_ys" % [altura, i])
+	if ys.size() != ys_regra.size():
+		return false
+	for i in ys.size():
+		if absf(ys[i] - ys_regra[i]) > 0.001:
+			return false
+	return true
 
 
 # C86
 func test_linhas_iniciais_em_320() -> void:
-	await _checa_altura(320, 7)
+	await _spawn(320, false)
+	assert_eq(_linhas().size(), 7, "altura 320: esperado 7 linhas filhas de running_platforms")
+	assert_true(_ys_iguais(320), "altura 320: y das linhas difere de initial_row_ys")
 
 
 # C87
 func test_linhas_iniciais_em_400() -> void:
-	await _checa_altura(400, 9)
+	await _spawn(400, false)
+	assert_eq(_linhas().size(), 9, "altura 400: esperado 9 linhas filhas de running_platforms")
+	assert_true(_ys_iguais(400), "altura 400: y das linhas difere de initial_row_ys")
 
 
 # C88
 func test_linhas_iniciais_em_462() -> void:
-	await _checa_altura(462, 10)
+	await _spawn(462, false)
+	assert_eq(_linhas().size(), 10, "altura 462: esperado 10 linhas filhas de running_platforms")
+	assert_true(_ys_iguais(462), "altura 462: y das linhas difere de initial_row_ys")
 
 
 # C89
@@ -77,8 +84,8 @@ func test_sem_linha_duplicada_em_3s_de_scroll_em_400() -> void:
 		var ys := _ys_globais()
 		for i in range(1, ys.size()):
 			menor = minf(menor, ys[i] - ys[i - 1])
-	assert_gte(_scroll.position_scrolled, 50.0, "scroll de 3 s deveria passar de 50 px (position_scrolled=%s)" % _scroll.position_scrolled)
-	assert_gte(menor, 49.5, "linhas duplicadas: menor distancia vertical entre linhas = %s (< 49.5)" % menor)
+	assert_gte(_scroll.position_scrolled, 50.0, "scroll de 3 s deveria passar de 50 px")
+	assert_gte(menor, 49.5, "linhas duplicadas: menor distancia vertical entre linhas abaixo de 49.5")
 
 
 func _novos(antes: Array) -> Array[float]:
@@ -120,8 +127,8 @@ func test_gatilho_aritmetico_49_9_50_e_salto_de_120() -> void:
 	var novos2 := _novos(antes2)
 	assert_eq(novos2.size(), 2, "salto de 120 px deveria gerar 2 linhas")
 	if novos2.size() == 2:
-		assert_almost_eq(novos2[0], -10.0, 0.001, "1a linha do salto em y=-10")
-		assert_almost_eq(novos2[1], -60.0, 0.001, "2a linha do salto em y=-60 (-10 - 50*k)")
+		assert_almost_eq(novos2[0], 60.0, 0.001, "1a linha do salto deveria estar em y global 60 (local -60)")
+		assert_almost_eq(novos2[1], 10.0, 0.001, "2a linha do salto deveria estar em y global 10 (local -110)")
 
 
 # C91
@@ -131,8 +138,8 @@ func test_nomes_e_flag_das_linhas() -> void:
 	for c in _linhas():
 		var y: float = c.position.y
 		if y > 190.0:
-			assert_eq(String(c.name), "Linha_%d" % int(y), "linha nova em y=%s deveria se chamar Linha_%d" % [y, int(y)])
-			assert_false(c.garantir_cor_inicial, "linha nova em y=%s nao pode ter garantir_cor_inicial" % y)
+			assert_eq(String(c.name), "Linha_%d" % int(y), "linha nova abaixo de 190 deveria se chamar Linha_<y>")
+			assert_false(c.garantir_cor_inicial, "linha nova abaixo de 190 nao pode ter garantir_cor_inicial")
 			assert_eq(c.get_parent(), _scroll.running_platforms, "linha nova filha de running_platforms")
 		if c.garantir_cor_inicial:
 			com_flag += 1

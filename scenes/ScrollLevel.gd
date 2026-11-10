@@ -16,6 +16,7 @@ var _rows_spawned: int = 0
 
 # Último y dos nós de linha do .tscn; abaixo dele nascem as linhas iniciais extras
 const ULTIMA_LINHA_TSCN := 190.0
+const EPSILON := 0.0001
 
 # Preenche a altura visível com linhas iniciais abaixo das 5 do .tscn.
 # Limitação: redimensionar a janela durante a partida não preenche faixa nova (sem religar size_changed).
@@ -40,16 +41,20 @@ func _physics_process(delta):
 	running_platforms.position.y += new_position
 	position_scrolled += new_position
 	# Gatilho aritmético: uma linha a cada ESPACAMENTO px, sem depender de altura nem de colisão
-	while position_scrolled >= InitialRows.ESPACAMENTO * (_rows_spawned + 1):
-		create_new_running_platform(InitialRows.Y_TOPO - InitialRows.ESPACAMENTO * _rows_spawned)
+	# EPSILON absorve o erro de ponto flutuante da soma de delta (49.99999 contaria como 1 frame a menos)
+	while position_scrolled + EPSILON >= InitialRows.ESPACAMENTO * (_rows_spawned + 1):
+		# Linha k em y local Y_TOPO - ESPACAMENTO*(k+1): com o scroll já em ESPACAMENTO*(k+1), nasce em y global Y_TOPO
+		create_new_running_platform(InitialRows.Y_TOPO - InitialRows.ESPACAMENTO * (_rows_spawned + 1))
 		_rows_spawned += 1
 
-# Cria um novo gerador de plataformas no y global dado (padrão: topo, acima da área visível)
-func create_new_running_platform(y_global: float = InitialRows.Y_TOPO):
+# Cria um novo gerador de plataformas no y local dado (filho de running_platforms).
+# Sem argumento (NAN): nasce em y global Y_TOPO, acima da área visível, descontando o scroll já feito.
+func create_new_running_platform(y_local: float = NAN):
 	var running_platform = pre_running_platform.instantiate()
 	running_platform.set_platform_type(Enums.PLATFORM_TYPE.RANDOM_ALL)
-	# running_platforms já desceu position_scrolled; compensa para o y global sair em y_global
-	running_platform.global_position = Vector2(0, y_global - position_scrolled)
+	if is_nan(y_local):
+		y_local = InitialRows.Y_TOPO - position_scrolled
+	running_platform.position = Vector2(0, y_local)
 
 	running_platforms.call_deferred("add_child", running_platform)
 
