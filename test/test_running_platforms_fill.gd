@@ -161,7 +161,8 @@ func test_espacamento_medido_em_jogo_bate_com_constante_nascendo_a_esquerda() ->
 		assert_almost_eq(float(d), MovingRowFill.ESPACAMENTO, TOLERANCIA_PX, "espacamento medido em jogo deve bater com MovingRowFill.ESPACAMENTO")
 
 
-func test_gerador_static_nao_pre_preenche_e_script_so_chama_a_classe() -> void:
+# A ligacao com MovingRowFill e provada por comportamento (C106: x das plataformas = MovingRowFill.initial_xs)
+func test_gerador_static_nao_pre_preenche() -> void:
 	var gerador := _criar_gerador(Enums.PLATFORM_TYPE.STATIC)
 	add_child_autofree(gerador)
 
@@ -171,12 +172,10 @@ func test_gerador_static_nao_pre_preenche_e_script_so_chama_a_classe() -> void:
 	xs.sort()
 	assert_eq(xs, [5.0, 90.0, 175.0], "gerador STATIC deve manter as 3 estaticas de sempre, sem pre-preenchimento movel")
 
-	var fonte := FileAccess.get_file_as_string("res://scenes/RunningPlatforms.gd")
-	assert_true(fonte.contains("MovingRowFill.initial_xs("), "RunningPlatforms.gd deve chamar MovingRowFill.initial_xs")
-	assert_false(fonte.contains("ESPACAMENTO"), "RunningPlatforms.gd nao deve ter conta de posicao inicial local")
-
 
 func test_gerador_random_all_movel_tambem_nasce_preenchido() -> void:
+	# Seed fixa: o sorteio de PlatformTypePicker (randi global) fica deterministico
+	seed(413)
 	var achou := false
 	for i in 60:
 		var gerador := _criar_gerador(Enums.PLATFORM_TYPE.RANDOM_ALL)

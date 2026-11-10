@@ -3,8 +3,8 @@ extends RefCounted
 
 # Regra pura do preenchimento inicial de uma linha movel: fonte unica do espacamento (ESPACAMENTO), da largura padrao
 # (180) e da semi-largura da plataforma (30). Sem arvore de cena: testavel direto.
-# ESPACAMENTO ~ 79 px e estimativa: area_exited do CheckGenerate (distancia entre centros > 60.2995 px, a 1 px/tick
-# a 60 Hz = ~61 ticks) + 0.3 s do timer (18 px). T2 mede em jogo (+/- 2 px) e ajusta esta constante se preciso.
+# ESPACAMENTO = 79 px: area_exited do CheckGenerate (distancia entre centros > 60.2995 px, a 1 px/tick a 60 Hz =
+# ~61 ticks) + 0.3 s do timer (18 px). Medido em jogo por test/test_running_platforms_fill.gd (+/- 2 px).
 
 const ESPACAMENTO := 79.0
 const LARGURA_PADRAO := 180.0
