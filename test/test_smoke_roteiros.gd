@@ -11,6 +11,7 @@ const ROTEIROS: Array[String] = [
 	"retrato-1080x2772",
 	"retrato-1170x2532",
 	"retrato-720x1280",
+	"retrato-pontua-1080x2772",
 	"retrato-queda-720x1280",
 ]
 const ROTEIROS_LONGOS: Array[String] = [
@@ -83,6 +84,12 @@ func test_retrato_queda_parseia_e_tem_seed() -> void:
 	_checar_roteiro_com_seed("retrato-queda-720x1280")
 
 
+func test_retrato_pontua_parseia_com_seed_e_semderrota() -> void:
+	_checar_roteiro_com_seed("retrato-pontua-1080x2772")
+	var caminho: String = str(_carregar("retrato-pontua-1080x2772").get("path", ""))
+	assert_true("semderrota=1" in caminho, "o roteiro pontua deve ligar o modo sem derrota (semderrota=1)")
+
+
 func test_cada_roteiro_tem_expect_e_state_lost_so_na_queda() -> void:
 	for nome in ROTEIROS:
 		assert_gt(_expects(nome).size(), 0, "cada roteiro deve ter ao menos um passo expect")
@@ -135,3 +142,22 @@ func test_expect_usa_so_chaves_e_operadores_do_contrato() -> void:
 					assert_eq(valor.size(), 1, "o objeto de comparacao deve ter exatamente um operador")
 					for operador in valor.keys():
 						assert_true(OPERADORES.has(str(operador)), "o operador deve ser eq/ne/gt/gte/lt/lte")
+
+
+func test_so_retrato_pontua_liga_semderrota_pontua_e_termina_vivo() -> void:
+	var nome_pontua: String = "retrato-pontua-1080x2772"
+	var passos := _passos(nome_pontua)
+	var tem_score_gte_1: bool = false
+	for passo in _expects(nome_pontua):
+		var exigencia: Dictionary = passo["expect"]
+		var score: Variant = exigencia.get("score", null)
+		if typeof(score) == TYPE_DICTIONARY and score.has("gte") and float(score["gte"]) == 1.0:
+			tem_score_gte_1 = true
+	assert_eq(tem_score_gte_1, true, "o roteiro pontua deve ter expect score gte 1")
+	var ultimo: Dictionary = passos[passos.size() - 1]
+	assert_eq(ultimo.get("expect", {}), {"state": "playing"}, "o roteiro pontua deve terminar com expect state playing (gecko vivo)")
+	for nome in ROTEIROS:
+		if nome == nome_pontua:
+			continue
+		var caminho: String = str(_carregar(nome).get("path", ""))
+		assert_eq("semderrota" in caminho, false, "so o roteiro pontua liga o modo sem derrota")
