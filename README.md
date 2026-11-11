@@ -78,7 +78,7 @@ godot-gecko-jump/
 
 ## 📱 Compatibilidade
 
-⚠️ **Aviso:** Este jogo foi desenvolvido para PC e não está otimizado para dispositivos móveis.
+⚠️ **Aviso:** A tela já é pensada para celular (retrato, 180 px de largura), mas o jogo ainda não lê toque: os controles de toque chegam num próximo epic. Por ora, jogue com teclado.
 
 **Requisitos:**
 - Godot Engine 4.7.2
@@ -212,7 +212,7 @@ with the dev-workspace `game-smoke.mjs`: `node <dev-workspace>/.claude/scripts/g
 
 ### 📱 Compatibility
 
-⚠️ **Warning:** This game was developed for PC and is not optimized for mobile devices.
+⚠️ **Warning:** The screen is already designed for phones (portrait, 180 px wide), but the game does not read touch yet: touch controls arrive in an upcoming epic. For now, play with a keyboard.
 
 **Requirements:**
 - Godot Engine 4.7.2
