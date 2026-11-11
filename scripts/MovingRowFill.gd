@@ -7,7 +7,7 @@ extends RefCounted
 # ~61 ticks) + 0.3 s do timer (18 px). Medido em jogo por test/test_running_platforms_fill.gd (+/- 2 px).
 
 const ESPACAMENTO := 79.0
-const LARGURA_PADRAO := 180.0
+const LARGURA_PADRAO := PlayArea.LARGURA
 const SEMI_PLATAFORMA := 30.0
 
 

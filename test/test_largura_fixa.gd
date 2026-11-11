@@ -12,3 +12,8 @@ func test_stretch_mode_viewport_e_escala_inteira() -> void:
 		"mode deve continuar viewport")
 	assert_eq(ProjectSettings.get_setting("display/window/stretch/scale_mode"), "integer",
 		"scale_mode deve continuar integer")
+
+# C142: fonte unica da largura jogavel; gerador e Player leem dela.
+func test_largura_jogavel_de_fonte_unica() -> void:
+	assert_eq(PlayArea.LARGURA, 180.0, "largura jogavel = 180")
+	assert_eq(MovingRowFill.LARGURA_PADRAO, PlayArea.LARGURA, "gerador usa a mesma constante do Player")

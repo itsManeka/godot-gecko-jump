@@ -63,6 +63,17 @@ func test_pouso_sorteia_so_entre_azul_e_verde_visiveis_e_as_duas_aparecem() -> v
 	assert_true(vistas.has(Enums.COLOR.VERDE), "VERDE aparece")
 
 
+func test_pouso_com_viewport_de_240_usa_largura_180_na_cor() -> void:
+	# C143: viewport mais largo que 180; a plataforma azul em x=200 (>180) fica fora da janela jogavel e nunca vence.
+	_sv.size = Vector2i(240, 320)
+	_p.position.x = 200.0
+	var base := _plataforma(Y_BAIXO, 90.0, Enums.COLOR.AMARELO)
+	_plataforma(Y_CIMA, 40.0, Enums.COLOR.VERDE)
+	_plataforma(Y_CIMA, 200.0, Enums.COLOR.AZUL)
+	for semente in range(1, SEMENTES + 1):
+		assert_eq(_pousar(base, semente), Enums.COLOR.VERDE, "so a VERDE dentro de [0, 180] e candidata")
+
+
 func test_pouso_com_linha_de_cima_vazia_usa_fallback_sem_perder_ponto() -> void:
 	# Pouso real pela fisica: o gecko cai na plataforma, troca de cor e emite add_point.
 	Global.iniciado = true
