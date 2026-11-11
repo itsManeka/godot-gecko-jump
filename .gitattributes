@@ -1,0 +1,11 @@
+# Fim de linha fixo em LF no checkout, em qualquer maquina (issue #36).
+# O Godot regrava `.import`, `.uid`, `.tscn`, `.tres` e `project.godot` sempre em LF; com `core.autocrlf=true` e sem
+# este arquivo o checkout saia em CRLF e cada `--import` deixava os `.import` como modificados no `git status`.
+* text=auto eol=lf
+
+# Binarios por extensao (nunca converter)
+*.png binary
+*.ttf binary
+*.wav binary
+*.ogg binary
+*.fnt binary
