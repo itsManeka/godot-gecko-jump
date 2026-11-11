@@ -103,6 +103,63 @@ func test_dois_pousos_em_linhas_diferentes_levam_a_cores_de_destino_distintas() 
 	assert_eq(_pousar(b, 1), Enums.COLOR.VERDE, "linha acima de B so tem VERDE")
 
 
+func test_pouso_com_plataforma_atual_liberada_usa_fallback_livre() -> void:
+	# Plataforma liberada (screen_exited) antes do pouso seguinte: comporta-se como actual_platform == null.
+	_plataforma(Y_CIMA, 40.0, Enums.COLOR.AZUL)
+	var vistas := {}
+	for semente in range(1, SEMENTES + 1):
+		# Atribuir objeto ja liberado a variavel tipada e recusado: o gecko guarda viva e ela e liberada depois.
+		var base := _plataforma(Y_BAIXO, 90.0, Enums.COLOR.AMARELO)
+		_p.actual_platform = base
+		base.free()
+		_p.rng = _rng(semente)
+		_p.change_color_random()
+		assert_null(_p.actual_platform, "a plataforma liberada vira null")
+		assert_true(Enums.COLOR.values().has(_p.color), "cor valida")
+		vistas[_p.color] = true
+	assert_gt(vistas.size(), 1, "fallback livre: mais de uma cor (so a AZUL da linha de cima seria 1)")
+
+
+func test_set_color_com_plataforma_atual_liberada_avisa_as_plataformas_vivas() -> void:
+	var viva := _plataforma(Y_CIMA, 60.0, Enums.COLOR.AZUL)
+	var base := _plataforma(Y_BAIXO, 90.0, Enums.COLOR.AMARELO)
+	_p.actual_platform = base
+	base.free()
+	Global.cor_gecko = Enums.COLOR.AZUL
+	assert_false(viva.shape.disabled, "a viva comeca com colisao ligada")
+	_p.set_color(Enums.COLOR.VERDE)
+	assert_eq(Global.cor_gecko, Enums.COLOR.VERDE, "Global.cor_gecko acompanha a cor nova")
+	assert_true(viva.shape.disabled, "a viva (AZUL) de outra cor perde a colisao")
+
+
+func test_pouso_na_fisica_com_plataforma_liberada_conclui_a_troca_de_cor() -> void:
+	# Fio real: pousa pela fisica, entra em outra plataforma, ela e liberada e o proximo _physics_process troca a cor.
+	Global.iniciado = true
+	_plataforma(Y_BAIXO, 90.0, Enums.COR_INICIAL)
+	_p.position = Vector2(90.0, Y_BAIXO - 60.0)
+	_p.rng = _rng(3)
+	_p.set_physics_process(true)
+	await wait_physics_frames(90)
+	assert_true(_p.is_on_floor(), "o gecko pousou")
+	assert_false(_p.can_change_color, "o pouso inicial ja consumiu a troca")
+	var outra := _plataforma(20.0, 150.0, Enums.COLOR.AMARELO)
+	_p._on_DetectorPlataforma_body_entered(outra)
+	assert_true(_p.can_change_color, "o detector liga a troca")
+	outra.free()
+	var sentinela := Enums.COLOR.AMARELO
+	for cor in Enums.COLOR.values():
+		if cor != _p.color:
+			sentinela = cor
+			break
+	Global.cor_gecko = sentinela
+	watch_signals(_p)
+	await wait_physics_frames(2)
+	assert_false(_p.can_change_color, "a troca terminou")
+	assert_signal_emit_count(_p, "add_point", 1, "o pouso deu o ponto")
+	assert_true(Enums.COLOR.values().has(_p.color), "cor valida")
+	assert_eq(Global.cor_gecko, _p.color, "Global.cor_gecko acompanha a cor do gecko")
+
+
 func test_linha_de_cima_so_com_a_cor_atual_mantem_a_cor() -> void:
 	var base := _plataforma(Y_BAIXO, 90.0, Enums.COLOR.AMARELO)
 	_plataforma(Y_CIMA, 60.0, Enums.COLOR.AZUL)

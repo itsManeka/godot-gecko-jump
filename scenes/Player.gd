@@ -129,10 +129,17 @@ func _on_DetectorPlataforma_body_entered(_body):
 func set_color(new_color):
 	color = new_color
 	sprite.modulate = Enums.get_cor(color)
+	_descartar_plataforma_liberada()
 	Global.player_color_changed(color, actual_platform)
+
+# Plataforma liberada (saiu da tela) vira null: parametro tipado recusa objeto liberado antes de qualquer checagem
+func _descartar_plataforma_liberada() -> void:
+	if not is_instance_valid(actual_platform):
+		actual_platform = null
 
 # Muda a cor do jogador para uma cor aleatória
 func change_color_random():
+	_descartar_plataforma_liberada()
 	set_color(ReachableColors.cor_no_pouso(Global.platforms, actual_platform, PlayArea.LARGURA, rng))
 
 # Retorna se o jogador está atualmente pulando

@@ -1,6 +1,6 @@
 extends GutTest
 
-# f439 T1: o jogo e so retrato, largura logica sempre 180 (ADR 0002). Janela larga ganha barras laterais
+# O jogo e so retrato, largura logica sempre 180 (ADR 0002). Janela larga ganha barras laterais
 # (aspect keep_width), nao area de jogo mais larga. Le os ajustes de stretch do projeto.
 
 func test_stretch_aspect_keep_width() -> void:
