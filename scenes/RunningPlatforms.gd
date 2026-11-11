@@ -30,19 +30,21 @@ var primeira_cor_gecko_lida: int = -1
 # Inicializa o gerador de plataformas
 func _ready():
 	speed = 60  # Velocidade fixa (antes era aleatória)
-	
+
 	# Resolve tipos de plataforma aleatórios (sorteio em PlatformTypePicker)
 	platform_type = PlatformTypePicker.resolve(platform_type)
 
-	# Configura comportamento baseado no tipo
+	# Configura comportamento baseado no tipo (Platform.gd: velocity = -speed, entao speed > 0 anda a esquerda)
 	match platform_type:
 		Enums.PLATFORM_TYPE.STATIC:
 			create_static_platforms()
 		Enums.PLATFORM_TYPE.MOVE_TO_LEFT:
-			check_generate.position.x = -30
-			speed *= -1  # Movimento para esquerda
+			# Nasce a direita (x da cena, 210) e anda para a esquerda
 			preencher_linha()
 		Enums.PLATFORM_TYPE.MOVE_TO_RIGHT:
+			# Nasce a esquerda (x = -30) e anda para a direita
+			check_generate.position.x = -30
+			speed *= -1
 			preencher_linha()
 
 # Define o tipo de plataforma que será gerada

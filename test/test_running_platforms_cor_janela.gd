@@ -31,7 +31,7 @@ func _rng(semente: int) -> RandomNumberGenerator:
 # Gerador movel na arvore: o _ready faz preencher_linha; o chamador acrescenta new_platform.
 func _gerador_movel(rng: RandomNumberGenerator) -> Node2D:
 	var gerador: Node2D = load(GERADOR_SCENE).instantiate()
-	gerador.platform_type = Enums.PLATFORM_TYPE.MOVE_TO_RIGHT
+	gerador.platform_type = Enums.PLATFORM_TYPE.MOVE_TO_LEFT
 	gerador.rng = rng
 	gerador.position = Vector2(0, 100)
 	Global.set_iniciado(true)

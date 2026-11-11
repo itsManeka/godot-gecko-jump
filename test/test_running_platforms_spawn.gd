@@ -30,7 +30,7 @@ func _plataformas_filhas(gerador: Node) -> Array:
 
 func test_gerador_movel_gera_varias_plataformas_em_3_segundos() -> void:
 	var gerador: Node2D = load(GERADOR_SCENE).instantiate()
-	gerador.platform_type = Enums.PLATFORM_TYPE.MOVE_TO_RIGHT
+	gerador.platform_type = Enums.PLATFORM_TYPE.MOVE_TO_LEFT
 	gerador.position = Vector2(0, 100)
 	Global.set_iniciado(true)
 	add_child_autofree(gerador)

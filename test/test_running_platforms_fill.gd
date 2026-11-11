@@ -1,11 +1,10 @@
 extends GutTest
 
-# f413: linhas moveis nascem preenchidas. Sentido pelo sinal de velocity / ponto de nascimento, nunca pelo nome do
-# enum (MOVE_TO_LEFT/MOVE_TO_RIGHT estao invertidos em relacao ao movimento, ver Platform.gd: velocity = -speed).
+# f413: linhas moveis nascem preenchidas. f452: o nome do enum casa com o movimento (Platform.gd: velocity = -speed).
 
 const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
-const SPAWN_ESQUERDA_ANDA_DIREITA := -30.0 # MOVE_TO_LEFT: nasce a esquerda, anda a direita
-const SPAWN_DIREITA_ANDA_ESQUERDA := 210.0 # MOVE_TO_RIGHT: nasce a direita, anda a esquerda
+const SPAWN_MOVE_TO_RIGHT := -30.0 # MOVE_TO_RIGHT: nasce a esquerda, anda a direita
+const SPAWN_MOVE_TO_LEFT := 210.0 # MOVE_TO_LEFT: nasce a direita, anda a esquerda
 # Periodo do ciclo area_exited -> timer: ~61 ticks ate sair do CheckGenerate + 0.3 s (18 ticks) a 60 Hz
 const PERIODO_FRAMES := 79
 const TOLERANCIA_FRAMES := 2
@@ -66,11 +65,11 @@ func _registrar_nascimentos(gerador: Node2D, spawn_x: float, nascimentos: Array,
 
 
 func test_linha_movel_direita_nasce_com_3_plataformas_visiveis_no_1o_frame() -> void:
-	var gerador := _criar_gerador(Enums.PLATFORM_TYPE.MOVE_TO_RIGHT)
+	var gerador := _criar_gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT)
 	add_child_autofree(gerador)
 
 	var xs := _xs_visiveis(gerador)
-	var esperado := _esperados(SPAWN_DIREITA_ANDA_ESQUERDA, true)
+	var esperado := _esperados(SPAWN_MOVE_TO_LEFT, true)
 	assert_eq(xs.size(), 3, "linha que nasce a direita deve ter 3 plataformas visiveis no 1o frame")
 	for x in esperado:
 		assert_true(xs.has(x), "linha que nasce a direita deve ter plataforma pre-colocada nos x de MovingRowFill")
@@ -81,11 +80,11 @@ func test_linha_movel_direita_nasce_com_3_plataformas_visiveis_no_1o_frame() -> 
 
 
 func test_linha_movel_esquerda_nasce_com_3_plataformas_visiveis_no_1o_frame() -> void:
-	var gerador := _criar_gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT)
+	var gerador := _criar_gerador(Enums.PLATFORM_TYPE.MOVE_TO_RIGHT)
 	add_child_autofree(gerador)
 
 	var xs := _xs_visiveis(gerador)
-	var esperado := _esperados(SPAWN_ESQUERDA_ANDA_DIREITA, false)
+	var esperado := _esperados(SPAWN_MOVE_TO_RIGHT, false)
 	assert_eq(xs.size(), 3, "linha que nasce a esquerda deve ter 3 plataformas visiveis no 1o frame")
 	for x in esperado:
 		assert_true(xs.has(x), "linha que nasce a esquerda deve ter plataforma pre-colocada nos x de MovingRowFill")
@@ -96,7 +95,7 @@ func test_linha_movel_esquerda_nasce_com_3_plataformas_visiveis_no_1o_frame() ->
 
 
 func test_plataforma_do_ponto_de_nascimento_existe_no_ready_sem_timer() -> void:
-	for caso in [[Enums.PLATFORM_TYPE.MOVE_TO_RIGHT, SPAWN_DIREITA_ANDA_ESQUERDA, -1.0], [Enums.PLATFORM_TYPE.MOVE_TO_LEFT, SPAWN_ESQUERDA_ANDA_DIREITA, 1.0]]:
+	for caso in [[Enums.PLATFORM_TYPE.MOVE_TO_LEFT, SPAWN_MOVE_TO_LEFT, -1.0], [Enums.PLATFORM_TYPE.MOVE_TO_RIGHT, SPAWN_MOVE_TO_RIGHT, 1.0]]:
 		var gerador := _criar_gerador(caso[0])
 		add_child_autofree(gerador)
 		var spawn_x: float = caso[1]
@@ -116,10 +115,10 @@ func test_plataforma_do_ponto_de_nascimento_existe_no_ready_sem_timer() -> void:
 
 
 func test_ritmo_entre_nascimentos_novos_e_o_periodo_do_ciclo() -> void:
-	var gerador := _criar_gerador(Enums.PLATFORM_TYPE.MOVE_TO_RIGHT)
+	var gerador := _criar_gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT)
 	var nascimentos: Array = []
 	var plataformas: Array = []
-	_registrar_nascimentos(gerador, SPAWN_DIREITA_ANDA_ESQUERDA, nascimentos, plataformas)
+	_registrar_nascimentos(gerador, SPAWN_MOVE_TO_LEFT, nascimentos, plataformas)
 	add_child_autofree(gerador)
 
 	await wait_physics_frames(PERIODO_FRAMES * 3 + 30)
@@ -148,14 +147,14 @@ func _medir_espacamento(tipo: Enums.PLATFORM_TYPE, spawn_x: float) -> Array:
 
 
 func test_espacamento_medido_em_jogo_bate_com_constante_nascendo_a_direita() -> void:
-	var distancias: Array = await _medir_espacamento(Enums.PLATFORM_TYPE.MOVE_TO_RIGHT, SPAWN_DIREITA_ANDA_ESQUERDA)
+	var distancias: Array = await _medir_espacamento(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, SPAWN_MOVE_TO_LEFT)
 	assert_gte(distancias.size(), 3, "espacamento: devem existir ao menos 3 medidas entre plataformas geradas pelo ciclo")
 	for d in distancias:
 		assert_almost_eq(float(d), MovingRowFill.ESPACAMENTO, TOLERANCIA_PX, "espacamento medido em jogo deve bater com MovingRowFill.ESPACAMENTO")
 
 
 func test_espacamento_medido_em_jogo_bate_com_constante_nascendo_a_esquerda() -> void:
-	var distancias: Array = await _medir_espacamento(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, SPAWN_ESQUERDA_ANDA_DIREITA)
+	var distancias: Array = await _medir_espacamento(Enums.PLATFORM_TYPE.MOVE_TO_RIGHT, SPAWN_MOVE_TO_RIGHT)
 	assert_gte(distancias.size(), 3, "espacamento: devem existir ao menos 3 medidas entre plataformas geradas pelo ciclo")
 	for d in distancias:
 		assert_almost_eq(float(d), MovingRowFill.ESPACAMENTO, TOLERANCIA_PX, "espacamento medido em jogo deve bater com MovingRowFill.ESPACAMENTO")

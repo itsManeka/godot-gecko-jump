@@ -78,7 +78,7 @@ func test_geradores_da_stage_nova_leem_a_cor_inicial_no_primeiro_preenchimento()
 	# Geradores moveis registram a cor do gecko que leram no 1o preencher_linha; os estaticos nao leem Global.
 	# Como o tipo do gerador e sorteado, um gerador movel explicito (mesmo estado da Stage nova) garante >= 1 leitura.
 	var gerador_movel: Node2D = load("res://scenes/RunningPlatforms.tscn").instantiate()
-	gerador_movel.platform_type = Enums.PLATFORM_TYPE.MOVE_TO_RIGHT
+	gerador_movel.platform_type = Enums.PLATFORM_TYPE.MOVE_TO_LEFT
 	Global.set_iniciado(true)
 	add_child_autofree(gerador_movel)
 	_geradores_vistos.append(gerador_movel)
