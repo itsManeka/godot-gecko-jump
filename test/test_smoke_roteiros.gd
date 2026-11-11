@@ -24,6 +24,10 @@ const ROTEIROS_LONGOS: Array[String] = [
 const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive"]
 const OPERADORES: Array[String] = ["eq", "ne", "gt", "gte", "lt", "lte"]
 const TIMEOUT_MIN_APOS_QUEDA_MS: int = 3000
+# Orcamento do tempo nominal (wait + (shots-1)*every) do Play ate o ultimo print de uma rajada moving true: a recarga
+# pos-derrota so ocorre ~2,3 s depois do Play; 1,5 s deixa folga para a sobrecarga do screenshot (issue #40).
+const ORCAMENTO_RAJADA_MOVING_MS: int = 1500
+const FREEZE_SHOTS_PADRAO: int = 4
 
 
 func _carregar(nome: String) -> Dictionary:
@@ -142,6 +146,106 @@ func test_expect_usa_so_chaves_e_operadores_do_contrato() -> void:
 					assert_eq(valor.size(), 1, "o objeto de comparacao deve ter exatamente um operador")
 					for operador in valor.keys():
 						assert_true(OPERADORES.has(str(operador)), "o operador deve ser eq/ne/gt/gte/lt/lte")
+
+
+# Um `down Space` inicia a partida quando, depois dele, so `wait`/`up` precedem um `expect` com state eq "playing".
+func _inicia_partida(passos: Array, i: int) -> bool:
+	if passos[i].get("down", "") != "Space":
+		return false
+	var j: int = i + 1
+	while j < passos.size() and (passos[j].has("wait") or passos[j].has("up")):
+		j += 1
+	if j >= passos.size() or not passos[j].has("expect"):
+		return false
+	return passos[j]["expect"].get("state", null) == "playing"
+
+
+func _estouros_de_orcamento(nome: String) -> Array[String]:
+	return _estouros_do_spec(nome, _carregar(nome))
+
+
+func _estouros_do_spec(nome: String, spec: Dictionary) -> Array[String]:
+	var freeze: int = int(spec.get("freeze_shots", FREEZE_SHOTS_PADRAO))
+	var passos: Array = spec.get("steps", [])
+	var acumulado: int = 0
+	var estouros: Array[String] = []
+	for i in passos.size():
+		var passo: Dictionary = passos[i]
+		if _inicia_partida(passos, i):
+			acumulado = 0
+		if passo.has("wait"):
+			acumulado += int(passo["wait"])
+		if passo.has("shots"):
+			var shots: int = int(passo["shots"])
+			acumulado += maxi(shots - 1, 0) * int(passo.get("every", 200))
+			if passo.get("moving", false) == true and shots >= freeze and acumulado > ORCAMENTO_RAJADA_MOVING_MS:
+				estouros.append("%s/%s: %d ms" % [nome, str(passo.get("name", "")), acumulado])
+	return estouros
+
+
+func test_rajada_moving_true_termina_dentro_do_orcamento_desde_o_play() -> void:
+	for nome in ROTEIROS:
+		var estouros := _estouros_de_orcamento(nome)
+		for e in estouros:
+			fail_test("rajada moving true fora do orcamento de %d ms desde o Play (roteiro/rajada: %s)" % [ORCAMENTO_RAJADA_MOVING_MS, e])
+		assert_eq(estouros.size(), 0, "nenhuma rajada moving true deve passar do orcamento (%s)" % nome)
+
+
+func test_falha_do_orcamento_cita_roteiro_e_nome_da_rajada() -> void:
+	var spec: Dictionary = {
+		"steps": [
+			{"down": "Space"},
+			{"wait": 150},
+			{"up": "Space"},
+			{"expect": {"state": "playing"}},
+			{"shots": 4, "every": 600, "name": "rajada-longa", "moving": true},
+		]
+	}
+	var estouros := _estouros_do_spec("roteiro-x", spec)
+	assert_eq(estouros.size(), 1, "a rajada de 1950 ms deve estourar o orcamento")
+	assert_true(estouros[0].begins_with("roteiro-x/rajada-longa:"), "a falha deve citar roteiro e nome da rajada")
+
+
+func _spec_sintetico(rajada: Dictionary, extra: Dictionary = {}) -> Dictionary:
+	var spec: Dictionary = extra.duplicate()
+	spec["steps"] = [
+		{"down": "Space"},
+		{"wait": 150},
+		{"up": "Space"},
+		{"expect": {"state": "playing"}},
+		rajada,
+	]
+	return spec
+
+
+func test_rajada_moving_com_menos_shots_que_freeze_nao_entra_no_orcamento() -> void:
+	var curta := _spec_sintetico({"shots": 3, "every": 800, "name": "curta", "moving": true})
+	assert_eq(_estouros_do_spec("s", curta).size(), 0, "rajada moving com 3 prints (< freeze 4) fica fora do orcamento mesmo acima de 1500 ms")
+	var no_limite := _spec_sintetico({"shots": 4, "every": 500, "name": "limite", "moving": true})
+	assert_eq(_estouros_do_spec("s", no_limite).size(), 1, "rajada moving com 4 prints (== freeze) entra no orcamento e estoura")
+
+
+func test_freeze_shots_do_spec_com_fallback_4_e_moving_false_ignorada() -> void:
+	var com_chave := _spec_sintetico({"shots": 2, "every": 1600, "name": "dois", "moving": true}, {"freeze_shots": 2})
+	assert_eq(_estouros_do_spec("s", com_chave).size(), 1, "com freeze_shots 2 a rajada de 2 prints entra no orcamento")
+	var sem_3 := _spec_sintetico({"shots": 3, "every": 800, "name": "tres", "moving": true})
+	assert_eq(_estouros_do_spec("s", sem_3).size(), 0, "sem a chave o fallback e 4: 3 prints fica fora")
+	var sem_4 := _spec_sintetico({"shots": 4, "every": 500, "name": "quatro", "moving": true})
+	assert_eq(_estouros_do_spec("s", sem_4).size(), 1, "sem a chave o fallback e 4: 4 prints entra")
+	var parada := _spec_sintetico({"shots": 8, "every": 400, "name": "queda", "moving": false})
+	assert_eq(_estouros_do_spec("s", parada).size(), 0, "rajada moving false e ignorada em qualquer tamanho")
+
+
+func test_orcamento_reinicia_por_partida() -> void:
+	var longo: Array[String] = _estouros_de_orcamento("gecko")
+	assert_eq(longo.size(), 0, "o roteiro real gecko deve caber no orcamento (partida 2 medida desde o seu Play)")
+	var spec := _carregar("gecko")
+	var passos: Array = spec["steps"]
+	var inicios: int = 0
+	for i in passos.size():
+		if _inicia_partida(passos, i):
+			inicios += 1
+	assert_eq(inicios, 2, "o gecko tem 2 partidas, cada uma com o seu proprio Play")
 
 
 func test_so_retrato_pontua_liga_semderrota_pontua_e_termina_vivo() -> void:
