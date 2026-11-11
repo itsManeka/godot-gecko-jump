@@ -1,6 +1,6 @@
 extends GutTest
 
-# Regressao do issue #22: gerador de plataformas moveis (MOVE_TO_RIGHT) parava na 1a plataforma apos a conversao
+# Regressao do issue #22: gerador de plataformas moveis (MOVE_TO_LEFT) parava na 1a plataforma apos a conversao
 # 3to4. Causa: AreaCheck de Platform.tscn com collision_layer = 0, entao o CheckGenerate do gerador nunca dispara
 # area_exited e _on_CheckGenerate_area_exited nao reinicia o timer.
 

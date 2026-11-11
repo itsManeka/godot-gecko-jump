@@ -3,7 +3,8 @@
 # este arquivo o checkout saia em CRLF e cada `--import` deixava os `.import` como modificados no `git status`.
 * text=auto eol=lf
 
-# Binarios por extensao (nunca converter)
+# Binarios por extensao (nunca converter). `text=auto` ja os detecta pelo conteudo; a lista fica explicita para nao
+# depender da heuristica do git.
 *.png binary
 *.ttf binary
 *.wav binary
