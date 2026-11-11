@@ -24,9 +24,17 @@ func aplicar_seed(valor: Variant) -> void:
 	else:
 		seed(int(valor))
 
+# Modo sem derrota (so smoke debug via `?semderrota=1`): o gecko nao perde. Nunca liga em release.
+var sem_derrota: bool = false
+
+# Aplica o modo sem derrota a partir do valor bruto do parametro e da flag de build.
+func aplicar_modo_sem_derrota(raw: Variant, is_debug: bool) -> void:
+	sem_derrota = ModoSemDerrota.decide(raw, is_debug)
+
 # Inicializa o gerador de números aleatórios e liga o recorde salvo ao ScoreKeeper
 func _ready():
 	aplicar_seed(SeedSource.decide(SeedSource.read_raw(), OS.is_debug_build()))
+	aplicar_modo_sem_derrota(ModoSemDerrota.read_raw(), OS.is_debug_build())
 	_best_store = BestScoreStore.new()
 	pontuacao.load_best(_best_store.load_best())
 	pontuacao.best_changed.connect(_best_store.save_best)

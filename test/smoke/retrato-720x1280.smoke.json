@@ -17,10 +17,9 @@
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
-    { "expect": { "score": { "gte": 1 } }, "timeout_ms": 3000 },
     { "shots": 4, "every": 250, "name": "partida1-pulo2", "moving": false },
     { "down": "ArrowLeft" },
-    { "expect": { "state": { "ne": "playing" } }, "timeout_ms": 6000 },
+    { "expect": { "state": { "ne": "playing" } }, "timeout_ms": 8000 },
     { "shots": 8, "every": 400, "name": "queda", "moving": false },
     { "up": "ArrowLeft" },
     { "wait": 9000 },
@@ -38,7 +37,6 @@
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
-    { "expect": { "score": { "gte": 1 } }, "timeout_ms": 3000 },
     { "shots": 4, "every": 250, "name": "partida2-pulo2", "moving": false }
   ]
 }

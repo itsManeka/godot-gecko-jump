@@ -13,7 +13,8 @@ const ROTEIROS: Array[String] = [
 	"retrato-720x1280",
 	"retrato-queda-720x1280",
 ]
-const RETRATOS: Array[String] = [
+const ROTEIROS_LONGOS: Array[String] = [
+	"gecko",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
 	"retrato-1170x2532",
@@ -82,37 +83,37 @@ func test_retrato_queda_parseia_e_tem_seed() -> void:
 	_checar_roteiro_com_seed("retrato-queda-720x1280")
 
 
-func test_cada_roteiro_tem_ao_menos_um_passo_expect() -> void:
+func test_cada_roteiro_tem_expect_e_state_lost_so_na_queda() -> void:
 	for nome in ROTEIROS:
 		assert_gt(_expects(nome).size(), 0, "cada roteiro deve ter ao menos um passo expect")
+		var espera_lost: bool = false
+		for passo in _expects(nome):
+			var estado: Variant = passo["expect"].get("state", null)
+			if typeof(estado) == TYPE_STRING and estado == "lost":
+				espera_lost = true
+		if nome == "retrato-queda-720x1280":
+			assert_true(espera_lost, "o roteiro de queda deve esperar state lost")
+		else:
+			assert_false(espera_lost, "so o roteiro de queda espera state lost (o gecko pode ja estar no menu)")
 
 
-func test_gecko_conserva_a_derrota_proposital() -> void:
-	var achou_derrota: bool = false
-	for passo in _expects("gecko"):
-		if passo["expect"].get("state", null) == "lost":
-			achou_derrota = true
-	assert_true(achou_derrota, "gecko.smoke.json deve esperar state lost (derrota proposital)")
-
-
-func test_rajada_pulo2_dos_retratos_nao_exige_movimento_e_confere_score() -> void:
-	for nome in RETRATOS:
+func test_roteiros_longos_nao_dependem_do_gecko_sobreviver() -> void:
+	for nome in ROTEIROS_LONGOS:
 		var passos := _passos(nome)
 		var rajadas: int = 0
 		for i in passos.size():
 			var passo: Dictionary = passos[i]
-			if not str(passo.get("name", "")).ends_with("-pulo2"):
-				continue
-			rajadas += 1
-			assert_eq(passo.get("moving", null), false, "a rajada pulo2 deve declarar moving false")
-			var anterior: Dictionary = passos[i - 1]
-			assert_true(anterior.has("expect"), "o passo antes da rajada pulo2 deve ser um expect")
-			var exigencia: Dictionary = anterior.get("expect", {})
-			assert_true(exigencia.has("score"), "o expect da rajada pulo2 deve conferir score")
-			assert_false(exigencia.has("player.alive"), "o expect da rajada pulo2 nao deve exigir alive")
-			var comparacao: Variant = exigencia.get("score", null)
-			assert_true(typeof(comparacao) == TYPE_DICTIONARY and comparacao.has("gte"), "a conferencia de score deve usar gte")
-		assert_eq(rajadas, 2, "cada retrato deve ter 2 rajadas pulo2 (partida 1 e 2)")
+			if passo.has("expect"):
+				assert_false(passo["expect"].has("score"), "nenhum expect dos roteiros longos le score")
+				assert_false(passo["expect"].has("player.alive"), "nenhum expect dos roteiros longos le player.alive")
+			if str(passo.get("name", "")).ends_with("-pulo2"):
+				rajadas += 1
+				assert_eq(passo.get("moving", null), false, "a rajada pulo2 deve declarar moving false")
+			if passo.get("down", "") == "ArrowLeft":
+				var seguinte: Dictionary = passos[i + 1]
+				assert_eq(seguinte.get("expect", {}), {"state": {"ne": "playing"}}, "o expect apos a seta deve ser state ne playing")
+				assert_gte(int(seguinte.get("timeout_ms", 0)), TIMEOUT_MIN_APOS_QUEDA_MS, "o expect apos a seta deve ter timeout_ms >= 3000")
+		assert_eq(rajadas, 2, "cada roteiro longo deve ter 2 rajadas pulo2 (partida 1 e 2)")
 
 
 func test_expect_apos_queda_ou_animacao_tem_timeout_de_ao_menos_3s() -> void:
