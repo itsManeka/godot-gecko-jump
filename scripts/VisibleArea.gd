@@ -2,7 +2,7 @@ class_name VisibleArea
 extends RefCounted
 
 # Ponto unico de area visivel, em coordenadas logicas do viewport. Sem arvore de cena: testavel direto.
-# Mudanca de tamanho (aspect=expand): quem consome liga no sinal size_changed do Viewport.
+# Mudanca de tamanho (stretch keep_width: a largura logica fica em 180 e so a altura varia): quem consome liga no sinal size_changed do Viewport.
 
 
 # Tamanho logico visivel (largura e altura) do viewport.

@@ -42,7 +42,7 @@ func _ready():
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
 
-	# Layout a partir da area visivel real; refaz quando o viewport muda de tamanho (aspect=expand)
+	# Layout a partir da area visivel real; refaz quando o viewport muda de tamanho (stretch keep_width: so a altura varia, a largura fica em 180)
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	_on_viewport_size_changed()
 
