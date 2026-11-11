@@ -1,6 +1,6 @@
 # 0005 — Desenvolvimento pela CLI headless; MCPs de jogo so em agentes dedicados
 
-- **Status:** aceito
+- **Status:** aceito; superado (trecho do gate de "pronto") por [0006](0006-oraculo-de-jogo-em-3-camadas.md)
 - **Data:** 2026-11-08
 - **Decisores:** itsManeka + Claude
 
