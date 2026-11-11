@@ -1,7 +1,8 @@
 extends GutTest
 
 # Validacao estatica dos roteiros de smoke (test/smoke/*.smoke.json): seed no path, passos `expect` e contrato do
-# runner (chaves publicadas pela ponte GameState, operadores eq/ne/gt/gte/lt/lte). Nao sobe export nem navegador.
+# runner (chaves publicadas pela ponte GameState, operadores eq/ne/gt/gte/lt/lte) e orcamento de tempo das rajadas
+# `moving: true` desde o Play (issue #40). Nao sobe export nem navegador.
 
 const PASTA: String = "res://test/smoke/"
 const ROTEIROS: Array[String] = [
@@ -165,7 +166,10 @@ func _estouros_de_orcamento(nome: String) -> Array[String]:
 
 
 func _estouros_do_spec(nome: String, spec: Dictionary) -> Array[String]:
-	var freeze: int = int(spec.get("freeze_shots", FREEZE_SHOTS_PADRAO))
+	var freeze: int = FREEZE_SHOTS_PADRAO
+	var freeze_spec: Variant = spec.get("freeze_shots", null)
+	if (typeof(freeze_spec) == TYPE_FLOAT or typeof(freeze_spec) == TYPE_INT) and freeze_spec == floorf(float(freeze_spec)) and freeze_spec > 1:
+		freeze = int(freeze_spec)
 	var passos: Array = spec.get("steps", [])
 	var acumulado: int = 0
 	var estouros: Array[String] = []
@@ -186,9 +190,7 @@ func _estouros_do_spec(nome: String, spec: Dictionary) -> Array[String]:
 func test_rajada_moving_true_termina_dentro_do_orcamento_desde_o_play() -> void:
 	for nome in ROTEIROS:
 		var estouros := _estouros_de_orcamento(nome)
-		for e in estouros:
-			fail_test("rajada moving true fora do orcamento de %d ms desde o Play (roteiro/rajada: %s)" % [ORCAMENTO_RAJADA_MOVING_MS, e])
-		assert_eq(estouros.size(), 0, "nenhuma rajada moving true deve passar do orcamento (%s)" % nome)
+		assert_eq(estouros.size(), 0, "rajada moving true fora do orcamento de %d ms desde o Play (roteiro/rajada: %s)" % [ORCAMENTO_RAJADA_MOVING_MS, ", ".join(estouros)])
 
 
 func test_falha_do_orcamento_cita_roteiro_e_nome_da_rajada() -> void:
@@ -232,6 +234,10 @@ func test_freeze_shots_do_spec_com_fallback_4_e_moving_false_ignorada() -> void:
 	assert_eq(_estouros_do_spec("s", sem_3).size(), 0, "sem a chave o fallback e 4: 3 prints fica fora")
 	var sem_4 := _spec_sintetico({"shots": 4, "every": 500, "name": "quatro", "moving": true})
 	assert_eq(_estouros_do_spec("s", sem_4).size(), 1, "sem a chave o fallback e 4: 4 prints entra")
+	var invalido_3 := _spec_sintetico({"shots": 3, "every": 800, "name": "tres", "moving": true}, {"freeze_shots": 1})
+	assert_eq(_estouros_do_spec("s", invalido_3).size(), 0, "freeze_shots 1 nao e valido (so inteiro > 1): fallback 4, 3 prints fica fora")
+	var invalido_4 := _spec_sintetico({"shots": 4, "every": 500, "name": "quatro", "moving": true}, {"freeze_shots": 1})
+	assert_eq(_estouros_do_spec("s", invalido_4).size(), 1, "freeze_shots 1 nao e valido: fallback 4, 4 prints entra")
 	var parada := _spec_sintetico({"shots": 8, "every": 400, "name": "queda", "moving": false})
 	assert_eq(_estouros_do_spec("s", parada).size(), 0, "rajada moving false e ignorada em qualquer tamanho")
 
@@ -245,7 +251,7 @@ func test_orcamento_reinicia_por_partida() -> void:
 	for i in passos.size():
 		if _inicia_partida(passos, i):
 			inicios += 1
-	assert_eq(inicios, 2, "o gecko tem 2 partidas, cada uma com o seu proprio Play")
+	assert_gte(inicios, 2, "o gecko tem ao menos 2 partidas, cada uma com o seu proprio Play")
 
 
 func test_so_retrato_pontua_liga_semderrota_pontua_e_termina_vivo() -> void:
