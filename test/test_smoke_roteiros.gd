@@ -238,6 +238,10 @@ func test_freeze_shots_do_spec_com_fallback_4_e_moving_false_ignorada() -> void:
 	assert_eq(_estouros_do_spec("s", invalido_3).size(), 0, "freeze_shots 1 nao e valido (so inteiro > 1): fallback 4, 3 prints fica fora")
 	var invalido_4 := _spec_sintetico({"shots": 4, "every": 500, "name": "quatro", "moving": true}, {"freeze_shots": 1})
 	assert_eq(_estouros_do_spec("s", invalido_4).size(), 1, "freeze_shots 1 nao e valido: fallback 4, 4 prints entra")
+	var fracionario := _spec_sintetico({"shots": 3, "every": 800, "name": "tres", "moving": true}, {"freeze_shots": 2.5})
+	assert_eq(_estouros_do_spec("s", fracionario).size(), 0, "freeze_shots 2.5 nao e inteiro: fallback 4, 3 prints fica fora")
+	var texto := _spec_sintetico({"shots": 3, "every": 800, "name": "tres", "moving": true}, {"freeze_shots": "2"})
+	assert_eq(_estouros_do_spec("s", texto).size(), 0, "freeze_shots \"2\" (texto) nao e numero: fallback 4, 3 prints fica fora")
 	var parada := _spec_sintetico({"shots": 8, "every": 400, "name": "queda", "moving": false})
 	assert_eq(_estouros_do_spec("s", parada).size(), 0, "rajada moving false e ignorada em qualquer tamanho")
 
