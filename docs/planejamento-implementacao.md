@@ -15,8 +15,8 @@ Restricoes que guiam as decisoes:
 1. **Celular primeiro.** Tela retrato, um polegar, sessao curta ([ADR 0002](adr/0002-tela-mobile-largura-180.md),
    [ADR 0003](adr/0003-controle-de-um-polegar.md)).
 2. **Pixel art de verdade.** Pixel quadrado em qualquer tela; arte final feita no Aseprite ([ADR 0004](adr/0004-arte-no-aseprite-com-rascunho-por-ia.md)).
-3. **Tudo verificavel pela linha de comando** (Godot headless, [ADR 0005](adr/0005-desenvolvimento-headless-e-mcp-isolado.md)),
-   com o gate de "pronto" em 3 camadas ([ADR 0006](adr/0006-oraculo-de-jogo-em-3-camadas.md)): testes GUT; smoke do
+3. **Tudo verificavel pela linha de comando** (Godot headless,
+   [ADR 0005](adr/0005-desenvolvimento-headless-e-mcp-isolado.md)), com o gate de "pronto" em 3 camadas ([ADR 0006](adr/0006-oraculo-de-jogo-em-3-camadas.md)): testes GUT; smoke do
    export web + bot nativo; o dono joga so sensacao, dificuldade, legibilidade, audio e toque.
 4. **Escopo final:** mecanica de cores + power-ups + modos de jogo. Mudar mecanica e rebalancear e permitido em
    features proprias.
@@ -46,14 +46,17 @@ Divisao em epics (as fases 1 a 3 acima formam o E1):
 | Epic | Conteudo | Issues | Estado |
 |---|---|---|---|
 | E1. Migracao e base solida | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3) | #8, #14, #7, #3, #4, #5, #6, #9 | concluido (2026-11-09) |
-| E2. CI, tela mobile e jogabilidade da base | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel | #28, #26, #15, #25, #24, #23 (+ #38, achada e corrigida no epic) | QA concluido em 2026-11-11; PR #31 aguardando merge do dono |
-| E3. Controles, dificuldade e pausa/opcoes/tutorial | Toque de um polegar, dificuldade progressiva, pausa, opcoes, tutorial; primeiro item: issues herdadas do E2 (#36 EOL dos `.import`, #37 enum `MOVE_TO_LEFT`/`MOVE_TO_RIGHT` invertido, #39 smoke intermitente por sorteio) | #11, #10, #12, #36, #37, #39 | proximo |
+| E2. CI, tela mobile e jogabilidade da base | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
+| E3. Controles, dificuldade e pausa/opcoes/tutorial | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes e tutorial | #36, #37, #39, #11, #10, #12 | proximo |
 | E4. Conteudo | Power-ups, modos de jogo, gerador com seed | #16, #17 | planejado |
 | E5. Ranking online por modo | Ranking por modo de jogo; depende do E4 e do ChumGames E1 | #29 | planejado |
 | E6. Arte final e audio | Arte final em pixel art, sons e musica | #18, #13 | planejado |
 | E7. Publicacao | Web no itch.io; build Android | #19, #20 | planejado |
 | E8. Monetizacao e Play Store | Anuncios, remocao paga e publicacao na Play Store | #30 | planejado |
 | ChumGames E1 (ecossistema proprio, fora deste repo) | Backend Firebase compartilhado de ranking + addon Godot; pre-requisito do E5 | — | planejado |
+
+Herdadas do E2 no E3: #36 (EOL dos `.import`), #37 (enum `MOVE_TO_LEFT`/`MOVE_TO_RIGHT` invertido) e #39 (smoke
+intermitente por sorteio da partida).
 
 Ordem: E3 → E4 → E5 → E6 → E7 → E8 (cada um depende do anterior). Todo epic termina com uma feature de QA em que o
 dono joga o que a maquina nao julga (Godot e export web; Android quando existir).
@@ -83,7 +86,7 @@ saiam uma por linha (#22). Problemas de jogabilidade herdados da jam ficaram com
 Escopo: CI, tela mobile e os problemas de jogabilidade herdados da jam (#23, #24, #25). Controles de toque,
 dificuldade e pausa/opcoes/tutorial ficaram para o E3.
 
-**Estado: QA concluido em 2026-11-11** (PR #31 aguardando merge do dono). Camada 1 (GUT, 173 testes) e camada 2 (smoke
+**Estado: QA concluido em 2026-11-11** (PR #31). Camada 1 (GUT, 173 testes) e camada 2 (smoke
 dos 7 roteiros + bot nativo contra a `main`) verdes. O dono jogou 4 partidas no Godot (3 na janela padrao, 1 em
 1280x720) e 3 no export web em retrato emulado (720x1280, 1080x2400, 1170x2532), sem erro no console nem `leaked at
 exit`. Observacoes do dono: com a garantia de cor o jogo ficou bem mais facil (entra na curva de dificuldade, #10 no
