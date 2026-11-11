@@ -125,6 +125,10 @@ release (o publicado) ignora os parametros abaixo e nao publica nada:
 
 Com sorteio real o gecko pode morrer cedo, entao os roteiros longos nao exigem pontuacao: conferem `playing` depois do
 Play e que a partida deixou de estar em `playing` depois da queda. Pontuacao so e conferida no roteiro sem derrota.
+Pela mesma razao, uma rajada `"moving": true` que o runner reprova por tela congelada (com `freeze_shots` prints ou
+mais, 4 por padrao) tem de terminar ate 1500 ms depois do Play (`wait` + `(shots-1)*every`): a recarga depois de uma
+derrota so vem ~2,3 s depois do Play, e menu parado dentro da rajada vira `canvas congelado`. O teste
+`test/test_smoke_roteiros.gd` confere esse orcamento.
 
 ### Versao do Godot no CI
 
@@ -234,6 +238,10 @@ build (the published one) ignores the parameters below and publishes nothing:
 
 With the real draw the gecko may die early, so the long scripts do not require a score: they check `playing` after
 Play and that the match left `playing` after the fall. Scoring is only checked in the no-defeat script.
+For the same reason, a `"moving": true` burst that the runner fails as a frozen screen (`freeze_shots` screenshots or
+more, 4 by default) must end within 1500 ms of Play (`wait` + `(shots-1)*every`): the reload after a defeat only comes
+~2.3 s after Play, and a still menu inside the burst becomes `canvas congelado`. The
+`test/test_smoke_roteiros.gd` test checks this budget.
 
 ### 📱 Compatibility
 
