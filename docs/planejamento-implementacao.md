@@ -16,8 +16,9 @@ Restricoes que guiam as decisoes:
    [ADR 0003](adr/0003-controle-de-um-polegar.md)).
 2. **Pixel art de verdade.** Pixel quadrado em qualquer tela; arte final feita no Aseprite ([ADR 0004](adr/0004-arte-no-aseprite-com-rascunho-por-ia.md)).
 3. **Tudo verificavel pela linha de comando** (Godot headless,
-   [ADR 0005](adr/0005-desenvolvimento-headless-e-mcp-isolado.md)), com o gate de "pronto" em 3 camadas ([ADR 0006](adr/0006-oraculo-de-jogo-em-3-camadas.md)): testes GUT; smoke do
-   export web + bot nativo; o dono joga so sensacao, dificuldade, legibilidade, audio e toque.
+   [ADR 0005](adr/0005-desenvolvimento-headless-e-mcp-isolado.md)), com o gate de "pronto" em 3 camadas
+   ([ADR 0006](adr/0006-oraculo-de-jogo-em-3-camadas.md)): testes GUT; smoke do export web + bot nativo; o dono joga
+   so sensacao, dificuldade, legibilidade, audio e toque.
 4. **Escopo final:** mecanica de cores + power-ups + modos de jogo. Mudar mecanica e rebalancear e permitido em
    features proprias.
 
