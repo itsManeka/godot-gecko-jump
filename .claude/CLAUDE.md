@@ -1,6 +1,6 @@
 # Gecko Jump
 
-Plataforma vertical infinita, tela retrato 180 px de largura com altura expandida (minimo 320, ADR 0002). O gecko so pisa nas plataformas da cor dele (4 cores); a cada
+Plataforma vertical infinita, so retrato (tambem no desktop/itch.io): 180 px de largura com altura expandida (minimo 320, ADR 0002). O gecko so pisa nas plataformas da cor dele (4 cores); a cada
 pouso troca de cor e ganha 1 ponto. Prototipo da game jam #1JAM Chroma rumo a versao final (web/itch.io + Android).
 
 ## Contexto obrigatorio
@@ -39,9 +39,11 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            StaticPlatformColors.gd (cores das estaticas iniciais, sem cena),
            InitialRows.gd (ys das linhas iniciais pela altura visivel, sem cena),
            MovingRowFill.gd (x pre-colocados das linhas moveis a partir do ponto de nascimento, sem cena),
-           ReachableColors.gd (cor do gecko alcancavel no pouso e nas plataformas moveis, sem cena)
+           ReachableColors.gd (cor do gecko alcancavel no pouso e nas plataformas moveis, sem cena),
+           PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
-test/smoke/ roteiro `gecko.smoke.json` do game-smoke (export web): mudou input, fluxo de inicio/derrota ou tempos? ajuste-o
+test/smoke/ roteiros do game-smoke (export web): `gecko.smoke.json` (fluxo), `retrato-*` (telas de celular) e
+           `janela-larga-1280x720` (coluna de 180 com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os
 addons/    GUT v9.7.1 (vendorizado; nao editar)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
 export/    saida de build (ignorada; so o .gdignore e versionado, para o Godot nao importar o build)
