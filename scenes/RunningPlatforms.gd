@@ -64,7 +64,11 @@ func create_static_platforms():
 		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL)
 	for i in 3:
 		var platform = pre_platform.instantiate()
-		platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color())
+		if Global.sem_derrota:
+			# Modo sem derrota (smoke debug): cor unica, a plataforma de origem nunca desliga
+			platform.set_color(Enums.COR_INICIAL)
+		else:
+			platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color())
 		platform.position.x = position_x
 		platform.set_speed(0)  # Plataformas estáticas não se movem
 		add_child(platform)
@@ -86,6 +90,8 @@ func new_platform():
 # Cor da proxima plataforma movel: garante a cor do gecko (Global) em toda janela de ReachableColors.K criadas por este
 # gerador; preencher_linha e new_platform passam por aqui, entao compartilham o historico
 func _cor_movel() -> int:
+	if Global.sem_derrota:
+		return Enums.COR_INICIAL
 	var cor_gecko: int = Global.cor_gecko
 	if primeira_cor_gecko_lida < 0:
 		primeira_cor_gecko_lida = cor_gecko
@@ -102,7 +108,7 @@ func _criar_plataforma(x: float):
 	var platform = pre_platform.instantiate()
 	platform.set_color(_cor_movel())
 	platform.position.x = x
-	platform.set_speed(speed)
+	platform.set_speed(0 if Global.sem_derrota else speed)
 	add_child(platform)
 
 # Inicia o timer para gerar próxima plataforma

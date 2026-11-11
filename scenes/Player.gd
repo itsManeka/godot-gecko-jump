@@ -140,6 +140,10 @@ func _descartar_plataforma_liberada() -> void:
 # Muda a cor do jogador para uma cor aleatória
 func change_color_random():
 	_descartar_plataforma_liberada()
+	if Global.sem_derrota:
+		# Modo sem derrota (smoke debug): sem sorteio, a cor fica COR_INICIAL
+		set_color(Enums.COR_INICIAL)
+		return
 	set_color(ReachableColors.cor_no_pouso(Global.platforms, actual_platform, PlayArea.LARGURA, rng))
 
 # Retorna se o jogador está atualmente pulando
