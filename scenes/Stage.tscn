@@ -8,7 +8,7 @@
 [ext_resource path="res://sounds/lose.wav" type="AudioStream" id=6]
 
 [sub_resource type="RectangleShape2D" id=1]
-size = Vector2( 182.8204, 20 )
+size = Vector2( 180, 20 )
 
 [sub_resource type="Animation" id=2]
 resource_name = "lose_animation"
@@ -54,7 +54,7 @@ position = Vector2( 95.4619, 168.452 )
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CheckPlayer"]
-position = Vector2( 90.4228, 310.483 )
+position = Vector2( 90, 330 )
 shape = SubResource( 1 )
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]

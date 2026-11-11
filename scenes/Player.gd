@@ -7,6 +7,7 @@ signal add_point
 const SPEED = 80                    # Velocidade horizontal do jogador
 const GRAVITY = 10                  # Força da gravidade aplicada por frame
 const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima)
+const GHOST_HALF_WIDTH = 16.0       # Meia largura visual do gecko (frame 32x32): o fantasma aparece quando ela cruza a borda
 
 # Cor atual do jogador (definida no editor)
 @export var color: Enums.COLOR = Enums.COR_INICIAL
@@ -16,6 +17,7 @@ const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima
 @onready var collision = $CollisionShape2D
 @onready var detector = $DetectorPlataforma/CollisionShape2D
 @onready var jumpaudio = $JumpAudio
+@onready var ghost = $Ghost
 
 # Variáveis de estado do jogador
 var on_ground = false              # Se o jogador está no chão
@@ -23,6 +25,7 @@ var can_change_color = false       # Se pode mudar de cor na próxima plataforma
 var actual_platform : Platform = null  # Plataforma atual em que o jogador está
 var jumping = true                 # Se o jogador está pulando
 var end = false                    # Se o jogo terminou para este jogador
+var rng: RandomNumberGenerator = null  # Sorteio da cor no pouso; null usa o global (so teste fixa semente)
 
 # Inicializa o jogador definindo sua cor inicial
 func _ready():
@@ -31,6 +34,31 @@ func _ready():
 	motion_mode = MOTION_MODE_GROUNDED
 	floor_snap_length = 0.0
 	sprite.modulate = Enums.get_cor(color)
+
+# Partida acabou (Stage liberada): a cor guardada em Global volta ao inicio antes da Stage seguinte gerar plataformas.
+# O _ready do Player chegaria tarde: ScrollLevel/RunningPlatforms (antes dele na Stage) ja geram no proprio _ready.
+func _exit_tree() -> void:
+	Global.cor_gecko = Enums.COR_INICIAL
+
+# Atualiza o fantasma a cada frame (tambem apos game over, quando a animacao "lose" troca sem physics)
+func _process(_delta):
+	_sync_ghost()
+
+# Copia animacao, frame, flip e cor do sprite real; o fantasma so aparece do outro lado da borda (sem colisao)
+func _sync_ghost() -> void:
+	if ghost.animation != sprite.animation:
+		ghost.animation = sprite.animation
+	ghost.frame = sprite.frame
+	ghost.flip_h = sprite.flip_h
+	ghost.modulate = sprite.modulate
+	if position.x < GHOST_HALF_WIDTH:
+		ghost.position = Vector2(PlayArea.LARGURA, 0.0)
+		ghost.visible = true
+	elif position.x > PlayArea.LARGURA - GHOST_HALF_WIDTH:
+		ghost.position = Vector2(-PlayArea.LARGURA, 0.0)
+		ghost.visible = true
+	else:
+		ghost.visible = false
 
 # Processa a física e input do jogador a cada frame
 func _physics_process(_delta):
@@ -60,11 +88,6 @@ func _physics_process(_delta):
 		if on_ground:
 			sprite.play("idle")
 	
-	# Limita o movimento às bordas da tela
-	if (position.x > 180 && velocity.x > 0) || \
-	   (position.x < 0 && velocity.x < 0):
-		velocity.x = 0
-	
 	# Processa o pulo
 	if Input.is_action_pressed("jump"):
 		if on_ground:
@@ -93,6 +116,9 @@ func _physics_process(_delta):
 	# Aplica o movimento
 	move_and_slide()
 
+	# Wrap horizontal: o centro que cruza uma borda reaparece do lado oposto (velocity intacta)
+	position.x = wrap_x(position.x, PlayArea.LARGURA)
+
 # Detecta quando o jogador entra em contato com uma plataforma
 func _on_DetectorPlataforma_body_entered(_body):
 	if _body is Platform:
@@ -103,11 +129,18 @@ func _on_DetectorPlataforma_body_entered(_body):
 func set_color(new_color):
 	color = new_color
 	sprite.modulate = Enums.get_cor(color)
+	_descartar_plataforma_liberada()
 	Global.player_color_changed(color, actual_platform)
+
+# Plataforma liberada (saiu da tela) vira null: parametro tipado recusa objeto liberado antes de qualquer checagem
+func _descartar_plataforma_liberada() -> void:
+	if not is_instance_valid(actual_platform):
+		actual_platform = null
 
 # Muda a cor do jogador para uma cor aleatória
 func change_color_random():
-	set_color(Enums.get_random_color())
+	_descartar_plataforma_liberada()
+	set_color(ReachableColors.cor_no_pouso(Global.platforms, actual_platform, PlayArea.LARGURA, rng))
 
 # Retorna se o jogador está atualmente pulando
 func is_jumping() -> bool:
@@ -123,3 +156,11 @@ func lose_game():
 	collision.call_deferred("set_disabled", true)
 	detector.call_deferred("set_disabled", true)
 	sprite.play("lose")
+
+# Wrap horizontal puro: x > width volta por width; x < 0 entra por width; x em [0, width] nao muda
+static func wrap_x(x: float, width: float) -> float:
+	if x > width:
+		return x - width
+	if x < 0.0:
+		return x + width
+	return x

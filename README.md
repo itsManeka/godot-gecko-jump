@@ -18,7 +18,7 @@
 ### 🎯 Objetivo
 - **Pular apenas nas plataformas da mesma cor** que o Gecko
 - **Ganhar pontos** a cada plataforma nova que tocar
-- **Mudar de cor automaticamente** após cada pulo bem-sucedido
+- **Mudar de cor automaticamente** após cada pulo bem-sucedido — a cor nova sempre existe numa plataforma da linha de cima
 - **Sobreviver** o máximo de tempo possível descendo pelas plataformas
 - **Bater o recorde**: a maior pontuação fica salva e continua lá quando você abre o jogo de novo
 
@@ -33,7 +33,7 @@
 ## 🚀 Como Jogar
 
 1. Pressione qualquer tecla de pulo para começar
-2. Use as setas ou WASD para mover o Gecko
+2. Use as setas ou WASD para mover o Gecko; ao sair por uma lateral da tela, ele reaparece pela outra
 3. Pule apenas em plataformas da mesma cor que o Gecko
 4. Evite cair ou tocar plataformas de cores diferentes
 5. Tente alcançar a maior pontuação possível!
@@ -59,7 +59,7 @@ Para gerar a versão web (sem threads):
 
 - **Engine:** Godot Engine 4.7.2
 - **Linguagem:** GDScript
-- **Resolução:** 180x320 (modo retrato)
+- **Resolução:** retrato, 180 px de largura e altura que acompanha a tela do aparelho (mínimo 320), com escala inteira para manter o pixel quadrado; em janela mais larga (desktop, navegador), a área de jogo fica centralizada com barras laterais
 - **Áudio:** Efeitos sonoros integrados
 
 ## 📁 Estrutura do Projeto
@@ -78,11 +78,57 @@ godot-gecko-jump/
 
 ## 📱 Compatibilidade
 
-⚠️ **Aviso:** Este jogo foi desenvolvido para PC e não está otimizado para dispositivos móveis.
+⚠️ **Aviso:** A tela já é pensada para celular (retrato, 180 px de largura), mas o jogo ainda não lê toque: os controles de toque chegam num próximo epic. Por ora, jogue com teclado.
 
 **Requisitos:**
 - Godot Engine 4.7.2
 - Sistema operacional: Windows, Linux, macOS
+
+## 🔧 Desenvolvimento e CI
+
+Pull requests para `main` e pushes em `main` que mudem arquivos fora de Markdown e de `docs/` rodam o workflow
+[`CI`](.github/workflows/ci.yml), com tres jobs:
+
+- **verify**: roda o oraculo `node .verify.mjs ci` (import, compilacao dos scripts, testes GUT e execucao de 10 s) com o Godot 4.7.2.
+- **export-web**: exporta o preset `Web` (sem threads) para `export/web/` e confere que `index.html`, um `.wasm` e um `.pck` existem e nao estao vazios.
+- **CI**: agregador; falha se qualquer um dos dois jobs anteriores falhar.
+
+### Baixar o build web de um PR
+
+Na pagina do PR, abra o run do `CI` e baixe o artefato `export-web` na secao *Artifacts* (guardado por 7 dias).
+Descompacte e sirva a pasta por um servidor estatico, como na secao Download.
+
+### Rodar o oraculo localmente
+
+Aponte a variavel `GODOT_PATH` para o executavel do Godot 4.7.2 e rode na raiz do projeto:
+
+```
+GODOT_PATH=/caminho/para/Godot_v4.7.2-stable_linux.x86_64 node .verify.mjs ci
+```
+
+No Windows, defina `GODOT_PATH` com o caminho do executavel antes de rodar o mesmo comando.
+
+### Smoke do build web
+
+O roteiro `test/smoke/gecko.smoke.json` joga o export web num navegador headless (iniciar, pular, morrer, reiniciar,
+pular) e acusa erro de pagina, recurso faltando e tela congelada. Rode-o sobre a pasta do export (`export/web/`) com o
+`game-smoke.mjs` do dev-workspace: `node <dev-workspace>/.claude/scripts/game-smoke.mjs export/web --spec=test/smoke/gecko.smoke.json --out=<pasta dos prints>`.
+
+### Versao do Godot no CI
+
+O Godot oficial, na versao fixada em `GODOT_VERSION`, e baixado do release `<versao>-stable` do repositorio
+`godotengine/godot` pela action local `.github/actions/setup-godot/action.yml`. O arquivo baixado e conferido por
+soma SHA-512 fixada no proprio arquivo antes do uso, e o binario e os export templates web ficam em cache (a chave
+muda com a versao e a soma). A soma do binario e conferida em todo run, inclusive quando ele vem do cache; a dos
+templates, so no download, pois o cache deles so e gravado depois dessa conferencia. O cache de um PR so serve ao proprio PR: o
+primeiro run de cada PR baixa o Godot, e depois do CI verde na `main` o cache dela passa a servir os PRs.
+As actions externas sao fixadas por SHA de commit e atualizadas mensalmente pelo Dependabot.
+
+Para trocar a versao do Godot, atualize em `.github/actions/setup-godot/action.yml` a variavel `GODOT_VERSION` e
+as duas somas SHA-512 (conferidas no `SHA512-SUMS.txt` do release); nomes de arquivo, URL, diretorios e chaves de
+cache derivam delas.
+
+Origem e decisoes do CI: issue [#28](https://github.com/itsManeka/godot-gecko-jump/issues/28).
 
 ## 🗺️ Roadmap
 
@@ -121,7 +167,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 #### 🎯 Objective
 - **Jump only on platforms of the same color** as the Gecko
 - **Earn points** for each new platform you touch
-- **Change color automatically** after each successful jump
+- **Change color automatically** after each successful jump — the new color is always on a platform in the row above
 - **Survive** as long as possible while descending through the platforms
 - **Beat your best score**: it is saved and still there the next time you open the game
 
@@ -136,7 +182,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 ### 🚀 How to Play
 
 1. Press any jump key to start
-2. Use arrows or WASD to move the Gecko
+2. Use arrows or WASD to move the Gecko; leaving through one side of the screen brings it back on the other
 3. Jump only on platforms of the same color as the Gecko
 4. Avoid falling or touching platforms of different colors
 5. Try to achieve the highest score possible!
@@ -158,9 +204,15 @@ To build the web version (no threads):
    ```
 3. Serve the `export/web/` folder with a local static server, for example `npx serve export/web`. Do not open `index.html` directly in the browser (`file://`): loading the `.wasm`/`.pck` fails.
 
+### Web build smoke
+
+The `test/smoke/gecko.smoke.json` script plays the web export in a headless browser (start, jump, die, restart,
+jump) and reports page errors, missing resources and a frozen screen. Run it against the export folder (`export/web/`)
+with the dev-workspace `game-smoke.mjs`: `node <dev-workspace>/.claude/scripts/game-smoke.mjs export/web --spec=test/smoke/gecko.smoke.json --out=<screenshots folder>`.
+
 ### 📱 Compatibility
 
-⚠️ **Warning:** This game was developed for PC and is not optimized for mobile devices.
+⚠️ **Warning:** The screen is already designed for phones (portrait, 180 px wide), but the game does not read touch yet: touch controls arrive in an upcoming epic. For now, play with a keyboard.
 
 **Requirements:**
 - Godot Engine 4.7.2

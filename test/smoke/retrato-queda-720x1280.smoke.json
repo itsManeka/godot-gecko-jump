@@ -1,0 +1,21 @@
+{
+  "path": "index.html",
+  "viewport": [720, 1280],
+  "boot_ms": 6000,
+  "steps": [
+    { "shots": 2, "every": 300, "name": "menu", "moving": false },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "shots": 3, "every": 300, "name": "partida-inicio", "moving": true },
+    { "down": "ArrowLeft" },
+    { "shots": 8, "every": 400, "name": "queda-lado", "moving": false },
+    { "up": "ArrowLeft" },
+    { "wait": 9000 },
+    { "shots": 2, "every": 300, "name": "menu-pos-derrota", "still": true },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "shots": 3, "every": 300, "name": "partida2-inicio", "moving": true }
+  ]
+}

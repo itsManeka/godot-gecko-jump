@@ -9,4 +9,5 @@ antigo como "superado por".
 | [0002](0002-tela-mobile-largura-180.md) | Tela mobile: largura logica 180 px, altura expandida, escala inteira | aceito |
 | [0003](0003-controle-de-um-polegar.md) | Controle de toque de um polegar (toque = pulo diagonal, segurar = andar) | aceito |
 | [0004](0004-arte-no-aseprite-com-rascunho-por-ia.md) | Arte no Aseprite compilado do fork pessoal, rascunho por IA | aceito |
-| [0005](0005-desenvolvimento-headless-e-mcp-isolado.md) | Desenvolvimento pela CLI headless; MCPs de jogo so em agentes dedicados | aceito |
+| [0005](0005-desenvolvimento-headless-e-mcp-isolado.md) | Desenvolvimento pela CLI headless; MCPs de jogo so em agentes dedicados | aceito; superado (trecho do gate de "pronto") por 0006 |
+| [0006](0006-oraculo-de-jogo-em-3-camadas.md) | Oraculo de jogo em 3 camadas; o dono joga so o que a maquina nao julga | aceito |

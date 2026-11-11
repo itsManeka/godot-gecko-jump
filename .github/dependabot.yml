@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Atualiza as actions fixadas por SHA nos workflows e na composite local (o comentario com a versao vai junto).
+  # "/" cobre .github/workflows/; "/.github/actions/*" cobre cada action composta local (setup-godot).
+  - package-ecosystem: github-actions
+    directories:
+      - "/"
+      - "/.github/actions/*"
+    schedule:
+      interval: monthly

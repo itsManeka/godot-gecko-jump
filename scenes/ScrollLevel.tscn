@@ -1,10 +1,7 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://scenes/ScrollLevel.gd" type="Script" id=1]
 [ext_resource path="res://scenes/RunningPlatforms.tscn" type="PackedScene" id=2]
-
-[sub_resource type="RectangleShape2D" id=1]
-size = Vector2( 179.952, 16.18808 )
 
 [node name="ScrollLevel" type="Node2D"]
 script = ExtResource( 1 )
@@ -31,14 +28,5 @@ platform_type = 4
 position = Vector2( 0, 190 )
 garantir_cor_inicial = true
 
-[node name="CheckArea" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 8
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CheckArea"]
-position = Vector2( 89.794, 224 )
-shape = SubResource( 1 )
-
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
-[connection signal="area_exited" from="CheckArea" to="." method="_on_CheckArea_area_exited"]
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_VisibilityNotifier2D_screen_exited"]
