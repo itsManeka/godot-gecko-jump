@@ -21,6 +21,8 @@ const BEST_TOP: float = 248.0
 const BEST_BOTTOM: float = 265.0
 # Safe area (coordenadas logicas) da ultima apply_layout; usada pelo HUD (T4)
 var safe_area: Rect2 = Rect2()
+# Ultimo estado montado para a ponte do smoke (ver GameState); lido pelos testes sem JavaScriptBridge
+var ultimo_estado: Dictionary = {}
 
 # Referencias aos nós da interface e jogo
 @onready var animation = $AnimationPlayer
@@ -41,6 +43,7 @@ func _ready():
 	Global.set_iniciado(false)
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
+	_publicar_estado(GameState.STATE_MENU, true)
 
 	# Layout a partir da area visivel real; refaz quando o viewport muda de tamanho
 	# (stretch keep_width: so a altura varia, a largura fica em 180)
@@ -92,6 +95,7 @@ func _on_CheckPlayer_body_exited(body):
 		body.lose_game()
 		loseaudio.play()
 		Global.set_score(points)
+		_publicar_estado(GameState.STATE_LOST, false)
 		animation.play("lose_animation")
 
 # Reinicia o jogo após a animação de perda
@@ -106,6 +110,7 @@ func _on_player_add_point():
 func add_point():
 	points += 1
 	pointslabel.text = str(points)
+	_publicar_estado(GameState.STATE_PLAYING, true)
 
 # Inicia o jogo escondendo menus e mostrando o jogador
 func _on_Play_button_down():
@@ -115,3 +120,9 @@ func _on_Play_button_down():
 	bestscore.visible = false
 	player.visible = true
 	Global.set_iniciado(true)
+	_publicar_estado(GameState.STATE_PLAYING, true)
+
+# Monta e publica o estado na ponte do smoke (no-op fora de web debug); score nunca negativo (points inicia em -1)
+func _publicar_estado(state: String, alive: bool) -> void:
+	ultimo_estado = GameState.build(maxi(points, 0), Global.get_best_score(), state, alive)
+	GameState.publish(ultimo_estado)

@@ -2,7 +2,8 @@ class_name SeedSource
 extends RefCounted
 
 ## Decide a seed do RNG a partir do valor bruto do parametro (ex.: `?seed=N` no web).
-## Puro: nao le o ambiente nem a arvore de cena; o chamador passa o valor bruto e a flag de build.
+## `decide` e puro: nao le o ambiente nem a arvore de cena; o chamador passa o valor bruto e a flag de build.
+## `read_raw` e a unica leitura do ambiente (fina, isolada do decisor): so no web le a query string.
 ##
 ## Saida: `int` (seed) ou `null` (= sorteio livre, o chamador deve usar `randomize()`).
 ## - build release (`is_debug` falso): sempre `null`, mesmo com valor valido (producao ignora `?seed=`).
@@ -29,3 +30,11 @@ static func decide(raw: Variant, is_debug: bool) -> Variant:
 	if valor > MAX_SEED:
 		return null
 	return valor
+
+
+## Le o parametro `seed` da query string. No web devolve o String (ou null se ausente);
+## fora do web devolve null sem tocar `JavaScriptBridge`.
+static func read_raw() -> Variant:
+	if not OS.has_feature("web"):
+		return null
+	return JavaScriptBridge.eval("new URLSearchParams(window.location.search).get('seed')", true)

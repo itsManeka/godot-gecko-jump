@@ -17,9 +17,16 @@ var _best_store: BestScoreStore
 # o Player a reseta ao sair da arvore (Player._exit_tree), antes de a Stage seguinte gerar as plataformas.
 var cor_gecko: Enums.COLOR = Enums.COR_INICIAL
 
+# Aplica a seed do RNG: null = sorteio livre (producao), inteiro = sequencia fixa (smoke debug).
+func aplicar_seed(valor: Variant) -> void:
+	if valor == null:
+		randomize()
+	else:
+		seed(int(valor))
+
 # Inicializa o gerador de números aleatórios e liga o recorde salvo ao ScoreKeeper
 func _ready():
-	randomize()
+	aplicar_seed(SeedSource.decide(SeedSource.read_raw(), OS.is_debug_build()))
 	_best_store = BestScoreStore.new()
 	pontuacao.load_best(_best_store.load_best())
 	pontuacao.best_changed.connect(_best_store.save_best)
