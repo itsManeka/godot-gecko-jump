@@ -27,7 +27,8 @@ Todo criterio de aceite de mudanca no jogo e classificado, e cada classe tem a c
 | (c) | Sensacao, dificuldade, legibilidade, audio, toque no aparelho | Camada 3 |
 
 - **Camada 1 — GUT.** Testes em `test/`, dentro do oraculo `node .verify.mjs <wave>` e do job `verify` do CI. Cobre a
-  classe (a) e a regra por tras de cada criterio (b). E a unica camada exigida quando nada muda na tela.
+  classe (a) e a regra por tras de cada criterio (b). Quando nada muda na tela, e a unica camada que julga o criterio:
+  o smoke da camada 2 roda de qualquer forma na verificacao final, com os roteiros que ja existem.
 - **Camada 2 — o jogo jogado por maquina.** Mudanca jogavel = roteiro novo ou atualizado em `test/smoke/`.
   - `game-smoke`: joga cada roteiro no export web, em navegador headless, na verificacao final da mudanca
     (`verify-wave final` do dev-workspace). Reprova erro de pagina, `SCRIPT ERROR`, recurso faltando e tela congelada.
@@ -46,10 +47,11 @@ dono nao compensa camada vermelha.
 - **Positivas:** o dono joga menos vezes e so para o que depende dele; crash e travamento do export web aparecem
   antes da partida; a verificacao e reproduzivel por qualquer chat limpo.
 - **Negativas / trade-offs:** os roteiros de smoke viram codigo a manter (mudou input, fluxo de inicio/derrota ou
-  tempos, ajuste-os). A camada 2 depende de scripts e de um agente que vivem no dev-workspace, fora deste repo. O bot
-  nativo abre janela, entao nao roda no CI.
+  tempos, ajuste-os). A camada 2 depende de scripts e de um agente que vivem no dev-workspace, fora deste repo, e
+  nao roda no CI (jobs `verify` e `export-web`): "camada 2 verde" e sempre uma rodada local.
 - **Riscos aceitos:** o jogo tem sorteio, entao a comparacao atual x referencia e por estrutura (cena, HUD, objetos),
-  nunca por pixel ou hash. Toque real no aparelho e audio nao tem camada automatica: ficam na classe (c).
+  nunca por pixel ou hash. Pelo mesmo sorteio, um roteiro pode reprovar sem defeito, porque a partida acabou antes
+  do passo esperado (issue #39). Toque real no aparelho e audio nao tem camada automatica: ficam na classe (c).
 
 ## Alternativas consideradas
 
