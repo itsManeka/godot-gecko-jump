@@ -26,7 +26,7 @@ window/size/viewport_height=320
 window/size/window_width_override=360
 window/size/window_height_override=640
 window/stretch/mode="viewport"
-window/stretch/aspect="expand"
+window/stretch/aspect="keep_width"
 window/stretch/scale_mode="integer"
 
 [input]

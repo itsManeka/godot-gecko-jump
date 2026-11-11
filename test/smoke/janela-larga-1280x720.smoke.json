@@ -1,0 +1,18 @@
+{
+  "path": "index.html",
+  "viewport": [1280, 720],
+  "boot_ms": 6000,
+  "steps": [
+    { "shots": 2, "every": 300, "name": "larga-menu", "moving": false },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "shots": 2, "every": 200, "name": "larga-inicio", "moving": true },
+    { "down": "ArrowLeft" },
+    { "shots": 6, "every": 150, "name": "larga-wrap-esquerda", "moving": false },
+    { "up": "ArrowLeft" },
+    { "down": "ArrowRight" },
+    { "shots": 6, "every": 150, "name": "larga-wrap-direita", "moving": false },
+    { "up": "ArrowRight" }
+  ]
+}
