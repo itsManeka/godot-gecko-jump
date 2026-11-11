@@ -22,6 +22,6 @@ static func decide(raw: Variant, is_debug: bool) -> bool:
 ## Le o parametro `semderrota` da query string. No web devolve o String (ou null se ausente);
 ## fora do web devolve null sem tocar `JavaScriptBridge`.
 static func read_raw() -> Variant:
-	if not OS.has_feature("web"):
+	if not OS.has_feature("web") or not OS.is_debug_build():
 		return null
 	return JavaScriptBridge.eval("new URLSearchParams(window.location.search).get('semderrota')", true)

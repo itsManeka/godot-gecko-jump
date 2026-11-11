@@ -114,6 +114,18 @@ O roteiro `test/smoke/gecko.smoke.json` joga o export web num navegador headless
 pular) e acusa erro de pagina, recurso faltando e tela congelada. Rode-o sobre a pasta do export (`export/web/`) com o
 `game-smoke.mjs` do dev-workspace: `node <dev-workspace>/.claude/scripts/game-smoke.mjs export/web --spec=test/smoke/gecko.smoke.json --out=<pasta dos prints>`.
 
+Os roteiros conferem o estado da partida, nao so a tela. Isso so funciona no export web de **debug**; o build de
+release (o publicado) ignora os parametros abaixo e nao publica nada:
+
+- `?seed=<numero>` no `path` do roteiro fixa o sorteio de cores e plataformas. Todo roteiro leva uma seed.
+- `?semderrota=1` liga o modo sem derrota (plataformas na cor inicial e paradas), usado so pelo roteiro
+  `retrato-pontua-1080x2772.smoke.json` para conferir que o gecko pontua.
+- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`) e `player.alive`.
+  O passo `expect` do roteiro le esses campos, por exemplo `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
+
+Com sorteio real o gecko pode morrer cedo, entao os roteiros longos nao exigem pontuacao: conferem `playing` depois do
+Play e que a partida deixou de estar em `playing` depois da queda. Pontuacao so e conferida no roteiro sem derrota.
+
 ### Versao do Godot no CI
 
 O Godot oficial, na versao fixada em `GODOT_VERSION`, e baixado do release `<versao>-stable` do repositorio
@@ -209,6 +221,19 @@ To build the web version (no threads):
 The `test/smoke/gecko.smoke.json` script plays the web export in a headless browser (start, jump, die, restart,
 jump) and reports page errors, missing resources and a frozen screen. Run it against the export folder (`export/web/`)
 with the dev-workspace `game-smoke.mjs`: `node <dev-workspace>/.claude/scripts/game-smoke.mjs export/web --spec=test/smoke/gecko.smoke.json --out=<screenshots folder>`.
+
+The scripts check the match state, not only the screen. This only works on the **debug** web export; the release
+build (the published one) ignores the parameters below and publishes nothing:
+
+- `?seed=<number>` in the script `path` fixes the color and platform draw. Every script carries a seed.
+- `?semderrota=1` turns on the no-defeat mode (platforms in the initial color and standing still), used only by the
+  `retrato-pontua-1080x2772.smoke.json` script to check that the gecko scores.
+- The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`) and
+  `player.alive`. The script `expect` step reads those fields, for example
+  `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
+
+With the real draw the gecko may die early, so the long scripts do not require a score: they check `playing` after
+Play and that the match left `playing` after the fall. Scoring is only checked in the no-defeat script.
 
 ### 📱 Compatibility
 

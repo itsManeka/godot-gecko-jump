@@ -39,7 +39,21 @@ func test_queda_publica_lost_e_alive_false_no_mesmo_instante() -> void:
 	assert_false(e["player"]["alive"], "queda deve publicar alive false sem esperar a animacao")
 
 
+func test_add_point_tardio_depois_de_lost_nao_volta_a_playing() -> void:
+	var stage := await _novo_stage()
+	stage._on_Play_button_down()
+	var player = stage.get_node("Node2D/Player")
+	player.jumping = false
+	stage._on_CheckPlayer_body_exited(player)
+	stage.add_point()
+	var e: Dictionary = stage.ultimo_estado
+	assert_eq(e["state"], "lost", "add_point tardio nao pode regredir o estado publicado de lost")
+	assert_false(e["player"]["alive"], "add_point tardio nao pode ressuscitar o player publicado")
+
+
 func test_pouso_sobe_score_exatamente_1_e_state_playing() -> void:
+	# Chama add_point() direto; o caminho real do pouso (sinal do Player) e coberto em
+	# test/test_modo_sem_derrota_plataformas.gd (integracao com Stage real).
 	var stage := await _novo_stage()
 	stage._on_Play_button_down()
 	stage.add_point()

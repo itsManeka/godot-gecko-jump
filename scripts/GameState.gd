@@ -26,4 +26,6 @@ static func deve_publicar(is_web: bool, is_debug: bool) -> bool:
 static func publish(estado: Dictionary) -> void:
 	if not deve_publicar(OS.has_feature("web"), OS.is_debug_build()):
 		return
+	# O estado so leva valor interno (int, bool e as 3 strings constantes de estado). Campo de texto livre
+	# (ex.: nome de jogador) exige rever a montagem deste eval.
 	JavaScriptBridge.eval("window.__GAME_STATE__ = %s" % JSON.stringify(estado), true)

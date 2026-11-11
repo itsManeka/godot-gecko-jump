@@ -22,6 +22,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	Input.action_release("jump")
+	randomize()
 	Global.sem_derrota = false
 	Global.cor_gecko = _cor_original
 	Global.platforms = []

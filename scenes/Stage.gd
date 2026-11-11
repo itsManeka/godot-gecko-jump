@@ -110,6 +110,9 @@ func _on_player_add_point():
 func add_point():
 	points += 1
 	pointslabel.text = str(points)
+	# Ponto tardio depois da derrota nao republica: o estado publicado segue `lost`, com o score do instante da queda.
+	if ultimo_estado.get("state", "") == GameState.STATE_LOST:
+		return
 	_publicar_estado(GameState.STATE_PLAYING, true)
 
 # Inicia o jogo escondendo menus e mostrando o jogador
