@@ -1,12 +1,14 @@
 {
-  "path": "index.html",
+  "path": "index.html?seed=457",
   "viewport": [1080, 2400],
   "boot_ms": 6000,
   "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
     { "shots": 2, "every": 300, "name": "menu", "moving": false },
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
     { "shots": 3, "every": 300, "name": "partida1-inicio", "moving": true },
     { "down": "Space" },
     { "wait": 150 },
@@ -15,15 +17,19 @@
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
-    { "shots": 4, "every": 250, "name": "partida1-pulo2", "moving": true },
+    { "expect": { "score": { "gte": 1 } }, "timeout_ms": 3000 },
+    { "shots": 4, "every": 250, "name": "partida1-pulo2", "moving": false },
     { "down": "ArrowLeft" },
+    { "expect": { "state": { "ne": "playing" } }, "timeout_ms": 6000 },
     { "shots": 8, "every": 400, "name": "queda", "moving": false },
     { "up": "ArrowLeft" },
     { "wait": 9000 },
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
     { "shots": 2, "every": 300, "name": "menu-pos-derrota", "still": true },
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
     { "shots": 3, "every": 300, "name": "partida2-inicio", "moving": true },
     { "down": "Space" },
     { "wait": 150 },
@@ -32,6 +38,7 @@
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
-    { "shots": 4, "every": 250, "name": "partida2-pulo2", "moving": true }
+    { "expect": { "score": { "gte": 1 } }, "timeout_ms": 3000 },
+    { "shots": 4, "every": 250, "name": "partida2-pulo2", "moving": false }
   ]
 }

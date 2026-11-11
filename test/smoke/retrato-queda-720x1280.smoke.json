@@ -1,21 +1,26 @@
 {
-  "path": "index.html",
+  "path": "index.html?seed=455",
   "viewport": [720, 1280],
   "boot_ms": 6000,
   "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
     { "shots": 2, "every": 300, "name": "menu", "moving": false },
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
     { "shots": 3, "every": 300, "name": "partida-inicio", "moving": true },
     { "down": "ArrowLeft" },
+    { "expect": { "state": "lost" }, "timeout_ms": 6000 },
     { "shots": 8, "every": 400, "name": "queda-lado", "moving": false },
     { "up": "ArrowLeft" },
     { "wait": 9000 },
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
     { "shots": 2, "every": 300, "name": "menu-pos-derrota", "still": true },
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
     { "shots": 3, "every": 300, "name": "partida2-inicio", "moving": true }
   ]
 }

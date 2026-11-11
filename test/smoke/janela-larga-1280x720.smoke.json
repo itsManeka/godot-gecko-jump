@@ -1,12 +1,14 @@
 {
-  "path": "index.html",
+  "path": "index.html?seed=454",
   "viewport": [1280, 720],
   "boot_ms": 6000,
   "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
     { "shots": 2, "every": 300, "name": "larga-menu", "moving": false },
     { "down": "Space" },
     { "wait": 150 },
     { "up": "Space" },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
     { "shots": 2, "every": 200, "name": "larga-inicio", "moving": true },
     { "down": "ArrowLeft" },
     { "shots": 6, "every": 150, "name": "larga-wrap-esquerda", "moving": false },
