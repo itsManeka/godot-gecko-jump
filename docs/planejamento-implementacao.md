@@ -2,6 +2,8 @@
 
 > **Fonte de verdade** do projeto. Chats limpos (`/feature`, `/epic` em contexto zerado) leem este arquivo antes de
 > tocar codigo. Briefing original: [`planejamento-design/briefing-original.md`](planejamento-design/briefing-original.md).
+> Design provisorio das telas de pausa, opcoes, tutorial e dica de toque:
+> [`planejamento-design/handoff-telas-novas.md`](planejamento-design/handoff-telas-novas.md).
 > Decisoes com justificativa: [`adr/`](adr/README.md). Backlog: issues do GitHub (`gh issue list -R itsManeka/godot-gecko-jump`).
 
 ## Contexto

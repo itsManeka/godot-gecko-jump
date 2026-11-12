@@ -331,14 +331,14 @@ As bordas `+--+` dos blocos existem so no desenho acima para mostrar a extensao;
 
 ### 8.4 Quando aparece e quando some
 
-| Situacao                                                                       | Dica                                                                           |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| Predicado de visibilidade (secao 7.2) falso (menu, derrota)                    | oculta                                                                         |
-| Primeira partida, antes do primeiro toque de jogo                              | visivel                                                                        |
-| Primeiro toque de jogo (em qualquer zona; o toque no botao de pausa nao conta) | some com fade-out de 0.3 s (proposta provisoria)                               |
-| Partidas seguintes                                                             | nao mostrada                                                                   |
-| Jogo pausado                                                                   | fica sob o overlay de pausa (z-order, 7.4)                                     |
-| Overlay de tutorial                                                            | reaproveitada como parte do tutorial; nao existe item de menu proprio para ela |
+| Situacao                                                                       | Dica                                                                          |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Predicado de visibilidade (secao 7.2) falso (menu, derrota)                    | oculta                                                                        |
+| Primeira partida, antes do primeiro toque de jogo                              | visivel                                                                       |
+| Primeiro toque de jogo (em qualquer zona; o toque no botao de pausa nao conta) | some com fade-out de 0.3 s (proposta provisoria); com o card aberto, ver 12.1 |
+| Partidas seguintes                                                             | nao mostrada                                                                  |
+| Jogo pausado                                                                   | fica sob o overlay de pausa (z-order, 7.4)                                    |
+| Overlay de tutorial                                                            | fica ate o card fechar (secao 12.1); nao existe item de menu proprio para ela |
 
 A flag "dica ja mostrada" e persistida em outra entrega. Variante de desktop/teclado: quando a entrada em uso e teclado ou
 controle, os dois blocos mostram a tecla de cada acao (`ui_left`, `ui_right`, `jump`) no lugar de "pula"/"segura: anda";
@@ -586,3 +586,199 @@ Soma vertical entre Play e Last: 173 + 16 + 24 + 17 = **230**. `x0 = (180 - 88) 
 - Aciona ao soltar com o dedo dentro do retangulo (regra da secao 7.3). Abre a tela da secao 10; Voltar retorna ao menu.
 - Teclado/joypad: ordem de foco no menu = Play, depois Opcoes (baixo vai do Play ao Opcoes); marcador `>` + moldura
   conforme secao 3.
+
+## 12. Tutorial da 1a partida
+
+Card curto com a regra de cor e uma linha sobre o controle (issue #12). O controle em si e mostrado pela dica de toque
+(secao 8), que fica visivel junto com o card. Usa a paleta (secao 1), a fonte (secao 2) e o botao (secao 3). A flag
+"tutorial ja visto" e persistida em outra entrega.
+
+### 12.1 Quando aparece e quando fecha
+
+| Situacao                                                      | Card                                                                                          |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Predicado de visibilidade (secao 7.2) falso (menu, derrota)   | oculto (exceto na reabertura, 12.5)                                                           |
+| Inicio da primeira partida (flag "tutorial ja visto" ausente) | aparece junto com a dica de toque; a partida ja esta em curso                                 |
+| Toque em **Pular** (12.4)                                     | fecha com fade-out de 0.3 s (proposta provisoria, igual ao da dica) e marca o tutorial visto  |
+| Primeiro pouso do gecko (primeiro ponto, `Stage.gd:106-110`)  | fecha do mesmo jeito e marca o tutorial visto (proposta provisoria; quem implementa confirma) |
+| Partidas seguintes                                            | nao aparece                                                                                   |
+
+Com o card aberto a dica de toque fica visivel; ela passa a seguir a regra de sumir da secao 8.4 a partir do fechamento
+do card. Fechar o card nao pausa nem reinicia a partida.
+
+### 12.2 Medidas do card
+
+Classe **topo** com `o` = 38 (8 px abaixo do placar, y[0, 30]). Mesma medida em 180x320 e 180x400; com `s_top` > 0
+soma-se `s_top` ao `y`. O card termina em y = 210, acima dos blocos da dica (a partir de y = 220 em 180x320, 300 em
+180x400, secao 8.2).
+
+| Item                                      | Medida                                                                      |
+| ----------------------------------------- | --------------------------------------------------------------------------- |
+| Card (fundo `#000000` a 60%, sem moldura) | x[8, 172] y[38, 210] (164x172); padding 6 em cima e embaixo, 8 nas laterais |
+| Area de conteudo                          | x[16, 164] (largura 148)                                                    |
+
+Linhas do card, de cima para baixo, todas em x[16, 164] (texto `#ffffff` com contorno `#000000`, tamanho 20; 17 px por
+linha, a mesma altura de Last/Best):
+
+| Linha               | Altura | `y`         | Conteudo (variante toque)                                       | Linhas de texto |
+| ------------------- | ------ | ----------- | --------------------------------------------------------------- | --------------- |
+| Titulo e Pular      | 24     | y[44, 68]   | "Como jogar" a esquerda; botao **Pular** em x[108, 164] (56x24) | 1               |
+| espaco              | 4      | y[68, 72]   |                                                                 |                 |
+| Regra de cor        | 34     | y[72, 106]  | "Pise na cor dele." / "Pouso troca a cor."                      | 2               |
+| espaco              | 4      | y[106, 110] |                                                                 |                 |
+| Amostras            | 35     | y[110, 145] | duas celulas de 74 (12.3): "igual" e "diferente"                | 1 (rotulo)      |
+| espaco              | 4      | y[145, 149] |                                                                 |                 |
+| Legenda das 4 cores | 34     | y[149, 183] | 2 colunas x 2 linhas de 17: amarelo, verde / azul, vermelho     | 2               |
+| espaco              | 4      | y[183, 187] |                                                                 |                 |
+| Controle            | 17     | y[187, 204] | "Toque: veja abaixo"                                            | 1               |
+
+Soma vertical: 6 + 24 + 4 + 34 + 4 + 35 + 4 + 34 + 4 + 17 + 6 = **172**. Conferencia: 38 + 6 = 44; + 24 = 68; + 4 = 72; +
+34 = 106; + 4 = 110; + 35 = 145; + 4 = 149; + 34 = 183; + 4 = 187; + 17 = 204; + 6 = 210; 210 - 38 = 172. Mesmo valor em 320
+e em 400 (elemento de topo, secao 4).
+
+Contagem de linhas: no maximo 20 caracteres por linha em 148 px, que e o que a secao 8.2 ja assume (12 caracteres em
+76 px, cerca de 6,3 px por caractere). Largura de glifo nao esta no repo (secao 2): quem implementa mede o texto real e,
+se uma linha estourar, encurta o texto; o card nao cresce (nao ha folga: a altura fecha em 210). Titulo de 10 caracteres e
+Pular de 56 px cabem lado a lado nos 148 px.
+
+Posicao relativa ao botao de pausa (retangulo da secao 7.1): o card comeca abaixo do botao, sem sobreposicao (o botao
+acaba em y = 26, o card comeca em y = 38). Pular tambem nao o toca.
+
+### 12.3 Amostras e legenda de cor
+
+A regra de cor sem depender de cor: texto + marca + posicao. As cores vem de `scripts/Enums.gd:23-33` (secao 1).
+
+| Celula (74x35, `x` em [16, 90) e [90, 164]) | Linha de cima (18 px)                                                                      | Rotulo (17 px) |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------- |
+| igual                                       | miniatura do gecko 12x16 em amarelo, marca `=` (10 de largura), plataforma 32x8 em amarelo | "igual"        |
+| diferente                                   | miniatura do gecko 12x16 em amarelo, marca `X` (10 de largura), plataforma 32x8 em azul    | "diferente"    |
+
+Dentro da celula: gecko em x 0..12, marca em x 16..26, plataforma em x 30..62; contorno preto de 1 px nas miniaturas.
+As duas amostras se distinguem por **marca (`=` ou `X`) e rotulo**, nunca so pela cor da plataforma.
+
+Legenda: cada cor tem um quadrado 12x12 com contorno preto de 1 px (x 0..12 da celula de 74, 2 px abaixo do topo da
+linha) e o **nome por escrito** em x = 16 da celula ("amarelo", "verde", "azul", "vermelho"; o mais longo tem 8
+caracteres, cerca de 50 px, cabe nos 58 restantes). As 4 cores aparecem nas amostras e na legenda sempre junto do nome ou
+da marca. As miniaturas e quadrados sao desenho do tutorial e **nao** afirmam como as plataformas do jogo se
+distinguem: hoje elas se distinguem so por cor (secao 1) e isso e uma lacuna registrada em issue do repo, fora deste
+handoff.
+
+### 12.4 Botao Pular, toque e relacao com o jogo
+
+O card **nao e modal**. Na primeira partida:
+
+- So o botao **Pular** (retangulo da tabela de 12.2, 56x24, acima do minimo da secao 3) recebe toque; ele aciona ao soltar com
+  o dedo dentro do retangulo (regra da secao 7.3).
+- O resto do card nao tem area de toque: o toque que cai sobre ele atravessa e chega ao classificador de toque de jogo
+  (metade esquerda/direita, secao 8.1).
+- O botao de pausa (secao 7.1) permanece acessivel: o card nao o cobre e o predicado de visibilidade (secao 7.2) ja e
+  verdadeiro. Pausar com o card aberto e permitido; o overlay de pausa (secao 9) fica acima do card e consome todo
+  toque, inclusive o de Pular, ate retomar.
+- A partida nao espera o tutorial: comeca no mesmo instante, com o card aberto.
+- Z-order, de baixo para cima (complementa a secao 7.4): (1) jogo; (2) dica de toque; (3) card do tutorial; (4) botao de
+  pausa; (5) overlay de pausa. Nenhum retangulo do card cruza o do botao de pausa, a ordem so resolve empate.
+- Risco aceito: o card (12.2) cobre boa parte da metade de cima e esconde parte das plataformas ate fechar; o fundo a 60% deixa o jogo visivel
+  a 40%. Julgamento de legibilidade: classe (c), no QA final do epic.
+
+### 12.5 Reabertura por "Ver tutorial"
+
+O item **Ver tutorial** da tela de Opcoes (secao 10.2) reabre o tutorial a qualquer momento.
+
+| Aspecto                  | Comportamento                                                                                                                                                                |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| De onde abre             | de Opcoes, nas duas origens (pausa e menu, secao 10.1)                                                                                                                       |
+| Tela por tras            | origem pausa: partida congelada sob o fundo da secao 9.2; origem menu: jogo nao iniciado, Play, Last, Best e o botao Opcoes do menu ficam ocultos e sem toque (como em 10.1) |
+| O que aparece            | o mesmo card (12.2) e a dica de toque (secao 8) sobre o fundo `#000000` a 60% da secao 9.2; a tela de Opcoes some enquanto o tutorial esta aberto                            |
+| Modo                     | **modal** nesta reabertura: todo toque fora de Pular e consumido (nao pula, nao anda, nao pausa); a partida nao anda e a entrada `jump` do menu fica suspensa                |
+| Botao de saida           | o mesmo botao do card, com o rotulo **Voltar** no lugar de "Pular", mesma medida (12.2); tambem Esc/P (previsao)                                                             |
+| Para onde volta          | tela de Opcoes (a origem original permanece a mesma), com foco em **Ver tutorial** (ordem de foco da secao 10.6)                                                             |
+| Flag "tutorial ja visto" | nao muda: rever o tutorial nao o marca de novo nem o limpa                                                                                                                   |
+
+O botao de pausa nao aparece na reabertura (o overlay de fundo o cobre, secao 9.3); voltar a Opcoes e depois a origem
+vale a tabela da secao 10.1.
+
+### 12.6 Variantes de toque e de teclado, lado a lado
+
+Mesma posicao, mesmas medidas e mesma regra de aparecer/fechar (12.1); muda so o que o texto de controle e a dica
+mostram.
+
+| Elemento                    | Toque                                                  | Teclado e controle                                                                                            |
+| --------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Titulo                      | "Como jogar"                                           | "Como jogar"                                                                                                  |
+| Regra de cor (2 linhas)     | "Pise na cor dele." / "Pouso troca a cor."             | igual                                                                                                         |
+| Amostras e legenda          | igual (12.3)                                           | igual                                                                                                         |
+| Controle (1 linha)          | "Toque: veja abaixo"                                   | "Teclas: veja abaixo" (19 caracteres)                                                                         |
+| Dica de toque (secao 8)     | setas `<` `>`, "pula" e "segura: anda" nos dois blocos | os blocos mostram a tecla de cada acao (`ui_left`, `ui_right`, `jump`), mesma posicao (secao 8.4)             |
+| Teclas citadas na dica      | n/a                                                    | seta esquerda, seta direita e espaco ou seta para cima (`project.godot`, acoes `ui_left`, `ui_right`, `jump`) |
+| Pular na 1a partida         | toque no botao (12.4)                                  | o botao nao entra na cadeia de foco, para nao tomar as teclas de jogo; o card fecha no primeiro pouso (12.1)  |
+| Voltar na reabertura (12.5) | toque no botao                                         | foco inicial em Voltar, `ui_accept` aciona; marcador `>` + moldura (secao 3)                                  |
+
+A escolha entre as duas variantes depende da entrada em uso (secao 8.4). Nao existe tecla dedicada a Pular na 1a partida: e
+uma pergunta aberta na secao 13.3.
+
+### 12.7 Onde e acessada
+
+- Automatica, uma vez, no inicio da primeira partida (12.1); nao reaparece sozinha.
+- Por escolha do jogador: **Ver tutorial** em Opcoes (12.5), em qualquer partida ou no menu.
+- Nao existe botao nem item de menu proprio fora de Opcoes.
+
+## 13. Mapa de acesso e o que cada consumidor extrai
+
+Esta secao so aponta: cada medida e cada regra tem um unico lugar (a secao citada) e nao se repete aqui.
+
+### 13.1 Mapa de acesso
+
+Predicado de visibilidade = o da secao 7.2. Retorno = para onde o jogador vai ao sair da tela.
+
+| Tela / entrada                       | Origem(ns)                                                               | Visivel quando                                               | Retorno                                                                                                                         |
+| ------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Botao de pausa (secao 7)             | tela de jogo, canto superior esquerdo                                    | predicado (7.2)                                              | abre o overlay de pausa; nao ha tela a retornar                                                                                 |
+| Pausa por tecla ou joypad (previsao) | Esc ou P, botao de start; a acao `pause` nao existe no `project.godot`   | predicado (7.2)                                              | abre o overlay; Esc/P com o overlay aberto retoma                                                                               |
+| Overlay de pausa (secao 9)           | botao de pausa ou tecla/joypad                                           | predicado (7.2) e partida pausada                            | Continuar volta a partida; Opcoes abre a tela da secao 10                                                                       |
+| Opcoes (secao 10)                    | botao Opcoes do overlay de pausa; botao Opcoes do menu (secao 11)        | origem pausa: como o overlay; origem menu: jogo nao iniciado | Voltar leva a origem (overlay de pausa ou menu), com foco em Opcoes                                                             |
+| Botao de Opcoes do menu (secao 11)   | menu, entre Play e Last                                                  | so no menu (jogo nao iniciado)                               | abre Opcoes; Voltar retorna ao menu                                                                                             |
+| Tutorial na 1a partida (secao 12)    | automatico no inicio da primeira partida                                 | predicado (7.2) e flag "tutorial ja visto" ausente           | Pular ou primeiro pouso fecham o card; a partida ja esta em curso                                                               |
+| Tutorial reaberto (secao 12.5)       | item Ver tutorial de Opcoes (pausa ou menu)                              | Opcoes aberta                                                | Voltar leva a Opcoes, com foco em Ver tutorial                                                                                  |
+| Dica de toque (secao 8)              | partida (antes do 1o toque de jogo) e card do tutorial; sem item de menu | predicado (7.2) e regra da secao 8.4                         | some sozinha (fade); nao e tela                                                                                                 |
+| Fim de partida (derrota)             | queda do gecko (`Stage.gd:98-99`)                                        | n/a                                                          | a animacao termina e o jogo recarrega a cena (`Stage.gd:102-103`) no menu; **nao pausa**, nao mostra overlay nem botao de pausa |
+
+### 13.2 O que cada consumidor extrai
+
+Cada linha aponta a secao onde esta o valor; o consumidor le la.
+
+| Consumidor                      | Extrai                                                                                                                                                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Toque e dica visual (issue #11) | retangulo da zona morta do botao de pausa (7.1, 7.3); linha de divisao em x = 90 e zonas (8.1); desenho e blocos da dica (8.2); sem hit area (8.3); regras de aparecer e sumir (8.4); z-order (7.4 e 12.4); variante de teclado (8.4) |
+| Pausa (issue #12)               | retangulo, estados e glifo do botao (7.1, 7.4); predicado de visibilidade (7.2); arbitragem e pausa acidental (7.3); overlay, botoes e medidas (9.2); toque no fundo (9.3); ordem de foco e teclas (9.5); acesso por tecla (7.5)      |
+| Opcoes (issue #12)              | origens e retorno (10.1); medidas e layout dos sliders (10.2); arrasto (10.3); estados, incluindo "mudo" (10.4); Music sem faixa (10.5); foco (10.6); botao do menu (11.1 e 11.2)                                                     |
+| Tutorial (issue #12)            | quando aparece e fecha (12.1); medidas do card e linhas (12.2); amostras e legenda das 4 cores (12.3); Pular, nao modal e z-order (12.4); reabertura (12.5); variantes toque e teclado (12.6)                                         |
+| Todos                           | paleta, fonte, botao, alvo minimo, safe area e ancoragem (secoes 1 a 5); zonas ocupadas (secao 5); limites (secao 6)                                                                                                                  |
+
+Legibilidade final no aparelho: **classe (c), julgada no QA final do epic**
+([ADR 0006](../adr/0006-oraculo-de-jogo-em-3-camadas.md)). Nenhum item deste handoff pede que o dono jogue para aceitar o
+documento.
+
+### 13.3 Decisoes tomadas e perguntas abertas
+
+Decididas:
+
+| Tema                      | Decisao                                                                                               | Onde               |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------ |
+| Onde Opcoes e acessada    | pela pausa **e** pelo menu (botao secundario abaixo do Play, so no menu); decisao do dono, 2026-11-11 | secoes 10.1 e 11   |
+| Tutorial revisitavel      | sim: item **Ver tutorial** em Opcoes; decisao do dono, 2026-11-11                                     | secoes 10.2 e 12.5 |
+| Posicao do botao de pausa | canto superior esquerdo, para nao mover o placar existente                                            | secao 7.1          |
+| Cor nunca e a unica pista | cumprida nas telas novas por texto, marca e posicao; hoje o jogo distingue plataformas so por cor     | secoes 1 e 12.3    |
+| Tutorial modal ou nao     | nao modal na 1a partida (so Pular recebe toque); modal so na reabertura por Opcoes                    | secoes 12.4 e 12.5 |
+| Formato do handoff        | um arquivo Markdown com wireframes ASCII e tabelas de medidas; sem imagem                             | este documento     |
+
+Abertas (nada decidido em silencio; propostas provisorias marcadas no texto):
+
+- Lacuna conhecida: as plataformas do jogo se distinguem so por cor, sem forma ou padrao junto; lacuna registrada em
+  issue do repo, fora deste handoff e da arte final deste epic.
+- Tecla para **Pular** na 1a partida na variante de teclado/controle: sem acao dedicada hoje; proposta: fora da cadeia de
+  foco e o card fecha no primeiro pouso (12.6).
+- Gatilho de fechamento do card sem Pular (primeiro pouso) e tempo de fade (0.3 s): propostas provisorias para quem
+  implementar confirmar (12.1).
+- Largura de glifo da fonte e contagem de linhas reais por card: medir no Godot (secoes 2 e 12.2).
+- Margem horizontal com entalhe maior que 13 px somados (`s_left` + `s_right`): caso nao coberto, medir o placar real
+  (secao 7.1).
