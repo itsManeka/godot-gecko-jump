@@ -21,6 +21,9 @@ var speed = 0
 # Sorteio das moveis: null = randi() global; teste injeta um rng de seed fixa
 var rng: RandomNumberGenerator = null
 
+# Estado de dificuldade da partida (injetado antes do add_child); null = snapshot do estagio 0
+var dificuldade: DifficultyState = null
+
 # Ultimas K-1 cores criadas por este gerador (historico da janela, ordem de criacao)
 var _cores_criadas: Array = []
 
@@ -29,10 +32,12 @@ var primeira_cor_gecko_lida: int = -1
 
 # Inicializa o gerador de plataformas
 func _ready():
-	speed = 60  # Velocidade fixa (antes era aleatória)
+	# Speed e proporcao lidas do snapshot vigente no nascimento: a linha mantem a speed ate sair
+	var snapshot: DifficultySnapshot = _snapshot()
+	speed = snapshot.get_speed_moveis()
 
 	# Resolve tipos de plataforma aleatórios (sorteio em PlatformTypePicker)
-	platform_type = PlatformTypePicker.resolve(platform_type)
+	platform_type = PlatformTypePicker.resolve(platform_type, null, snapshot.get_proporcao_estaticas())
 
 	# Configura comportamento baseado no tipo (Platform.gd: velocity = -speed, entao speed > 0 anda a esquerda)
 	match platform_type:
@@ -79,7 +84,7 @@ func create_static_platforms():
 func preencher_linha():
 	var spawn_x: float = check_generate.position.x
 	# Plataforma anda em direcao oposta ao sinal de speed (Platform.gd: velocity = -speed)
-	for x in MovingRowFill.initial_xs(spawn_x, speed > 0):
+	for x in MovingRowFill.initial_xs(spawn_x, speed > 0, MovingRowFill.LARGURA_PADRAO, absf(speed)):
 		_criar_plataforma(x)
 	new_platform()
 
@@ -87,7 +92,13 @@ func preencher_linha():
 func new_platform():
 	_criar_plataforma(check_generate.position.x)
 
-# Cor da proxima plataforma movel: garante a cor do gecko (Global) em toda janela de K (DifficultyStage.K_PADRAO) criadas por este
+# Foto vigente da dificuldade; sem estado injetado = estagio 0
+func _snapshot() -> DifficultySnapshot:
+	if dificuldade == null:
+		return DifficultySnapshot.new()
+	return dificuldade.snapshot()
+
+# Cor da proxima plataforma movel: garante a cor do gecko (Global) em toda janela de K (K vigente) criadas por este
 # gerador; preencher_linha e new_platform passam por aqui, entao compartilham o historico
 func _cor_movel() -> int:
 	if Global.sem_derrota:
@@ -95,9 +106,11 @@ func _cor_movel() -> int:
 	var cor_gecko: int = Global.cor_gecko
 	if primeira_cor_gecko_lida < 0:
 		primeira_cor_gecko_lida = cor_gecko
-	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, _cores_criadas, rng)
+	# K relido a cada plataforma criada (pode mudar no meio da linha)
+	var k: int = _snapshot().get_k()
+	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, _cores_criadas, rng, k)
 	_cores_criadas.append(cor)
-	var maximo: int = maxi(DifficultyStage.K_PADRAO - 1, 0)
+	var maximo: int = maxi(k - 1, 0)
 	while _cores_criadas.size() > maximo:
 		_cores_criadas.pop_front()
 	return cor
