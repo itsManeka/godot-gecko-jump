@@ -50,7 +50,7 @@ Divisao em epics (as fases 1 a 3 acima formam o E1):
 |---|---|---|---|
 | E1. Migracao e base solida | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3) | #8, #14, #7, #3, #4, #5, #6, #9 | concluido (2026-11-09) |
 | E2. CI, tela mobile e jogabilidade da base | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
-| E3. Controles, dificuldade e pausa/opcoes/tutorial | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes e tutorial | #36, #37, #39, #11, #10, #12 | proximo |
+| E3. Controles, dificuldade e pausa/opcoes/tutorial | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes e tutorial | #36, #37, #39, #11, #10, #12 | em andamento |
 | E4. Conteudo | Power-ups, modos de jogo, gerador com seed | #16, #17 | planejado |
 | E5. Ranking online por modo | Ranking por modo de jogo; depende do E4 e do ChumGames E1 | #29 | planejado |
 | E6. Arte final e audio | Arte final em pixel art, sons e musica | #18, #13 | planejado |
@@ -64,11 +64,11 @@ intermitente por sorteio da partida).
 Ordem: E3 → E4 → E5 → E6 → E7 → E8 (cada um depende do anterior). Todo epic termina com uma feature de QA em que o
 dono joga o que a maquina nao julga (Godot e export web; Android quando existir).
 
-Dificuldade da cor: `ReachableColors.K` (default 3) e o botao que controla quao rara fica a garantia da cor do gecko nas plataformas moveis; K maior = mais dificil, K = 1 = facil demais.
+Dificuldade: uma curva unica em `ressources/curva_dificuldade.tres` (estagios com interpolacao, avaliados por pontos e tempo de partida) controla scroll, velocidade das plataformas moveis, `ReachableColors.K` (quao rara fica a garantia da cor do gecko nas moveis; K maior = mais dificil, K = 1 = facil demais) e a proporcao de plataformas estaticas. Valores e decisao em [ADR 0007](adr/0007-curva-de-dificuldade-em-resource.md).
 
 ## Epic 1 — Migracao e base solida
 
-Escopo: fases 2 e 3. **A mecanica fica igual a original** (velocidade 60, scroll 20 px/s, regra de cor).
+Escopo: fases 2 e 3. **A mecanica fica igual a original** (velocidade e scroll fixos, regra de cor; a dificuldade progressiva entrou no E3).
 
 **Estado: concluido em 2026-11-09.** O dono jogou 3 partidas seguidas no Godot 4.7.2 e no export web, sem erro no
 console nem vazamento ao fechar, com o recorde mantido entre sessoes. O QA achou e corrigiu as plataformas moveis que
@@ -106,6 +106,17 @@ lateral com toque no aparelho (o jogo ainda nao le toque, #11).
 7. Cor alcancavel com `ReachableColors.K` (#23); a #38, achada no QA, foi corrigida no epic.
 8. Janela larga com a coluna de 180 centralizada e barras laterais.
 9. Gate em 3 camadas ([ADR 0006](adr/0006-oraculo-de-jogo-em-3-camadas.md)).
+
+## Epic 3 — Controles, dificuldade e pausa/opcoes/tutorial
+
+Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10) e pausa, opcoes e tutorial (#12).
+
+**Estado: em andamento** (branch `epic/gecko-e3-controles-e-progressao`).
+
+1. Dificuldade progressiva (#10, [ADR 0007](adr/0007-curva-de-dificuldade-em-resource.md)): a curva em
+   `ressources/curva_dificuldade.tres` troca os literais de scroll, velocidade das moveis, K da garantia de cor e
+   proporcao de estaticas por estagios com interpolacao, avaliados por pontos e tempo da partida (plato em cerca de 3
+   min). Silenciosa: nenhuma UI de nivel. Calibracao fina pelo playtest do dono no QA do epic.
 
 ## Regras de trabalho
 

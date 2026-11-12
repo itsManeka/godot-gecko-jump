@@ -11,3 +11,4 @@ antigo como "superado por".
 | [0004](0004-arte-no-aseprite-com-rascunho-por-ia.md) | Arte no Aseprite compilado do fork pessoal, rascunho por IA | aceito |
 | [0005](0005-desenvolvimento-headless-e-mcp-isolado.md) | Desenvolvimento pela CLI headless; MCPs de jogo so em agentes dedicados | aceito; superado (trecho do gate de "pronto") por 0006 |
 | [0006](0006-oraculo-de-jogo-em-3-camadas.md) | Oraculo de jogo em 3 camadas; o dono joga so o que a maquina nao julga | aceito |
+| [0007](0007-curva-de-dificuldade-em-resource.md) | Curva de dificuldade progressiva em Resource `.tres`, avaliada por pontos e tempo | aceito |

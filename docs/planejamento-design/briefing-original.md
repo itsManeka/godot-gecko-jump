@@ -21,7 +21,7 @@ O projeto é um jogo de plataforma vertical em Godot 3 (`config_version=4`, `Kin
 | `scenes/Player.gd` (123) | Movimento, pulo, animações, troca de cor ao pousar |
 | `scenes/Platform.gd` (48) | Colisão ligada só quando a cor bate com a do jogador |
 | `scenes/RuningPlatforms.gd` (86) | Gerador de plataformas (estáticas, esquerda, direita); nome com erro de digitação |
-| `scenes/ScrollLevel.gd` (43) | Scroll de 20 px/s e criação de geradores |
+| `scenes/ScrollLevel.gd` (43) | Scroll fixo (valor da jam; hoje vem da curva de dificuldade, ADR 0007) e criação de geradores |
 | `scripts/Global.gd` (63) | Autoload: lista de plataformas, estado, recorde |
 | `scripts/Enums.gd` (34) | Cores (#f6db61, #79cf5a, #5987e9, #ec4848) e tipos de plataforma |
 
@@ -30,7 +30,7 @@ O projeto é um jogo de plataforma vertical em Godot 3 (`config_version=4`, `Kin
 **Pontos fracos que impedem um jogo final:**
 
 - O recorde não é salvo e zera ao fechar o jogo.
-- A dificuldade é constante (velocidade 60, scroll 20).
+- A dificuldade é constante (velocidade e scroll fixos na jam; hoje a curva de dificuldade, ADR 0007, os faz subir).
 - Não há som de pouso ou de ponto, nem música.
 - Só há controle por teclado; o README diz que não é otimizado para celular.
 - Faltam pausa, opções e tutorial.
