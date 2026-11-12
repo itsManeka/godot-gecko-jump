@@ -27,6 +27,10 @@ signal partida_iniciada
 var touch_controls: TouchControls = null
 # Dica visual das zonas de toque (filha da Stage, criada em _ready)
 var touch_hint: TouchHint = null
+# Botao de pausa por toque e overlay de pausa (filhos da Stage, criados em _ready)
+var pause_botao: PauseBotao = null
+var pause_overlay: PauseOverlay = null
+var pause_state: PauseState = null
 # Safe area (coordenadas logicas) da ultima apply_layout; usada pelo HUD (T4)
 var safe_area: Rect2 = Rect2()
 # Ultimo estado montado para a ponte do smoke (ver GameState); lido pelos testes sem JavaScriptBridge
@@ -69,6 +73,16 @@ func _ready():
 	touch_hint = TouchHint.new()
 	touch_hint.player = player
 	add_child(touch_hint)
+	# Botao e overlay de pausa: filhos depois de touch_controls/touch_hint (o _input chega a eles antes). So o overlay
+	# e ALWAYS (retoma com a arvore pausada); a Stage segue pausavel.
+	pause_botao = PauseBotao.new()
+	pause_botao.player = player
+	pause_botao.pausar_pedido.connect(_pausar)
+	add_child(pause_botao)
+	pause_overlay = PauseOverlay.new()
+	pause_overlay.retomar.connect(_retomar)
+	add_child(pause_overlay)
+	pause_state = PauseState.new(get_tree(), _partida_ativa)
 
 	# Layout a partir da area visivel real; refaz quando o viewport muda de tamanho
 	# (stretch keep_width: so a altura varia, a largura fica em 180)
@@ -92,6 +106,14 @@ func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 	_layout_hud(visible_size, safe)
 	if touch_hint != null:
 		touch_hint.aplicar_layout(visible_size, safe)
+	if pause_botao != null:
+		pause_botao.aplicar_layout(visible_size, safe)
+		# Zona morta do toque de jogo: o retangulo do botao (ja deslocado por s_left/s_top)
+		if touch_controls != null:
+			var mortas: Array[Rect2] = [pause_botao.rect_botao()]
+			touch_controls.classificador.zonas_mortas = mortas
+	if pause_overlay != null:
+		pause_overlay.aplicar_layout(visible_size, safe)
 
 # HUD no topo da safe area: Pontos junto a borda direita visivel, menu com o y de 180x320 deslocado por safe.position.y
 # e centrado na largura visivel. Posicao calculada do tamanho injetado (o pai Control so reflete o viewport real).
@@ -126,6 +148,27 @@ func _physics_process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch and (event as InputEventScreenTouch).pressed:
 		_on_Play_button_down()
+
+# Acao `pause` com a arvore rodando: pausa (ignorada fora de partida ativa). Com o overlay aberto, quem escuta
+# e o proprio overlay (ALWAYS), que consome o evento antes daqui.
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause") and not (event is InputEventKey and (event as InputEventKey).echo):
+		_pausar()
+		get_viewport().set_input_as_handled()
+
+func _partida_ativa() -> bool:
+	return PauseState.partida_ativa(started, player.is_end())
+
+# Pausa a arvore (Global.iniciado nao muda), cancela o toque de jogo em curso e abre o overlay
+func _pausar() -> void:
+	if pause_state.esta_pausado() or not pause_state.pausar():
+		return
+	touch_controls.cancelar_tudo()
+	pause_overlay.abrir()
+
+func _retomar() -> void:
+	pause_state.retomar()
+	pause_overlay.fechar()
 
 # Detecta quando o jogador sai da área de jogo (perde)
 func _on_CheckPlayer_body_exited(body):

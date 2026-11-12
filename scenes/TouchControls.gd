@@ -148,6 +148,11 @@ func _cancelar(dedo: int) -> void:
 	gesto_concluido.emit(r["resultado"], r["lado"])
 
 
+# Cancela o gesto em curso e solta as acoes da camada (pausa: o release durante a pausa nao chega aqui).
+func cancelar_tudo() -> void:
+	_cancelar_tudo()
+
+
 func _cancelar_tudo() -> void:
 	if _dedo != -1:
 		_cancelar(_dedo)

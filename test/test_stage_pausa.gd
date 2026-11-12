@@ -1,0 +1,164 @@
+extends GutTest
+
+# Pausa ligada na Stage real + TouchControls: arvore parada (fisica, scroll, dificuldade), retomada no mesmo estado,
+# press pre-pausa descartado, zona morta do botao e acao `pause`.
+const STAGE_SCENE := "res://scenes/Stage.tscn"
+const TICKS: int = 12
+
+var _agora_ms: int = 0
+var _gestos: Array = []
+
+
+func before_each() -> void:
+	Global.platforms = []
+	Global.iniciado = false
+	_agora_ms = 0
+	_gestos = []
+
+
+func after_each() -> void:
+	get_tree().paused = false
+	for acao in ["jump", "ui_left", "ui_right", "pause"]:
+		Input.action_release(acao)
+	Global.platforms = []
+	Global.iniciado = false
+
+
+func _relogio() -> int:
+	return _agora_ms
+
+
+func _registrar_gesto(resultado: int, lado: int) -> void:
+	_gestos.append([resultado, lado])
+
+
+func _novo_stage(iniciar: bool = true) -> Node:
+	var stage: Node = add_child_autofree(load(STAGE_SCENE).instantiate())
+	await wait_frames(2)
+	if iniciar:
+		stage._on_Play_button_down()
+		await wait_frames(2)
+	return stage
+
+
+func _acao_pause() -> void:
+	var ev := InputEventAction.new()
+	ev.action = "pause"
+	ev.pressed = true
+	Input.parse_input_event(ev)
+	Input.flush_buffered_events()
+	await wait_frames(2)
+
+
+func _toque(stage: Node, pressionado: bool, pos: Vector2) -> void:
+	var ev := InputEventScreenTouch.new()
+	ev.index = 0
+	ev.pressed = pressionado
+	ev.position = pos
+	stage.touch_controls._input(ev)
+
+
+func test_arvore_pausada_nao_move_fisica_scroll_nem_dificuldade() -> void:
+	var stage := await _novo_stage()
+	await wait_physics_frames(3)
+	stage.pause_state.pausar()
+	assert_true(get_tree().paused, "arvore pausada")
+	var player: Node = stage.player
+	var scroll: Node = stage.get_node("ScrollLevel")
+	var pos_player: Vector2 = player.position
+	var y_scroll: float = scroll.running_platforms.position.y
+	var rolado: float = scroll.position_scrolled
+	var segundos: float = stage.dificuldade._segundos
+	await wait_physics_frames(TICKS)
+	assert_eq(player.position, pos_player, "Player parado durante a pausa")
+	assert_eq(scroll.running_platforms.position.y, y_scroll, "y das plataformas parado durante a pausa")
+	assert_eq(scroll.position_scrolled, rolado, "scroll parado durante a pausa")
+	assert_eq(stage.dificuldade._segundos, segundos, "tempo da dificuldade parado durante a pausa")
+	assert_true(Global.is_iniciado(), "Global.is_iniciado segue true durante a pausa")
+
+
+func test_retomar_continua_do_mesmo_estado() -> void:
+	var stage := await _novo_stage()
+	await wait_physics_frames(3)
+	stage._pausar()
+	var pos_player: Vector2 = stage.player.position
+	var pontos: int = stage.points
+	await wait_physics_frames(TICKS)
+	stage._retomar()
+	assert_false(get_tree().paused, "arvore retomada")
+	assert_eq(stage.player.position, pos_player, "posicao do Player igual a de antes da pausa")
+	assert_eq(stage.points, pontos, "points igual ao de antes da pausa")
+	assert_true(Global.is_iniciado(), "Global.is_iniciado segue true")
+
+
+func test_press_antes_da_pausa_solto_depois_nao_emite_hold_nem_tap() -> void:
+	var stage := await _novo_stage()
+	stage.touch_controls.relogio = Callable(self, "_relogio")
+	stage.touch_controls.gesto_concluido.connect(_registrar_gesto)
+	_agora_ms = 1000
+	_toque(stage, true, Vector2(45.0, 100.0))
+	stage._pausar()
+	_gestos.clear()  # o cancelamento da pausa e esperado; so conta o que vem depois
+	stage._retomar()
+	_agora_ms = 1500  # > 200 ms depois do press: sem o descarte viraria HOLD
+	_toque(stage, false, Vector2(45.0, 100.0))
+	assert_eq(_gestos.size(), 0, "release apos a retomada nao emite HOLD nem TAP (gestos: %s)" % [_gestos])
+	assert_false(stage.touch_controls.classificador.ativo(), "classificador sem press pendente")
+
+
+func test_pausa_cancela_o_gesto_em_curso_como_cancelado() -> void:
+	var stage := await _novo_stage()
+	stage.touch_controls.gesto_concluido.connect(_registrar_gesto)
+	_toque(stage, true, Vector2(45.0, 100.0))
+	stage._pausar()
+	assert_eq(_gestos.size(), 1, "um unico gesto emitido ao pausar")
+	assert_eq(_gestos[0][0], TouchClassifier.Resultado.CANCELADO, "gesto em curso cancelado pela pausa")
+
+
+func test_toque_no_botao_de_pausa_nunca_vira_gesto_de_jogo() -> void:
+	var stage := await _novo_stage()
+	var safe := Rect2(0.0, 20.0, 180.0, 294.0)
+	stage.apply_layout(Vector2(180.0, 320.0), safe)
+	var alvo: Vector2 = stage.pause_botao.rect_botao().get_center()
+	assert_eq(stage.pause_botao.rect_botao().position.y, 22.0, "botao deslocado por s_top")
+	stage.touch_controls.gesto_concluido.connect(_registrar_gesto)
+	_toque(stage, true, alvo)
+	_toque(stage, false, alvo)
+	assert_eq(_gestos.size(), 0, "toque no botao nao produz gesto_concluido de jogo (gestos: %s)" % [_gestos])
+	assert_false(stage.touch_controls.classificador.ativo(), "toque no botao nao vira press de jogo")
+	# Fora da zona (mesmo x/y sem deslocamento de s_top) o toque ainda e de jogo
+	_toque(stage, true, Vector2(14.0, 60.0))
+	_toque(stage, false, Vector2(14.0, 60.0))
+	assert_eq(_gestos.size(), 1, "toque fora do botao segue sendo gesto de jogo")
+
+
+func test_pause_no_menu_e_ignorada_e_play_nao_reinicia_apos_retomar() -> void:
+	var stage := await _novo_stage(false)
+	await _acao_pause()
+	assert_false(get_tree().paused, "pause no menu nao pausa")
+	assert_false(stage.pause_overlay.esta_aberto(), "overlay fechado no menu")
+	stage._on_Play_button_down()
+	await wait_frames(2)
+	var iniciadas: Array = []
+	stage.partida_iniciada.connect(func(): iniciadas.append(1))
+	stage._pausar()
+	stage._retomar()
+	stage._on_Play_button_down()
+	assert_eq(iniciadas.size(), 0, "Play apos retomar nao reinicia a partida")
+	assert_true(stage.started, "started segue true")
+	assert_true(Global.is_iniciado(), "Global.is_iniciado segue true")
+
+
+func test_acao_pause_pausa_e_abre_overlay_e_a_mesma_acao_retoma() -> void:
+	var stage := await _novo_stage()
+	await _acao_pause()
+	assert_true(get_tree().paused, "acao pause com partida ativa pausa a arvore")
+	assert_true(stage.pause_overlay.esta_aberto(), "overlay aberto")
+	assert_ne(stage.process_mode, Node.PROCESS_MODE_ALWAYS, "a Stage em si segue pausavel")
+	assert_eq(stage.pause_overlay.process_mode, Node.PROCESS_MODE_ALWAYS, "overlay escuta com a arvore pausada")
+	var pos_player: Vector2 = stage.player.position
+	await wait_physics_frames(TICKS)
+	assert_eq(stage.player.position, pos_player, "Player nao anda pausado")
+	await _acao_pause()
+	assert_false(get_tree().paused, "a mesma acao retoma")
+	assert_false(stage.pause_overlay.esta_aberto(), "overlay fechado")
