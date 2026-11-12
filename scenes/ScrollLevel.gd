@@ -11,6 +11,15 @@ const pre_running_platform = preload("res://scenes/RunningPlatforms.tscn")
 # Distância total que o nível scrollou (para posicionar novas plataformas)
 var position_scrolled = 0
 
+# Dificuldade da partida (atribuida pela Stage em _ready); null = estagio 0 (cena isolada)
+var dificuldade: DifficultyState = null
+
+# Foto vigente da dificuldade; sem estado injetado = estagio 0
+func _snapshot() -> DifficultySnapshot:
+	if dificuldade == null:
+		return DifficultySnapshot.new()
+	return dificuldade.snapshot()
+
 # Quantas linhas do fluxo já nasceram (uma a cada InitialRows.ESPACAMENTO px de scroll)
 var _rows_spawned: int = 0
 
@@ -39,7 +48,7 @@ func _physics_process(delta):
 		return
 	
 	# Calcula movimento de scroll baseado no delta time
-	var new_position = 20 * delta
+	var new_position: float = _snapshot().get_scroll() * delta
 	running_platforms.position.y += new_position
 	position_scrolled += new_position
 	# Gatilho aritmético: uma linha a cada ESPACAMENTO px, sem depender de altura nem de colisão
@@ -58,6 +67,8 @@ func create_new_running_platform(y_local: float = NAN):
 	if is_nan(y_local):
 		y_local = InitialRows.Y_TOPO - position_scrolled
 	running_platform.position = Vector2(0, y_local)
+	# Estado injetado ANTES do add_child (adiado): a linha le speed/proporcao/K no _ready
+	running_platform.dificuldade = dificuldade
 
 	running_platforms.call_deferred("add_child", running_platform)
 

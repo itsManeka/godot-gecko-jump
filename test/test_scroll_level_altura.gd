@@ -34,6 +34,8 @@ func _spawn(altura: int, fisica_ligada: bool = false) -> void:
 	_sv.add_child(_stage)
 	_scroll = _stage.get_node("ScrollLevel")
 	_p = _stage.get_node("Node2D/Player")
+	# Teste de altura, nao de dificuldade: scroll fixo no estagio 0 (20 px/s) para o y de nascimento ser exato
+	_scroll.dificuldade = null
 	if not fisica_ligada:
 		_scroll.set_physics_process(false)
 		_p.set_physics_process(false)

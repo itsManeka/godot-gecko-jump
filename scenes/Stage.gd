@@ -52,6 +52,10 @@ func _ready():
 	# Configura estado inicial
 	Global.set_iniciado(false)
 	dificuldade = DifficultyState.new(CURVA_DIFICULDADE)
+	# Linhas do .tscn e as de ScrollLevel._ready ja nasceram (estagio 0); as novas recebem o estado
+	var scroll_level: Node = get_node_or_null("ScrollLevel")
+	if scroll_level != null:
+		scroll_level.dificuldade = dificuldade
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
 	_publicar_estado(GameState.STATE_MENU, true)
