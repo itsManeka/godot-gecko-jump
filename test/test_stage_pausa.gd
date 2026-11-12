@@ -162,3 +162,59 @@ func test_acao_pause_pausa_e_abre_overlay_e_a_mesma_acao_retoma() -> void:
 	await _acao_pause()
 	assert_false(get_tree().paused, "a mesma acao retoma")
 	assert_false(stage.pause_overlay.esta_aberto(), "overlay fechado")
+
+
+# Perda de foco (T6): a notificacao entregue a Stage em partida ativa pausa e abre o overlay. Cada notificacao tem o seu
+# teste, para a mutacao de uma nao derrubar a outra.
+func test_foco_perdido_da_aplicacao_pausa_partida_ativa_e_abre_overlay() -> void:
+	var stage := await _novo_stage()
+	await wait_physics_frames(2)
+	stage.notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_true(get_tree().paused, "APPLICATION_FOCUS_OUT pausa a arvore")
+	assert_true(stage.pause_overlay.esta_aberto(), "APPLICATION_FOCUS_OUT abre o overlay")
+
+
+func test_foco_perdido_da_janela_pausa_partida_ativa_e_abre_overlay() -> void:
+	var stage := await _novo_stage()
+	await wait_physics_frames(2)
+	stage.notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+	assert_true(get_tree().paused, "WM_WINDOW_FOCUS_OUT pausa a arvore")
+	assert_true(stage.pause_overlay.esta_aberto(), "WM_WINDOW_FOCUS_OUT abre o overlay")
+
+
+# Foco perdido no menu e na derrota nao pausa; o foco de volta nunca retoma a partida pausada pelo foco.
+func test_foco_perdido_no_menu_e_na_derrota_nao_pausa() -> void:
+	var stage := await _novo_stage(false)
+	stage.notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
+	stage.notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+	assert_false(get_tree().paused, "foco perdido no menu nao pausa")
+	assert_false(stage.pause_overlay.esta_aberto(), "overlay fechado no menu")
+	stage._on_Play_button_down()
+	stage.player.lose_game()
+	assert_true(stage.player.is_end(), "derrota ativa (precondicao)")
+	stage.notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+	assert_false(get_tree().paused, "foco perdido na derrota nao pausa")
+	assert_false(stage.pause_overlay.esta_aberto(), "overlay fechado na derrota")
+
+
+func test_foco_de_volta_nao_retoma_partida_pausada_pelo_foco() -> void:
+	var stage := await _novo_stage()
+	stage.notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+	stage.notification(NOTIFICATION_APPLICATION_FOCUS_IN)
+	stage.notification(NOTIFICATION_WM_WINDOW_FOCUS_IN)
+	assert_true(get_tree().paused, "foco de volta nao retoma")
+	assert_true(stage.pause_overlay.esta_aberto(), "overlay segue aberto ate Continuar")
+
+
+# Foco perdido com a partida ja pausada e idempotente: overlay nao duplica, paused segue true.
+func test_foco_perdido_com_partida_ja_pausada_e_idempotente() -> void:
+	var stage := await _novo_stage()
+	stage._pausar()
+	stage.notification(NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+	assert_true(get_tree().paused, "paused segue true apos WM_WINDOW_FOCUS_OUT")
+	assert_true(stage.pause_overlay.esta_aberto(), "overlay segue aberto apos WM_WINDOW_FOCUS_OUT")
+	stage.notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_true(get_tree().paused, "paused segue true apos APPLICATION_FOCUS_OUT")
+	assert_true(stage.pause_overlay.esta_aberto(), "overlay segue aberto apos APPLICATION_FOCUS_OUT")
+	var overlays: int = stage.get_children().filter(func(c): return c is PauseOverlay).size()
+	assert_eq(overlays, 1, "overlay nao duplica")

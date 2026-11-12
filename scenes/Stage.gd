@@ -170,6 +170,12 @@ func _retomar() -> void:
 	pause_state.retomar()
 	pause_overlay.fechar()
 
+# Perda de foco da janela ou da aba pausa a partida (idempotente; fora de partida ativa _pausar ignora). Nao retoma
+# ao recuperar o foco: a retomada e do jogador, por Continuar.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		_pausar()
+
 # Detecta quando o jogador sai da área de jogo (perde)
 func _on_CheckPlayer_body_exited(body):
 	if !body.is_jumping() && !body.is_end():
