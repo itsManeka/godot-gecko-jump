@@ -1,0 +1,13 @@
+{
+  "path": "index.html?seed=462&dica=1",
+  "viewport": [720, 1280],
+  "boot_ms": 6000,
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "click": [360, 640] },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "wait": 300 },
+    { "shots": 2, "every": 300, "name": "dica-toque-partida", "moving": false },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 }
+  ]
+}

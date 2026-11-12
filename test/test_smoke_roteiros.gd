@@ -6,6 +6,7 @@ extends GutTest
 
 const PASTA: String = "res://test/smoke/"
 const ROTEIROS: Array[String] = [
+	"dica-toque",
 	"gecko",
 	"janela-larga-1280x720",
 	"retrato-1080x2400",
@@ -14,6 +15,7 @@ const ROTEIROS: Array[String] = [
 	"retrato-720x1280",
 	"retrato-pontua-1080x2772",
 	"retrato-queda-720x1280",
+	"toque",
 ]
 const ROTEIROS_LONGOS: Array[String] = [
 	"gecko",
@@ -149,9 +151,9 @@ func test_expect_usa_so_chaves_e_operadores_do_contrato() -> void:
 						assert_true(OPERADORES.has(str(operador)), "o operador deve ser eq/ne/gt/gte/lt/lte")
 
 
-# Um `down Space` inicia a partida quando, depois dele, so `wait`/`up` precedem um `expect` com state eq "playing".
+# Um `down Space` ou um `click` (toque no Play) inicia a partida quando, depois dele, so `wait`/`up` precedem um `expect` com state eq "playing".
 func _inicia_partida(passos: Array, i: int) -> bool:
-	if passos[i].get("down", "") != "Space":
+	if passos[i].get("down", "") != "Space" and not passos[i].has("click"):
 		return false
 	var j: int = i + 1
 	while j < passos.size() and (passos[j].has("wait") or passos[j].has("up")):

@@ -1,0 +1,13 @@
+{
+  "path": "index.html?seed=461",
+  "viewport": [720, 1280],
+  "boot_ms": 6000,
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "shots": 2, "every": 300, "name": "menu", "moving": false },
+    { "click": [360, 640] },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "toque-inicio", "moving": true },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 }
+  ]
+}

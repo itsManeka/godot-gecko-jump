@@ -29,6 +29,10 @@ func aplicar_seed(valor: Variant) -> void:
 var toque_detectado: bool = false
 var dica_toque_mostrada: bool = false
 
+# Dica de toque forcada (so smoke debug via `?dica=1`): liga toque_detectado sem dispositivo de toque. Nunca liga em release.
+func aplicar_modo_dica(raw: Variant, is_debug: bool) -> void:
+	toque_detectado = ModoDicaToque.decide(raw, is_debug)
+
 # Modo sem derrota (so smoke debug via `?semderrota=1`): o gecko nao perde. Nunca liga em release.
 var sem_derrota: bool = false
 
@@ -40,6 +44,7 @@ func aplicar_modo_sem_derrota(raw: Variant, is_debug: bool) -> void:
 func _ready():
 	aplicar_seed(SeedSource.decide(SeedSource.read_raw(), OS.is_debug_build()))
 	aplicar_modo_sem_derrota(ModoSemDerrota.read_raw(), OS.is_debug_build())
+	aplicar_modo_dica(ModoDicaToque.read_raw(), OS.is_debug_build())
 	_best_store = BestScoreStore.new()
 	pontuacao.load_best(_best_store.load_best())
 	pontuacao.best_changed.connect(_best_store.save_best)
