@@ -24,15 +24,17 @@
 
 ## 🎮 Controles
 
-| Ação | Teclas |
-|------|--------|
-| **Pular** | `Espaço`, `W` ou `↑` |
-| **Mover para Esquerda** | `A` ou `←` |
-| **Mover para Direita** | `D` ou `→` |
+| Ação | Teclas | Toque (um polegar) |
+|------|--------|--------------------|
+| **Pular** | `Espaço`, `W` ou `↑` | Toque rápido numa metade da tela: pulo na diagonal para aquele lado |
+| **Mover para Esquerda** | `A` ou `←` | Segure na metade esquerda |
+| **Mover para Direita** | `D` ou `→` | Segure na metade direita |
+
+No celular, uma dica discreta mostra as duas metades na primeira partida e some sozinha.
 
 ## 🚀 Como Jogar
 
-1. Pressione qualquer tecla de pulo para começar
+1. Pressione qualquer tecla de pulo (ou toque na tela) para começar
 2. Use as setas ou WASD para mover o Gecko; ao sair por uma lateral da tela, ele reaparece pela outra
 3. Pule apenas em plataformas da mesma cor que o Gecko
 4. Evite cair ou tocar plataformas de cores diferentes
@@ -78,7 +80,7 @@ godot-gecko-jump/
 
 ## 📱 Compatibilidade
 
-⚠️ **Aviso:** A tela já é pensada para celular (retrato, 180 px de largura), mas o jogo ainda não lê toque: os controles de toque chegam num próximo epic. Por ora, jogue com teclado.
+A tela é pensada para celular (retrato, 180 px de largura) e o jogo aceita toque com um polegar, além de teclado.
 
 **Requisitos:**
 - Godot Engine 4.7.2
@@ -120,6 +122,8 @@ release (o publicado) ignora os parametros abaixo e nao publica nada:
 - `?seed=<numero>` no `path` do roteiro fixa o sorteio de cores e plataformas. Todo roteiro leva uma seed.
 - `?semderrota=1` liga o modo sem derrota (plataformas na cor inicial e paradas), usado so pelo roteiro
   `retrato-pontua-1080x2772.smoke.json` para conferir que o gecko pontua.
+- `?dica=1` força a dica de toque sem aparelho de toque, usado pelo roteiro `dica-toque.smoke.json`. O runner só
+  clica com mouse, então tap e segurar por tempo não são jogados pelos roteiros (`toque.smoke.json` confere o início por clique).
 - O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`) e `player.alive`.
   O passo `expect` do roteiro le esses campos, por exemplo `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
 
@@ -189,15 +193,17 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 
 ### 🎮 Controls
 
-| Action | Keys |
-|--------|------|
-| **Jump** | `Space`, `W` or `↑` |
-| **Move Left** | `A` or `←` |
-| **Move Right** | `D` or `→` |
+| Action | Keys | Touch (one thumb) |
+|--------|------|-------------------|
+| **Jump** | `Space`, `W` or `↑` | Quick tap on one half of the screen: diagonal jump to that side |
+| **Move Left** | `A` or `←` | Hold on the left half |
+| **Move Right** | `D` or `→` | Hold on the right half |
+
+On phones, a subtle hint shows both halves in the first match and fades out on its own.
 
 ### 🚀 How to Play
 
-1. Press any jump key to start
+1. Press any jump key (or tap the screen) to start
 2. Use arrows or WASD to move the Gecko; leaving through one side of the screen brings it back on the other
 3. Jump only on platforms of the same color as the Gecko
 4. Avoid falling or touching platforms of different colors
@@ -232,6 +238,8 @@ build (the published one) ignores the parameters below and publishes nothing:
 - `?seed=<number>` in the script `path` fixes the color and platform draw. Every script carries a seed.
 - `?semderrota=1` turns on the no-defeat mode (platforms in the initial color and standing still), used only by the
   `retrato-pontua-1080x2772.smoke.json` script to check that the gecko scores.
+- `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` script. The runner only
+  clicks with a mouse, so tap and hold by time are not played by the scripts (`toque.smoke.json` checks the start with a click).
 - The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`) and
   `player.alive`. The script `expect` step reads those fields, for example
   `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
@@ -245,7 +253,7 @@ more, 4 by default) must end within 1500 ms of Play (`wait` + `(shots-1)*every`)
 
 ### 📱 Compatibility
 
-⚠️ **Warning:** The screen is already designed for phones (portrait, 180 px wide), but the game does not read touch yet: touch controls arrive in an upcoming epic. For now, play with a keyboard.
+The screen is designed for phones (portrait, 180 px wide) and the game accepts one-thumb touch as well as a keyboard.
 
 **Requirements:**
 - Godot Engine 4.7.2

@@ -32,7 +32,7 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ```
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
-           ScrollLevel (scroll 20 px/s)
+           ScrollLevel (scroll 20 px/s), TouchControls (toque -> acoes de input), TouchHint (dica das zonas)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
            ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd (recorde salvo em user://),
            PlatformTypePicker.gd (tipo do gerador, sem cena),
@@ -40,7 +40,8 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            InitialRows.gd (ys das linhas iniciais pela altura visivel, sem cena),
            MovingRowFill.gd (x pre-colocados das linhas moveis a partir do ponto de nascimento, sem cena),
            ReachableColors.gd (cor do gecko alcancavel no pouso e nas plataformas moveis, sem cena),
-           PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador)
+           PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador),
+           TouchClassifier.gd (tap x segurar e lado do toque, sem cena; ADR 0003)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 test/smoke/ roteiros do game-smoke (export web): `gecko.smoke.json` (fluxo), `retrato-*` (telas de celular) e
            `janela-larga-1280x720` (coluna de 180 com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os
