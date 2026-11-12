@@ -38,7 +38,8 @@ No celular, uma dica discreta mostra as duas metades na primeira partida e some 
 2. Use as setas ou WASD para mover o Gecko; ao sair por uma lateral da tela, ele reaparece pela outra
 3. Pule apenas em plataformas da mesma cor que o Gecko
 4. Evite cair ou tocar plataformas de cores diferentes
-5. Tente alcançar a maior pontuação possível!
+5. Quanto mais você pontua e mais tempo sobrevive, mais rápido a tela sobe e as plataformas andam; cada partida recomeça no ritmo inicial
+6. Tente alcançar a maior pontuação possível!
 
 ## 📱 Download
 
@@ -207,7 +208,8 @@ On phones, a subtle hint shows both halves in the first match and fades out on i
 2. Use arrows or WASD to move the Gecko; leaving through one side of the screen brings it back on the other
 3. Jump only on platforms of the same color as the Gecko
 4. Avoid falling or touching platforms of different colors
-5. Try to achieve the highest score possible!
+5. The more you score and the longer you survive, the faster the screen climbs and the platforms move; every run starts over at the initial pace
+6. Try to achieve the highest score possible!
 
 ### 📱 Download
 
