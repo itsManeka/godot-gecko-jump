@@ -1,0 +1,25 @@
+{
+  "path": "index.html?seed=453&semderrota=1",
+  "viewport": [360, 640],
+  "boot_ms": 6000,
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "partida-inicio", "moving": true },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "expect": { "score": { "gte": 1 } }, "timeout_ms": 3000 },
+    { "press": "KeyP" },
+    { "wait": 300 },
+    { "shots": 3, "every": 300, "name": "pausado", "still": true },
+    { "expect": { "state": "playing", "score": { "gte": 1 } }, "timeout_ms": 2000 },
+    { "press": "KeyP" },
+    { "wait": 150 },
+    { "shots": 4, "every": 150, "name": "retomado", "moving": true },
+    { "expect": { "state": "playing", "score": { "gte": 1 } }, "timeout_ms": 2000 }
+  ]
+}
