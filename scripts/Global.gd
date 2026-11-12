@@ -24,6 +24,11 @@ func aplicar_seed(valor: Variant) -> void:
 	else:
 		seed(int(valor))
 
+# Dica de toque (TouchHint): so em memoria (volta a cada recarga da pagina). A Stage e recriada a cada partida,
+# entao o estado "ja detectei toque" e "ja mostrei a dica" vive aqui.
+var toque_detectado: bool = false
+var dica_toque_mostrada: bool = false
+
 # Modo sem derrota (so smoke debug via `?semderrota=1`): o gecko nao perde. Nunca liga em release.
 var sem_derrota: bool = false
 

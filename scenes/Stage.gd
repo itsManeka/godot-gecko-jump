@@ -23,6 +23,8 @@ const BEST_BOTTOM: float = 265.0
 signal partida_iniciada
 # Camada de toque (filha da Stage, criada em _ready)
 var touch_controls: TouchControls = null
+# Dica visual das zonas de toque (filha da Stage, criada em _ready)
+var touch_hint: TouchHint = null
 # Safe area (coordenadas logicas) da ultima apply_layout; usada pelo HUD (T4)
 var safe_area: Rect2 = Rect2()
 # Ultimo estado montado para a ponte do smoke (ver GameState); lido pelos testes sem JavaScriptBridge
@@ -53,6 +55,11 @@ func _ready():
 	touch_controls = TouchControls.new()
 	touch_controls.player = player
 	add_child(touch_controls)
+	# Dica das zonas de toque (so desenho, abaixo do HUD); criada depois da camada de toque: recebe o toque antes
+	# dela e da Stage, entao o toque que inicia a partida nao conta como toque de jogo
+	touch_hint = TouchHint.new()
+	touch_hint.player = player
+	add_child(touch_hint)
 
 	# Layout a partir da area visivel real; refaz quando o viewport muda de tamanho
 	# (stretch keep_width: so a altura varia, a largura fica em 180)
@@ -74,6 +81,8 @@ func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 	collision.shape = shape
 	collision.position = Vector2(visible_size.x / 2.0, visible_size.y + CHECK_THICKNESS / 2.0)
 	_layout_hud(visible_size, safe)
+	if touch_hint != null:
+		touch_hint.aplicar_layout(visible_size, safe)
 
 # HUD no topo da safe area: Pontos junto a borda direita visivel, menu com o y de 180x320 deslocado por safe.position.y
 # e centrado na largura visivel. Posicao calculada do tamanho injetado (o pai Control so reflete o viewport real).
