@@ -19,6 +19,10 @@ const LAST_TOP: float = 230.0
 const LAST_BOTTOM: float = 247.0
 const BEST_TOP: float = 248.0
 const BEST_BOTTOM: float = 265.0
+# Disparado a cada inicio efetivo da partida (a guarda de started impede repeticao)
+signal partida_iniciada
+# Camada de toque (filha da Stage, criada em _ready)
+var touch_controls: TouchControls = null
 # Safe area (coordenadas logicas) da ultima apply_layout; usada pelo HUD (T4)
 var safe_area: Rect2 = Rect2()
 # Ultimo estado montado para a ponte do smoke (ver GameState); lido pelos testes sem JavaScriptBridge
@@ -44,6 +48,11 @@ func _ready():
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
 	_publicar_estado(GameState.STATE_MENU, true)
+
+	# Camada de toque de um polegar (criada por codigo; inerte fora de partida em curso)
+	touch_controls = TouchControls.new()
+	touch_controls.player = player
+	add_child(touch_controls)
 
 	# Layout a partir da area visivel real; refaz quando o viewport muda de tamanho
 	# (stretch keep_width: so a altura varia, a largura fica em 180)
@@ -89,6 +98,13 @@ func _process(delta):
 		if Input.is_action_pressed("jump"):
 			_on_Play_button_down()
 
+# Toque de jogo no menu inicia a partida. A TouchControls (filha) recebe o evento antes e ainda esta inerte,
+# entao o toque que inicia nao vira tap de jogo; depois da derrota started segue true e a guarda de
+# _on_Play_button_down faz o toque nao ter efeito.
+func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch and (event as InputEventScreenTouch).pressed:
+		_on_Play_button_down()
+
 # Detecta quando o jogador sai da área de jogo (perde)
 func _on_CheckPlayer_body_exited(body):
 	if !body.is_jumping() && !body.is_end():
@@ -117,7 +133,11 @@ func add_point():
 
 # Inicia o jogo escondendo menus e mostrando o jogador
 func _on_Play_button_down():
+	# Idempotente: toque + button_down emulado, toque durante a derrota ou jump preso nao reiniciam nada
+	if started:
+		return
 	started = true
+	partida_iniciada.emit()
 	playbutton.visible = false
 	lastscore.visible = false
 	bestscore.visible = false
