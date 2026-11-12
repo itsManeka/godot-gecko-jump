@@ -87,7 +87,7 @@ func preencher_linha():
 func new_platform():
 	_criar_plataforma(check_generate.position.x)
 
-# Cor da proxima plataforma movel: garante a cor do gecko (Global) em toda janela de ReachableColors.K criadas por este
+# Cor da proxima plataforma movel: garante a cor do gecko (Global) em toda janela de K (DifficultyStage.K_PADRAO) criadas por este
 # gerador; preencher_linha e new_platform passam por aqui, entao compartilham o historico
 func _cor_movel() -> int:
 	if Global.sem_derrota:
@@ -97,7 +97,7 @@ func _cor_movel() -> int:
 		primeira_cor_gecko_lida = cor_gecko
 	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, _cores_criadas, rng)
 	_cores_criadas.append(cor)
-	var maximo: int = maxi(ReachableColors.K - 1, 0)
+	var maximo: int = maxi(DifficultyStage.K_PADRAO - 1, 0)
 	while _cores_criadas.size() > maximo:
 		_cores_criadas.pop_front()
 	return cor

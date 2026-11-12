@@ -20,7 +20,7 @@ const EPS_PROGRESSO := 0.001
 
 # Formula do 04-plan ("Espacamento"): 60.2995 + 0.3 * speed, arredondada para cima (espacamento(60) == 79).
 func _espacamento(speed: float) -> float:
-	return ceilf(60.2995 + 0.3 * speed)  # T6 troca por MovingRowFill.espacamento(speed)
+	return MovingRowFill.espacamento(speed)
 
 
 func _taxa() -> float:

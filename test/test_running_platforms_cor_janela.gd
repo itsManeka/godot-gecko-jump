@@ -1,6 +1,6 @@
 extends GutTest
 
-# f414 T4: linhas moveis garantem a cor do gecko (Global.cor_gecko) em toda janela de ReachableColors.K plataformas
+# f414 T4: linhas moveis garantem a cor do gecko (Global.cor_gecko) em toda janela de K (DifficultyStage.K_PADRAO) plataformas
 # consecutivas criadas pelo mesmo gerador. Linhas iniciais estaticas seguem com a garantia de COR_INICIAL (F4/E1).
 
 const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
@@ -58,9 +58,10 @@ func _cores(gerador: Node) -> Array:
 # Quantas janelas de K consecutivas ficaram sem a cor
 func _janelas_sem_a_cor(cores: Array, cor: int) -> int:
 	var sem_cor := 0
-	for inicio in range(0, cores.size() - ReachableColors.K + 1):
+	var k: int = DifficultyStage.K_PADRAO
+	for inicio in range(0, cores.size() - k + 1):
 		var tem := false
-		for i in range(inicio, inicio + ReachableColors.K):
+		for i in range(inicio, inicio + k):
 			if cores[i] == cor:
 				tem = true
 		if not tem:

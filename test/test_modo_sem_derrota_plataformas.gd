@@ -120,9 +120,10 @@ func test_modo_desligado_janela_de_k_continua_valendo() -> void:
 	for p in _plataformas(gerador):
 		cores.append(p.color)
 	var sem_a_cor := 0
-	for inicio in range(0, cores.size() - ReachableColors.K + 1):
+	var k: int = DifficultyStage.K_PADRAO
+	for inicio in range(0, cores.size() - k + 1):
 		var tem := false
-		for i in range(inicio, inicio + ReachableColors.K):
+		for i in range(inicio, inicio + k):
 			if cores[i] == Enums.COLOR.AZUL:
 				tem = true
 		if not tem:

@@ -221,7 +221,7 @@ func test_c136_janela_de_k_moveis_tem_a_cor_vigente_no_spawn() -> void:
 			geckos[hist[i]["gecko"]] = true
 			janelas += 1
 			var tem: bool = false
-			for j in range(maxi(0, i - ReachableColors.K + 1), i + 1):
+			for j in range(maxi(0, i - DifficultyStage.K_PADRAO + 1), i + 1):
 				if hist[j]["cor"] == hist[i]["gecko"]:
 					tem = true
 			if not tem:

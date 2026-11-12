@@ -19,6 +19,8 @@ const LAST_TOP: float = 230.0
 const LAST_BOTTOM: float = 247.0
 const BEST_TOP: float = 248.0
 const BEST_BOTTOM: float = 265.0
+# Curva de producao (estagios da dificuldade); o estado de cada partida e criado em _ready a partir dela
+const CURVA_DIFICULDADE: DifficultyCurve = preload("res://ressources/curva_dificuldade.tres")
 # Disparado a cada inicio efetivo da partida (a guarda de started impede repeticao)
 signal partida_iniciada
 # Camada de toque (filha da Stage, criada em _ready)
@@ -29,6 +31,8 @@ var touch_hint: TouchHint = null
 var safe_area: Rect2 = Rect2()
 # Ultimo estado montado para a ponte do smoke (ver GameState); lido pelos testes sem JavaScriptBridge
 var ultimo_estado: Dictionary = {}
+# Dificuldade da partida (DifficultyState): nasce em _ready, zera a cada Stage nova (reload da cena). Consumidores leem o snapshot
+var dificuldade: DifficultyState = null
 
 # Referencias aos nós da interface e jogo
 @onready var animation = $AnimationPlayer
@@ -47,6 +51,7 @@ func _ready():
 	
 	# Configura estado inicial
 	Global.set_iniciado(false)
+	dificuldade = DifficultyState.new(CURVA_DIFICULDADE)
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
 	_publicar_estado(GameState.STATE_MENU, true)
@@ -107,6 +112,10 @@ func _process(delta):
 		if Input.is_action_pressed("jump"):
 			_on_Play_button_down()
 
+# Acumula o tempo da partida na dificuldade (DifficultyState so conta com Global.is_iniciado())
+func _physics_process(delta: float) -> void:
+	dificuldade.tick(delta)
+
 # Toque de jogo no menu inicia a partida. A TouchControls (filha) recebe o evento antes e ainda esta inerte,
 # entao o toque que inicia nao vira tap de jogo; depois da derrota started segue true e a guarda de
 # _on_Play_button_down faz o toque nao ter efeito.
@@ -134,6 +143,7 @@ func _on_player_add_point():
 # Adiciona um ponto à pontuação e atualiza a interface
 func add_point():
 	points += 1
+	dificuldade.set_pontos(points)
 	pointslabel.text = str(points)
 	# Ponto tardio depois da derrota nao republica: o estado publicado segue `lost`, com o score do instante da queda.
 	if ultimo_estado.get("state", "") == GameState.STATE_LOST:

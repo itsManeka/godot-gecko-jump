@@ -5,8 +5,8 @@ extends RefCounted
 # Sem arvore de cena: recebe tudo por parametro, testavel direto. Sem rng usa randi() global; com rng e deterministico.
 
 # Janela das plataformas moveis: toda janela de K plataformas consecutivas (ordem de criacao) tem a cor do gecko.
-# Constante de dificuldade: K maior = a garantia fica mais rara; K <= 1 = toda movel da cor do gecko.
-const K := 3
+# K vem do estagio da curva (DifficultyStage.k): K maior = a garantia fica mais rara; K <= 1 = toda movel da cor do gecko.
+# Sem k explicito vale DifficultyStage.K_PADRAO.
 
 
 # (a) Devolve uma das cores candidatas. Lista vazia (sem plataforma visivel acima) -> sorteio livre entre as cores de Enums.
@@ -18,9 +18,9 @@ static func escolher_cor_gecko(candidatas: Array, rng: RandomNumberGenerator = n
 
 
 # (b) Cor de uma plataforma movel. Se nenhuma das K-1 ultimas de `anteriores` tem a cor do gecko, forca a cor do gecko;
-# senao sorteia. Historico menor que K-1 (inicio da linha) conta como "nenhuma tem a cor". `k` so muda em teste.
+# senao sorteia. Historico menor que K-1 (inicio da linha) conta como "nenhuma tem a cor".
 static func cor_plataforma_movel(
-	cor_gecko: int, anteriores: Array, rng: RandomNumberGenerator = null, k: int = K
+	cor_gecko: int, anteriores: Array, rng: RandomNumberGenerator = null, k: int = DifficultyStage.K_PADRAO
 ) -> int:
 	if k <= 1 or not _tem_cor_na_janela(cor_gecko, anteriores, k - 1):
 		return cor_gecko
