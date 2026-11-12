@@ -12,7 +12,7 @@ extends RefCounted
 const DISTANCIA_SAIDA := 60.2995
 const TEMPO_TIMER := 0.3
 const TAXA_FISICA := 60.0
-const SPEED_PADRAO := 60.0 # speed do estagio 0 da curva (ressources/curva_dificuldade.tres)
+const SPEED_PADRAO: float = DifficultyStage.SPEED_PADRAO # speed do estagio 0 (ressources/curva_dificuldade.tres)
 const LARGURA_PADRAO := PlayArea.LARGURA
 const SEMI_PLATAFORMA := 30.0
 
