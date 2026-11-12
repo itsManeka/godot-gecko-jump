@@ -146,3 +146,70 @@ func test_arrastar_de_dentro_para_fora_cancela() -> void:
 	assert_false(b.esta_pressionado(), "sair do retangulo cancela o estado pressed")
 	b.tratar_evento(_toque(Vector2(10.0, 10.0), false))
 	assert_eq(_pedidos, 0, "arrastar para fora e voltar a soltar dentro nao deve pausar")
+
+
+func _clique(pos: Vector2, pressed: bool, device: int = 0, button: int = MOUSE_BUTTON_LEFT) -> InputEventMouseButton:
+	var e := InputEventMouseButton.new()
+	e.position = pos
+	e.pressed = pressed
+	e.button_index = button
+	e.device = device
+	return e
+
+
+func test_clique_de_mouse_dentro_pausa() -> void:
+	var b := _novo_botao()
+	_ativo(b)
+	assert_true(b.tratar_evento(_clique(Vector2(10.0, 10.0), true)), "pressionar dentro com mouse pertence ao botao")
+	assert_eq(_pedidos, 0, "pressionar com mouse nao pausa")
+	b.tratar_evento(_clique(Vector2(12.0, 12.0), false))
+	assert_eq(_pedidos, 1, "clique de mouse dentro do retangulo deve pausar 1 vez")
+
+
+func test_clique_de_mouse_emulado_nao_pausa() -> void:
+	var b := _novo_botao()
+	_ativo(b)
+	assert_false(b.tratar_evento(_clique(Vector2(10.0, 10.0), true, InputEvent.DEVICE_ID_EMULATION)), "mouse emulado nao e do botao")
+	assert_false(b.tratar_evento(_clique(Vector2(10.0, 10.0), false, InputEvent.DEVICE_ID_EMULATION)), "soltar mouse emulado nao e do botao")
+	assert_eq(_pedidos, 0, "mouse emulado a partir do toque nao deve pausar")
+
+
+func test_clique_de_mouse_soltar_fora_nao_pausa() -> void:
+	var b := _novo_botao()
+	_ativo(b)
+	b.tratar_evento(_clique(Vector2(10.0, 10.0), true))
+	b.tratar_evento(_clique(Vector2(100.0, 100.0), false))
+	assert_eq(_pedidos, 0, "pressionar dentro e soltar fora com mouse nao deve pausar")
+	assert_false(b.esta_pressionado(), "soltar fora com mouse limpa o estado pressed")
+
+
+func test_cancelar_zera_pressed_e_release_posterior_nao_pausa() -> void:
+	var b := _novo_botao()
+	_ativo(b)
+	b.tratar_evento(_toque(Vector2(10.0, 10.0), true))
+	assert_true(b.esta_pressionado(), "precondicao: dedo pressionado no botao")
+	b.cancelar()
+	assert_false(b.esta_pressionado(), "cancelar() deixa o botao nao pressionado")
+	b.tratar_evento(_toque(Vector2(12.0, 12.0), false))
+	assert_eq(_pedidos, 0, "release posterior do mesmo dedo apos cancelar() nao deve pausar")
+
+
+func test_clique_direito_de_mouse_dentro_nao_pausa() -> void:
+	var b := _novo_botao()
+	_ativo(b)
+	assert_false(b.tratar_evento(_clique(Vector2(10.0, 10.0), true, 0, MOUSE_BUTTON_RIGHT)), "pressionar dentro com botao direito nao pertence ao botao")
+	assert_false(b.esta_pressionado(), "botao direito nao ativa o estado pressed")
+	assert_false(b.tratar_evento(_clique(Vector2(12.0, 12.0), false, 0, MOUSE_BUTTON_RIGHT)), "soltar dentro com botao direito nao pertence ao botao")
+	assert_eq(_pedidos, 0, "clique direito dentro do retangulo nao deve pausar")
+
+
+func test_toque_e_mouse_misturados_dentro_nao_pausam() -> void:
+	var b := _novo_botao()
+	_ativo(b)
+	assert_true(b.tratar_evento(_toque(Vector2(10.0, 10.0), true)), "toque pressionado dentro pertence ao botao")
+	assert_false(b.tratar_evento(_clique(Vector2(12.0, 12.0), false)), "soltar mouse esquerdo de outro ponteiro nao e consumido")
+	assert_eq(_pedidos, 0, "toque pressionado + mouse solto dentro nao deve pausar")
+	b.cancelar()
+	assert_true(b.tratar_evento(_clique(Vector2(10.0, 10.0), true)), "mouse esquerdo pressionado dentro pertence ao botao")
+	assert_false(b.tratar_evento(_toque(Vector2(12.0, 12.0), false)), "soltar toque de outro ponteiro nao e consumido")
+	assert_eq(_pedidos, 0, "mouse pressionado + toque solto dentro nao deve pausar")

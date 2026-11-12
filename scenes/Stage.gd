@@ -153,18 +153,21 @@ func _input(event: InputEvent) -> void:
 # e o proprio overlay (ALWAYS), que consome o evento antes daqui.
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause") and not (event is InputEventKey and (event as InputEventKey).echo):
-		_pausar()
-		get_viewport().set_input_as_handled()
+		# Consome so quando a pausa de fato acontece: no menu e na derrota a acao segue para quem a escuta
+		if _pausar():
+			get_viewport().set_input_as_handled()
 
 func _partida_ativa() -> bool:
 	return PauseState.partida_ativa(started, player.is_end())
 
 # Pausa a arvore (Global.iniciado nao muda), cancela o toque de jogo em curso e abre o overlay
-func _pausar() -> void:
+func _pausar() -> bool:
 	if pause_state.esta_pausado() or not pause_state.pausar():
-		return
+		return false
 	touch_controls.cancelar_tudo()
+	pause_botao.cancelar()
 	pause_overlay.abrir()
+	return true
 
 func _retomar() -> void:
 	pause_state.retomar()
@@ -174,6 +177,9 @@ func _retomar() -> void:
 # ao recuperar o foco: a retomada e do jogador, por Continuar.
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		_pausar()
+	elif what == NOTIFICATION_APPLICATION_PAUSED:
+		# Android/web em segundo plano: mesmo efeito da perda de foco (idempotente, so partida ativa)
 		_pausar()
 
 # Detecta quando o jogador sai da área de jogo (perde)

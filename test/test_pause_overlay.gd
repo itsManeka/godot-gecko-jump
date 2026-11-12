@@ -107,3 +107,53 @@ func test_c185_acao_pause_com_overlay_aberto_emite_retomar() -> void:
 	o.fechar()
 	assert_false(o.tratar_evento(_acao("pause")), "pause com overlay fechado nao e do overlay")
 	assert_eq(_retomou, 1, "pause com overlay fechado nao emite retomar")
+
+
+func _clique(pos: Vector2, pressed: bool, device: int = 0, botao: int = MOUSE_BUTTON_LEFT) -> InputEventMouseButton:
+	var e := InputEventMouseButton.new()
+	e.position = pos
+	e.pressed = pressed
+	e.button_index = botao
+	e.device = device
+	return e
+
+
+func test_clique_de_mouse_dentro_de_continuar_emite_retomar() -> void:
+	var o := _novo(PEQUENA)
+	var dentro := o.rect_continuar().get_center()
+	assert_true(o.tratar_evento(_clique(dentro, true)), "pressionar dentro de Continuar e consumido")
+	assert_eq(_retomou, 0, "pressionar dentro ainda nao aciona")
+	assert_true(o.tratar_evento(_clique(dentro, false)), "soltar dentro e consumido")
+	assert_eq(_retomou, 1, "clique de mouse dentro de Continuar emite retomar")
+
+
+func test_clique_de_mouse_no_fundo_e_consumido_e_nao_retoma() -> void:
+	var o := _novo(PEQUENA)
+	assert_true(o.tratar_evento(_clique(Vector2(5, 5), true)), "pressionar no fundo e consumido")
+	assert_true(o.tratar_evento(_clique(Vector2(5, 5), false)), "soltar no fundo e consumido")
+	assert_eq(_retomou, 0, "clique no fundo nao retoma")
+	assert_eq(_abriu_opcoes, 0, "clique no fundo nao abre opcoes")
+
+
+func test_clique_de_mouse_soltar_fora_nao_aciona() -> void:
+	var o := _novo(PEQUENA)
+	var dentro := o.rect_continuar().get_center()
+	o.tratar_evento(_clique(dentro, true))
+	assert_true(o.tratar_evento(_clique(Vector2(5, 5), false)), "soltar fora ainda e consumido pelo overlay")
+	assert_eq(_retomou, 0, "pressionar dentro e soltar fora nao emite retomar")
+
+
+func test_clique_de_mouse_emulado_nao_aciona_e_nao_e_consumido() -> void:
+	var o := _novo(PEQUENA)
+	var dentro := o.rect_continuar().get_center()
+	assert_false(o.tratar_evento(_clique(dentro, true, InputEvent.DEVICE_ID_EMULATION)), "mouse emulado nao e do overlay")
+	assert_false(o.tratar_evento(_clique(dentro, false, InputEvent.DEVICE_ID_EMULATION)), "soltar mouse emulado nao e do overlay")
+	assert_eq(_retomou, 0, "mouse emulado a partir do toque nao emite retomar")
+
+
+func test_clique_de_botao_direito_nao_aciona() -> void:
+	var o := _novo(PEQUENA)
+	var dentro := o.rect_continuar().get_center()
+	assert_false(o.tratar_evento(_clique(dentro, true, 0, MOUSE_BUTTON_RIGHT)), "botao direito nao e do overlay")
+	assert_false(o.tratar_evento(_clique(dentro, false, 0, MOUSE_BUTTON_RIGHT)), "soltar botao direito nao e do overlay")
+	assert_eq(_retomou, 0, "botao direito nao emite retomar")

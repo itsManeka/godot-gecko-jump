@@ -18,6 +18,8 @@ const COR_TEXTO: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_FUNDO: Color = Color(0.0, 0.0, 0.0, 0.6)
 const COR_BOTAO: Color = Color("#5b8a4a")
+# Chave do mouse no dicionario de toques (dedos do toque sao indices pequenos, como em TouchControls.DEDO_MOUSE)
+const DEDO_MOUSE: int = 1000
 
 # Medidas em px logicos (handoff 9.2)
 const BLOCO_ALTURA: float = 118.0
@@ -98,6 +100,8 @@ func tratar_evento(event: InputEvent) -> bool:
 		return true
 	if event is InputEventScreenDrag:
 		return true
+	if event is InputEventMouseButton:
+		return _tratar_mouse(event as InputEventMouseButton)
 	if event is InputEventKey or event is InputEventJoypadButton or event is InputEventAction:
 		return _tratar_acao(event)
 	return false
@@ -182,17 +186,30 @@ func _tratar_acao(event: InputEvent) -> bool:
 
 
 func _tratar_toque(toque: InputEventScreenTouch) -> void:
-	if toque.pressed:
-		var b := _botao_em(toque.position)
-		_toques[toque.index] = b
+	_tratar_ponteiro(toque.index, toque.pressed, toque.position)
+
+
+# Clique de mouse esquerdo real (nao emulado a partir do toque) tem a mesma arbitragem do toque. Botao direito e
+# mouse emulado nao sao do overlay: devolvem false (nao consumidos).
+func _tratar_mouse(mouse: InputEventMouseButton) -> bool:
+	if mouse.device == InputEvent.DEVICE_ID_EMULATION or mouse.button_index != MOUSE_BUTTON_LEFT:
+		return false
+	_tratar_ponteiro(DEDO_MOUSE, mouse.pressed, mouse.position)
+	return true
+
+
+func _tratar_ponteiro(dedo: int, pressionado: bool, pos: Vector2) -> void:
+	if pressionado:
+		var b := _botao_em(pos)
+		_toques[dedo] = b
 		_pressionado = b
 		_atualizar_visual()
 		return
-	var inicio: int = _toques.get(toque.index, -1)
-	_toques.erase(toque.index)
+	var inicio: int = _toques.get(dedo, -1)
+	_toques.erase(dedo)
 	_pressionado = -1
 	_atualizar_visual()
-	if inicio != -1 and (_rects[inicio] as Rect2).has_point(toque.position):
+	if inicio != -1 and (_rects[inicio] as Rect2).has_point(pos):
 		_acionar(inicio)
 
 

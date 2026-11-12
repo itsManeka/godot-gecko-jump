@@ -218,3 +218,115 @@ func test_foco_perdido_com_partida_ja_pausada_e_idempotente() -> void:
 	assert_true(stage.pause_overlay.esta_aberto(), "overlay segue aberto apos APPLICATION_FOCUS_OUT")
 	var overlays: int = stage.get_children().filter(func(c): return c is PauseOverlay).size()
 	assert_eq(overlays, 1, "overlay nao duplica")
+
+
+# APPLICATION_PAUSED (Android/web em segundo plano) tem o mesmo efeito da perda de foco na Stage.
+func test_app_pausada_pausa_partida_ativa_e_abre_overlay() -> void:
+	var stage := await _novo_stage()
+	await wait_physics_frames(2)
+	stage.notification(NOTIFICATION_APPLICATION_PAUSED)
+	assert_true(get_tree().paused, "APPLICATION_PAUSED pausa a arvore")
+	assert_true(stage.pause_overlay.esta_aberto(), "APPLICATION_PAUSED abre o overlay")
+
+
+# Botao de pausa com o dedo sobre ele quando a pausa acontece pela acao: o estado pressed nao fica preso.
+func test_pausa_cancela_toque_pressionado_no_botao() -> void:
+	var stage := await _novo_stage()
+	stage.pause_botao.atualizar_visibilidade()
+	var ev := InputEventScreenTouch.new()
+	ev.index = 0
+	ev.pressed = true
+	ev.position = stage.pause_botao.rect_botao().get_center()
+	stage.pause_botao.tratar_evento(ev)
+	assert_true(stage.pause_botao.esta_pressionado(), "precondicao: dedo pressionado sobre o botao")
+	await _acao_pause()
+	assert_true(get_tree().paused, "acao pause pausa a partida")
+	assert_false(stage.pause_botao.esta_pressionado(), "pausa cancela o botao pressionado")
+	await _acao_pause()
+	assert_false(get_tree().paused, "a mesma acao retoma")
+	assert_false(stage.pause_botao.esta_pressionado(), "botao nao fica pressionado apos retomar")
+
+
+# Acao `pause` so e consumida quando a pausa acontece: no menu ela segue e chega ao ouvinte posterior.
+func test_acao_pause_no_menu_nao_e_consumida() -> void:
+	var ouvinte := _ouvinte()
+	await _novo_stage(false)
+	await _acao_pause()
+	assert_false(get_tree().paused, "pause no menu nao pausa")
+	assert_eq(ouvinte.acoes_pause, 1, "pause no menu nao e consumida: chega ao ouvinte posterior")
+
+
+func test_acao_pause_com_partida_ativa_e_consumida() -> void:
+	var ouvinte := _ouvinte()
+	await _novo_stage()
+	await _acao_pause()
+	assert_true(get_tree().paused, "pause com partida ativa pausa a arvore")
+	assert_eq(ouvinte.acoes_pause, 0, "pause com partida ativa e consumida pela Stage (nao chega ao ouvinte)")
+
+
+# Toque de verdade (Input.parse_input_event) no fundo com o overlay aberto: o overlay consome; nada chega ao jogo.
+func test_toque_no_fundo_com_overlay_aberto_nao_chega_ao_jogo() -> void:
+	var ouvinte := _ouvinte()
+	var stage := await _novo_stage()
+	stage.touch_controls.gesto_concluido.connect(_registrar_gesto)
+	var partidas: Array = []
+	stage.partida_iniciada.connect(func() -> void: partidas.append(1))
+	await _acao_pause()
+	assert_true(stage.pause_overlay.esta_aberto(), "precondicao: overlay aberto")
+	var fundo := Vector2(170.0, 300.0)
+	await _toque_real(fundo, true)
+	await _toque_real(fundo, false)
+	assert_eq(_gestos.size(), 0, "toque no fundo com overlay aberto nao gera gesto de jogo (gestos: %s)" % [_gestos])
+	assert_true(stage.pause_overlay.esta_aberto(), "overlay segue aberto apos toque no fundo")
+	assert_true(get_tree().paused, "arvore segue pausada apos toque no fundo")
+	assert_eq(ouvinte.toques, 0, "toque no fundo e consumido pelo overlay (nao chega a camada posterior)")
+
+
+# Toque sobre o botao de pausa, que fica sob o overlay: nao pede pausa nem retoma.
+func test_toque_sobre_o_botao_de_pausa_com_overlay_aberto_nao_pausa_nem_retoma() -> void:
+	var ouvinte := _ouvinte()
+	var stage := await _novo_stage()
+	await _acao_pause()
+	var pedidos: Array = []
+	stage.pause_botao.pausar_pedido.connect(func() -> void: pedidos.append(1))
+	var alvo: Vector2 = stage.pause_botao.rect_botao().get_center()
+	await _toque_real(alvo, true)
+	await _toque_real(alvo, false)
+	assert_eq(pedidos.size(), 0, "toque sobre o botao sob o overlay nao pede pausa")
+	assert_true(stage.pause_overlay.esta_aberto(), "toque sobre o botao nao retoma: overlay segue aberto")
+	assert_true(get_tree().paused, "toque sobre o botao nao retoma: arvore segue pausada")
+	assert_eq(ouvinte.toques, 0, "toque sobre o botao e consumido pelo overlay")
+
+
+func _toque_real(pos: Vector2, pressionado: bool) -> void:
+	var ev := InputEventScreenTouch.new()
+	ev.index = 0
+	ev.pressed = pressionado
+	ev.position = pos
+	Input.parse_input_event(ev)
+	Input.flush_buffered_events()
+	await wait_frames(2)
+
+
+# Ouvinte posterior a Stage na propagacao (criado antes dela): so recebe o que a Stage e o overlay nao consumiram.
+func _ouvinte() -> OuvinteEntrada:
+	var o := OuvinteEntrada.new()
+	add_child_autofree(o)
+	return o
+
+
+class OuvinteEntrada:
+	extends Node
+	var acoes_pause: int = 0
+	var toques: int = 0
+
+	func _init() -> void:
+		process_mode = Node.PROCESS_MODE_ALWAYS
+
+	func _input(event: InputEvent) -> void:
+		if event is InputEventScreenTouch:
+			toques += 1
+
+	func _unhandled_input(event: InputEvent) -> void:
+		if event.is_action_pressed("pause"):
+			acoes_pause += 1

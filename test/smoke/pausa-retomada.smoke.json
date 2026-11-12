@@ -20,6 +20,20 @@
     { "press": "KeyP" },
     { "wait": 150 },
     { "shots": 4, "every": 150, "name": "retomado", "moving": true },
-    { "expect": { "state": "playing", "score": { "gte": 1 } }, "timeout_ms": 2000 }
+    { "expect": { "state": "playing", "score": { "gte": 1 } }, "timeout_ms": 2000 },
+    { "click": [28, 28] },
+    { "wait": 300 },
+    { "shots": 2, "every": 300, "name": "pausa-botao", "still": true },
+    { "click": [180, 326] },
+    { "wait": 300 },
+    { "expect": { "state": "playing", "score": { "gte": 1 } }, "timeout_ms": 2000 },
+    { "shots": 2, "every": 150, "name": "continuar-botao" },
+    { "press": "Escape" },
+    { "wait": 300 },
+    { "shots": 2, "every": 300, "name": "pausa-esc", "still": true },
+    { "press": "Escape" },
+    { "wait": 300 },
+    { "expect": { "state": "playing", "score": { "gte": 1 } }, "timeout_ms": 2000 },
+    { "shots": 2, "every": 150, "name": "retomada-esc" }
   ]
 }

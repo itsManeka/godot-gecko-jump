@@ -12,6 +12,8 @@ signal pausar_pedido
 const COR_FUNDO: Color = Color("#5b8a4a")
 const COR_BORDA: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_GLIFO: Color = Color(1.0, 1.0, 1.0, 1.0)
+# Chave do mouse no estado de toque (dedos do toque sao indices pequenos, como em TouchControls.DEDO_MOUSE)
+const DEDO_MOUSE: int = 1000
 
 # Acima da dica de toque (layer 0) e do HUD (layer 1); abaixo do overlay de pausa (7.4).
 const CAMADA: int = 2
@@ -74,7 +76,7 @@ func partida_ativa() -> bool:
 func atualizar_visibilidade() -> void:
 	var ativa := partida_ativa()
 	if not ativa:
-		_cancelar()
+		cancelar()
 	visible = ativa
 
 
@@ -82,37 +84,48 @@ func esta_pressionado() -> bool:
 	return _pressed
 
 
-# Trata toque/arraste. Retorna true se o evento pertence ao botao (e foi consumido).
+# Trata toque, arraste e clique de mouse esquerdo real (nao emulado). Retorna true se o evento pertence ao botao
+# (e foi consumido). O mouse tem a mesma arbitragem do toque: pressionar dentro + soltar dentro pausa.
 func tratar_evento(event: InputEvent) -> bool:
 	if event is InputEventScreenTouch:
 		var t := event as InputEventScreenTouch
-		if t.pressed:
-			if not visible or not _rect.has_point(t.position):
-				return false
-			_dedo = t.index
-			_definir_pressed(true)
-			_consumir()
-			return true
-		if t.index != _dedo:
-			return false
-		var dentro := visible and _rect.has_point(t.position)
-		_cancelar()
-		_consumir()
-		if dentro:
-			pausar_pedido.emit()
-		return true
+		return _ponteiro(t.index, t.pressed, t.position)
 	if event is InputEventScreenDrag:
 		var d := event as InputEventScreenDrag
 		if d.index != _dedo:
 			return false
 		if not _rect.has_point(d.position):
-			_cancelar()
+			cancelar()
 		_consumir()
 		return true
+	if event is InputEventMouseButton:
+		var m := event as InputEventMouseButton
+		if m.device == InputEvent.DEVICE_ID_EMULATION or m.button_index != MOUSE_BUTTON_LEFT:
+			return false
+		return _ponteiro(DEDO_MOUSE, m.pressed, m.position)
 	return false
 
 
-func _cancelar() -> void:
+func _ponteiro(dedo: int, pressionado: bool, pos: Vector2) -> bool:
+	if pressionado:
+		if not visible or not _rect.has_point(pos):
+			return false
+		_dedo = dedo
+		_definir_pressed(true)
+		_consumir()
+		return true
+	if dedo != _dedo:
+		return false
+	var dentro := visible and _rect.has_point(pos)
+	cancelar()
+	_consumir()
+	if dentro:
+		pausar_pedido.emit()
+	return true
+
+
+# Cancela o toque em curso e zera o estado pressed (pausa com o dedo sobre o botao, saida do retangulo, predicado falso).
+func cancelar() -> void:
 	_dedo = -1
 	_definir_pressed(false)
 
