@@ -64,7 +64,7 @@ intermitente por sorteio da partida).
 Ordem: E3 → E4 → E5 → E6 → E7 → E8 (cada um depende do anterior). Todo epic termina com uma feature de QA em que o
 dono joga o que a maquina nao julga (Godot e export web; Android quando existir).
 
-Dificuldade: uma curva unica em `ressources/curva_dificuldade.tres` (estagios com interpolacao, avaliados por pontos e tempo de partida) controla scroll, velocidade das plataformas moveis, `ReachableColors.K` (quao rara fica a garantia da cor do gecko nas moveis; K maior = mais dificil, K = 1 = facil demais) e a proporcao de plataformas estaticas. Valores e decisao em [ADR 0007](adr/0007-curva-de-dificuldade-em-resource.md).
+Dificuldade: uma curva unica em `ressources/curva_dificuldade.tres` (estagios com interpolacao, avaliados por pontos e tempo de partida) controla scroll, velocidade das plataformas moveis, o K da garantia de cor (`DifficultyStage.k`: quao rara fica a garantia da cor do gecko nas moveis; K maior = mais dificil, K = 1 = facil demais) e a proporcao de plataformas estaticas. Valores e decisao em [ADR 0007](adr/0007-curva-de-dificuldade-em-resource.md).
 
 ## Epic 1 — Migracao e base solida
 
@@ -103,7 +103,7 @@ lateral com toque no aparelho (o jogo ainda nao le toque, #11).
 4. Gerador de plataformas cobre a altura visivel (#15).
 5. Borda lateral com wrap (#25).
 6. Linhas moveis preenchidas desde o inicio (#24).
-7. Cor alcancavel com `ReachableColors.K` (#23); a #38, achada no QA, foi corrigida no epic.
+7. Cor alcancavel em toda janela de K plataformas moveis (#23); a #38, achada no QA, foi corrigida no epic.
 8. Janela larga com a coluna de 180 centralizada e barras laterais.
 9. Gate em 3 camadas ([ADR 0006](adr/0006-oraculo-de-jogo-em-3-camadas.md)).
 

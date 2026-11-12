@@ -94,9 +94,7 @@ func new_platform():
 
 # Foto vigente da dificuldade; sem estado injetado = estagio 0
 func _snapshot() -> DifficultySnapshot:
-	if dificuldade == null:
-		return DifficultySnapshot.new()
-	return dificuldade.snapshot()
+	return DifficultySnapshot.de(dificuldade)
 
 # Cor da proxima plataforma movel: garante a cor do gecko (Global) em toda janela de K (K vigente) criadas por este
 # gerador; preencher_linha e new_platform passam por aqui, entao compartilham o historico

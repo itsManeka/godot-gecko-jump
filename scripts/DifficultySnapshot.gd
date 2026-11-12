@@ -42,3 +42,10 @@ func get_proporcao_estaticas() -> float:
 
 func get_mecanicas() -> Array[StringName]:
 	return _mecanicas.duplicate()
+
+
+# Foto vigente de um estado de dificuldade; sem estado (cena isolada, antes da injecao) = estagio 0
+static func de(estado: DifficultyState) -> DifficultySnapshot:
+	if estado == null:
+		return DifficultySnapshot.new()
+	return estado.snapshot()

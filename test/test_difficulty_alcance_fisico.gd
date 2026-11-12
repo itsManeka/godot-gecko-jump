@@ -18,7 +18,8 @@ const MARGEM_VERTICAL := 5.0
 const EPS_PROGRESSO := 0.001
 
 
-# Formula do 04-plan ("Espacamento"): 60.2995 + 0.3 * speed, arredondada para cima (espacamento(60) == 79).
+# Espacamento de producao (MovingRowFill.espacamento: ticks de fisica ate a saida do CheckGenerate + timer;
+# espacamento(60) == 79).
 func _espacamento(speed: float) -> float:
 	return MovingRowFill.espacamento(speed)
 

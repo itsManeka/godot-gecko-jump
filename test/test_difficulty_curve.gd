@@ -31,6 +31,18 @@ func test_progresso_zero_e_o_comportamento_atual() -> void:
 	assert_almost_eq(s.get_proporcao_estaticas(), 1.0 / 3.0, EPS)
 
 
+# O caminho legado do sorteio (golden de rng do smoke) e o snapshot sem estado usam DifficultyStage.*_PADRAO:
+# o estagio 0 do .tres tem de bater com eles, senao producao e "estagio 0" divergem em silencio.
+func test_estagio_0_do_tres_bate_com_os_defaults_de_difficulty_stage() -> void:
+	var e0: DifficultyStage = _curva.estagios[0]
+	assert_almost_eq(e0.scroll, DifficultyStage.SCROLL_PADRAO, EPS, "scroll do E0 = SCROLL_PADRAO")
+	assert_almost_eq(e0.speed_moveis, DifficultyStage.SPEED_PADRAO, EPS, "speed do E0 = SPEED_PADRAO")
+	assert_almost_eq(float(e0.k), float(DifficultyStage.K_PADRAO), EPS, "K do E0 = K_PADRAO")
+	assert_almost_eq(
+		e0.proporcao_estaticas, DifficultyStage.PROPORCAO_PADRAO, EPS, "proporcao do E0 = PROPORCAO_PADRAO"
+	)
+
+
 func test_varredura_fina_monotonia() -> void:
 	var anterior := _no_progresso(0.0)
 	for i in range(1, PASSOS + 1):

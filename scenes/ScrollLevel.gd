@@ -16,9 +16,7 @@ var dificuldade: DifficultyState = null
 
 # Foto vigente da dificuldade; sem estado injetado = estagio 0
 func _snapshot() -> DifficultySnapshot:
-	if dificuldade == null:
-		return DifficultySnapshot.new()
-	return dificuldade.snapshot()
+	return DifficultySnapshot.de(dificuldade)
 
 # Quantas linhas do fluxo já nasceram (uma a cada InitialRows.ESPACAMENTO px de scroll)
 var _rows_spawned: int = 0
