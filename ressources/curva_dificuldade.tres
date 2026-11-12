@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="DifficultyCurve" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/DifficultyCurve.gd" id="1_curva"]
+[ext_resource type="Script" path="res://scripts/DifficultyStage.gd" id="2_estagio"]
+
+[sub_resource type="Resource" id="Resource_e0"]
+script = ExtResource("2_estagio")
+progresso_inicio = 0.0
+scroll = 20.0
+speed_moveis = 60.0
+k = 3
+proporcao_estaticas = 0.3333333333333333
+mecanicas = Array[StringName]([])
+
+[sub_resource type="Resource" id="Resource_e1"]
+script = ExtResource("2_estagio")
+progresso_inicio = 0.35
+scroll = 26.0
+speed_moveis = 72.0
+k = 4
+proporcao_estaticas = 0.25
+mecanicas = Array[StringName]([])
+
+[sub_resource type="Resource" id="Resource_e2"]
+script = ExtResource("2_estagio")
+progresso_inicio = 0.7
+scroll = 33.0
+speed_moveis = 86.0
+k = 5
+proporcao_estaticas = 0.15
+mecanicas = Array[StringName]([])
+
+[sub_resource type="Resource" id="Resource_e3"]
+script = ExtResource("2_estagio")
+progresso_inicio = 1.0
+scroll = 40.0
+speed_moveis = 100.0
+k = 6
+proporcao_estaticas = 0.1
+mecanicas = Array[StringName]([])
+
+[resource]
+script = ExtResource("1_curva")
+estagios = Array[ExtResource("2_estagio")]([SubResource("Resource_e0"), SubResource("Resource_e1"), SubResource("Resource_e2"), SubResource("Resource_e3")])
+pontos_plato = 120.0
+segundos_plato = 180.0
