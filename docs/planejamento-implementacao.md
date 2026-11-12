@@ -26,37 +26,37 @@ Restricoes que guiam as decisoes:
 
 ## Ambiente
 
-| Item | Onde |
-|---|---|
-| Godot 4.7.2 (alvo) | `D:/Dev/.tools/godot-4.7.2/Godot_v4.7.2-stable_win64_console.exe` + templates em `%APPDATA%/Godot/export_templates/4.7.2.stable/` |
-| Aseprite (fork pessoal) | `dev-workspace/ecossistemas/ferramentas/aseprite/build/bin/aseprite.exe` |
-| Android SDK / JDK | `D:/android/Sdk`; JDK 21 (Liberica) instalado — conferir a versao exigida pelo Godot 4.7 no build Android |
-| Oraculo do repo | `node .verify.mjs <wave>` |
+| Item                    | Onde                                                                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Godot 4.7.2 (alvo)      | `D:/Dev/.tools/godot-4.7.2/Godot_v4.7.2-stable_win64_console.exe` + templates em `%APPDATA%/Godot/export_templates/4.7.2.stable/` |
+| Aseprite (fork pessoal) | `dev-workspace/ecossistemas/ferramentas/aseprite/build/bin/aseprite.exe`                                                          |
+| Android SDK / JDK       | `D:/android/Sdk`; JDK 21 (Liberica) instalado — conferir a versao exigida pelo Godot 4.7 no build Android                         |
+| Oraculo do repo         | `node .verify.mjs <wave>`                                                                                                         |
 
 No dev-workspace, os caminhos ficam em `workspace-config.json` → `ecosystems.game-gecko.tools`; fora dele, use a
 env `GODOT_PATH`.
 
 ## Roadmap
 
-| Fase | Conteudo | Issues | Estado |
-|---|---|---|---|
-| 1. Preparacao | `.gitignore`, oraculo headless, CLAUDE.md, baseline jogado | PR #2 | concluida (2026-11-08) |
-| 2. Migracao Godot 4 | Projeto, cenas e scripts no 4.7; export web pela CLI; rename do gerador | #8, #14 | epic 1, concluida (2026-11-09) |
-| 3. Base solida | Testes GUT; bugs da lista de plataformas, vazamento, aviso de import, cor inicial; recorde salvo | #7, #3, #4, #5, #6, #9 | epic 1, concluida (2026-11-09) |
+| Fase                | Conteudo                                                                                         | Issues                 | Estado                         |
+| ------------------- | ------------------------------------------------------------------------------------------------ | ---------------------- | ------------------------------ |
+| 1. Preparacao       | `.gitignore`, oraculo headless, CLAUDE.md, baseline jogado                                       | PR #2                  | concluida (2026-11-08)         |
+| 2. Migracao Godot 4 | Projeto, cenas e scripts no 4.7; export web pela CLI; rename do gerador                          | #8, #14                | epic 1, concluida (2026-11-09) |
+| 3. Base solida      | Testes GUT; bugs da lista de plataformas, vazamento, aviso de import, cor inicial; recorde salvo | #7, #3, #4, #5, #6, #9 | epic 1, concluida (2026-11-09) |
 
 Divisao em epics (as fases 1 a 3 acima formam o E1):
 
-| Epic | Conteudo | Issues | Estado |
-|---|---|---|---|
-| E1. Migracao e base solida | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3) | #8, #14, #7, #3, #4, #5, #6, #9 | concluido (2026-11-09) |
-| E2. CI, tela mobile e jogabilidade da base | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
-| E3. Controles, dificuldade e pausa/opcoes/tutorial | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes e tutorial | #36, #37, #39, #11, #10, #12 | em andamento |
-| E4. Conteudo | Power-ups, modos de jogo, gerador com seed | #16, #17 | planejado |
-| E5. Ranking online por modo | Ranking por modo de jogo; depende do E4 e do ChumGames E1 | #29 | planejado |
-| E6. Arte final e audio | Arte final em pixel art, sons e musica | #18, #13 | planejado |
-| E7. Publicacao | Web no itch.io; build Android | #19, #20 | planejado |
-| E8. Monetizacao e Play Store | Anuncios, remocao paga e publicacao na Play Store | #30 | planejado |
-| ChumGames E1 (ecossistema proprio, fora deste repo) | Backend Firebase compartilhado de ranking + addon Godot; pre-requisito do E5 | — | planejado |
+| Epic                                                | Conteudo                                                                                        | Issues                                               | Estado                              |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------- |
+| E1. Migracao e base solida                          | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3) | #8, #14, #7, #3, #4, #5, #6, #9                      | concluido (2026-11-09)              |
+| E2. CI, tela mobile e jogabilidade da base          | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel                | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
+| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes e tutorial          | #36, #37, #39, #11, #10, #12                         | em andamento                        |
+| E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                      | #16, #17                                             | planejado                           |
+| E5. Ranking online por modo                         | Ranking por modo de jogo; depende do E4 e do ChumGames E1                                       | #29                                                  | planejado                           |
+| E6. Arte final e audio                              | Arte final em pixel art, sons e musica                                                          | #18, #13                                             | planejado                           |
+| E7. Publicacao                                      | Web no itch.io; build Android                                                                   | #19, #20                                             | planejado                           |
+| E8. Monetizacao e Play Store                        | Anuncios, remocao paga e publicacao na Play Store                                               | #30                                                  | planejado                           |
+| ChumGames E1 (ecossistema proprio, fora deste repo) | Backend Firebase compartilhado de ranking + addon Godot; pre-requisito do E5                    | —                                                    | planejado                           |
 
 Herdadas do E2 no E3: #36 (EOL dos `.import`), #37 (enum `MOVE_TO_LEFT`/`MOVE_TO_RIGHT` invertido) e #39 (smoke
 intermitente por sorteio da partida).
@@ -117,6 +117,10 @@ Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10)
    `ressources/curva_dificuldade.tres` troca os literais de scroll, velocidade das moveis, K da garantia de cor e
    proporcao de estaticas por estagios com interpolacao, avaliados por pontos e tempo da partida (plato em cerca de 3
    min). Silenciosa: nenhuma UI de nivel. Calibracao fina pelo playtest do dono no QA do epic.
+2. Pausa (#12, [ADR 0008](adr/0008-pausa-por-tree-paused.md)): acao `pause` (Esc, P, start do controle), botao de
+   toque no canto superior esquerdo, pausa automatica ao perder o foco e overlay Continuar/Opcoes, por
+   `get_tree().paused`. Opcoes so emite o sinal ate a tela de Opcoes existir. Pausa por foco no web e no Android:
+   verificacao manual no QA do epic.
 
 ## Regras de trabalho
 

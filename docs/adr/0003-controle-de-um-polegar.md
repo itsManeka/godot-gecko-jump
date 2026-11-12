@@ -20,7 +20,8 @@ inteira como area de toque (Leap Day, Tower Climb, Color Jump), sem botoes virtu
 - **Limiar de 200 ms**, decidido no release: toque de ate 200 ms e pulo, a partir de 200 ms e segurar. O pulo sai ao
   soltar o dedo (latencia de ate 200 ms no tap) em troca de nunca pular por engano no comeco de um segurar.
 - **Tap no ar e descartado**, como no teclado: nao ha buffer de pulo para o proximo pouso.
-- **So toque**: mouse (real ou emulado a partir do toque) e ignorado pela camada de toque.
+- **So toque**: mouse (real ou emulado a partir do toque) e ignorado pela camada de toque. Excecao fora do gesto de
+  jogo: o botao de pausa e o overlay de pausa aceitam clique esquerdo de mouse real ([ADR 0008](0008-pausa-por-tree-paused.md)).
 - **Lado decidido ao pressionar**: arrastar o dedo para a outra metade nao troca o lado. So o primeiro dedo vale
   enquanto estiver na tela; o meio exato da tela pertence a direita.
 - Toque em qualquer ponto da tela inicia a partida; o toque que inicia nao vira pulo.

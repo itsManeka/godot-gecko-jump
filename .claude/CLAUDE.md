@@ -32,7 +32,8 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ```
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
-           ScrollLevel (scroll vindo da curva de dificuldade), TouchControls (toque -> acoes de input), TouchHint (dica das zonas)
+           ScrollLevel (scroll vindo da curva de dificuldade), TouchControls (toque -> acoes de input), TouchHint (dica das zonas),
+           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
            ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd (recorde salvo em user://),
            PlatformTypePicker.gd (tipo do gerador, sem cena),
@@ -43,7 +44,8 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador),
            TouchClassifier.gd (tap x segurar e lado do toque, sem cena; ADR 0003),
            DifficultyCurve.gd / DifficultyStage.gd (curva de dificuldade, sem cena; ADR 0007),
-           DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sem cena)
+           DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sem cena),
+           PauseState.gd (pausa = `get_tree().paused`, nunca `Global.iniciado`; sem cena; ADR 0008)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 test/smoke/ roteiros do game-smoke (export web): `gecko.smoke.json` (fluxo), `retrato-*` (telas de celular) e
            `janela-larga-1280x720` (coluna de 180 com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os

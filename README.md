@@ -5,7 +5,7 @@
 ![Godot Engine](https://img.shields.io/badge/Godot-4.7-blue?logo=godot-engine&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-PC-orange.svg)
 
-*Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!*
+_Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 
 [🎮 Como Jogar](#-como-jogar) • [📱 Download](#-download) • [🛠️ Tecnologias](#️-tecnologias-utilizadas) • [🌍 English](#-english-version)
 
@@ -13,9 +13,10 @@
 
 ## 📖 Descrição
 
-**Gecko Jump** é um jogo de plataforma onde você controla um camaleão confuso que muda de cor! 
+**Gecko Jump** é um jogo de plataforma onde você controla um camaleão confuso que muda de cor!
 
 ### 🎯 Objetivo
+
 - **Pular apenas nas plataformas da mesma cor** que o Gecko
 - **Ganhar pontos** a cada plataforma nova que tocar
 - **Mudar de cor automaticamente** após cada pulo bem-sucedido — a cor nova sempre existe numa plataforma da linha de cima
@@ -24,13 +25,17 @@
 
 ## 🎮 Controles
 
-| Ação | Teclas | Toque (um polegar) |
-|------|--------|--------------------|
-| **Pular** | `Espaço`, `W` ou `↑` | Toque rápido numa metade da tela: pulo na diagonal para aquele lado |
-| **Mover para Esquerda** | `A` ou `←` | Segure na metade esquerda |
-| **Mover para Direita** | `D` ou `→` | Segure na metade direita |
+| Ação                    | Teclas                           | Toque (um polegar)                                                  |
+| ----------------------- | -------------------------------- | ------------------------------------------------------------------- |
+| **Pular**               | `Espaço`, `W` ou `↑`             | Toque rápido numa metade da tela: pulo na diagonal para aquele lado |
+| **Mover para Esquerda** | `A` ou `←`                       | Segure na metade esquerda                                           |
+| **Mover para Direita**  | `D` ou `→`                       | Segure na metade direita                                            |
+| **Pausar / Continuar**  | `Esc` ou `P` (start no controle) | Botão de pausa no canto superior esquerdo                           |
 
 No celular, uma dica discreta mostra as duas metades na primeira partida e some sozinha.
+
+A partida também pausa sozinha quando a janela ou a aba perde o foco, ou quando o app vai para segundo plano. Para
+voltar, use **Continuar**, `Esc` ou `P`. No desktop, o botão de pausa e o menu de pausa também aceitam clique do mouse.
 
 ## 🚀 Como Jogar
 
@@ -46,11 +51,13 @@ No celular, uma dica discreta mostra as duas metades na primeira partida e some 
 > 🚧 **Em desenvolvimento** - O jogo ainda não possui release oficial.
 
 Para jogar agora:
+
 1. Clone este repositório
 2. Abra o projeto no Godot Engine 4.7.2
 3. Execute a cena principal `scenes/Stage.tscn`
 
 Para gerar a versão web (sem threads):
+
 1. Instale os export templates do Godot 4.7.2 (`Web`, sem threads)
 2. Na raiz do projeto, rode o export substituindo `<godot>` pelo executável do Godot 4.7.2:
    ```
@@ -84,6 +91,7 @@ godot-gecko-jump/
 A tela é pensada para celular (retrato, 180 px de largura) e o jogo aceita toque com um polegar, além de teclado.
 
 **Requisitos:**
+
 - Godot Engine 4.7.2
 - Sistema operacional: Windows, Linux, macOS
 
@@ -98,7 +106,7 @@ Pull requests para `main` e pushes em `main` que mudem arquivos fora de Markdown
 
 ### Baixar o build web de um PR
 
-Na pagina do PR, abra o run do `CI` e baixe o artefato `export-web` na secao *Artifacts* (guardado por 7 dias).
+Na pagina do PR, abra o run do `CI` e baixe o artefato `export-web` na secao _Artifacts_ (guardado por 7 dias).
 Descompacte e sirva a pasta por um servidor estatico, como na secao Download.
 
 ### Rodar o oraculo localmente
@@ -172,6 +180,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 ### 👨‍💻 Autor
 
 **Emanuel Ozorio**
+
 - GitHub: [@itsManeka](https://github.com/itsManeka)
 - Email: [emanuel.ozoriodias@gmail.com](mailto:emanuel.ozoriodias@gmail.com)
 
@@ -186,6 +195,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 **Gecko Jump** is a platform game where you control a confused chameleon that changes colors!
 
 #### 🎯 Objective
+
 - **Jump only on platforms of the same color** as the Gecko
 - **Earn points** for each new platform you touch
 - **Change color automatically** after each successful jump — the new color is always on a platform in the row above
@@ -194,13 +204,17 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 
 ### 🎮 Controls
 
-| Action | Keys | Touch (one thumb) |
-|--------|------|-------------------|
-| **Jump** | `Space`, `W` or `↑` | Quick tap on one half of the screen: diagonal jump to that side |
-| **Move Left** | `A` or `←` | Hold on the left half |
-| **Move Right** | `D` or `→` | Hold on the right half |
+| Action             | Keys                              | Touch (one thumb)                                               |
+| ------------------ | --------------------------------- | --------------------------------------------------------------- |
+| **Jump**           | `Space`, `W` or `↑`               | Quick tap on one half of the screen: diagonal jump to that side |
+| **Move Left**      | `A` or `←`                        | Hold on the left half                                           |
+| **Move Right**     | `D` or `→`                        | Hold on the right half                                          |
+| **Pause / Resume** | `Esc` or `P` (start on a gamepad) | Pause button in the top-left corner                             |
 
 On phones, a subtle hint shows both halves in the first match and fades out on its own.
+
+The match also pauses on its own when the window or tab loses focus, or when the app goes to the background. To resume,
+use **Continuar**, `Esc` or `P`. On desktop, the pause button and the pause menu also accept mouse clicks.
 
 ### 🚀 How to Play
 
@@ -216,11 +230,13 @@ On phones, a subtle hint shows both halves in the first match and fades out on i
 > 🚧 **In development** - The game doesn't have an official release yet.
 
 To play now:
+
 1. Clone this repository
 2. Open the project in Godot Engine 4.7.2
 3. Run the main scene `scenes/Stage.tscn`
 
 To build the web version (no threads):
+
 1. Install the Godot 4.7.2 export templates (`Web`, no threads)
 2. From the project root, run the export replacing `<godot>` with the Godot 4.7.2 executable:
    ```
@@ -258,5 +274,6 @@ more, 4 by default) must end within 1500 ms of Play (`wait` + `(shots-1)*every`)
 The screen is designed for phones (portrait, 180 px wide) and the game accepts one-thumb touch as well as a keyboard.
 
 **Requirements:**
+
 - Godot Engine 4.7.2
 - Operating System: Windows, Linux, macOS

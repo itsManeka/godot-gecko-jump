@@ -163,8 +163,7 @@ e arbitrada na secao 7.3. Esta tabela e o unico lugar que fixa a posicao do plac
 
 ## 6. Limites desta fundacao
 
-- Nao ha acao `pause` no `project.godot` (so `ui_left`, `ui_right`, `jump`); teclas de pausa citadas nas telas sao
-  previsao.
+- A acao `pause` existe no `project.godot` (Esc, P e o botao de start do controle; [ADR 0008](../adr/0008-pausa-por-tree-paused.md)).
 - Hoje nenhuma tela trata toque alem do clique/toque emulado do botao Play.
 - Nao ha slider, tema de UI nem fonte alem da do placar; os estados e o alvo de toque desta pagina sao proposta, a
   confirmar no QA final.
@@ -254,8 +253,7 @@ fica acima da dica para nunca ser coberto por ela e abaixo do overlay, que o enc
 ### 7.5 Onde e acessada
 
 - Na tela de jogo, no canto superior esquerdo (7.1), quando o predicado de visibilidade (secao 7.2) e verdadeiro.
-- Por tecla ou joypad: previsao (Esc ou P no teclado, botao de start no controle). Nao existe acao `pause` no
-  `project.godot`; este documento nao a cria.
+- Por tecla ou joypad: acao `pause` (Esc ou P no teclado, botao de start no controle).
 
 ## 8. Dica visual de toque
 
@@ -367,9 +365,8 @@ paleta (secao 1), a fonte (secao 2) e o botao (secao 3).
 
 - Visivel somente com o predicado de visibilidade (secao 7.2) verdadeiro **e** a partida pausada. Menu e derrota nunca
   mostram o overlay.
-- Abre pelo botao de pausa (7.1) ou por tecla/joypad (previsao: Esc ou P, botao de start; a acao `pause` nao existe
-  no `project.godot`, este documento nao a cria).
-- Fecha por **Continuar**, ou por Esc/P (previsao) com o overlay aberto. A partida volta ao ponto em que estava.
+- Abre pelo botao de pausa (7.1) ou por tecla/joypad (acao `pause`: Esc ou P, botao de start).
+- Fecha por **Continuar**, ou por Esc/P com o overlay aberto. A partida volta ao ponto em que estava.
 - Opcoes abre a tela da secao 10; Voltar de la devolve a este overlay.
 
 ### 9.2 Elementos e medidas
@@ -434,7 +431,7 @@ posicao (primeiro, acima), rotulo (verbo de retomar) e tamanho de texto (26 cont
 
 - Ordem de foco: Continuar, depois Opcoes; cima/baixo (`ui_up`/`ui_down`) circulam entre eles. Foco inicial em Continuar.
 - Foco visivel = marcador `>` antes do rotulo + moldura de 2 px (secao 3, estado focus).
-- Confirmar (`ui_accept`) aciona o botao com foco. Esc/P (previsao) = Continuar.
+- Confirmar (`ui_accept`) aciona o botao com foco. Esc/P (acao `pause`) = Continuar.
 
 ## 10. Tela de Opcoes
 
@@ -752,17 +749,17 @@ Esta secao so aponta: cada medida e cada regra tem um unico lugar (a secao citad
 
 Predicado de visibilidade = o da secao 7.2. Retorno = para onde o jogador vai ao sair da tela.
 
-| Tela / entrada                       | Origem(ns)                                                                                                                  | Visivel quando                                               | Retorno                                                                                                                         |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| Botao de pausa (secao 7)             | tela de jogo, canto superior esquerdo                                                                                       | predicado (7.2)                                              | abre o overlay de pausa; nao ha tela a retornar                                                                                 |
-| Pausa por tecla ou joypad (previsao) | Esc ou P, botao de start; a acao `pause` nao existe no `project.godot`                                                      | predicado (7.2)                                              | abre o overlay; Esc/P com o overlay aberto retoma                                                                               |
-| Overlay de pausa (secao 9)           | botao de pausa ou tecla/joypad                                                                                              | predicado (7.2) e partida pausada                            | Continuar volta a partida; Opcoes abre a tela da secao 10                                                                       |
-| Opcoes (secao 10)                    | botao Opcoes do overlay de pausa; botao Opcoes do menu (secao 11)                                                           | origem pausa: como o overlay; origem menu: jogo nao iniciado | Voltar leva a origem (overlay de pausa ou menu), com foco em Opcoes                                                             |
-| Botao de Opcoes do menu (secao 11)   | menu, entre Play e Last                                                                                                     | so no menu (jogo nao iniciado)                               | abre Opcoes; Voltar retorna ao menu                                                                                             |
-| Tutorial na 1a partida (secao 12)    | automatico no inicio da primeira partida                                                                                    | predicado (7.2) e flag "tutorial ja visto" ausente           | Pular ou primeiro pouso fecham o card; a partida ja esta em curso                                                               |
-| Tutorial reaberto (secao 12.5)       | item Ver tutorial de Opcoes (pausa ou menu)                                                                                 | Opcoes aberta                                                | Voltar leva a Opcoes, com foco em Ver tutorial                                                                                  |
-| Dica de toque (secao 8)              | partida em dispositivo de toque (antes do 1o toque de jogo; com o card aberto, depois do fechamento dele); sem item de menu | predicado (7.2) e regra da secao 8.4                         | some sozinha (fade); nao e tela                                                                                                 |
-| Fim de partida (derrota)             | queda do gecko (`Stage.gd:98-99`)                                                                                           | n/a                                                          | a animacao termina e o jogo recarrega a cena (`Stage.gd:102-103`) no menu; **nao pausa**, nao mostra overlay nem botao de pausa |
+| Tela / entrada                     | Origem(ns)                                                                                                                  | Visivel quando                                               | Retorno                                                                                                                         |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Botao de pausa (secao 7)           | tela de jogo, canto superior esquerdo                                                                                       | predicado (7.2)                                              | abre o overlay de pausa; nao ha tela a retornar                                                                                 |
+| Pausa por tecla ou joypad          | Esc ou P, botao de start (acao `pause` do `project.godot`)                                                                  | predicado (7.2)                                              | abre o overlay; Esc/P com o overlay aberto retoma                                                                               |
+| Overlay de pausa (secao 9)         | botao de pausa ou tecla/joypad                                                                                              | predicado (7.2) e partida pausada                            | Continuar volta a partida; Opcoes abre a tela da secao 10                                                                       |
+| Opcoes (secao 10)                  | botao Opcoes do overlay de pausa; botao Opcoes do menu (secao 11)                                                           | origem pausa: como o overlay; origem menu: jogo nao iniciado | Voltar leva a origem (overlay de pausa ou menu), com foco em Opcoes                                                             |
+| Botao de Opcoes do menu (secao 11) | menu, entre Play e Last                                                                                                     | so no menu (jogo nao iniciado)                               | abre Opcoes; Voltar retorna ao menu                                                                                             |
+| Tutorial na 1a partida (secao 12)  | automatico no inicio da primeira partida                                                                                    | predicado (7.2) e flag "tutorial ja visto" ausente           | Pular ou primeiro pouso fecham o card; a partida ja esta em curso                                                               |
+| Tutorial reaberto (secao 12.5)     | item Ver tutorial de Opcoes (pausa ou menu)                                                                                 | Opcoes aberta                                                | Voltar leva a Opcoes, com foco em Ver tutorial                                                                                  |
+| Dica de toque (secao 8)            | partida em dispositivo de toque (antes do 1o toque de jogo; com o card aberto, depois do fechamento dele); sem item de menu | predicado (7.2) e regra da secao 8.4                         | some sozinha (fade); nao e tela                                                                                                 |
+| Fim de partida (derrota)           | queda do gecko (`Stage.gd:98-99`)                                                                                           | n/a                                                          | a animacao termina e o jogo recarrega a cena (`Stage.gd:102-103`) no menu; **nao pausa**, nao mostra overlay nem botao de pausa |
 
 ### 13.2 O que cada consumidor extrai
 
