@@ -35,11 +35,13 @@ func _gerar_linha_estatica(y: float, rng: RandomNumberGenerator) -> Dictionary:
 
 
 # Cria 1 plataforma do historico da linha movel com a cor do gecko vigente agora; devolve a cor.
-func _criar_movel(linha: Dictionary, cor_gecko: int, rng: RandomNumberGenerator) -> int:
+func _criar_movel(
+	linha: Dictionary, cor_gecko: int, rng: RandomNumberGenerator, k: int = DifficultyStage.K_PADRAO
+) -> int:
 	var anteriores: Array = []
 	for h in linha["historico"]:
 		anteriores.append(h["cor"])
-	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, anteriores, rng)
+	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, anteriores, rng, k)
 	linha["historico"].append({"cor": cor, "gecko": cor_gecko})
 	return cor
 
@@ -53,6 +55,36 @@ func _gerar_linha_movel(y: float, cor_gecko: int, rng: RandomNumberGenerator) ->
 		linha["plataformas"].append({"x": x, "cor": _criar_movel(linha, cor_gecko, rng)})
 	_criar_movel(linha, cor_gecko, rng)
 	return linha
+
+
+# Linha nova de uma partida num estagio: o tipo sai de PlatformTypePicker com a proporcao do snapshot; estatica tem cores
+# aleatorias (como o gerador, sem a garantia da cor inicial); movel usa initial_xs com a speed e o K do snapshot.
+# Guarda {xs, spawn_x} da movel para conferir o espacamento.
+func _gerar_linha_do_snapshot(
+	y: float, cor_gecko: int, rng: RandomNumberGenerator, snap: DifficultySnapshot
+) -> Dictionary:
+	var tipo: int = PlatformTypePicker.resolve(Enums.PLATFORM_TYPE.RANDOM_ALL, rng, snap.get_proporcao_estaticas())
+	if tipo == Enums.PLATFORM_TYPE.STATIC:
+		var plataformas: Array = []
+		for x in [30.0, 90.0, 150.0]:
+			plataformas.append({"x": x, "cor": Enums.get_random_color(rng)})
+		return {"y": y, "tipo": "estatica", "plataformas": plataformas, "historico": []}
+	var para_esquerda: bool = tipo == Enums.PLATFORM_TYPE.MOVE_TO_LEFT
+	var spawn_x: float = LARGURA + MovingRowFill.SEMI_PLATAFORMA if para_esquerda else -MovingRowFill.SEMI_PLATAFORMA
+	var xs: Array = MovingRowFill.initial_xs(spawn_x, para_esquerda, LARGURA, snap.get_speed_moveis())
+	var linha: Dictionary = {
+		"y": y, "tipo": "movel", "plataformas": [], "historico": [], "xs": xs, "spawn_x": spawn_x
+	}
+	for x in xs:
+		linha["plataformas"].append({"x": x, "cor": _criar_movel(linha, cor_gecko, rng, snap.get_k())})
+	_criar_movel(linha, cor_gecko, rng, snap.get_k())
+	return linha
+
+
+func _nova_linha(y: float, cor_gecko: int, rng: RandomNumberGenerator, snap: DifficultySnapshot) -> Dictionary:
+	if snap == null:
+		return _gerar_linha_movel(y, cor_gecko, rng)
+	return _gerar_linha_do_snapshot(y, cor_gecko, rng, snap)
 
 
 # Recontagem independente da escolha: varre as plataformas geradas de TODAS as linhas e guarda as visiveis da linha em y.
@@ -77,9 +109,10 @@ func _entradas(linhas: Array) -> Array:
 
 # Devolve {linhas, eventos, cores}. Evento = um pouso na linha g: cor antes/depois, a coleta usada na escolha e as
 # cores visiveis da linha g+1 recontadas das plataformas geradas.
-func _simular(seed_valor: int) -> Dictionary:
+func _simular(seed_valor: int, snap: DifficultySnapshot = null) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_valor
+	var k: int = DifficultyStage.K_PADRAO if snap == null else snap.get_k()
 	var cor: int = Enums.COR_INICIAL
 	var linhas: Array = []
 	var iniciais: int = InitialRows.initial_row_ys(ALTURA_TELA).size()
@@ -90,7 +123,7 @@ func _simular(seed_valor: int) -> Dictionary:
 	for g in range(LINHAS - 1):
 		var cor_antes: int = cor
 		while linhas.size() <= g + 1:
-			linhas.append(_gerar_linha_movel(_y_da_linha(linhas.size()), cor_antes, rng))
+			linhas.append(_nova_linha(_y_da_linha(linhas.size()), cor_antes, rng, snap))
 		var candidatas: Array = ReachableColors.coletar_cores_linha_acima(
 			_entradas(linhas), float(linhas[g]["y"]), LARGURA
 		)
@@ -109,9 +142,9 @@ func _simular(seed_valor: int) -> Dictionary:
 		# Linhas moveis vivas criam outra plataforma no spawn com a cor do gecko vigente (nova cor do pouso).
 		for i in range(maxi(0, g + 2 - POUSOS_COM_SPAWN), g + 2):
 			if linhas[i]["tipo"] == "movel":
-				_criar_movel(linhas[i], cor, rng)
+				_criar_movel(linhas[i], cor, rng, k)
 	while linhas.size() < LINHAS:
-		linhas.append(_gerar_linha_movel(_y_da_linha(linhas.size()), cor, rng))
+		linhas.append(_nova_linha(_y_da_linha(linhas.size()), cor, rng, snap))
 	return {"linhas": linhas, "eventos": eventos, "cores": cores}
 
 
@@ -232,3 +265,89 @@ func test_c136_janela_de_k_moveis_tem_a_cor_vigente_no_spawn() -> void:
 	assert_gt(linhas_com_spawn_posterior, 0, "ha linha movel com spawn depois do preenchimento inicial")
 	assert_gt(linhas_com_gecko_variado, 0, "a cor do gecko vigente muda entre os spawns de uma mesma linha")
 	assert_eq(falhas.size(), 0, "toda janela de K moveis consecutivas tem a cor do gecko vigente no spawn")
+
+
+# --- f458 T10: alcancabilidade por estagio e no teto --------------------------------------------------------------
+# Snapshots lidos do .tres de producao (inicio e fim de cada estagio e teto). A simulacao usa o codigo real
+# (PlatformTypePicker com a proporcao, MovingRowFill.initial_xs com a speed, ReachableColors com o K do snapshot).
+# Limites aprovados do teto (04-plan, proposta de teto): decisao de projeto, nao copia do .tres. Reduzir o teto no
+# .tres continua passando; subir alem destes exige decidir aqui.
+const CURVA_PATH := "res://ressources/curva_dificuldade.tres"
+const EPS_PROGRESSO := 0.001
+const SEEDS_ESTAGIO := [20261110, 20261111, 20261112]
+const K_LIMITE := 6
+const SPEED_LIMITE := 100.0
+
+
+func _casos() -> Array:
+	var curva := load(CURVA_PATH) as DifficultyCurve
+	var casos: Array = []
+	for i in range(curva.estagios.size()):
+		var p_ini: float = curva.estagios[i].progresso_inicio
+		casos.append(["E%d inicio" % i, curva.avaliar(p_ini * curva.pontos_plato, 0.0)])
+		if i + 1 < curva.estagios.size():
+			var p_fim: float = curva.estagios[i + 1].progresso_inicio - EPS_PROGRESSO
+			casos.append(["E%d fim" % i, curva.avaliar(p_fim * curva.pontos_plato, 0.0)])
+	casos.append(["teto", curva.avaliar(curva.pontos_plato, curva.segundos_plato)])
+	return casos
+
+
+func test_c177_estagios_e_teto_nenhuma_janela_de_k_sem_a_cor_do_gecko() -> void:
+	var casos: Array = _casos()
+	assert_eq(casos.size(), 8, "4 estagios: 3 inicios + 3 fins + inicio do teto + teto")
+	for caso in casos:
+		var snap: DifficultySnapshot = caso[1]
+		var k: int = snap.get_k()
+		var esp: float = MovingRowFill.espacamento(snap.get_speed_moveis())
+		var janelas: int = 0
+		var moveis: int = 0
+		var estaticas: int = 0
+		var falhas_janela: Array = []
+		var falhas_espacamento: Array = []
+		var falhas_cor: Array = []
+		for seed_valor in SEEDS_ESTAGIO:
+			var sim: Dictionary = _simular(seed_valor, snap)
+			for e in sim["eventos"]:
+				if e["acima"].is_empty() or not e["acima"].has(e["depois"]):
+					falhas_cor.append([seed_valor, e["g"]])
+			for idx in sim["linhas"].size():
+				var linha: Dictionary = sim["linhas"][idx]
+				if linha["tipo"] == "estatica":
+					estaticas += 1
+					continue
+				moveis += 1
+				var ant: float = linha["spawn_x"]
+				for x in linha["xs"]:
+					if absf(absf(float(x) - ant) - esp) > 0.001:
+						falhas_espacamento.append([seed_valor, idx])
+					ant = x
+				var hist: Array = linha["historico"]
+				for i in hist.size():
+					janelas += 1
+					var tem: bool = false
+					for j in range(maxi(0, i - k + 1), i + 1):
+						if hist[j]["cor"] == hist[i]["gecko"]:
+							tem = true
+					if not tem:
+						falhas_janela.append([seed_valor, idx, i])
+		assert_gt(moveis, 0, "%s: ha linhas moveis na simulacao" % caso[0])
+		assert_gt(estaticas, 0, "%s: ha linhas estaticas (proporcao %.2f)" % [caso[0], snap.get_proporcao_estaticas()])
+		assert_gt(janelas, 0, "%s: ha janelas de K=%d para conferir" % [caso[0], k])
+		assert_eq(falhas_janela.size(), 0, "%s: toda janela de K=%d moveis tem a cor do gecko vigente" % [caso[0], k])
+		assert_eq(falhas_espacamento.size(), 0, "%s: x pre-colocados espacados por espacamento(speed)" % caso[0])
+		assert_eq(falhas_cor.size(), 0, "%s: a linha de cima de todo pouso tem a cor nova do gecko" % caso[0])
+
+
+func test_c178_k_e_speed_dentro_do_limite_aprovado_em_todo_estagio_e_no_teto() -> void:
+	var casos: Array = _casos()
+	assert_eq(casos.size(), 8, "4 estagios: 3 inicios + 3 fins + inicio do teto + teto")
+	for caso in casos:
+		var snap: DifficultySnapshot = caso[1]
+		assert_gte(snap.get_k(), DifficultyCurve.K_MINIMO, "%s: K %d >= minimo" % [caso[0], snap.get_k()])
+		assert_lte(snap.get_k(), K_LIMITE, "%s: K %d <= limite aprovado %d" % [caso[0], snap.get_k(), K_LIMITE])
+		assert_gt(snap.get_speed_moveis(), 0.0, "%s: speed positiva" % caso[0])
+		assert_lte(
+			snap.get_speed_moveis(),
+			SPEED_LIMITE,
+			"%s: speed %.1f <= limite aprovado %.0f" % [caso[0], snap.get_speed_moveis(), SPEED_LIMITE]
+		)
