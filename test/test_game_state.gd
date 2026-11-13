@@ -40,6 +40,11 @@ func test_build_publica_volumes_de_opcoes() -> void:
 	assert_eq(typeof((mudo["volume"] as Dictionary)["sfx"]), TYPE_INT, "sfx e int")
 
 
+func test_build_publica_tutorial_aberto_e_fechado() -> void:
+	assert_eq(GameState.build(0, 0, "menu", true)["tutorial"], "fechado", "padrao: fechado")
+	assert_eq(GameState.build(0, 0, "playing", true, 100, 100, true)["tutorial"], "aberto", "aberto")
+
+
 func test_json_stringify_parseia_de_volta_igual() -> void:
 	var estado: Dictionary = GameState.build(5, 9, "lost", false)
 	var texto: String = JSON.stringify(estado)

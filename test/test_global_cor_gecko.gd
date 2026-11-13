@@ -10,6 +10,7 @@ var _cores_no_primeiro_gerador: Array = []
 
 
 func before_each() -> void:
+	Global.tutorial_visto_espelho = true
 	_cor_original = Global.cor_gecko
 	Global.platforms = []
 	Global.iniciado = false

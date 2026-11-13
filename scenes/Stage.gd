@@ -29,6 +29,11 @@ var touch_controls: TouchControls = null
 var touch_hint: TouchHint = null
 # Botao de pausa por toque e overlay de pausa (filhos da Stage, criados em _ready)
 var pause_botao: PauseBotao = null
+# Card do tutorial da 1a partida (filho da Stage, criado em _ready) e a flag "ja visto" (store: Global.opcoes)
+var tutorial_card: TutorialCard = null
+var tutorial_flag: TutorialFlag = null
+# Callable() -> bool que substitui DisplayServer.is_touchscreen_available() na escolha da variante do card (teste)
+var touchscreen_disponivel: Callable = Callable()
 var pause_overlay: PauseOverlay = null
 var pause_state: PauseState = null
 # Tela de Opcoes (filha da Stage, criada em _ready)
@@ -78,6 +83,12 @@ func _ready():
 	touch_hint = TouchHint.new()
 	touch_hint.player = player
 	add_child(touch_hint)
+	# Card do tutorial: depois da dica e antes do botao de pausa (abaixo dele no z-order). Fecha e grava a flag no
+	# Pular ou no 1o ponto; derrota antes disso nao grava (o card some com a cena e volta na partida seguinte).
+	tutorial_flag = TutorialFlag.new(Global.opcoes)
+	tutorial_card = TutorialCard.new()
+	tutorial_card.pular.connect(_concluir_tutorial)
+	add_child(tutorial_card)
 	# Botao e overlay de pausa: filhos depois de touch_controls/touch_hint (o _input chega a eles antes). So o overlay
 	# e ALWAYS (retoma com a arvore pausada); a Stage segue pausavel.
 	pause_botao = PauseBotao.new()
@@ -120,6 +131,8 @@ func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 	_layout_hud(visible_size, safe)
 	if touch_hint != null:
 		touch_hint.aplicar_layout(visible_size, safe)
+	if tutorial_card != null:
+		tutorial_card.aplicar_layout(visible_size, safe)
 	if pause_botao != null:
 		pause_botao.aplicar_layout(visible_size, safe)
 		# Zona morta do toque de jogo: o retangulo do botao (ja deslocado por s_left/s_top)
@@ -159,6 +172,7 @@ func _process(delta):
 	if not started and not _inicio_suspenso():
 		if Input.is_action_pressed("jump"):
 			_on_Play_button_down()
+	_sincronizar_tutorial()
 
 # Acumula o tempo da partida na dificuldade (DifficultyState so conta com Global.is_iniciado())
 func _physics_process(delta: float) -> void:
@@ -187,6 +201,31 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _partida_ativa() -> bool:
 	return PauseState.partida_ativa(started, player.is_end())
+
+# Abre o card se a flag "visto" esta ausente (so no inicio da partida); a partida nao espera por ele
+func _abrir_tutorial() -> void:
+	if tutorial_flag.visto():
+		return
+	var toque: bool = Global.toque_detectado or _tem_touchscreen()
+	tutorial_card.abrir(TutorialCard.Variante.TOQUE if toque else TutorialCard.Variante.TECLADO)
+
+func _tem_touchscreen() -> bool:
+	if touchscreen_disponivel.is_valid():
+		return bool(touchscreen_disponivel.call())
+	return DisplayServer.is_touchscreen_available()
+
+# Pular ou 1o ponto: fecha o card com fade e grava a flag (uma vez: so com o card aberto)
+func _concluir_tutorial() -> void:
+	if not tutorial_card.esta_aberto():
+		return
+	tutorial_card.fechar()
+	tutorial_flag.marcar()
+	_republicar_volumes()
+
+# Card oculto fora de partida ativa (menu, animacao de derrota); nao grava a flag
+func _sincronizar_tutorial() -> void:
+	if tutorial_card != null and tutorial_card.esta_aberto() and not _partida_ativa():
+		tutorial_card.fechar(true)
 
 # Pausa a arvore (Global.iniciado nao muda), cancela o toque de jogo em curso e abre o overlay
 func _pausar() -> bool:
@@ -256,6 +295,7 @@ func _notification(what: int) -> void:
 func _on_CheckPlayer_body_exited(body):
 	if !body.is_jumping() && !body.is_end():
 		body.lose_game()
+		_sincronizar_tutorial()
 		loseaudio.play()
 		Global.set_score(points)
 		_publicar_estado(GameState.STATE_LOST, false)
@@ -271,7 +311,10 @@ func _on_player_add_point():
 
 # Adiciona um ponto à pontuação e atualiza a interface
 func add_point():
+	var primeiro_ponto: bool = points < 0
 	points += 1
+	if primeiro_ponto and ultimo_estado.get("state", "") != GameState.STATE_LOST:
+		_concluir_tutorial()
 	dificuldade.set_pontos(points)
 	pointslabel.text = str(points)
 	# Ponto tardio depois da derrota nao republica: o estado publicado segue `lost`, com o score do instante da queda.
@@ -289,6 +332,7 @@ func _on_Play_button_down():
 	_mostrar_menu(false)
 	player.visible = true
 	Global.set_iniciado(true)
+	_abrir_tutorial()
 	_publicar_estado(GameState.STATE_PLAYING, true)
 
 # Monta e publica o estado na ponte do smoke (no-op fora de web debug); score nunca negativo (points inicia em -1)
@@ -300,5 +344,6 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		alive,
 		roundi(Global.get_volume_music() * 100.0),
 		roundi(Global.get_volume_sfx() * 100.0),
+		tutorial_card != null and tutorial_card.esta_aberto(),
 	)
 	GameState.publish(ultimo_estado)

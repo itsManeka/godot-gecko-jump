@@ -10,6 +10,7 @@ const CURVA := preload("res://ressources/curva_dificuldade.tres")
 
 
 func before_each() -> void:
+	Global.tutorial_visto_espelho = true
 	Global.set_iniciado(false)
 
 

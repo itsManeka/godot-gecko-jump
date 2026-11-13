@@ -8,6 +8,7 @@ var _retomadas: int = 0
 
 
 func before_each() -> void:
+	Global.tutorial_visto_espelho = true
 	Global.platforms = []
 	Global.iniciado = false
 	_retomadas = 0

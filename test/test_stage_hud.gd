@@ -5,6 +5,7 @@ const STAGE := "res://scenes/Stage.tscn"
 var _stage: Node
 
 func before_each() -> void:
+	Global.tutorial_visto_espelho = true
 	Global.platforms = []
 	Global.iniciado = false
 

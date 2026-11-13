@@ -9,6 +9,7 @@ const SAFE_COM_TOPO := Rect2(0.0, 20.0, 180.0, 294.0)
 
 
 func before_each() -> void:
+	Global.tutorial_visto_espelho = true
 	Global.platforms = []
 	Global.iniciado = false
 
