@@ -132,6 +132,30 @@ func test_roteiros_longos_nao_dependem_do_gecko_sobreviver() -> void:
 		assert_eq(rajadas, 2, "cada roteiro longo deve ter 2 rajadas pulo2 (partida 1 e 2)")
 
 
+func test_roteiros_longos_esperam_state_playing_antes_de_cada_rajada_de_pulo() -> void:
+	for nome in ROTEIROS_LONGOS:
+		var passos := _passos(nome)
+		var protegidos: int = 0
+		for i in passos.size():
+			if passos[i].get("down", "") != "Space":
+				continue
+			# o `down Space` abre uma rajada pulo1/pulo2 quando o 1o `shots` depois dele tem esse nome
+			var j: int = i + 1
+			while j < passos.size() and not passos[j].has("shots"):
+				j += 1
+			if j >= passos.size():
+				continue
+			var rajada: String = str(passos[j].get("name", ""))
+			if not (rajada.ends_with("-pulo1") or rajada.ends_with("-pulo2")):
+				continue
+			assert_gt(i, 0, "%s: o down Space de %s nao pode ser o 1o passo" % [nome, rajada])
+			var anterior: Dictionary = passos[i - 1]
+			assert_eq(anterior.get("expect", {}), {"state": "playing"}, "%s: o down Space de %s deve ser precedido por expect state playing" % [nome, rajada])
+			assert_gte(int(anterior.get("timeout_ms", 0)), TIMEOUT_MIN_APOS_QUEDA_MS, "%s: o expect antes de %s deve ter timeout_ms >= 3000" % [nome, rajada])
+			protegidos += 1
+		assert_eq(protegidos, 4, "%s: 4 rajadas de pulo (2 por partida) devem ter o expect state playing antes" % nome)
+
+
 func test_expect_apos_queda_ou_animacao_tem_timeout_de_ao_menos_3s() -> void:
 	for nome in ROTEIROS:
 		for passo in _expects(nome):
