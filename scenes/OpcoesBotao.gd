@@ -151,6 +151,9 @@ func _tratar_acao(event: InputEvent) -> bool:
 			focar(true)
 			return true
 		return false
+	# Espaco e `jump` e `ui_accept` ao mesmo tempo: com foco no botao ele inicia a partida (Stage), nao reabre Opcoes.
+	if event.is_action("jump"):
+		return false
 	if event.is_action_pressed("ui_accept"):
 		acionado.emit()
 		return true

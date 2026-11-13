@@ -161,6 +161,37 @@ func test_toque_que_fecha_a_tela_nao_conta_como_inicio() -> void:
 	assert_false(stage.started, "o toque do Voltar nao inicia a partida")
 
 
+func _tecla(keycode: Key) -> InputEventKey:
+	var ev := InputEventKey.new()
+	ev.keycode = keycode
+	ev.physical_keycode = keycode
+	ev.pressed = true
+	return ev
+
+
+func test_espaco_com_foco_no_botao_nao_reabre_a_tela_e_enter_abre() -> void:
+	var stage := await _novo_stage()
+	_abrir_pelo_botao(stage)
+	stage.options_screen.voltar.emit()
+	assert_true(stage.opcoes_botao.tem_foco(), "foco no botao Opcoes depois de voltar")
+	var consumido: bool = stage.opcoes_botao.tratar_evento(_tecla(KEY_SPACE))
+	assert_false(consumido, "Espaco (jump) com foco no botao nao e consumido")
+	assert_false(stage.options_screen.esta_aberta(), "Espaco nao reabre a tela de Opcoes")
+	stage.opcoes_botao.tratar_evento(_tecla(KEY_ENTER))
+	assert_true(stage.options_screen.esta_aberta(), "Enter com foco abre a tela de Opcoes")
+
+
+func test_espaco_real_com_foco_no_botao_inicia_a_partida() -> void:
+	var stage := await _novo_stage()
+	_abrir_pelo_botao(stage)
+	stage.options_screen.voltar.emit()
+	Input.parse_input_event(_tecla(KEY_SPACE))
+	Input.flush_buffered_events()
+	await wait_frames(3)
+	assert_false(stage.options_screen.esta_aberta(), "Espaco real nao reabre a tela")
+	assert_true(stage.started, "Espaco real inicia a partida")
+
+
 func test_ui_down_leva_o_foco_para_opcoes_e_ui_accept_abre_a_tela() -> void:
 	var stage := await _novo_stage()
 	assert_false(stage.opcoes_botao.tem_foco(), "foco inicial no Play")
