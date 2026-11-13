@@ -354,7 +354,8 @@ func _on_player_add_point():
 
 # Adiciona um ponto à pontuação e atualiza a interface
 func add_point():
-	var primeiro_ponto: bool = points < 0
+	# points inicia em -1: o pouso inicial na plataforma de partida leva a 0 e nao conta; o 1o ponto real leva 0 -> 1
+	var primeiro_ponto: bool = points == 0
 	points += 1
 	if primeiro_ponto and ultimo_estado.get("state", "") != GameState.STATE_LOST:
 		_concluir_tutorial()

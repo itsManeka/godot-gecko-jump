@@ -92,15 +92,28 @@ func test_c205_primeiro_ponto_fecha_grava_e_segundo_nao_regrava() -> void:
 	stage._on_Play_button_down()
 	assert_eq(stage.points, -1)
 	stage.player.add_point.emit()
-	assert_eq(stage.points, 0, "1o ponto: points -1 -> 0")
+	assert_eq(stage.points, 0, "pouso inicial na plataforma de partida: points -1 -> 0")
+	assert_true(stage.tutorial_card.esta_aberto(), "pouso inicial nao fecha o card")
+	assert_false(_visto_no_cfg(), "pouso inicial nao grava a flag")
+	stage.player.add_point.emit()
+	assert_eq(stage.points, 1, "1o ponto real: points 0 -> 1")
 	assert_false(stage.tutorial_card.esta_aberto(), "1o ponto fecha o card")
 	assert_true(_visto_no_cfg(), "1o ponto grava a flag")
 	_limpar()
 	Global.tutorial_visto_espelho = false
 	stage.player.add_point.emit()
-	assert_eq(stage.points, 1)
+	assert_eq(stage.points, 2)
 	assert_false(stage.tutorial_card.esta_aberto(), "2o ponto nao reabre o card")
 	assert_false(_visto_no_cfg(), "2o ponto nao regrava a flag")
+
+
+func test_c205_pouso_inicial_com_fisica_real_mantem_card_aberto() -> void:
+	var stage := await _novo_stage()
+	stage._on_Play_button_down()
+	await wait_physics_frames(30)
+	assert_true(Global.is_iniciado(), "partida iniciada")
+	assert_true(stage.tutorial_card.esta_aberto(), "gecko parado na plataforma de partida: card segue aberto")
+	assert_false(_visto_no_cfg(), "gecko parado na plataforma de partida: flag nao gravada")
 
 
 func test_c206_derrota_com_card_aberto_nao_grava_e_stage_seguinte_abre() -> void:
