@@ -8,6 +8,7 @@ const PASTA: String = "res://test/smoke/"
 const ROTEIROS: Array[String] = [
 	"dica-toque",
 	"estagio",
+	"estagio-alto",
 	"gecko",
 	"janela-larga-1280x720",
 	"retrato-1080x2400",
@@ -29,6 +30,7 @@ const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.aliv
 const ROTEIROS_SEMDERROTA: Array[String] = [
 	"retrato-pontua-1080x2772",
 	"estagio",
+	"estagio-alto",
 	"gecko",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
@@ -339,3 +341,20 @@ func test_semderrota_so_na_lista_explicita_e_pontua_termina_vivo() -> void:
 	for nome in ROTEIROS:
 		var caminho: String = str(_carregar(nome).get("path", ""))
 		assert_eq("semderrota" in caminho, ROTEIROS_SEMDERROTA.has(nome), "semderrota so nos roteiros da lista explicita (pontua, estagio e longos)")
+
+
+func test_estagio_alto_prova_estagio_3_com_progresso_1_e_semderrota() -> void:
+	var nome: String = "estagio-alto"
+	_checar_roteiro_com_seed(nome)
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_true("progresso=1.0" in caminho, "o roteiro estagio-alto passa progresso=1.0 (estagio mais alto)")
+	assert_true("semderrota=1" in caminho, "o roteiro estagio-alto liga semderrota")
+	assert_true(ROTEIROS.has(nome), "o roteiro estagio-alto deve estar em ROTEIROS")
+	assert_true(ROTEIROS_SEMDERROTA.has(nome), "o roteiro estagio-alto deve estar em ROTEIROS_SEMDERROTA")
+	var i_gte3: int = _indice_expect(nome, "dificuldade.estagio", "gte")
+	assert_gte(i_gte3, 0, "deve haver expect dificuldade.estagio gte")
+	var passos := _passos(nome)
+	assert_eq(passos[i_gte3]["expect"]["dificuldade.estagio"]["gte"], 3.0, "o gte e contra o estagio 3")
+	assert_gte(int(passos[i_gte3].get("timeout_ms", 0)), TIMEOUT_MIN_APOS_QUEDA_MS, "o expect do estagio 3 deve ter timeout_ms >= 3000")
+	var ultimo: Dictionary = passos[passos.size() - 1]
+	assert_eq(ultimo.get("expect", {}), {"state": "playing"}, "o roteiro estagio-alto termina com expect state playing (gecko vivo)")
