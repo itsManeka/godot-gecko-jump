@@ -30,6 +30,16 @@ func test_build_valores_literais_menu_jogando_derrotado() -> void:
 	assert_eq(typeof((derrotado["player"] as Dictionary)["alive"]), TYPE_BOOL, "derrotado: alive e bool")
 
 
+func test_build_publica_volumes_de_opcoes() -> void:
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	assert_eq((padrao["volume"] as Dictionary)["music"], 100, "padrao: music 100")
+	assert_eq((padrao["volume"] as Dictionary)["sfx"], 100, "padrao: sfx 100")
+	var mudo: Dictionary = GameState.build(2, 4, "playing", true, 35, 0)
+	assert_eq((mudo["volume"] as Dictionary)["music"], 35, "music 35")
+	assert_eq((mudo["volume"] as Dictionary)["sfx"], 0, "sfx 0")
+	assert_eq(typeof((mudo["volume"] as Dictionary)["sfx"]), TYPE_INT, "sfx e int")
+
+
 func test_json_stringify_parseia_de_volta_igual() -> void:
 	var estado: Dictionary = GameState.build(5, 9, "lost", false)
 	var texto: String = JSON.stringify(estado)

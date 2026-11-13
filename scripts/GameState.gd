@@ -9,13 +9,15 @@ const STATE_MENU := "menu"
 const STATE_PLAYING := "playing"
 const STATE_LOST := "lost"
 
-# Monta o estado publicado: `score` e `best` (int), `state` ("menu"|"playing"|"lost"), `player.alive` (bool)
-static func build(score: int, best: int, state: String, alive: bool) -> Dictionary:
+# Monta o estado publicado: `score` e `best` (int), `state` ("menu"|"playing"|"lost"), `player.alive` (bool) e
+# `volume.music`/`volume.sfx` (int 0-100, o mesmo valor mostrado nos sliders de Opcoes)
+static func build(score: int, best: int, state: String, alive: bool, music: int = 100, sfx: int = 100) -> Dictionary:
 	return {
 		"score": score,
 		"best": best,
 		"state": state,
 		"player": {"alive": alive},
+		"volume": {"music": music, "sfx": sfx},
 	}
 
 # Decisor puro da trava de publicacao: so web de debug publica (release ignora; headless/desktop nao tem web)

@@ -218,6 +218,7 @@ func _abrir_opcoes_do_menu() -> void:
 # Voltar: fecha a tela e devolve o menu (foco no botao Opcoes) ou o overlay de pausa (foco em Opcoes, ainda pausado)
 func _voltar_opcoes() -> void:
 	options_screen.fechar()
+	_republicar_volumes()
 	if _opcoes_do_menu:
 		_opcoes_do_menu = false
 		if not started:
@@ -225,6 +226,13 @@ func _voltar_opcoes() -> void:
 			opcoes_botao.focar(true)
 		return
 	pause_overlay.abrir(PauseOverlay.Botao.OPCOES)
+
+# Republica o ultimo estado com os volumes atuais (ponte do smoke); estado ainda nao publicado nao e inventado
+func _republicar_volumes() -> void:
+	if ultimo_estado.is_empty():
+		return
+	var player_dict: Dictionary = ultimo_estado.get("player", {}) as Dictionary
+	_publicar_estado(str(ultimo_estado.get("state", "")), bool(player_dict.get("alive", true)))
 
 func _mostrar_menu(valor: bool) -> void:
 	playbutton.visible = valor
@@ -285,5 +293,12 @@ func _on_Play_button_down():
 
 # Monta e publica o estado na ponte do smoke (no-op fora de web debug); score nunca negativo (points inicia em -1)
 func _publicar_estado(state: String, alive: bool) -> void:
-	ultimo_estado = GameState.build(maxi(points, 0), Global.get_best_score(), state, alive)
+	ultimo_estado = GameState.build(
+		maxi(points, 0),
+		Global.get_best_score(),
+		state,
+		alive,
+		roundi(Global.get_volume_music() * 100.0),
+		roundi(Global.get_volume_sfx() * 100.0),
+	)
 	GameState.publish(ultimo_estado)
