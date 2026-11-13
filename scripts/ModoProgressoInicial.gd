@@ -27,9 +27,11 @@ static func decide(raw: Variant, is_debug: bool) -> float:
 	return texto.to_float()
 
 
-## Le o parametro `progresso` da query string. No web debug devolve o String (ou null se ausente);
-## fora do web devolve null sem tocar `JavaScriptBridge`.
+## Le o parametro `progresso`. Release: null. Web debug: query string (String, ou null se ausente).
+## Nativo debug: argumento de usuario `-- --progresso=0.34` via `DebugArgs.fonte`; sem tocar `JavaScriptBridge`.
 static func read_raw() -> Variant:
-	if not OS.has_feature("web") or not OS.is_debug_build():
+	if not OS.is_debug_build():
 		return null
-	return JavaScriptBridge.eval("new URLSearchParams(window.location.search).get('progresso')", true)
+	if OS.has_feature("web"):
+		return JavaScriptBridge.eval("new URLSearchParams(window.location.search).get('progresso')", true)
+	return DebugArgs.fonte(false, true, OS.get_cmdline_user_args(), "progresso")

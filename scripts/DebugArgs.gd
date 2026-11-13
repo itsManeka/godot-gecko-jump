@@ -2,8 +2,9 @@ class_name DebugArgs
 extends RefCounted
 
 ## Le os argumentos de usuario do Godot nativo (`godot ... -- --nome=valor`) para os parametros de debug.
-## `find` e puro: recebe a lista e o nome, nao le o ambiente. `read` e a unica leitura do ambiente.
+## `find` e `fonte` sao puros: recebem a lista e o nome, nao leem o ambiente.
 ## `fonte` decide a origem: so em build debug fora do web le os args; release e web devolvem null sem ler.
+## Os `read_raw` dos 5 decisores passam `OS.get_cmdline_user_args()` a `fonte`.
 ##
 ## Saida: `String` com o valor de `--nome=valor` (`--nome` sem valor vira `""`, paridade com `?nome` do web),
 ## ou `null` se ausente. Casa o nome exato (`--seed` nao casa `--seedx` nem `--seed2=1`); o valor e tudo
@@ -27,8 +28,3 @@ static func fonte(is_web: bool, is_debug: bool, args: PackedStringArray, nome: S
 	if is_web or not is_debug:
 		return null
 	return find(args, nome)
-
-
-## Unica leitura do ambiente: os args de usuario do processo, passados a `find`.
-static func read(nome: String) -> Variant:
-	return find(OS.get_cmdline_user_args(), nome)
