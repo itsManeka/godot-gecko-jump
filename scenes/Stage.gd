@@ -51,6 +51,8 @@ var safe_area: Rect2 = Rect2()
 var ultimo_estado: Dictionary = {}
 # Dificuldade da partida (DifficultyState): nasce em _ready, zera a cada Stage nova (reload da cena). Consumidores leem o snapshot
 var dificuldade: DifficultyState = null
+# Estagio da dificuldade na ultima publicacao da ponte; mudanca por tempo republica 1x (ver _physics_process)
+var _estagio_publicado: int = 0
 
 # Referencias aos nós da interface e jogo
 @onready var animation = $AnimationPlayer
@@ -70,6 +72,8 @@ func _ready():
 	# Configura estado inicial
 	Global.set_iniciado(false)
 	dificuldade = DifficultyState.new(CURVA_DIFICULDADE)
+	# Progresso inicial de debug (?progresso=, 0.0 fora do web debug): a partida ja nasce nesse ponto da curva
+	dificuldade.progresso_inicial = Global.progresso_inicial
 	# Linhas do .tscn e as de ScrollLevel._ready ja nasceram (estagio 0); as novas recebem o estado
 	var scroll_level: Node = get_node_or_null("ScrollLevel")
 	if scroll_level != null:
@@ -196,6 +200,9 @@ func _process(delta):
 # Acumula o tempo da partida na dificuldade (DifficultyState so conta com Global.is_iniciado())
 func _physics_process(delta: float) -> void:
 	dificuldade.tick(delta)
+	# O estagio sobe por tempo sem evento de ponto/Play: republica 1x por mudanca, nunca apos a derrota
+	if dificuldade.estagio() != _estagio_publicado and ultimo_estado.get("state", "") != GameState.STATE_LOST:
+		_republicar_volumes()
 
 # Toque de jogo no menu inicia a partida. A TouchControls (filha) recebe o evento antes e ainda esta inerte,
 # entao o toque que inicia nao vira tap de jogo; depois da derrota started segue true e a guarda de
@@ -388,6 +395,7 @@ func _on_Play_button_down():
 
 # Monta e publica o estado na ponte do smoke (no-op fora de web debug); score nunca negativo (points inicia em -1)
 func _publicar_estado(state: String, alive: bool) -> void:
+	_estagio_publicado = dificuldade.estagio()
 	ultimo_estado = GameState.build(
 		maxi(points, 0),
 		Global.get_best_score(),
@@ -396,5 +404,6 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		roundi(Global.get_volume_music() * 100.0),
 		roundi(Global.get_volume_sfx() * 100.0),
 		tutorial_card != null and tutorial_card.esta_aberto(),
+		_estagio_publicado,
 	)
 	GameState.publish(ultimo_estado)
