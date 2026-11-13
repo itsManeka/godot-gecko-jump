@@ -26,7 +26,15 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-720x1280",
 ]
 const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "dificuldade.estagio"]
-const ROTEIROS_SEMDERROTA: Array[String] = ["retrato-pontua-1080x2772", "estagio"]
+const ROTEIROS_SEMDERROTA: Array[String] = [
+	"retrato-pontua-1080x2772",
+	"estagio",
+	"gecko",
+	"retrato-1080x2400",
+	"retrato-1080x2772",
+	"retrato-1170x2532",
+	"retrato-720x1280",
+]
 const OPERADORES: Array[String] = ["eq", "ne", "gt", "gte", "lt", "lte"]
 const TIMEOUT_MIN_APOS_QUEDA_MS: int = 3000
 # Orcamento do tempo nominal (wait + (shots-1)*every) do Play ate o ultimo print de uma rajada moving true: a recarga
@@ -330,4 +338,4 @@ func test_so_retrato_pontua_liga_semderrota_pontua_e_termina_vivo() -> void:
 	assert_eq(ultimo.get("expect", {}), {"state": "playing"}, "o roteiro pontua deve terminar com expect state playing (gecko vivo)")
 	for nome in ROTEIROS:
 		var caminho: String = str(_carregar(nome).get("path", ""))
-		assert_eq("semderrota" in caminho, ROTEIROS_SEMDERROTA.has(nome), "semderrota so nos roteiros da lista explicita (pontua e estagio)")
+		assert_eq("semderrota" in caminho, ROTEIROS_SEMDERROTA.has(nome), "semderrota so nos roteiros da lista explicita (pontua, estagio e longos)")
