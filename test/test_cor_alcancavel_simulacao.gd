@@ -107,9 +107,26 @@ func _entradas(linhas: Array) -> Array:
 	return entradas
 
 
+func _total_plataformas(linhas: Array) -> int:
+	var total: int = 0
+	for linha in linhas:
+		total += linha["plataformas"].size()
+	return total
+
+
+# Remove da linha a 1a plataforma visivel da cor do pouso (a que o gecko pisou); devolve se removeu.
+func _remover_plataforma_do_pouso(linha: Dictionary, cor_pouso: int) -> bool:
+	for i in linha["plataformas"].size():
+		var p: Dictionary = linha["plataformas"][i]
+		if p["cor"] == cor_pouso and _visivel(p["x"]):
+			linha["plataformas"].remove_at(i)
+			return true
+	return false
+
+
 # Devolve {linhas, eventos, cores}. Evento = um pouso na linha g: cor antes/depois, a coleta usada na escolha e as
 # cores visiveis da linha g+1 recontadas das plataformas geradas.
-func _simular(seed_valor: int, snap: DifficultySnapshot = null) -> Dictionary:
+func _simular(seed_valor: int, snap: DifficultySnapshot = null, desmoronar: bool = false) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_valor
 	var k: int = DifficultyStage.K_PADRAO if snap == null else snap.get_k()
@@ -129,16 +146,22 @@ func _simular(seed_valor: int, snap: DifficultySnapshot = null) -> Dictionary:
 		)
 		cor = ReachableColors.escolher_cor_gecko(candidatas, rng)
 		cores.append(cor)
-		eventos.append(
-			{
-				"g": g,
-				"antes": cor_antes,
-				"depois": cor,
-				"candidatas": candidatas,
-				"acima": _cores_recontadas(linhas, float(linhas[g + 1]["y"])),
-				"tipo_acima": linhas[g + 1]["tipo"],
-			}
-		)
+		var evento: Dictionary = {
+			"g": g,
+			"antes": cor_antes,
+			"depois": cor,
+			"candidatas": candidatas,
+			"acima": _cores_recontadas(linhas, float(linhas[g + 1]["y"])),
+			"tipo_acima": linhas[g + 1]["tipo"],
+		}
+		if desmoronar:
+			# Plataforma do pouso (cor antes do pouso) desmorona depois da coleta; so ela sai da linha g.
+			var total_antes: int = _total_plataformas(linhas)
+			var removida: bool = _remover_plataforma_do_pouso(linhas[g], cor_antes)
+			evento["removida"] = removida
+			evento["removidas_total"] = total_antes - _total_plataformas(linhas)
+			evento["acima_pos"] = _cores_recontadas(linhas, float(linhas[g + 1]["y"]))
+		eventos.append(evento)
 		# Linhas moveis vivas criam outra plataforma no spawn com a cor do gecko vigente (nova cor do pouso).
 		for i in range(maxi(0, g + 2 - POUSOS_COM_SPAWN), g + 2):
 			if linhas[i]["tipo"] == "movel":
@@ -336,6 +359,34 @@ func test_c177_estagios_e_teto_nenhuma_janela_de_k_sem_a_cor_do_gecko() -> void:
 		assert_eq(falhas_janela.size(), 0, "%s: toda janela de K=%d moveis tem a cor do gecko vigente" % [caso[0], k])
 		assert_eq(falhas_espacamento.size(), 0, "%s: x pre-colocados espacados por espacamento(speed)" % caso[0])
 		assert_eq(falhas_cor.size(), 0, "%s: a linha de cima de todo pouso tem a cor nova do gecko" % caso[0])
+
+
+func test_cor_alcancavel_simulacao_desmoronamento_so_do_pouso_em_estagios_e_teto() -> void:
+	PlatformModifiers.restaurar_padrao()
+	var casos: Array = _casos()
+	assert_eq(casos.size(), 8, "4 estagios: 3 inicios + 3 fins + inicio do teto + teto")
+	var com_desmoronamento: int = 0
+	for caso in casos:
+		var snap: DifficultySnapshot = caso[1]
+		if not snap.get_mecanicas().has(PlatformModifiers.PLATAFORMAS_QUE_CAEM):
+			continue
+		com_desmoronamento += 1
+		var removidas: int = 0
+		var falhas_cor: Array = []
+		var falhas_so_pouso: Array = []
+		for seed_valor in SEEDS_ESTAGIO:
+			var sim: Dictionary = _simular(seed_valor, snap, true)
+			for e in sim["eventos"]:
+				if e["removida"]:
+					removidas += 1
+				if e["removidas_total"] > 1:
+					falhas_so_pouso.append([seed_valor, e["g"]])
+				if not e["acima_pos"].has(e["depois"]):
+					falhas_cor.append([seed_valor, e["g"]])
+		assert_gt(removidas, 0, "%s: ha plataforma de pouso desmoronando" % caso[0])
+		assert_eq(falhas_so_pouso.size(), 0, "%s: so a plataforma do pouso desmorona" % caso[0])
+		assert_eq(falhas_cor.size(), 0, "%s: a linha de cima mantem a cor nova do gecko apos o desmoronamento" % caso[0])
+	assert_gt(com_desmoronamento, 0, "a curva de producao tem caso com plataformas_que_caem")
 
 
 func test_c178_k_e_speed_dentro_do_limite_aprovado_em_todo_estagio_e_no_teto() -> void:
