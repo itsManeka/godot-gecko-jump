@@ -31,6 +31,8 @@ var touch_hint: TouchHint = null
 var pause_botao: PauseBotao = null
 var pause_overlay: PauseOverlay = null
 var pause_state: PauseState = null
+# Tela de Opcoes (filha da Stage, criada em _ready)
+var options_screen: OptionsScreen = null
 # Safe area (coordenadas logicas) da ultima apply_layout; usada pelo HUD (T4)
 var safe_area: Rect2 = Rect2()
 # Ultimo estado montado para a ponte do smoke (ver GameState); lido pelos testes sem JavaScriptBridge
@@ -81,7 +83,12 @@ func _ready():
 	add_child(pause_botao)
 	pause_overlay = PauseOverlay.new()
 	pause_overlay.retomar.connect(_retomar)
+	pause_overlay.opcoes.connect(_abrir_opcoes_da_pausa)
 	add_child(pause_overlay)
+	# Tela de Opcoes (ALWAYS, camada acima do overlay): origem pausa; Voltar devolve ao overlay com foco em Opcoes
+	options_screen = OptionsScreen.new()
+	options_screen.voltar.connect(_voltar_opcoes_da_pausa)
+	add_child(options_screen)
 	pause_state = PauseState.new(get_tree(), _partida_ativa)
 
 	# Layout a partir da area visivel real; refaz quando o viewport muda de tamanho
@@ -114,6 +121,8 @@ func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 			touch_controls.classificador.zonas_mortas = mortas
 	if pause_overlay != null:
 		pause_overlay.aplicar_layout(visible_size, safe)
+	if options_screen != null:
+		options_screen.aplicar_layout(visible_size, safe)
 
 # HUD no topo da safe area: Pontos junto a borda direita visivel, menu com o y de 180x320 deslocado por safe.position.y
 # e centrado na largura visivel. Posicao calculada do tamanho injetado (o pai Control so reflete o viewport real).
@@ -134,6 +143,9 @@ func _place(control: Control, left: float, top: float, right: float, bottom: flo
 
 # Processa input para iniciar o jogo
 func _process(delta):
+	# Pausa terminada por outro caminho: a tela de Opcoes nao fica aberta sobre a partida rodando
+	if options_screen != null and options_screen.esta_aberta() and not get_tree().paused:
+		options_screen.fechar()
 	if not started:
 		if Input.is_action_pressed("jump"):
 			_on_Play_button_down()
@@ -172,6 +184,17 @@ func _pausar() -> bool:
 func _retomar() -> void:
 	pause_state.retomar()
 	pause_overlay.fechar()
+	options_screen.fechar()
+
+# Opcoes pela pausa: o overlay sai de cena (fechar o deixa invisivel e sem entrada) e a arvore segue pausada
+func _abrir_opcoes_da_pausa() -> void:
+	pause_overlay.fechar()
+	options_screen.abrir()
+
+# Voltar: fecha a tela e devolve o overlay com foco em Opcoes (ainda pausado)
+func _voltar_opcoes_da_pausa() -> void:
+	options_screen.fechar()
+	pause_overlay.abrir(PauseOverlay.Botao.OPCOES)
 
 # Perda de foco da janela ou da aba pausa a partida (idempotente; fora de partida ativa _pausar ignora). Nao retoma
 # ao recuperar o foco: a retomada e do jogador, por Continuar.

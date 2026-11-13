@@ -153,9 +153,9 @@ func esta_aberto() -> bool:
 	return _aberto
 
 
-func abrir() -> void:
+func abrir(foco: int = Botao.CONTINUAR) -> void:
 	_aberto = true
-	_foco = Botao.CONTINUAR
+	_foco = foco
 	_toques.clear()
 	_pressionado = -1
 	visible = true
