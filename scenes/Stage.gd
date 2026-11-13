@@ -202,7 +202,7 @@ func _physics_process(delta: float) -> void:
 	dificuldade.tick(delta)
 	# O estagio sobe por tempo sem evento de ponto/Play: republica 1x por mudanca, nunca apos a derrota
 	if dificuldade.estagio() != _estagio_publicado and ultimo_estado.get("state", "") != GameState.STATE_LOST:
-		_republicar_volumes()
+		_republicar_estado()
 
 # Toque de jogo no menu inicia a partida. A TouchControls (filha) recebe o evento antes e ainda esta inerte,
 # entao o toque que inicia nao vira tap de jogo; depois da derrota started segue true e a guarda de
@@ -249,7 +249,7 @@ func _concluir_tutorial() -> void:
 	tutorial_card.fechar()
 	_atualizar_zonas_mortas()
 	tutorial_flag.marcar()
-	_republicar_volumes()
+	_republicar_estado()
 
 # Card oculto fora de partida ativa (menu, animacao de derrota); nao grava a flag
 func _sincronizar_tutorial() -> void:
@@ -296,7 +296,7 @@ func _abrir_opcoes_do_menu() -> void:
 # Voltar: fecha a tela e devolve o menu (foco no botao Opcoes) ou o overlay de pausa (foco em Opcoes, ainda pausado)
 func _voltar_opcoes() -> void:
 	options_screen.fechar()
-	_republicar_volumes()
+	_republicar_estado()
 	if _opcoes_do_menu:
 		_opcoes_do_menu = false
 		if not started:
@@ -323,8 +323,8 @@ func _fechar_tutorial_revisao() -> void:
 	_atualizar_card_partida()
 	options_screen.abrir(OptionsScreen.Item.VER_TUTORIAL)
 
-# Republica o ultimo estado com os volumes atuais (ponte do smoke); estado ainda nao publicado nao e inventado
-func _republicar_volumes() -> void:
+# Republica o ultimo estado com os volumes e o estagio atuais (ponte do smoke); estado ainda nao publicado nao e inventado
+func _republicar_estado() -> void:
 	if ultimo_estado.is_empty():
 		return
 	var player_dict: Dictionary = ultimo_estado.get("player", {}) as Dictionary

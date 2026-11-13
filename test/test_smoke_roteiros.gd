@@ -324,7 +324,7 @@ func test_roteiro_estagio_prova_a_subida_com_seed_progresso_e_termina_vivo() -> 
 	assert_eq(ultimo.get("expect", {}), {"state": "playing"}, "o roteiro estagio termina com expect state playing")
 
 
-func test_so_retrato_pontua_liga_semderrota_pontua_e_termina_vivo() -> void:
+func test_semderrota_so_na_lista_explicita_e_pontua_termina_vivo() -> void:
 	var nome_pontua: String = "retrato-pontua-1080x2772"
 	var passos := _passos(nome_pontua)
 	var tem_score_gte_1: bool = false

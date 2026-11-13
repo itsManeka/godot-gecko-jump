@@ -52,7 +52,7 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 test/smoke/ roteiros do game-smoke (export web): `gecko.smoke.json` (fluxo), `retrato-*` (telas de celular) e
            `janela-larga-1280x720` (coluna de 180 com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os.
-           Todos usam `?tutorial=visto`, menos `tutorial.smoke.json` (1a partida com `user://` limpo); `estagio.smoke.json` (`?progresso=`) prova a subida de `dificuldade.estagio`; `?semderrota=1` so em pontua e estagio; roteiros longos esperam `playing` antes de cada rajada
+           Todos usam `?tutorial=visto`, menos `tutorial.smoke.json` (1a partida com `user://` limpo); `estagio.smoke.json` (`?progresso=`) prova a subida de `dificuldade.estagio`; `?semderrota=1` em pontua, estagio e nos roteiros longos (queda pela borda segue); roteiros longos esperam `playing` antes de cada rajada
 addons/    GUT v9.7.1 (vendorizado; nao editar)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
 export/    saida de build (ignorada; so o .gdignore e versionado, para o Godot nao importar o build)
