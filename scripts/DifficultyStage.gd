@@ -7,6 +7,8 @@ const SCROLL_PADRAO: float = 20.0
 const SPEED_PADRAO: float = 60.0
 const K_PADRAO: int = 3
 const PROPORCAO_PADRAO: float = 1.0 / 3.0
+const LARGURA_PLATAFORMA_PADRAO: float = 60.0
+const ATRASO_DESMORONAR_PADRAO: float = 1.0
 
 ## Progresso (0..1) a partir do qual este estagio vale; interpola ate o proximo estagio.
 @export_range(0.0, 1.0) var progresso_inicio: float = 0.0
@@ -18,5 +20,9 @@ const PROPORCAO_PADRAO: float = 1.0 / 3.0
 @export_range(1, 20) var k: int = K_PADRAO
 ## Fracao das plataformas sorteadas como estaticas (o resto e movel, dividido igualmente entre esquerda e direita).
 @export_range(0.0, 1.0) var proporcao_estaticas: float = PROPORCAO_PADRAO
-## Mecanicas ligadas ao estagio (f10..f14). Vazio nesta feature.
+## Largura da plataforma em px (interpola ate o proximo estagio). Padrao = largura do prefab de antes da curva.
+@export var largura_plataforma: float = LARGURA_PLATAFORMA_PADRAO
+## Segundos entre o pouso e o desmoronamento da plataforma (so vale com a mecanica plataformas_que_caem).
+@export var atraso_desmoronar: float = ATRASO_DESMORONAR_PADRAO
+## Mecanicas ligadas ao estagio (nomes conhecidos por PlatformModifiers). Nao interpolam: vem do estagio atual.
 @export var mecanicas: Array[StringName] = []

@@ -56,7 +56,9 @@ func avaliar(pontos: float, segundos: float) -> DifficultySnapshot:
 		lerpf(atual.speed_moveis, proximo.speed_moveis, t),
 		maxi(K_MINIMO, floori(k_interp)),
 		lerpf(atual.proporcao_estaticas, proximo.proporcao_estaticas, t),
-		atual.mecanicas
+		atual.mecanicas,
+		lerpf(atual.largura_plataforma, proximo.largura_plataforma, t),
+		lerpf(atual.atraso_desmoronar, proximo.atraso_desmoronar, t)
 	)
 
 
@@ -66,5 +68,7 @@ func _snapshot_de(estagio: DifficultyStage) -> DifficultySnapshot:
 		estagio.speed_moveis,
 		maxi(K_MINIMO, estagio.k),
 		estagio.proporcao_estaticas,
-		estagio.mecanicas
+		estagio.mecanicas,
+		estagio.largura_plataforma,
+		estagio.atraso_desmoronar
 	)

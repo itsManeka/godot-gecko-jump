@@ -175,3 +175,71 @@ func test_indice_estagio_da_curva_de_producao_com_fronteira_e_saturacao() -> voi
 
 func test_indice_estagio_sem_estagios_e_zero() -> void:
 	assert_eq(DifficultyCurve.new().indice_estagio(0.9), 0, "curva vazia")
+
+
+func _curva_duas_larguras() -> DifficultyCurve:
+	var a := DifficultyStage.new()
+	a.progresso_inicio = 0.0
+	a.largura_plataforma = 56.0
+	a.atraso_desmoronar = 1.0
+	a.mecanicas = [&"plataformas_menores"]
+	var b := DifficultyStage.new()
+	b.progresso_inicio = 1.0
+	b.largura_plataforma = 50.0
+	b.atraso_desmoronar = 0.8
+	b.mecanicas = [&"plataformas_que_caem"]
+	var curva := DifficultyCurve.new()
+	curva.estagios = [a, b]
+	curva.pontos_plato = 100.0
+	return curva
+
+
+func test_estagio_sem_campos_novos_devolve_largura_60_e_atraso_1() -> void:
+	assert_almost_eq(DifficultyStage.new().largura_plataforma, 60.0, EPS, "default do estagio")
+	assert_almost_eq(DifficultyStage.new().atraso_desmoronar, 1.0, EPS, "default do estagio")
+	var curva := DifficultyCurve.new()
+	curva.estagios = [DifficultyStage.new()]
+	var s := curva.avaliar(0.0, 0.0)
+	assert_almost_eq(s.get_largura_plataforma(), 60.0, EPS)
+	assert_almost_eq(s.get_atraso_desmoronar(), 1.0, EPS)
+
+
+func test_interpolacao_no_meio_de_estagios_com_largura_e_atraso_e_media() -> void:
+	var curva := _curva_duas_larguras()
+	var s := curva.avaliar(50.0, 0.0)
+	assert_almost_eq(s.get_largura_plataforma(), 53.0, EPS, "largura no meio = media de 56 e 50")
+	assert_almost_eq(s.get_atraso_desmoronar(), 0.9, EPS, "atraso no meio = media de 1,0 e 0,8")
+	assert_eq(s.get_mecanicas().size(), 1, "mecanicas vem so do estagio atual")
+	assert_eq(s.get_mecanicas()[0], &"plataformas_menores")
+
+
+func test_teto_devolve_largura_e_atraso_do_ultimo_estagio() -> void:
+	var curva := _curva_duas_larguras()
+	var s := curva.avaliar(1e9, 0.0)
+	assert_almost_eq(s.get_largura_plataforma(), 50.0, EPS)
+	assert_almost_eq(s.get_atraso_desmoronar(), 0.8, EPS)
+
+
+func test_curva_sem_estagios_devolve_largura_60_e_atraso_1() -> void:
+	var s := DifficultyCurve.new().avaliar(5.0, 5.0)
+	assert_almost_eq(s.get_largura_plataforma(), 60.0, EPS)
+	assert_almost_eq(s.get_atraso_desmoronar(), 1.0, EPS)
+
+
+func test_snapshot_sem_argumentos_devolve_largura_60_e_atraso_1() -> void:
+	var s := DifficultySnapshot.new()
+	assert_almost_eq(s.get_largura_plataforma(), 60.0, EPS)
+	assert_almost_eq(s.get_atraso_desmoronar(), 1.0, EPS)
+	# Posicional ate o 4o parametro continua valido; os campos novos caem no default.
+	var posicional := DifficultySnapshot.new(30.0, 90.0, 4, 0.5)
+	assert_almost_eq(posicional.get_scroll(), 30.0, EPS)
+	assert_almost_eq(posicional.get_proporcao_estaticas(), 0.5, EPS)
+	assert_almost_eq(posicional.get_largura_plataforma(), 60.0, EPS)
+	assert_almost_eq(posicional.get_atraso_desmoronar(), 1.0, EPS)
+
+
+func test_snapshot_aceita_largura_e_atraso_como_ultimos_parametros() -> void:
+	var s := DifficultySnapshot.new(20.0, 60.0, 3, 0.3, [&"plataformas_menores"], 44.0, 0.8)
+	assert_almost_eq(s.get_largura_plataforma(), 44.0, EPS)
+	assert_almost_eq(s.get_atraso_desmoronar(), 0.8, EPS)
+	assert_eq(s.get_mecanicas()[0], &"plataformas_menores")
