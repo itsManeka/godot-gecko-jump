@@ -40,6 +40,10 @@ var sem_derrota: bool = false
 func aplicar_modo_sem_derrota(raw: Variant, is_debug: bool) -> void:
 	sem_derrota = ModoSemDerrota.decide(raw, is_debug)
 
+# Espelho em memoria do "tutorial visto" (TutorialFlag.marcar): impede o card de reaparecer na mesma sessao se a
+# gravacao em disco falhar. Publico de proposito (seam de teste: before_each reseta).
+var tutorial_visto_espelho: bool = false
+
 # Inicializa o gerador de números aleatórios e liga o recorde salvo ao ScoreKeeper
 func _ready():
 	aplicar_seed(SeedSource.decide(SeedSource.read_raw(), OS.is_debug_build()))

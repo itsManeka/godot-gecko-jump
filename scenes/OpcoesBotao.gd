@@ -14,8 +14,6 @@ const FONTE: Font = preload("res://fonts/alterebro-pixel-font.ttf")
 const COR_TEXTO: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_FUNDO: Color = Color("#5b8a4a")
-# Chave do mouse no estado de toque (dedos do toque sao indices pequenos)
-const DEDO_MOUSE: int = 1000
 # Mesma camada do HUD da Stage
 const CAMADA: int = 1
 
@@ -43,7 +41,7 @@ func _ready() -> void:
 	_moldura = Panel.new()
 	_moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_moldura.focus_mode = Control.FOCUS_NONE
-	_moldura.add_theme_stylebox_override("panel", _estilo(Color(0, 0, 0, 0), 2))
+	_moldura.add_theme_stylebox_override("panel", UiHelpers.estilo(Color(0, 0, 0, 0), 2, COR_CONTORNO, 0))
 	add_child(_moldura)
 	_painel = Panel.new()
 	_painel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -129,7 +127,7 @@ func tratar_evento(event: InputEvent) -> bool:
 		var m := event as InputEventMouseButton
 		if m.device == InputEvent.DEVICE_ID_EMULATION or m.button_index != MOUSE_BUTTON_LEFT:
 			return false
-		return _ponteiro(DEDO_MOUSE, m.pressed, m.position)
+		return _ponteiro(UiHelpers.DEDO_MOUSE, m.pressed, m.position)
 	if event is InputEventKey or event is InputEventJoypadButton or event is InputEventAction:
 		return _tratar_acao(event)
 	return false
@@ -192,16 +190,7 @@ func _aplicar_rect() -> void:
 func _atualizar_visual() -> void:
 	if _painel == null:
 		return
-	_painel.add_theme_stylebox_override("panel", _estilo(COR_FUNDO, 2 if _pressed else 1))
+	_painel.add_theme_stylebox_override("panel", UiHelpers.estilo(COR_FUNDO, 2 if _pressed else 1, COR_CONTORNO, RAIO))
 	_moldura.visible = _foco
 	_rotulo.text = ("> " if _foco else "") + TEXTO
 	_rotulo.position = Vector2(0.0, 1.0 if _pressed else 0.0)
-
-
-func _estilo(fundo: Color, borda: int) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = fundo
-	s.set_border_width_all(borda)
-	s.border_color = COR_CONTORNO
-	s.set_corner_radius_all(RAIO if fundo.a > 0.0 else 0)
-	return s

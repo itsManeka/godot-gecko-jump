@@ -181,17 +181,7 @@ func _montar_bloco(lado: int) -> Control:
 
 
 func _novo_label(texto: String, y: float) -> Label:
-	var l := Label.new()
-	l.text = texto
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.focus_mode = Control.FOCUS_NONE
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	l.add_theme_font_override("font", FONTE)
-	l.add_theme_font_size_override("font_size", FONT_SIZE)
-	l.add_theme_color_override("font_color", COR)
-	l.add_theme_color_override("font_outline_color", COR_CONTORNO)
-	l.add_theme_constant_override("outline_size", OUTLINE_SIZE)
+	var l := UiHelpers.novo_label(texto, FONT_SIZE, OUTLINE_SIZE)
 	l.position = Vector2(0.0, y)
 	l.size = Vector2(0.0, TEXTO_ALTURA)
 	l.set_meta("y", y)

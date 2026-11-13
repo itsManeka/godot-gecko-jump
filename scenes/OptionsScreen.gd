@@ -15,8 +15,6 @@ signal voltar
 enum Item { MUSIC, SFX, VOLTAR }
 enum Tipo { SLIDER, BOTAO }
 
-const FONTE: Font = preload("res://fonts/alterebro-pixel-font.ttf")
-const COR_TEXTO: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_FUNDO: Color = Color(0.0, 0.0, 0.0, 0.6)
 const COR_BOTAO: Color = Color("#5b8a4a")
@@ -24,8 +22,6 @@ const COR_PREENCHIMENTO: Color = Color("#5b8a4a")
 const COR_TRILHA: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_MOLDURA_TRILHA: Color = Color(1.0, 1.0, 1.0, 0.6)
 const COR_CURSOR: Color = Color(1.0, 1.0, 1.0, 1.0)
-# Chave do mouse no dicionario de toques (dedos do toque sao indices pequenos)
-const DEDO_MOUSE: int = 1000
 # Acima do overlay de pausa (PauseOverlay.CAMADA = 10)
 const CAMADA: int = 11
 
@@ -95,23 +91,23 @@ func _ready() -> void:
 	_fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fundo.focus_mode = Control.FOCUS_NONE
 	add_child(_fundo)
-	_titulo = _novo_label(TEXTO_TITULO, TAMANHO_TITULO, CONTORNO_TITULO, HORIZONTAL_ALIGNMENT_CENTER)
+	_titulo = UiHelpers.novo_label(TEXTO_TITULO, TAMANHO_TITULO, CONTORNO_TITULO, HORIZONTAL_ALIGNMENT_CENTER)
 	add_child(_titulo)
 	for i in TIPOS.size():
-		var moldura := _novo_panel(_estilo(Color(0, 0, 0, 0), 2, COR_CONTORNO))
+		var moldura := _novo_panel(UiHelpers.estilo_opcoes(Color(0, 0, 0, 0), 2, COR_CONTORNO, COR_BOTAO))
 		add_child(moldura)
 		_molduras.append(moldura)
 		if TIPOS[i] == Tipo.SLIDER:
-			var nome := _novo_label(NOMES[i], TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_LEFT)
+			var nome := UiHelpers.novo_label(NOMES[i], TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_LEFT)
 			add_child(nome)
 			_nomes.append(nome)
-			var valor := _novo_label("", TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_RIGHT)
+			var valor := UiHelpers.novo_label("", TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_RIGHT)
 			add_child(valor)
 			_valores_lbl.append(valor)
-			var tm := _novo_panel(_estilo(COR_MOLDURA_TRILHA, 0, COR_CONTORNO))
+			var tm := _novo_panel(UiHelpers.estilo_opcoes(COR_MOLDURA_TRILHA, 0, COR_CONTORNO, COR_BOTAO))
 			add_child(tm)
 			_trilhas_moldura.append(tm)
-			var trilha := _novo_panel(_estilo(COR_TRILHA, 0, COR_CONTORNO))
+			var trilha := _novo_panel(UiHelpers.estilo_opcoes(COR_TRILHA, 0, COR_CONTORNO, COR_BOTAO))
 			add_child(trilha)
 			_trilhas.append(trilha)
 			var fill := ColorRect.new()
@@ -120,13 +116,13 @@ func _ready() -> void:
 			fill.focus_mode = Control.FOCUS_NONE
 			add_child(fill)
 			_preenchimentos.append(fill)
-			var cursor := _novo_panel(_estilo(COR_CURSOR, 1, COR_CONTORNO))
+			var cursor := _novo_panel(UiHelpers.estilo_opcoes(COR_CURSOR, 1, COR_CONTORNO, COR_BOTAO))
 			add_child(cursor)
 			_cursores.append(cursor)
 		else:
-			_botao_painel = _novo_panel(_estilo(COR_BOTAO, 1, COR_CONTORNO))
+			_botao_painel = _novo_panel(UiHelpers.estilo_opcoes(COR_BOTAO, 1, COR_CONTORNO, COR_BOTAO))
 			add_child(_botao_painel)
-			_botao_rotulo = _novo_label(NOMES[i], TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_CENTER)
+			_botao_rotulo = UiHelpers.novo_label(NOMES[i], TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_CENTER)
 			_botao_painel.add_child(_botao_rotulo)
 	_atualizar_visual()
 
@@ -310,15 +306,15 @@ func _tratar_acao(event: InputEvent) -> bool:
 func _tratar_mouse(mouse: InputEventMouseButton) -> bool:
 	if mouse.device == InputEvent.DEVICE_ID_EMULATION or mouse.button_index != MOUSE_BUTTON_LEFT:
 		return false
-	_tratar_ponteiro(DEDO_MOUSE, mouse.pressed, mouse.position)
+	_tratar_ponteiro(UiHelpers.DEDO_MOUSE, mouse.pressed, mouse.position)
 	return true
 
 
 # Arrasto com o botao esquerdo apertado: so conta se o clique comecou na tela (mouse emulado nao e da tela).
 func _tratar_movimento(mov: InputEventMouseMotion) -> bool:
-	if mov.device == InputEvent.DEVICE_ID_EMULATION or not _toques.has(DEDO_MOUSE):
+	if mov.device == InputEvent.DEVICE_ID_EMULATION or not _toques.has(UiHelpers.DEDO_MOUSE):
 		return false
-	_arrastar(DEDO_MOUSE, mov.position)
+	_arrastar(UiHelpers.DEDO_MOUSE, mov.position)
 	return true
 
 
@@ -394,7 +390,7 @@ func _atualizar_visual() -> void:
 			var cx := SliderMath.x_do_valor(_valores[i])
 			var cy := r.position.y + r.size.y / 2.0
 			var tam := CURSOR_ARRASTANDO if arrastando else CURSOR_NORMAL
-			_cursores[s].add_theme_stylebox_override("panel", _estilo(COR_CURSOR, 2 if arrastando else 1, COR_CONTORNO))
+			_cursores[s].add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_CURSOR, 2 if arrastando else 1, COR_CONTORNO, COR_BOTAO))
 			_cursores[s].size = tam
 			_cursores[s].position = Vector2(cx - tam.x / 2.0, cy - tam.y / 2.0)
 			_preenchimentos[s].position = Vector2(SliderMath.X_MIN, cy - TRILHA_ALTURA / 2.0)
@@ -402,7 +398,7 @@ func _atualizar_visual() -> void:
 			s += 1
 		else:
 			var pressed: bool = _pressionado == i
-			_botao_painel.add_theme_stylebox_override("panel", _estilo(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO))
+			_botao_painel.add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO, COR_BOTAO))
 			_botao_rotulo.text = ("> " if _foco == i else "") + NOMES[i]
 			_botao_rotulo.position = Vector2(0.0, 1.0 if pressed else 0.0)
 
@@ -413,27 +409,3 @@ func _novo_panel(estilo: StyleBoxFlat) -> Panel:
 	p.focus_mode = Control.FOCUS_NONE
 	p.add_theme_stylebox_override("panel", estilo)
 	return p
-
-
-func _estilo(fundo: Color, borda: int, cor_borda: Color) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = fundo
-	s.set_border_width_all(borda)
-	s.border_color = cor_borda
-	s.set_corner_radius_all(4 if borda > 0 and fundo == COR_BOTAO else 0)
-	return s
-
-
-func _novo_label(texto: String, tamanho: int, contorno: int, alinhamento: HorizontalAlignment) -> Label:
-	var l := Label.new()
-	l.text = texto
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.focus_mode = Control.FOCUS_NONE
-	l.horizontal_alignment = alinhamento
-	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	l.add_theme_font_override("font", FONTE)
-	l.add_theme_font_size_override("font_size", tamanho)
-	l.add_theme_color_override("font_color", COR_TEXTO)
-	l.add_theme_color_override("font_outline_color", COR_CONTORNO)
-	l.add_theme_constant_override("outline_size", contorno)
-	return l

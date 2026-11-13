@@ -13,13 +13,9 @@ signal opcoes
 
 enum Botao { CONTINUAR, OPCOES }
 
-const FONTE: Font = preload("res://fonts/alterebro-pixel-font.ttf")
-const COR_TEXTO: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_FUNDO: Color = Color(0.0, 0.0, 0.0, 0.6)
 const COR_BOTAO: Color = Color("#5b8a4a")
-# Chave do mouse no dicionario de toques (dedos do toque sao indices pequenos, como em TouchControls.DEDO_MOUSE)
-const DEDO_MOUSE: int = 1000
 
 # Medidas em px logicos (handoff 9.2)
 const BLOCO_ALTURA: float = 118.0
@@ -65,13 +61,13 @@ func _ready() -> void:
 	_fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fundo.focus_mode = Control.FOCUS_NONE
 	add_child(_fundo)
-	_titulo = _novo_label(TEXTO_TITULO, TAMANHO_TITULO, CONTORNO_TITULO)
+	_titulo = UiHelpers.novo_label(TEXTO_TITULO, TAMANHO_TITULO, CONTORNO_TITULO)
 	add_child(_titulo)
 	for b in [Botao.CONTINUAR, Botao.OPCOES]:
 		var moldura := Panel.new()
 		moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		moldura.focus_mode = Control.FOCUS_NONE
-		moldura.add_theme_stylebox_override("panel", _estilo(Color(0, 0, 0, 0), 2, COR_CONTORNO))
+		moldura.add_theme_stylebox_override("panel", UiHelpers.estilo(Color(0, 0, 0, 0), 2, COR_CONTORNO, UiHelpers.RAIO_BOTAO))
 		add_child(moldura)
 		_molduras.append(moldura)
 		var painel := Panel.new()
@@ -80,7 +76,7 @@ func _ready() -> void:
 		add_child(painel)
 		_paineis.append(painel)
 		var tamanho := TAMANHO_CONTINUAR if b == Botao.CONTINUAR else TAMANHO_OPCOES
-		var rotulo := _novo_label(TEXTOS[b], tamanho, CONTORNO_BOTAO)
+		var rotulo := UiHelpers.novo_label(TEXTOS[b], tamanho, CONTORNO_BOTAO)
 		painel.add_child(rotulo)
 		_rotulos.append(rotulo)
 	_atualizar_visual()
@@ -194,7 +190,7 @@ func _tratar_toque(toque: InputEventScreenTouch) -> void:
 func _tratar_mouse(mouse: InputEventMouseButton) -> bool:
 	if mouse.device == InputEvent.DEVICE_ID_EMULATION or mouse.button_index != MOUSE_BUTTON_LEFT:
 		return false
-	_tratar_ponteiro(DEDO_MOUSE, mouse.pressed, mouse.position)
+	_tratar_ponteiro(UiHelpers.DEDO_MOUSE, mouse.pressed, mouse.position)
 	return true
 
 
@@ -232,31 +228,7 @@ func _atualizar_visual() -> void:
 		return
 	for b in [Botao.CONTINUAR, Botao.OPCOES]:
 		var pressed: bool = _pressionado == b
-		_paineis[b].add_theme_stylebox_override("panel", _estilo(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO))
+		_paineis[b].add_theme_stylebox_override("panel", UiHelpers.estilo(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO, UiHelpers.RAIO_BOTAO))
 		_molduras[b].visible = _foco == b
 		_rotulos[b].text = ("> " if _foco == b else "") + TEXTOS[b]
 		_rotulos[b].position = Vector2(0.0, 1.0 if pressed else 0.0)
-
-
-func _estilo(fundo: Color, borda: int, cor_borda: Color) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = fundo
-	s.set_border_width_all(borda)
-	s.border_color = cor_borda
-	s.set_corner_radius_all(4)
-	return s
-
-
-func _novo_label(texto: String, tamanho: int, contorno: int) -> Label:
-	var l := Label.new()
-	l.text = texto
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.focus_mode = Control.FOCUS_NONE
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	l.add_theme_font_override("font", FONTE)
-	l.add_theme_font_size_override("font_size", tamanho)
-	l.add_theme_color_override("font_color", COR_TEXTO)
-	l.add_theme_color_override("font_outline_color", COR_CONTORNO)
-	l.add_theme_constant_override("outline_size", contorno)
-	return l

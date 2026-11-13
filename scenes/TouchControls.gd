@@ -24,7 +24,6 @@ const TICKS_MINIMOS: int = 2
 const ACAO_ESQUERDA: String = "ui_left"
 const ACAO_DIREITA: String = "ui_right"
 const ACAO_PULO: String = "jump"
-const DEDO_MOUSE: int = 1000
 
 var player: Node = null
 var classificador: TouchClassifier = TouchClassifier.new()
@@ -61,9 +60,9 @@ func _input(event: InputEvent) -> void:
 		if mouse.device == InputEvent.DEVICE_ID_EMULATION or mouse.button_index != MOUSE_BUTTON_LEFT:
 			return
 		if mouse.pressed:
-			_pressionou(DEDO_MOUSE, mouse.position)
+			_pressionou(UiHelpers.DEDO_MOUSE, mouse.position)
 		else:
-			_soltou(DEDO_MOUSE)
+			_soltou(UiHelpers.DEDO_MOUSE)
 	# InputEventScreenDrag nao muda nada: o lado e decidido no pressionar.
 
 

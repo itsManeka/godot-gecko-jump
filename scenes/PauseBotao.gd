@@ -12,8 +12,6 @@ signal pausar_pedido
 const COR_FUNDO: Color = Color("#5b8a4a")
 const COR_BORDA: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_GLIFO: Color = Color(1.0, 1.0, 1.0, 1.0)
-# Chave do mouse no estado de toque (dedos do toque sao indices pequenos, como em TouchControls.DEDO_MOUSE)
-const DEDO_MOUSE: int = 1000
 
 # Acima da dica de toque (layer 0) e do HUD (layer 1); abaixo do overlay de pausa (7.4).
 const CAMADA: int = 2
@@ -102,7 +100,7 @@ func tratar_evento(event: InputEvent) -> bool:
 		var m := event as InputEventMouseButton
 		if m.device == InputEvent.DEVICE_ID_EMULATION or m.button_index != MOUSE_BUTTON_LEFT:
 			return false
-		return _ponteiro(DEDO_MOUSE, m.pressed, m.position)
+		return _ponteiro(UiHelpers.DEDO_MOUSE, m.pressed, m.position)
 	return false
 
 
