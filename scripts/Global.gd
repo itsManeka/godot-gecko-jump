@@ -44,11 +44,18 @@ func aplicar_modo_sem_derrota(raw: Variant, is_debug: bool) -> void:
 # gravacao em disco falhar. Publico de proposito (seam de teste: before_each reseta).
 var tutorial_visto_espelho: bool = false
 
+# Tutorial forcado como visto (so smoke debug via `?tutorial=visto`): liga so o espelho em memoria, nunca grava o
+# `.cfg`. Nunca liga em release.
+func aplicar_modo_tutorial(raw: Variant, is_debug: bool) -> void:
+	if ModoTutorialVisto.decide(raw, is_debug):
+		tutorial_visto_espelho = true
+
 # Inicializa o gerador de números aleatórios e liga o recorde salvo ao ScoreKeeper
 func _ready():
 	aplicar_seed(SeedSource.decide(SeedSource.read_raw(), OS.is_debug_build()))
 	aplicar_modo_sem_derrota(ModoSemDerrota.read_raw(), OS.is_debug_build())
 	aplicar_modo_dica(ModoDicaToque.read_raw(), OS.is_debug_build())
+	aplicar_modo_tutorial(ModoTutorialVisto.read_raw(), OS.is_debug_build())
 	_best_store = BestScoreStore.new()
 	pontuacao.load_best(_best_store.load_best())
 	pontuacao.best_changed.connect(_best_store.save_best)
