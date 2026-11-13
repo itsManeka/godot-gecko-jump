@@ -1,5 +1,5 @@
 {
-  "path": "index.html?seed=453&semderrota=1",
+  "path": "index.html?seed=453&semderrota=1&tutorial=visto",
   "viewport": [360, 640],
   "boot_ms": 6000,
   "steps": [
@@ -8,10 +8,10 @@
     { "wait": 300 },
     { "shots": 2, "every": 200, "name": "opcoes-menu", "moving": false },
     { "expect": { "state": "menu" }, "timeout_ms": 2000 },
-    { "click": [20, 388] },
+    { "click": [20, 348] },
     { "wait": 300 },
     { "shots": 2, "every": 200, "name": "opcoes-sfx-mudo", "moving": false },
-    { "click": [180, 468] },
+    { "click": [180, 508] },
     { "wait": 300 },
     { "expect": { "state": "menu", "volume.sfx": 0, "volume.music": 100 }, "timeout_ms": 2000 },
     { "shots": 2, "every": 200, "name": "menu-volta", "moving": false },
@@ -26,7 +26,7 @@
     { "click": [180, 406] },
     { "wait": 300 },
     { "shots": 2, "every": 300, "name": "opcoes-pausa", "still": true },
-    { "click": [180, 468] },
+    { "click": [180, 508] },
     { "wait": 300 },
     { "shots": 2, "every": 300, "name": "pausa-volta", "still": true },
     { "click": [180, 326] },

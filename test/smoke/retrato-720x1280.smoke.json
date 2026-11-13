@@ -1,5 +1,5 @@
 {
-  "path": "index.html?seed=456",
+  "path": "index.html?seed=456&tutorial=visto",
   "viewport": [720, 1280],
   "boot_ms": 6000,
   "steps": [
