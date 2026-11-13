@@ -6,13 +6,15 @@ extends CanvasLayer
 # `process_mode = ALWAYS`: recebe entrada com a arvore pausada. Todo toque/clique e consumido (fundo nao faz nada).
 # O toque pertence ao slider desde o pressionar na area e se mantem fora dela, com x limitado (eixo vertical ignorado).
 # Voltar aciona ao soltar com o dedo dentro do retangulo. Esc/P (acao `pause`) = Voltar, nunca retoma a partida.
-# Layout por lista de itens (TIPOS/ESPACO_ANTES): acrescentar um item (ex.: botao "Ver tutorial") e inserir nas
-# duas listas, em ITEM_* e em TEXTOS; as contas de y seguem a lista.
+# Layout por lista de itens (TIPOS/ESPACO_ANTES): acrescentar um item e inserir nas listas TIPOS/ESPACO_ANTES/NOMES,
+# no enum Item e em _valores; as contas de y seguem a lista. Botoes: Ver tutorial (sinal `ver_tutorial`) e Voltar.
 
 # Emitido por Voltar e pela acao `pause` com a tela aberta.
 signal voltar
+# Emitido por Ver tutorial (toque solto dentro ou `ui_accept` com o foco nele).
+signal ver_tutorial
 
-enum Item { MUSIC, SFX, VOLTAR }
+enum Item { MUSIC, SFX, VER_TUTORIAL, VOLTAR }
 enum Tipo { SLIDER, BOTAO }
 
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
@@ -26,9 +28,9 @@ const COR_CURSOR: Color = Color(1.0, 1.0, 1.0, 1.0)
 const CAMADA: int = 11
 
 # Itens na ordem de foco e de cima para baixo; espaco acima de cada item (handoff 10.2)
-const TIPOS: Array[int] = [Tipo.SLIDER, Tipo.SLIDER, Tipo.BOTAO]
-const ESPACO_ANTES: Array[float] = [12.0, 8.0, 12.0]
-const NOMES: Array[String] = ["Music", "SFX", "Voltar"]
+const TIPOS: Array[int] = [Tipo.SLIDER, Tipo.SLIDER, Tipo.BOTAO, Tipo.BOTAO]
+const ESPACO_ANTES: Array[float] = [12.0, 8.0, 12.0, 8.0]
+const NOMES: Array[String] = ["Music", "SFX", "Ver tutorial", "Voltar"]
 
 # Medidas em px logicos (handoff 10.2)
 const LARGURA: float = 180.0
@@ -61,12 +63,13 @@ var _trilhas_moldura: Array[Panel] = []
 var _trilhas: Array[Panel] = []
 var _preenchimentos: Array[ColorRect] = []
 var _cursores: Array[Panel] = []
-var _botao_painel: Panel
-var _botao_rotulo: Label
+# Painel e rotulo por item (null nos sliders)
+var _botao_paineis: Array[Panel] = []
+var _botao_rotulos: Array[Label] = []
 # Area de toque do slider ou retangulo do botao, por item
 var _rects: Array[Rect2] = []
 # Valor 0-100 por item (so os sliders usam)
-var _valores: Array[int] = [100, 100, 0]
+var _valores: Array[int] = [100, 100, 0, 0]
 var _foco: int = Item.MUSIC
 var _aberta: bool = false
 # index do dedo -> item em que o toque comecou (-1 = fundo)
@@ -97,6 +100,8 @@ func _ready() -> void:
 		var moldura := _novo_panel(UiHelpers.estilo_opcoes(Color(0, 0, 0, 0), 2, COR_CONTORNO, COR_BOTAO))
 		add_child(moldura)
 		_molduras.append(moldura)
+		_botao_paineis.append(null)
+		_botao_rotulos.append(null)
 		if TIPOS[i] == Tipo.SLIDER:
 			var nome := UiHelpers.novo_label(NOMES[i], TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_LEFT)
 			add_child(nome)
@@ -120,10 +125,12 @@ func _ready() -> void:
 			add_child(cursor)
 			_cursores.append(cursor)
 		else:
-			_botao_painel = _novo_panel(UiHelpers.estilo_opcoes(COR_BOTAO, 1, COR_CONTORNO, COR_BOTAO))
-			add_child(_botao_painel)
-			_botao_rotulo = UiHelpers.novo_label(NOMES[i], TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_CENTER)
-			_botao_painel.add_child(_botao_rotulo)
+			var painel := _novo_panel(UiHelpers.estilo_opcoes(COR_BOTAO, 1, COR_CONTORNO, COR_BOTAO))
+			add_child(painel)
+			var rotulo := UiHelpers.novo_label(NOMES[i], TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_CENTER)
+			painel.add_child(rotulo)
+			_botao_paineis[i] = painel
+			_botao_rotulos[i] = rotulo
 	_atualizar_visual()
 
 
@@ -206,9 +213,9 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 			_trilhas[s].size = Vector2(SliderMath.LARGURA_TRILHA, TRILHA_ALTURA)
 			s += 1
 		else:
-			_botao_painel.position = r.position
-			_botao_painel.size = r.size
-			_botao_rotulo.size = r.size
+			_botao_paineis[i].position = r.position
+			_botao_paineis[i].size = r.size
+			_botao_rotulos[i].size = r.size
 	_atualizar_visual()
 
 
@@ -223,6 +230,10 @@ func rect_music() -> Rect2:
 
 func rect_sfx() -> Rect2:
 	return _rects[Item.SFX]
+
+
+func rect_ver_tutorial() -> Rect2:
+	return _rects[Item.VER_TUTORIAL]
 
 
 func rect_voltar() -> Rect2:
@@ -243,9 +254,9 @@ func esta_aberta() -> bool:
 	return _aberta
 
 
-func abrir() -> void:
+func abrir(foco: int = Item.MUSIC) -> void:
 	_aberta = true
-	_foco = Item.MUSIC
+	_foco = foco
 	_toques.clear()
 	_pressionado = -1
 	_pendente = false
@@ -296,7 +307,7 @@ func _tratar_acao(event: InputEvent) -> bool:
 		return true
 	if event.is_action_pressed("ui_accept"):
 		if TIPOS[_foco] == Tipo.BOTAO:
-			voltar.emit()
+			_acionar(_foco)
 		return true
 	return false
 
@@ -335,6 +346,13 @@ func _tratar_ponteiro(dedo: int, pressionado: bool, pos: Vector2) -> void:
 		_persistir_pendente()
 	_atualizar_visual()
 	if inicio != -1 and TIPOS[inicio] == Tipo.BOTAO and (_rects[inicio] as Rect2).has_point(pos):
+		_acionar(inicio)
+
+
+func _acionar(item: int) -> void:
+	if item == Item.VER_TUTORIAL:
+		ver_tutorial.emit()
+	else:
 		voltar.emit()
 
 
@@ -398,9 +416,9 @@ func _atualizar_visual() -> void:
 			s += 1
 		else:
 			var pressed: bool = _pressionado == i
-			_botao_painel.add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO, COR_BOTAO))
-			_botao_rotulo.text = ("> " if _foco == i else "") + NOMES[i]
-			_botao_rotulo.position = Vector2(0.0, 1.0 if pressed else 0.0)
+			_botao_paineis[i].add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO, COR_BOTAO))
+			_botao_rotulos[i].text = ("> " if _foco == i else "") + NOMES[i]
+			_botao_rotulos[i].position = Vector2(0.0, 1.0 if pressed else 0.0)
 
 
 func _novo_panel(estilo: StyleBoxFlat) -> Panel:

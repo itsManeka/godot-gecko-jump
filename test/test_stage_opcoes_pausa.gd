@@ -64,6 +64,17 @@ func test_voltar_devolve_o_overlay_com_foco_em_opcoes_e_continuar_retoma() -> vo
 	assert_false(get_tree().paused, "Continuar retoma")
 
 
+func test_ver_tutorial_na_pausa_nao_retoma_e_voltar_devolve_opcoes() -> void:
+	var stage := await _novo_stage_pausado()
+	stage.pause_overlay.opcoes.emit()
+	stage.options_screen.ver_tutorial.emit()
+	assert_true(get_tree().paused, "arvore segue pausada com o tutorial reaberto")
+	stage.tutorial_revisao.voltar.emit()
+	assert_true(stage.options_screen.esta_aberta(), "Voltar do tutorial devolve Opcoes")
+	assert_eq(stage.options_screen.foco_atual(), OptionsScreen.Item.VER_TUTORIAL, "foco em Ver tutorial")
+	assert_true(get_tree().paused, "segue pausada")
+
+
 func test_pause_com_a_tela_aberta_nao_retoma() -> void:
 	var stage := await _novo_stage_pausado()
 	stage.pause_overlay.opcoes.emit()

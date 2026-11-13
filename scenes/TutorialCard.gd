@@ -55,6 +55,8 @@ const NOMES_LEGENDA: Array[String] = ["amarelo", "verde", "azul", "vermelho"]
 const CORES_LEGENDA: Array[int] = [Enums.COLOR.AMARELO, Enums.COLOR.VERDE, Enums.COLOR.AZUL, Enums.COLOR.VERMELHO]
 
 var _raiz: Control
+# Fundo de tela cheia (#000000 a 60%, handoff 9.2) so na reabertura: cobre a partida congelada e o botao de pausa
+var _tela: ColorRect
 var _fundo: ColorRect
 var _botao_painel: Panel
 var _botao_rotulo: Label
@@ -63,6 +65,7 @@ var _controle: Label
 var _variante: int = Variante.TOQUE
 var _modo: int = Modo.PARTIDA
 var _s_top: float = 0.0
+var _tamanho_tela: Vector2 = Vector2(180.0, 320.0)
 var _aberto: bool = false
 # index do dedo que comecou o toque dentro do botao
 var _toques: Dictionary = {}
@@ -77,6 +80,14 @@ func _init() -> void:
 func _ready() -> void:
 	layer = CAMADA_PARTIDA
 	visible = false
+	_tela = ColorRect.new()
+	_tela.name = "Tela"
+	_tela.color = COR_FUNDO
+	_tela.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tela.focus_mode = Control.FOCUS_NONE
+	_tela.visible = false
+	_tela.size = _tamanho_tela
+	add_child(_tela)
 	_raiz = Control.new()
 	_raiz.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_raiz.focus_mode = Control.FOCUS_NONE
@@ -149,8 +160,11 @@ func tratar_evento(event: InputEvent) -> bool:
 
 
 # Posiciona o card a partir do tamanho visivel e da safe area (coordenadas logicas); so `s_top` desloca o card.
-func aplicar_layout(_visible_size: Vector2, safe: Rect2) -> void:
+func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 	_s_top = safe.position.y
+	_tamanho_tela = visible_size
+	if _tela != null:
+		_tela.size = visible_size
 	if _raiz != null:
 		_raiz.position = Vector2(0.0, _s_top)
 
@@ -166,6 +180,8 @@ func abrir(variante: int, modo: int = Modo.PARTIDA) -> void:
 	layer = CAMADA_REABERTURA if modo == Modo.REABERTURA else CAMADA_PARTIDA
 	if _raiz != null:
 		_raiz.modulate.a = 1.0
+	if _tela != null:
+		_tela.visible = modo == Modo.REABERTURA
 	visible = true
 	_atualizar_textos()
 	_atualizar_botao()
@@ -200,6 +216,11 @@ func rect_fundo() -> Rect2:
 
 func esta_aberto() -> bool:
 	return _aberto
+
+
+# Fundo de tela cheia visivel (so na reabertura aberta).
+func tela_visivel() -> bool:
+	return visible and _tela != null and _tela.visible
 
 
 # Variante em uso (enum Variante).

@@ -100,6 +100,18 @@ func test_voltar_restaura_o_menu_com_foco_no_botao_e_o_inicio_volta() -> void:
 	assert_true(stage.started, "jump volta a iniciar a partida")
 
 
+func test_toque_real_em_ver_tutorial_abre_o_tutorial_reaberto_sem_iniciar() -> void:
+	var stage := await _novo_stage()
+	_abrir_pelo_botao(stage)
+	assert_true(stage.options_screen.rect_ver_tutorial() == Rect2(34, 198, 112, 32), "Ver tutorial y[198,230] em 180x320")
+	var centro: Vector2 = stage.options_screen.rect_ver_tutorial().get_center()
+	await _toque_real(true, centro)
+	await _toque_real(false, centro)
+	assert_true(stage.tutorial_revisao.esta_aberto(), "Ver tutorial abre o card reaberto")
+	assert_false(stage.options_screen.esta_aberta(), "Opcoes some enquanto o tutorial esta aberto")
+	assert_false(stage.started, "o toque em Ver tutorial nao inicia a partida")
+
+
 func test_play_volta_a_iniciar_depois_de_voltar() -> void:
 	var stage := await _novo_stage()
 	_abrir_pelo_botao(stage)

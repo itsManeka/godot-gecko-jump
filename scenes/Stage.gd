@@ -41,6 +41,10 @@ var options_screen: OptionsScreen = null
 # Botao Opcoes do menu (filho da Stage, criado em _ready) e origem da tela aberta (menu x pausa)
 var opcoes_botao: OpcoesBotao = null
 var _opcoes_do_menu: bool = false
+# Card do tutorial reaberto por Opcoes > Ver tutorial (modal, 2o card da Stage, ultimo filho: recebe a entrada primeiro).
+# `_card_partida_escondido`: o card da 1a partida estava aberto e ficou oculto durante a reabertura.
+var tutorial_revisao: TutorialCard = null
+var _card_partida_escondido: bool = false
 # Safe area (coordenadas logicas) da ultima apply_layout; usada pelo HUD (T4)
 var safe_area: Rect2 = Rect2()
 # Ultimo estado montado para a ponte do smoke (ver GameState); lido pelos testes sem JavaScriptBridge
@@ -107,7 +111,12 @@ func _ready():
 	# Tela de Opcoes (ALWAYS, camada acima do overlay): Voltar devolve ao overlay (pausa) ou ao menu
 	options_screen = OptionsScreen.new()
 	options_screen.voltar.connect(_voltar_opcoes)
+	options_screen.ver_tutorial.connect(_abrir_tutorial_revisao)
 	add_child(options_screen)
+	# Reabertura do tutorial (ALWAYS, camada acima de Opcoes): ultimo filho, consome todo toque antes do resto
+	tutorial_revisao = TutorialCard.new()
+	tutorial_revisao.voltar.connect(_fechar_tutorial_revisao)
+	add_child(tutorial_revisao)
 	pause_state = PauseState.new(get_tree(), _partida_ativa)
 
 	# Layout a partir da area visivel real; refaz quando o viewport muda de tamanho
@@ -143,6 +152,8 @@ func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 		opcoes_botao.aplicar_layout(visible_size, safe)
 	if options_screen != null:
 		options_screen.aplicar_layout(visible_size, safe)
+	if tutorial_revisao != null:
+		tutorial_revisao.aplicar_layout(visible_size, safe)
 
 # Zonas mortas do toque de jogo: o botao de pausa e, com o card do tutorial aberto, o retangulo do Pular (7.3/8.1);
 # ja deslocados por s_left/s_top. Refeita ao abrir/fechar o card e no layout.
@@ -197,7 +208,8 @@ func _input(event: InputEvent) -> void:
 
 # A partida nao inicia enquanto a tela de Opcoes esta aberta (tecla `jump` e toque ficam suspensos)
 func _inicio_suspenso() -> bool:
-	return options_screen != null and options_screen.esta_aberta()
+	var revisao := tutorial_revisao != null and tutorial_revisao.esta_aberto()
+	return revisao or (options_screen != null and options_screen.esta_aberta())
 
 # Acao `pause` com a arvore rodando: pausa (ignorada fora de partida ativa). Com o overlay aberto, quem escuta
 # e o proprio overlay (ALWAYS), que consome o evento antes daqui.
@@ -276,6 +288,26 @@ func _voltar_opcoes() -> void:
 			opcoes_botao.focar(true)
 		return
 	pause_overlay.abrir(PauseOverlay.Botao.OPCOES)
+
+# Ver tutorial: Opcoes some, o card da 1a partida (se aberto) fica oculto e o card reaberto assume a entrada. A origem
+# (pausa x menu) e a flag `tutorial/visto` nao mudam.
+func _abrir_tutorial_revisao() -> void:
+	options_screen.fechar()
+	_card_partida_escondido = tutorial_card.esta_aberto()
+	if _card_partida_escondido:
+		tutorial_card.visible = false
+	var toque: bool = Global.toque_detectado or _tem_touchscreen()
+	tutorial_revisao.abrir(
+		TutorialCard.Variante.TOQUE if toque else TutorialCard.Variante.TECLADO, TutorialCard.Modo.REABERTURA
+	)
+
+# Voltar (ou Esc/P) do card reaberto: devolve o card da 1a partida e Opcoes, com foco em Ver tutorial
+func _fechar_tutorial_revisao() -> void:
+	tutorial_revisao.fechar(true)
+	if _card_partida_escondido:
+		_card_partida_escondido = false
+		tutorial_card.visible = tutorial_card.esta_aberto()
+	options_screen.abrir(OptionsScreen.Item.VER_TUTORIAL)
 
 # Republica o ultimo estado com os volumes atuais (ponte do smoke); estado ainda nao publicado nao e inventado
 func _republicar_volumes() -> void:

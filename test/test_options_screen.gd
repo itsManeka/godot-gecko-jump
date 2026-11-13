@@ -1,6 +1,6 @@
 extends GutTest
 
-# Tela de Opcoes (OptionsScreen): layout do handoff 10.2 (opcao A, sem "Ver tutorial"; valores literais da tabela,
+# Tela de Opcoes (OptionsScreen): layout do handoff 10.2 (com "Ver tutorial" entre SFX e Voltar; valores literais da tabela,
 # nao da formula do codigo), arrasto dos sliders (10.3), Voltar, teclado e consumo de toque/mouse.
 const PEQUENA := Vector2(180.0, 320.0)
 const TEMP_PATH := "user://options_test_screen.cfg"
@@ -70,20 +70,31 @@ func _mudo(bus: String) -> bool:
 	return AudioServer.is_bus_mute(AudioServer.get_bus_index(bus))
 
 
-func test_c199_retangulos_batem_com_a_tabela_do_handoff_10_2_opcao_a() -> void:
+func test_c199_retangulos_batem_com_a_tabela_do_handoff_10_2_com_ver_tutorial() -> void:
 	var o := _nova()
-	assert_true(o.rect_music() == Rect2(8, 131, 164, 24), "180x320: Music x[8,172] y[131,155]")
-	assert_true(o.rect_sfx() == Rect2(8, 182, 164, 24), "180x320: SFX x[8,172] y[182,206]")
-	assert_true(o.rect_voltar() == Rect2(34, 218, 112, 32), "180x320: Voltar x[34,146] y[218,250]")
+	assert_true(o.rect_music() == Rect2(8, 111, 164, 24), "180x320: Music x[8,172] y[111,135]")
+	assert_true(o.rect_sfx() == Rect2(8, 162, 164, 24), "180x320: SFX x[8,172] y[162,186]")
+	assert_true(o.rect_ver_tutorial() == Rect2(34, 198, 112, 32), "180x320: Ver tutorial x[34,146] y[198,230]")
+	assert_true(o.rect_voltar() == Rect2(34, 238, 112, 32), "180x320: Voltar x[34,146] y[238,270]")
+
+
+func test_c217_retangulos_de_ver_tutorial_e_voltar_em_320_e_em_400() -> void:
+	var o := _nova()
+	assert_true(o.rect_ver_tutorial() == Rect2(34, 198, 112, 32), "180x320: Ver tutorial y[198,230]")
+	assert_true(o.rect_voltar() == Rect2(34, 238, 112, 32), "180x320: Voltar y[238,270]")
+	var alta := _nova(Vector2(180.0, 400.0))
+	assert_true(alta.rect_ver_tutorial() == Rect2(34, 238, 112, 32), "180x400: Ver tutorial y[238,270]")
+	assert_true(alta.rect_voltar() == Rect2(34, 278, 112, 32), "180x400: Voltar y[278,310]")
 
 
 func test_c200_com_safe_area_todos_os_retangulos_ficam_dentro() -> void:
 	var safe := Rect2(0, 20, 180, 294)
 	var o := _nova(PEQUENA, safe)
-	assert_true(o.rect_music() == Rect2(8, 138, 164, 24), "s_top 20 / s_bottom 6: Music y[138,162]")
-	assert_true(o.rect_sfx() == Rect2(8, 189, 164, 24), "s_top 20 / s_bottom 6: SFX y[189,213]")
-	assert_true(o.rect_voltar() == Rect2(34, 225, 112, 32), "s_top 20 / s_bottom 6: Voltar y[225,257]")
-	for r in [o.rect_music(), o.rect_sfx(), o.rect_voltar()]:
+	assert_true(o.rect_music() == Rect2(8, 118, 164, 24), "s_top 20 / s_bottom 6: Music y[118,142]")
+	assert_true(o.rect_sfx() == Rect2(8, 169, 164, 24), "s_top 20 / s_bottom 6: SFX y[169,193]")
+	assert_true(o.rect_ver_tutorial() == Rect2(34, 205, 112, 32), "s_top 20 / s_bottom 6: Ver tutorial y[205,237]")
+	assert_true(o.rect_voltar() == Rect2(34, 245, 112, 32), "s_top 20 / s_bottom 6: Voltar y[245,277]")
+	for r in [o.rect_music(), o.rect_sfx(), o.rect_ver_tutorial(), o.rect_voltar()]:
 		assert_true(safe.encloses(r), "retangulo %s dentro da safe area" % str(r))
 
 
@@ -127,8 +138,10 @@ func test_c203_acao_pause_emite_voltar_e_nao_retomar() -> void:
 	assert_eq(_voltou, 1, "pause com a tela fechada nao emite voltar")
 
 
-func test_c204_foco_circula_music_sfx_voltar_e_accept_em_voltar_emite() -> void:
+func test_c204_foco_circula_music_sfx_ver_tutorial_voltar_e_accept_emite() -> void:
 	var o := _nova()
+	var tutoriais: Array[int] = [0]
+	o.ver_tutorial.connect(func() -> void: tutoriais[0] += 1)
 	assert_eq(o.foco_atual(), OptionsScreen.Item.MUSIC, "foco inicial em Music")
 	o.tratar_evento(_acao("ui_up"))
 	assert_eq(o.foco_atual(), OptionsScreen.Item.VOLTAR, "ui_up em Music circula para Voltar")
@@ -138,10 +151,38 @@ func test_c204_foco_circula_music_sfx_voltar_e_accept_em_voltar_emite() -> void:
 	assert_eq(o.foco_atual(), OptionsScreen.Item.SFX, "ui_down em Music vai a SFX")
 	o.tratar_evento(_acao("ui_accept"))
 	assert_eq(_voltou, 0, "ui_accept em slider nao emite voltar")
+	assert_eq(tutoriais[0], 0, "ui_accept em slider nao emite ver_tutorial")
 	o.tratar_evento(_acao("ui_down"))
-	assert_eq(o.foco_atual(), OptionsScreen.Item.VOLTAR, "ui_down em SFX vai a Voltar")
+	assert_eq(o.foco_atual(), OptionsScreen.Item.VER_TUTORIAL, "ui_down em SFX vai a Ver tutorial")
+	o.tratar_evento(_acao("ui_accept"))
+	assert_eq(tutoriais[0], 1, "ui_accept em Ver tutorial emite ver_tutorial")
+	assert_eq(_voltou, 0, "ui_accept em Ver tutorial nao emite voltar")
+	o.tratar_evento(_acao("ui_down"))
+	assert_eq(o.foco_atual(), OptionsScreen.Item.VOLTAR, "ui_down em Ver tutorial vai a Voltar")
 	o.tratar_evento(_acao("ui_accept"))
 	assert_eq(_voltou, 1, "ui_accept em Voltar emite voltar")
+	assert_eq(tutoriais[0], 1, "ui_accept em Voltar nao emite ver_tutorial")
+
+
+func test_c218_ver_tutorial_so_aciona_ao_soltar_dentro() -> void:
+	var o := _nova()
+	var tutoriais: Array[int] = [0]
+	o.ver_tutorial.connect(func() -> void: tutoriais[0] += 1)
+	var dentro := o.rect_ver_tutorial().get_center()
+	o.tratar_evento(_toque(dentro, true))
+	assert_eq(tutoriais[0], 0, "pressionar em Ver tutorial ainda nao emite")
+	o.tratar_evento(_toque(Vector2(5, 5), false))
+	assert_eq(tutoriais[0], 0, "soltar fora nao emite ver_tutorial")
+	o.tratar_evento(_toque(dentro, true))
+	o.tratar_evento(_toque(dentro, false))
+	assert_eq(tutoriais[0], 1, "soltar dentro emite ver_tutorial")
+	assert_eq(_voltou, 0, "Ver tutorial nao emite voltar")
+
+
+func test_abrir_com_foco_inicial_em_ver_tutorial() -> void:
+	var o := _nova()
+	o.abrir(OptionsScreen.Item.VER_TUTORIAL)
+	assert_eq(o.foco_atual(), OptionsScreen.Item.VER_TUTORIAL, "abrir(foco) devolve o foco a Ver tutorial")
 
 
 func test_passo_de_teclado_ui_left_e_ui_right_limitados() -> void:
