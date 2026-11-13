@@ -1,0 +1,17 @@
+{
+  "path": "index.html?seed=464&semderrota=1&progresso=0.34&tutorial=visto",
+  "viewport": [1080, 2772],
+  "boot_ms": 6000,
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "expect": { "dificuldade.estagio": { "eq": 0 } }, "timeout_ms": 3000 },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "expect": { "dificuldade.estagio": { "eq": 0 } }, "timeout_ms": 3000 },
+    { "expect": { "dificuldade.estagio": { "gte": 1 } }, "timeout_ms": 8000 },
+    { "shots": 2, "every": 300, "name": "estagio1", "moving": false },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 }
+  ]
+}

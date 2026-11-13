@@ -7,6 +7,7 @@ extends GutTest
 const PASTA: String = "res://test/smoke/"
 const ROTEIROS: Array[String] = [
 	"dica-toque",
+	"estagio",
 	"gecko",
 	"janela-larga-1280x720",
 	"retrato-1080x2400",
@@ -24,7 +25,8 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-1170x2532",
 	"retrato-720x1280",
 ]
-const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive"]
+const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "dificuldade.estagio"]
+const ROTEIROS_SEMDERROTA: Array[String] = ["retrato-pontua-1080x2772", "estagio"]
 const OPERADORES: Array[String] = ["eq", "ne", "gt", "gte", "lt", "lte"]
 const TIMEOUT_MIN_APOS_QUEDA_MS: int = 3000
 # Orcamento do tempo nominal (wait + (shots-1)*every) do Play ate o ultimo print de uma rajada moving true: a recarga
@@ -260,6 +262,36 @@ func test_orcamento_reinicia_por_partida() -> void:
 	assert_gte(inicios, 2, "o gecko tem ao menos 2 partidas, cada uma com o seu proprio Play")
 
 
+func _indice_expect(nome: String, chave: String, operador: String) -> int:
+	var passos := _passos(nome)
+	for i in passos.size():
+		if not passos[i].has("expect"):
+			continue
+		var valor: Variant = passos[i]["expect"].get(chave, null)
+		if typeof(valor) == TYPE_DICTIONARY and valor.has(operador):
+			return i
+	return -1
+
+
+func test_roteiro_estagio_prova_a_subida_com_seed_progresso_e_termina_vivo() -> void:
+	_checar_roteiro_com_seed("estagio")
+	var caminho: String = str(_carregar("estagio").get("path", ""))
+	assert_true("seed=464" in caminho, "o roteiro estagio usa a seed da propria feature")
+	assert_true("semderrota=1" in caminho, "o roteiro estagio liga semderrota")
+	assert_true("progresso=" in caminho, "o roteiro estagio passa progresso=")
+	assert_true("tutorial=visto" in caminho, "o roteiro estagio pula o tutorial")
+	var i_eq0: int = _indice_expect("estagio", "dificuldade.estagio", "eq")
+	var i_gte1: int = _indice_expect("estagio", "dificuldade.estagio", "gte")
+	assert_gte(i_eq0, 0, "deve haver expect dificuldade.estagio eq 0")
+	assert_gt(i_gte1, i_eq0, "expect estagio gte 1 vem depois do eq 0")
+	var passos := _passos("estagio")
+	assert_eq(passos[i_eq0]["expect"]["dificuldade.estagio"]["eq"], 0.0, "o eq e contra o estagio 0")
+	assert_eq(passos[i_gte1]["expect"]["dificuldade.estagio"]["gte"], 1.0, "o gte e contra o estagio 1")
+	assert_gte(int(passos[i_gte1].get("timeout_ms", 0)), 8000, "o gte 1 espera ao menos 8 s")
+	var ultimo: Dictionary = passos[passos.size() - 1]
+	assert_eq(ultimo.get("expect", {}), {"state": "playing"}, "o roteiro estagio termina com expect state playing")
+
+
 func test_so_retrato_pontua_liga_semderrota_pontua_e_termina_vivo() -> void:
 	var nome_pontua: String = "retrato-pontua-1080x2772"
 	var passos := _passos(nome_pontua)
@@ -273,7 +305,5 @@ func test_so_retrato_pontua_liga_semderrota_pontua_e_termina_vivo() -> void:
 	var ultimo: Dictionary = passos[passos.size() - 1]
 	assert_eq(ultimo.get("expect", {}), {"state": "playing"}, "o roteiro pontua deve terminar com expect state playing (gecko vivo)")
 	for nome in ROTEIROS:
-		if nome == nome_pontua:
-			continue
 		var caminho: String = str(_carregar(nome).get("path", ""))
-		assert_eq("semderrota" in caminho, false, "so o roteiro pontua liga o modo sem derrota")
+		assert_eq("semderrota" in caminho, ROTEIROS_SEMDERROTA.has(nome), "semderrota so nos roteiros da lista explicita (pontua e estagio)")
