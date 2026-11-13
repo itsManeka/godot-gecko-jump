@@ -33,9 +33,9 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 ```
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
            ScrollLevel (scroll vindo da curva de dificuldade), TouchControls (toque -> acoes de input), TouchHint (dica das zonas),
-           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008)
+           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
-           ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd (recorde salvo em user://),
+           ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd / OptionsStore.gd (recorde e opcoes em user://; buses Music/SFX),
            PlatformTypePicker.gd (tipo do gerador, sem cena),
            StaticPlatformColors.gd (cores das estaticas iniciais, sem cena),
            InitialRows.gd (ys das linhas iniciais pela altura visivel, sem cena),

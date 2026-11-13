@@ -37,6 +37,10 @@ No celular, uma dica discreta mostra as duas metades na primeira partida e some 
 A partida também pausa sozinha quando a janela ou a aba perde o foco, ou quando o app vai para segundo plano. Para
 voltar, use **Continuar**, `Esc` ou `P`. No desktop, o botão de pausa e o menu de pausa também aceitam clique do mouse.
 
+**Opções** (botão no menu inicial, entre Play e Last, ou no menu de pausa): volume da música e dos efeitos sonoros, de
+0 (mudo) a 100%, por arrasto ou com `←`/`→`. Os volumes ficam salvos e continuam valendo quando você abre o jogo de novo.
+No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
+
 ## 🚀 Como Jogar
 
 1. Pressione qualquer tecla de pulo (ou toque na tela) para começar
@@ -215,6 +219,10 @@ On phones, a subtle hint shows both halves in the first match and fades out on i
 
 The match also pauses on its own when the window or tab loses focus, or when the app goes to the background. To resume,
 use **Continuar**, `Esc` or `P`. On desktop, the pause button and the pause menu also accept mouse clicks.
+
+**Options** (button on the start menu, between Play and Last, or in the pause menu): music and sound effects volume,
+from 0 (muted) to 100%, by dragging or with `←`/`→`. Volumes are saved and still apply the next time you open the game.
+On the menu, `↓` moves the focus to **Opcoes** and `Enter` opens the screen.
 
 ### 🚀 How to Play
 

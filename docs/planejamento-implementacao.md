@@ -119,7 +119,11 @@ Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10)
    min). Silenciosa: nenhuma UI de nivel. Calibracao fina pelo playtest do dono no QA do epic.
 2. Pausa (#12, [ADR 0008](adr/0008-pausa-por-tree-paused.md)): acao `pause` (Esc, P, start do controle), botao de
    toque no canto superior esquerdo, pausa automatica ao perder o foco e overlay Continuar/Opcoes, por
-   `get_tree().paused`. Opcoes so emite o sinal ate a tela de Opcoes existir. Pausa por foco no web e no Android:
+   `get_tree().paused`. Pausa por foco no web e no Android: verificacao manual no QA do epic.
+3. Opcoes (#12): buses `Music` e `SFX` (os sons do jogo vao para `SFX`; `Music` sem faixa ate o E6), volumes salvos em
+   `user://options.cfg` (mesma escrita atomica do recorde) e aplicados no boot e ao mudar. Tela de Opcoes (sliders
+   Music/SFX e Voltar) aberta pelo botao Opcoes do menu inicial e pelo overlay de pausa; o arrasto aplica o volume na hora
+   e grava ao soltar. O item "Ver tutorial" entra com o tutorial. Persistencia apos recarga no web e nivel audivel:
    verificacao manual no QA do epic.
 
 ## Regras de trabalho
