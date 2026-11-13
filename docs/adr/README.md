@@ -13,3 +13,4 @@ antigo como "superado por".
 | [0006](0006-oraculo-de-jogo-em-3-camadas.md)           | Oraculo de jogo em 3 camadas; o dono joga so o que a maquina nao julga            | aceito                                                 |
 | [0007](0007-curva-de-dificuldade-em-resource.md)       | Curva de dificuldade progressiva em Resource `.tres`, avaliada por pontos e tempo | aceito                                                 |
 | [0008](0008-pausa-por-tree-paused.md)                  | Pausa por `get_tree().paused`, nao por `Global.iniciado`                          | aceito                                                 |
+| [0009](0009-modificadores-de-plataforma.md)            | Modificadores de plataforma por contrato; largura por shape duplicado             | aceito                                                 |

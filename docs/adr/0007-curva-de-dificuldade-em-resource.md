@@ -22,8 +22,9 @@ cor (#10). Faltava uma forma de a dificuldade subir com a partida, ajustavel sem
   acumula tempo com a partida em andamento. Entrega um snapshot imutavel; consumidor sem estado injetado usa o estagio 0.
 - **Injecao:** o `Stage` cria o estado; o `ScrollLevel` recebe o snapshot e repassa a cada linha. Scroll e lido a cada
   frame; velocidade e K sao lidos quando a plataforma nasce, para a linha manter a velocidade ate sair da tela.
-- **Mecanicas:** cada estagio tem `mecanicas: Array[StringName]`, vazio por enquanto. E o encaixe das mecanicas futuras,
-  que ganham ADR proprio quando forem implementadas.
+- **Mecanicas:** cada estagio tem `mecanicas: Array[StringName]`, que liga mecanicas de forma discreta na fronteira do
+  estagio. As duas primeiras (plataformas menores e que caem) estao implementadas e o contrato delas esta no
+  [ADR 0009](0009-modificadores-de-plataforma.md). As proximas mecanicas ganham ADR proprio quando forem implementadas.
 - Os numeros ficam no `.tres`, nao neste ADR.
 
 ## Consequencias
@@ -39,6 +40,6 @@ cor (#10). Faltava uma forma de a dificuldade subir com a partida, ajustavel sem
 - **Curva em `const` GDScript (plano B):** mesma logica e mesma interface de avaliacao, sem Resource. Fica como saida
   se o `.tres` atrapalhar o GUT ou o export web: a curva vira `const` no `DifficultyCurve.gd` e o `.tres` e removido.
 - **Contrato `PlatformModifier` por estagio:** cobriria as mecanicas futuras agora, mas sem caso real o contrato seria
-  chute. Fica para a primeira feature de mecanica.
+  chute. Foi desenhado na primeira mecanica real ([ADR 0009](0009-modificadores-de-plataforma.md)).
 - **Autoload guardando o estado:** sobrevive ao reload da cena e exige zerar a mao a cada partida. Rejeitado: o estado
   pertence a partida, nao ao jogo.

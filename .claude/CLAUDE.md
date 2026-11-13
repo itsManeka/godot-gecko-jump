@@ -19,14 +19,14 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ## Comandos
 
-| Acao | Comando |
-|---|---|
-| Importar | `<godot> --headless --path . --import` |
-| Rodar sem janela | `<godot> --headless --path . --quit-after <frames>` |
-| Jogar (janela) | `<godot> --path .` |
-| Oraculo completo (import, compile, GUT, run de 10 s) | `node .verify.mjs <wave>` |
-| So os testes GUT | `<godot> --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit` (le o `.gutconfig.json`, cujo `pre_run_script` isola o recorde real; outro `-gconfig` sem ele grava no `user://best_score.cfg` de quem joga) |
-| Export web | `<godot> --headless --path . --export-release "Web" export/web/index.html` (sem threads; servir `export/web/` por servidor estatico, nao `file://`) |
+| Acao                                                 | Comando                                                                                                                                                                                                                       |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Importar                                             | `<godot> --headless --path . --import`                                                                                                                                                                                        |
+| Rodar sem janela                                     | `<godot> --headless --path . --quit-after <frames>`                                                                                                                                                                           |
+| Jogar (janela)                                       | `<godot> --path .`                                                                                                                                                                                                            |
+| Oraculo completo (import, compile, GUT, run de 10 s) | `node .verify.mjs <wave>`                                                                                                                                                                                                     |
+| So os testes GUT                                     | `<godot> --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit` (le o `.gutconfig.json`, cujo `pre_run_script` isola o recorde real; outro `-gconfig` sem ele grava no `user://best_score.cfg` de quem joga) |
+| Export web                                           | `<godot> --headless --path . --export-release "Web" export/web/index.html` (sem threads; servir `export/web/` por servidor estatico, nao `file://`)                                                                           |
 
 ## Estrutura
 
@@ -44,7 +44,7 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            ReachableColors.gd (cor do gecko alcancavel no pouso e nas plataformas moveis, sem cena),
            PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador),
            TouchClassifier.gd (tap x segurar e lado do toque, sem cena; ADR 0003),
-           DifficultyCurve.gd / DifficultyStage.gd (curva de dificuldade, sem cena; ADR 0007),
+           DifficultyCurve.gd / DifficultyStage.gd (curva de dificuldade, sem cena; ADR 0007), PlatformModifier(s).gd + PlatformNarrower/PlatformCrumble.gd (mecanicas de plataforma, sem cena; ADR 0009),
            DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sem cena),
            PauseState.gd (pausa = `get_tree().paused`, nunca `Global.iniciado`; sem cena; ADR 0008),
            TutorialFlag.gd (flag "tutorial ja visto" no OptionsStore), DebugArgs.gd (args de usuario do nativo debug, `--nome=valor` depois de `--`), ModoTutorialVisto.gd (`?tutorial=` dos smokes, so debug), ModoProgressoInicial.gd (`?progresso=` dos smokes, so debug),
