@@ -10,6 +10,7 @@ scroll = 20.0
 speed_moveis = 60.0
 k = 3
 proporcao_estaticas = 0.3333333333333333
+largura_plataforma = 60.0
 mecanicas = Array[StringName]([])
 
 [sub_resource type="Resource" id="Resource_e1"]
@@ -19,7 +20,8 @@ scroll = 26.0
 speed_moveis = 72.0
 k = 4
 proporcao_estaticas = 0.25
-mecanicas = Array[StringName]([])
+largura_plataforma = 56.0
+mecanicas = Array[StringName]([&"plataformas_menores"])
 
 [sub_resource type="Resource" id="Resource_e2"]
 script = ExtResource("2_estagio")
@@ -28,7 +30,9 @@ scroll = 33.0
 speed_moveis = 86.0
 k = 5
 proporcao_estaticas = 0.15
-mecanicas = Array[StringName]([])
+largura_plataforma = 50.0
+atraso_desmoronar = 1.0
+mecanicas = Array[StringName]([&"plataformas_menores", &"plataformas_que_caem"])
 
 [sub_resource type="Resource" id="Resource_e3"]
 script = ExtResource("2_estagio")
@@ -37,7 +41,9 @@ scroll = 40.0
 speed_moveis = 100.0
 k = 6
 proporcao_estaticas = 0.1
-mecanicas = Array[StringName]([])
+largura_plataforma = 44.0
+atraso_desmoronar = 0.8
+mecanicas = Array[StringName]([&"plataformas_menores", &"plataformas_que_caem"])
 
 [resource]
 script = ExtResource("1_curva")

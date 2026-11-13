@@ -10,6 +10,7 @@ var _curva: DifficultyCurve
 
 
 func before_each() -> void:
+	PlatformModifiers.restaurar_padrao()
 	_curva = load(CURVA_PATH) as DifficultyCurve
 
 
@@ -150,16 +151,30 @@ func test_k_e_inteiro_floor_e_no_minimo_3() -> void:
 	assert_eq(perto.get_k(), _curva.estagios[0].k)
 
 
-func test_estagios_sem_mecanicas_e_ordenados_a_partir_de_zero() -> void:
-	assert_eq(_curva.estagios[0].progresso_inicio, 0.0, "primeiro estagio em 0.0")
+func test_estagio_0_sem_mecanicas_e_nomes_conhecidos_pelo_registro() -> void:
+	var e0: DifficultyStage = _curva.estagios[0]
+	assert_eq(e0.mecanicas.size(), 0, "estagio 0 sem mecanicas")
+	assert_almost_eq(e0.largura_plataforma, 60.0, EPS, "estagio 0 com largura 60 (antes da curva)")
 	for i in range(_curva.estagios.size()):
-		assert_eq(_curva.estagios[i].mecanicas.size(), 0, "mecanicas vazias no estagio %d" % i)
-		if i > 0:
-			assert_gt(
-				_curva.estagios[i].progresso_inicio,
-				_curva.estagios[i - 1].progresso_inicio,
-				"progresso_inicio estritamente crescente no estagio %d" % i
-			)
+		var e: DifficultyStage = _curva.estagios[i]
+		var snap := DifficultySnapshot.new(e.scroll, e.speed_moveis, e.k, e.proporcao_estaticas, e.mecanicas)
+		# resolver so devolve modificador para nome conhecido: menos que mecanicas = typo no .tres
+		assert_eq(
+			PlatformModifiers.resolver(snap).size(), e.mecanicas.size(), "mecanica desconhecida no estagio %d" % i
+		)
+
+
+func test_larguras_nao_crescentes_e_progresso_estritamente_crescente() -> void:
+	assert_eq(_curva.estagios[0].progresso_inicio, 0.0, "primeiro estagio em 0.0")
+	for i in range(1, _curva.estagios.size()):
+		var anterior: DifficultyStage = _curva.estagios[i - 1]
+		var atual: DifficultyStage = _curva.estagios[i]
+		assert_gt(
+			atual.progresso_inicio,
+			anterior.progresso_inicio,
+			"progresso_inicio estritamente crescente no estagio %d" % i
+		)
+		assert_lte(atual.largura_plataforma, anterior.largura_plataforma, "largura nao cresce no estagio %d" % i)
 
 
 func test_indice_estagio_da_curva_de_producao_com_fronteira_e_saturacao() -> void:

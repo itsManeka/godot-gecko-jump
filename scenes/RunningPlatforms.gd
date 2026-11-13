@@ -30,10 +30,15 @@ var _cores_criadas: Array = []
 # Cor do gecko lida no 1o preenchimento (-1 = ainda nao leu); so leitura, para teste
 var primeira_cor_gecko_lida: int = -1
 
+# Snapshot e modificadores de plataforma lidos no nascimento da linha (null = ainda nao lidos)
+var _snapshot_nascimento: DifficultySnapshot = null
+var _modificadores: Array = []
+
 # Inicializa o gerador de plataformas
 func _ready():
 	# Speed e proporcao lidas do snapshot vigente no nascimento: a linha mantem a speed ate sair
 	var snapshot: DifficultySnapshot = _snapshot()
+	_ler_mecanicas(snapshot)
 	speed = snapshot.get_speed_moveis()
 
 	# Resolve tipos de plataforma aleatórios (sorteio em PlatformTypePicker)
@@ -75,6 +80,7 @@ func create_static_platforms():
 		else:
 			platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color())
 		platform.position.x = position_x
+		_aplicar_mecanicas(platform)
 		platform.set_speed(0)  # Plataformas estáticas não se movem
 		add_child(platform)
 		position_x += 85
@@ -120,7 +126,23 @@ func _criar_plataforma(x: float):
 	platform.set_color(_cor_movel())
 	platform.position.x = x
 	platform.set_speed(0 if Global.sem_derrota else speed)
+	_aplicar_mecanicas(platform)
 	add_child(platform)
+
+# Resolve os modificadores do snapshot do nascimento; linha com garantir_cor_inicial (Q5) nunca desmorona
+func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
+	_snapshot_nascimento = snapshot
+	_modificadores = []
+	for modificador in PlatformModifiers.resolver(snapshot):
+		if garantir_cor_inicial and modificador is PlatformCrumble:
+			continue
+		_modificadores.append(modificador)
+
+# Entrega a lista de modificadores a plataforma antes do add_child (gerador fora da arvore le na 1a criacao)
+func _aplicar_mecanicas(platform: Platform) -> void:
+	if _snapshot_nascimento == null:
+		_ler_mecanicas(_snapshot())
+	platform.definir_modificadores(_modificadores, _snapshot_nascimento)
 
 # Inicia o timer para gerar próxima plataforma
 func start_generate_timer():

@@ -69,6 +69,10 @@ func _physics_process(_delta):
 	# Verifica se deve mudar de cor ao tocar uma nova plataforma
 	if is_on_floor() && can_change_color:
 		can_change_color = false
+		# Avisa a plataforma do pouso (com a cor do pouso) antes de sortear a nova cor; liberada = sem aviso
+		_descartar_plataforma_liberada()
+		if actual_platform != null:
+			actual_platform.notificar_pouso()
 		change_color_random()
 		emit_signal("add_point")
 	
