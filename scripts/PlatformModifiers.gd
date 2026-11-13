@@ -6,8 +6,20 @@ extends RefCounted
 const PLATAFORMAS_MENORES: StringName = &"plataformas_menores"
 const PLATAFORMAS_QUE_CAEM: StringName = &"plataformas_que_caem"
 
-# Nome -> script. Vazio ate as classes dos modificadores existirem; cada uma entra aqui ao ser criada.
-static var _registro: Dictionary = {}
+# Nome -> script. Ja nasce com os modificadores reais; registrar/limpar servem a testes com fakes.
+static var _registro: Dictionary = _padrao()
+
+
+static func _padrao() -> Dictionary:
+	return {
+		PLATAFORMAS_MENORES: PlatformNarrower,
+		PLATAFORMAS_QUE_CAEM: PlatformCrumble,
+	}
+
+
+# Restaura o mapeamento real (depois de um limpar() de teste)
+static func restaurar_padrao() -> void:
+	_registro = _padrao()
 
 
 static func registrar(nome: StringName, modificador: Script) -> void:

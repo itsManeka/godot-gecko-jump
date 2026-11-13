@@ -16,7 +16,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	PlatformModifiers.limpar()
+	PlatformModifiers.restaurar_padrao()
 
 
 func _snapshot(mecanicas: Array[StringName]) -> DifficultySnapshot:
