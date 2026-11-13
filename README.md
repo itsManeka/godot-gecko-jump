@@ -140,6 +140,8 @@ release (o publicado) ignora os parametros abaixo e nao publica nada:
   `retrato-pontua-1080x2772.smoke.json` para conferir que o gecko pontua.
 - `?dica=1` força a dica de toque sem aparelho de toque, usado pelo roteiro `dica-toque.smoke.json`. O runner só
   clica com mouse, então tap e segurar por tempo não são jogados pelos roteiros (`toque.smoke.json` confere o início por clique).
+- `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
+  tela. Todo roteiro leva o parâmetro, menos `tutorial.smoke.json`, que joga a primeira partida com o armazenamento limpo.
 - O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`) e `player.alive`.
   O passo `expect` do roteiro le esses campos, por exemplo `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
 
@@ -272,6 +274,8 @@ build (the published one) ignores the parameters below and publishes nothing:
   `retrato-pontua-1080x2772.smoke.json` script to check that the gecko scores.
 - `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` script. The runner only
   clicks with a mouse, so tap and hold by time are not played by the scripts (`toque.smoke.json` checks the start with a click).
+- `?tutorial=visto` marks the first-match tutorial as already seen (without saving anything), so the card does not
+  cover the screen. Every script carries it, except `tutorial.smoke.json`, which plays the first match with clean storage.
 - The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`) and
   `player.alive`. The script `expect` step reads those fields, for example
   `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
