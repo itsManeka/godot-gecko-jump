@@ -48,6 +48,44 @@ func _ready():
 	_best_store = BestScoreStore.new()
 	pontuacao.load_best(_best_store.load_best())
 	pontuacao.best_changed.connect(_best_store.save_best)
+	usar_options_store(OptionsStore.new())
+
+# Opcoes de audio: store publico de proposito (seam de teste; test/gut_pre_run.gd o troca por um de caminho temporario).
+var opcoes: OptionsStore
+var _volume_music: float = OptionsStore.DEFAULT_VOLUME
+var _volume_sfx: float = OptionsStore.DEFAULT_VOLUME
+
+# Define o store das opcoes, le os volumes salvos e aplica nos buses.
+func usar_options_store(store: OptionsStore) -> void:
+	opcoes = store
+	_volume_music = store.load_music()
+	_volume_sfx = store.load_sfx()
+	_aplicar_bus("Music", _volume_music)
+	_aplicar_bus("SFX", _volume_sfx)
+
+func set_volume_music(v: float) -> void:
+	_volume_music = clampf(v, 0.0, 1.0)
+	_aplicar_bus("Music", _volume_music)
+	opcoes.save_music(_volume_music)
+
+func set_volume_sfx(v: float) -> void:
+	_volume_sfx = clampf(v, 0.0, 1.0)
+	_aplicar_bus("SFX", _volume_sfx)
+	opcoes.save_sfx(_volume_sfx)
+
+func get_volume_music() -> float:
+	return _volume_music
+
+func get_volume_sfx() -> float:
+	return _volume_sfx
+
+# Aplica o volume linear no bus: dB pela conversao do store e mudo em 0.
+func _aplicar_bus(bus: String, linear: float) -> void:
+	var idx := AudioServer.get_bus_index(bus)
+	if idx < 0:
+		return
+	AudioServer.set_bus_volume_db(idx, OptionsStore.volume_linear_to_db(linear))
+	AudioServer.set_bus_mute(idx, linear <= 0.0)
 
 # Adiciona uma nova plataforma à lista de plataformas ativas
 func add_platform(platform: Platform):
