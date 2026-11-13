@@ -44,6 +44,9 @@ enum Lado { ESQUERDA, DIREITA }
 var player: Node = null
 # Callable() -> bool que substitui DisplayServer.is_touchscreen_available() (teste).
 var touchscreen_disponivel: Callable = Callable()
+# Card do tutorial (injetado pela Stage): com ele aberto nenhum toque inicia o fade (handoff 8.4/12.1); o 1o toque
+# de jogo depois do fechamento inicia.
+var tutorial_card: TutorialCard = null
 
 var _raiz: Control
 var _linha: Control
@@ -83,6 +86,8 @@ func _input(event: InputEvent) -> void:
 		return
 	# Qualquer toque prova dispositivo de toque; so o toque com a partida em curso conta como toque de jogo.
 	Global.toque_detectado = true
+	if tutorial_card != null and tutorial_card.esta_aberto():
+		return
 	if _mostrando and _em_curso() and (_fade == null or not _fade.is_valid()):
 		_iniciar_fade()
 

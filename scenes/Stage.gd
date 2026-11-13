@@ -87,6 +87,7 @@ func _ready():
 	# Pular ou no 1o ponto; derrota antes disso nao grava (o card some com a cena e volta na partida seguinte).
 	tutorial_flag = TutorialFlag.new(Global.opcoes)
 	tutorial_card = TutorialCard.new()
+	touch_hint.tutorial_card = tutorial_card
 	tutorial_card.pular.connect(_concluir_tutorial)
 	add_child(tutorial_card)
 	# Botao e overlay de pausa: filhos depois de touch_controls/touch_hint (o _input chega a eles antes). So o overlay
@@ -135,16 +136,23 @@ func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 		tutorial_card.aplicar_layout(visible_size, safe)
 	if pause_botao != null:
 		pause_botao.aplicar_layout(visible_size, safe)
-		# Zona morta do toque de jogo: o retangulo do botao (ja deslocado por s_left/s_top)
-		if touch_controls != null:
-			var mortas: Array[Rect2] = [pause_botao.rect_botao()]
-			touch_controls.classificador.zonas_mortas = mortas
+	_atualizar_zonas_mortas()
 	if pause_overlay != null:
 		pause_overlay.aplicar_layout(visible_size, safe)
 	if opcoes_botao != null:
 		opcoes_botao.aplicar_layout(visible_size, safe)
 	if options_screen != null:
 		options_screen.aplicar_layout(visible_size, safe)
+
+# Zonas mortas do toque de jogo: o botao de pausa e, com o card do tutorial aberto, o retangulo do Pular (7.3/8.1);
+# ja deslocados por s_left/s_top. Refeita ao abrir/fechar o card e no layout.
+func _atualizar_zonas_mortas() -> void:
+	if touch_controls == null or pause_botao == null:
+		return
+	var mortas: Array[Rect2] = [pause_botao.rect_botao()]
+	if tutorial_card != null and tutorial_card.esta_aberto():
+		mortas.append(tutorial_card.rect_pular())
+	touch_controls.classificador.zonas_mortas = mortas
 
 # HUD no topo da safe area: Pontos junto a borda direita visivel, menu com o y de 180x320 deslocado por safe.position.y
 # e centrado na largura visivel. Posicao calculada do tamanho injetado (o pai Control so reflete o viewport real).
@@ -208,6 +216,7 @@ func _abrir_tutorial() -> void:
 		return
 	var toque: bool = Global.toque_detectado or _tem_touchscreen()
 	tutorial_card.abrir(TutorialCard.Variante.TOQUE if toque else TutorialCard.Variante.TECLADO)
+	_atualizar_zonas_mortas()
 
 func _tem_touchscreen() -> bool:
 	if touchscreen_disponivel.is_valid():
@@ -219,6 +228,7 @@ func _concluir_tutorial() -> void:
 	if not tutorial_card.esta_aberto():
 		return
 	tutorial_card.fechar()
+	_atualizar_zonas_mortas()
 	tutorial_flag.marcar()
 	_republicar_volumes()
 
@@ -226,6 +236,7 @@ func _concluir_tutorial() -> void:
 func _sincronizar_tutorial() -> void:
 	if tutorial_card != null and tutorial_card.esta_aberto() and not _partida_ativa():
 		tutorial_card.fechar(true)
+		_atualizar_zonas_mortas()
 
 # Pausa a arvore (Global.iniciado nao muda), cancela o toque de jogo em curso e abre o overlay
 func _pausar() -> bool:
