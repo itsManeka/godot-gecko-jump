@@ -44,6 +44,9 @@ func test_web_nao_le_args_de_usuario() -> void:
 	assert_true(DebugArgs.fonte(true, true, PackedStringArray(["--seed=42"]), "seed") == null, "o ramo web nao le args de usuario")
 
 
+# Os 5 testes abaixo supoem o runner GUT sem args de usuario (nada depois de `--`), como o `.verify.mjs` e o comando
+# do README chamam. Rodar o GUT com `-- --seed=...` (ou outro parametro de debug) faz o `read_raw` ler o arg e o
+# teste falhar: nao e regressao. O nome de cada parametro no `read_raw` e conferido por leitura, nao por estes testes.
 func test_seed_read_raw_sem_args_devolve_null() -> void:
 	assert_true(SeedSource.read_raw() == null, "runner GUT sem --seed devolve null")
 

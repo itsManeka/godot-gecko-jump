@@ -133,7 +133,7 @@ pular) e acusa erro de pagina, recurso faltando e tela congelada. Rode-o sobre a
 `game-smoke.mjs` do dev-workspace: `node <dev-workspace>/.claude/scripts/game-smoke.mjs export/web --spec=test/smoke/gecko.smoke.json --out=<pasta dos prints>`.
 
 Os roteiros conferem o estado da partida, nao so a tela. Isso so funciona no export web de **debug**; o build de
-release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot nativo de **debug**, os mesmos parametros valem como argumentos de usuario depois de `--` (ex.: `godot --path . -- --seed=42 --semderrota=1`); `--nome` sem valor equivale a `?nome`, e o build de release ignora:
+release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot nativo de **debug**, os mesmos parametros valem como argumentos de usuario depois de `--` (ex.: `godot --path . -- --seed=42 --semderrota=1`); `--nome` sem valor equivale a `?nome` (nao liga o modo: so o valor exato de cada parametro liga), e o build de release ignora:
 
 - `?seed=<numero>` no `path` do roteiro fixa o sorteio de cores e plataformas. Todo roteiro leva uma seed.
 - `?semderrota=1` liga o modo sem derrota (plataformas na cor inicial e paradas; a queda pela borda ainda encerra a
@@ -275,7 +275,7 @@ jump) and reports page errors, missing resources and a frozen screen. Run it aga
 with the dev-workspace `game-smoke.mjs`: `node <dev-workspace>/.claude/scripts/game-smoke.mjs export/web --spec=test/smoke/gecko.smoke.json --out=<screenshots folder>`.
 
 The scripts check the match state, not only the screen. This only works on the **debug** web export; the release
-build (the published one) ignores the parameters below and publishes nothing. On the native Godot **debug** build, the same parameters work as user arguments after `--` (e.g. `godot --path . -- --seed=42 --semderrota=1`); `--name` without a value is the same as `?name`, and the release build ignores them:
+build (the published one) ignores the parameters below and publishes nothing. On the native Godot **debug** build, the same parameters work as user arguments after `--` (e.g. `godot --path . -- --seed=42 --semderrota=1`); `--name` without a value is the same as `?name` (it does not turn the mode on: only each parameter's exact value does), and the release build ignores them:
 
 - `?seed=<number>` in the script `path` fixes the color and platform draw. Every script carries a seed.
 - `?semderrota=1` turns on the no-defeat mode (platforms in the initial color and standing still; falling off the
