@@ -33,7 +33,8 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 ```
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
            ScrollLevel (scroll vindo da curva de dificuldade), TouchControls (toque -> acoes de input), TouchHint (dica das zonas),
-           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes)
+           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes, Ver tutorial),
+           TutorialCard (card da 1a partida e reabertura modal)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
            ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd / OptionsStore.gd (recorde e opcoes em user://; buses Music/SFX),
            PlatformTypePicker.gd (tipo do gerador, sem cena),
@@ -45,10 +46,13 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            TouchClassifier.gd (tap x segurar e lado do toque, sem cena; ADR 0003),
            DifficultyCurve.gd / DifficultyStage.gd (curva de dificuldade, sem cena; ADR 0007),
            DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sem cena),
-           PauseState.gd (pausa = `get_tree().paused`, nunca `Global.iniciado`; sem cena; ADR 0008)
+           PauseState.gd (pausa = `get_tree().paused`, nunca `Global.iniciado`; sem cena; ADR 0008),
+           TutorialFlag.gd (flag "tutorial ja visto" no OptionsStore), ModoTutorialVisto.gd (`?tutorial=` dos smokes, so debug),
+           UiHelpers.gd (estilo de caixa, label e chave do mouse das telas de UI, sem cena)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 test/smoke/ roteiros do game-smoke (export web): `gecko.smoke.json` (fluxo), `retrato-*` (telas de celular) e
-           `janela-larga-1280x720` (coluna de 180 com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os
+           `janela-larga-1280x720` (coluna de 180 com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os.
+           Todos usam `?tutorial=visto`, menos `tutorial.smoke.json` (1a partida com `user://` limpo)
 addons/    GUT v9.7.1 (vendorizado; nao editar)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
 export/    saida de build (ignorada; so o .gdignore e versionado, para o Godot nao importar o build)

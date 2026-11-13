@@ -123,8 +123,12 @@ Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10)
 3. Opcoes (#12): buses `Music` e `SFX` (os sons do jogo vao para `SFX`; `Music` sem faixa ate o E6), volumes salvos em
    `user://options.cfg` (mesma escrita atomica do recorde) e aplicados no boot e ao mudar. Tela de Opcoes (sliders
    Music/SFX e Voltar) aberta pelo botao Opcoes do menu inicial e pelo overlay de pausa; o arrasto aplica o volume na hora
-   e grava ao soltar. O item "Ver tutorial" entra com o tutorial. Persistencia apos recarga no web e nivel audivel:
-   verificacao manual no QA do epic.
+   e grava ao soltar. Persistencia apos recarga no web e nivel audivel: verificacao manual no QA do epic.
+4. Tutorial da 1a partida (#12): card com os controles (variante de toque ou de teclado, pela mesma conta da dica)
+   aberto na 1a partida, que fecha no 1o pouso ou em Pular, com fade de 0.3 s; a flag `tutorial/visto` em
+   `user://options.cfg` so grava ao concluir ou pular (derrota antes do 1o pouso reabre o card). O item "Ver tutorial"
+   de Opcoes reabre o card em modo modal, sobre o fundo da pausa, sem mudar a flag. Os smokes forcam o tutorial como visto
+   por `?tutorial=visto` (so em build debug); `tutorial.smoke.json` joga a 1a partida com `user://` limpo.
 
 ## Regras de trabalho
 

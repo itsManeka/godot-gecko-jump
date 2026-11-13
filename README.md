@@ -41,6 +41,9 @@ voltar, use **Continuar**, `Esc` ou `P`. No desktop, o botão de pausa e o menu 
 0 (mudo) a 100%, por arrasto ou com `←`/`→`. Os volumes ficam salvos e continuam valendo quando você abre o jogo de novo.
 No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
 
+Na primeira partida, um cartão mostra os controles e some no primeiro pouso (ou em **Pular**). Para vê-lo de novo,
+use **Opções > Ver tutorial**.
+
 ## 🚀 Como Jogar
 
 1. Pressione qualquer tecla de pulo (ou toque na tela) para começar
@@ -223,6 +226,9 @@ use **Continuar**, `Esc` or `P`. On desktop, the pause button and the pause menu
 **Options** (button on the start menu, between Play and Last, or in the pause menu): music and sound effects volume,
 from 0 (muted) to 100%, by dragging or with `←`/`→`. Volumes are saved and still apply the next time you open the game.
 On the menu, `↓` moves the focus to **Opcoes** and `Enter` opens the screen.
+
+In the first match, a card shows the controls and fades out on the first landing (or on **Pular**). To see it again,
+use **Opcoes > Ver tutorial**.
 
 ### 🚀 How to Play
 
