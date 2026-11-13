@@ -136,17 +136,23 @@ Os roteiros conferem o estado da partida, nao so a tela. Isso so funciona no exp
 release (o publicado) ignora os parametros abaixo e nao publica nada:
 
 - `?seed=<numero>` no `path` do roteiro fixa o sorteio de cores e plataformas. Todo roteiro leva uma seed.
-- `?semderrota=1` liga o modo sem derrota (plataformas na cor inicial e paradas), usado so pelo roteiro
-  `retrato-pontua-1080x2772.smoke.json` para conferir que o gecko pontua.
+- `?semderrota=1` liga o modo sem derrota (plataformas na cor inicial e paradas), usado so pelos roteiros
+  `retrato-pontua-1080x2772.smoke.json` (conferir que o gecko pontua) e `estagio.smoke.json` (conferir que a dificuldade sobe).
+- `?progresso=<0 a 1>` comeca a partida no ponto da curva de dificuldade indicado (valor invalido vale 0), usado pelo
+  roteiro `estagio.smoke.json`.
 - `?dica=1` força a dica de toque sem aparelho de toque, usado pelo roteiro `dica-toque.smoke.json`. O runner só
   clica com mouse, então tap e segurar por tempo não são jogados pelos roteiros (`toque.smoke.json` confere o início por clique).
 - `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
   tela. Todo roteiro leva o parâmetro, menos `tutorial.smoke.json`, que joga a primeira partida com o armazenamento limpo.
-- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`) e `player.alive`.
+- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`), `player.alive` e
+  `dificuldade.estagio` (inteiro, 0 no inicio da partida; republicado quando o estagio muda).
   O passo `expect` do roteiro le esses campos, por exemplo `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
+  O roteiro `estagio.smoke.json` prova que o estagio sobe de 0 para 1 ou mais durante a partida.
 
 Com sorteio real o gecko pode morrer cedo, entao os roteiros longos nao exigem pontuacao: conferem `playing` depois do
-Play e que a partida deixou de estar em `playing` depois da queda. Pontuacao so e conferida no roteiro sem derrota.
+Play e que a partida deixou de estar em `playing` depois da queda. Antes de cada rajada de pulo, o roteiro tambem espera
+`playing`, para que uma derrota anterior apareca como falha de estado e nao como tela congelada. Pontuacao so e conferida
+no roteiro `retrato-pontua-1080x2772`, que liga o modo sem derrota.
 Pela mesma razao, uma rajada `"moving": true` que o runner reprova por tela congelada (com `freeze_shots` prints ou
 mais, 4 por padrao) tem de terminar ate 1500 ms depois do Play (`wait` + `(shots-1)*every`): a recarga depois de uma
 derrota so vem ~2,3 s depois do Play, e menu parado dentro da rajada vira `canvas congelado`. O teste
@@ -271,17 +277,23 @@ build (the published one) ignores the parameters below and publishes nothing:
 
 - `?seed=<number>` in the script `path` fixes the color and platform draw. Every script carries a seed.
 - `?semderrota=1` turns on the no-defeat mode (platforms in the initial color and standing still), used only by the
-  `retrato-pontua-1080x2772.smoke.json` script to check that the gecko scores.
+  `retrato-pontua-1080x2772.smoke.json` script (to check that the gecko scores) and the `estagio.smoke.json` script
+  (to check that the difficulty rises).
+- `?progresso=<0 to 1>` starts the match at that point of the difficulty curve (an invalid value means 0), used by the
+  `estagio.smoke.json` script.
 - `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` script. The runner only
   clicks with a mouse, so tap and hold by time are not played by the scripts (`toque.smoke.json` checks the start with a click).
 - `?tutorial=visto` marks the first-match tutorial as already seen (without saving anything), so the card does not
   cover the screen. Every script carries it, except `tutorial.smoke.json`, which plays the first match with clean storage.
-- The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`) and
-  `player.alive`. The script `expect` step reads those fields, for example
-  `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
+- The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`),
+  `player.alive` and `dificuldade.estagio` (an integer, 0 at the start of the match; republished when the stage changes).
+  The script `expect` step reads those fields, for example `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
+  The `estagio.smoke.json` script checks that the stage rises from 0 to 1 or more during the match.
 
 With the real draw the gecko may die early, so the long scripts do not require a score: they check `playing` after
-Play and that the match left `playing` after the fall. Scoring is only checked in the no-defeat script.
+Play and that the match left `playing` after the fall. Before each jump burst, the long scripts also wait for
+`playing`, so an earlier defeat shows up as a state failure and not as a frozen screen. Scoring is only checked in the
+`retrato-pontua-1080x2772` script, which turns on the no-defeat mode.
 For the same reason, a `"moving": true` burst that the runner fails as a frozen screen (`freeze_shots` screenshots or
 more, 4 by default) must end within 1500 ms of Play (`wait` + `(shots-1)*every`): the reload after a defeat only comes
 ~2.3 s after Play, and a still menu inside the burst becomes `canvas congelado`. The
