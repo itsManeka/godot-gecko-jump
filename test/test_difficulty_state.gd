@@ -108,3 +108,49 @@ func test_snapshot_e_imutavel() -> void:
 	assert_almost_eq(primeiro.get_scroll(), 20.0, 0.001, "snapshot antigo nao muda com o tick")
 	assert_almost_eq(segundo.get_scroll(), 40.0, 0.001, "snapshot novo reflete o tempo")
 	assert_eq(estado.snapshot().get_mecanicas().size(), 0, "proximo snapshot nao herda a alteracao")
+
+
+func _estado_producao() -> DifficultyState:
+	return DifficultyState.new(load("res://ressources/curva_dificuldade.tres") as DifficultyCurve)
+
+
+func test_estagio_de_estado_novo_e_zero() -> void:
+	assert_eq(_estado_producao().estagio(), 0, "estado novo no estagio 0")
+
+
+func test_progresso_inicial_e_offset_no_canal_do_tempo() -> void:
+	# C217: 0.34 -> estagio 0 em t=0; com partida iniciada, 2 s de tick cruzam a fronteira 0.35.
+	var estado := _estado_producao()
+	estado.progresso_inicial = 0.34
+	assert_eq(estado.estagio(), 0, "t=0 ainda no estagio 0")
+	Global.set_iniciado(true)
+	estado.tick(2.0)
+	assert_eq(estado.estagio(), 1, "tempo de partida soma ao offset")
+
+
+func test_progresso_inicial_nao_anda_sem_partida_iniciada() -> void:
+	# C218: Global.iniciado desligado (before_each): 10 s de tick nao mexem no estagio.
+	var estado := _estado_producao()
+	estado.progresso_inicial = 0.34
+	estado.tick(10.0)
+	assert_eq(estado.estagio(), 0, "sem partida o tempo nao anda")
+
+
+func test_progresso_inicial_meio_e_saturacao() -> void:
+	# C219: 0.5 -> estagio 1 em t=0; 7.0 satura no estagio final; -1.0 satura em 0.
+	var estado := _estado_producao()
+	estado.progresso_inicial = 0.5
+	assert_eq(estado.estagio(), 1, "0.5 -> estagio 1")
+	estado.progresso_inicial = 7.0
+	assert_eq(estado.estagio(), 3, "7.0 satura no estagio final")
+	estado.progresso_inicial = -1.0
+	assert_eq(estado.estagio(), 0, "-1.0 satura em 0")
+
+
+func test_snapshot_com_progresso_inicial_zero_igual_ao_da_curva() -> void:
+	# C216: offset 0 nao altera avaliar().
+	var estado := DifficultyState.new(_curva_teste())
+	Global.set_iniciado(true)
+	estado.tick(25.0)
+	estado.progresso_inicial = 0.0
+	assert_almost_eq(estado.snapshot().get_scroll(), 30.0, 0.001, "igual ao snapshot sem offset")

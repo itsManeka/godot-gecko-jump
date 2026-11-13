@@ -4,6 +4,12 @@
 class_name DifficultyState
 extends RefCounted
 
+## Progresso inicial de debug (0..1, saturado): entra como offset no canal do tempo
+## (segundos efetivos = _segundos + progresso_inicial * segundos_plato); o tempo segue subindo com a partida.
+var progresso_inicial: float = 0.0:
+	set(valor):
+		progresso_inicial = clampf(valor, 0.0, 1.0)
+
 var _curva: DifficultyCurve
 var _pontos: float = 0.0
 var _segundos: float = 0.0
@@ -26,4 +32,13 @@ func set_pontos(pontos: int) -> void:
 
 ## Foto imutavel dos parametros vigentes para os pontos e o tempo acumulados.
 func snapshot() -> DifficultySnapshot:
-	return _curva.avaliar(_pontos, _segundos)
+	return _curva.avaliar(_pontos, _segundos_efetivos())
+
+
+## Indice do estagio da curva para os pontos e o tempo vigentes (inclui o progresso inicial).
+func estagio() -> int:
+	return _curva.indice_estagio(_curva.progresso(_pontos, _segundos_efetivos()))
+
+
+func _segundos_efetivos() -> float:
+	return _segundos + progresso_inicial * _curva.segundos_plato

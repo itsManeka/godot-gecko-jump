@@ -45,6 +45,22 @@ func test_build_publica_tutorial_aberto_e_fechado() -> void:
 	assert_eq(GameState.build(0, 0, "playing", true, 100, 100, true)["tutorial"], "aberto", "aberto")
 
 
+func test_build_publica_dificuldade_estagio_int_default_0() -> void:
+	# (a) default: sem o parametro, estagio 0 e int (nao float)
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	var dif_padrao: Dictionary = padrao["dificuldade"] as Dictionary
+	assert_eq(dif_padrao["estagio"], 0, "padrao: dificuldade.estagio 0")
+	assert_eq(typeof(dif_padrao["estagio"]), TYPE_INT, "padrao: estagio e int")
+	# (b) comum: parametro passado publica o mesmo valor
+	var em_estagio: Dictionary = GameState.build(7, 12, "playing", true, 100, 100, false, 2)
+	assert_eq((em_estagio["dificuldade"] as Dictionary)["estagio"], 2, "estagio 2 publicado")
+	assert_eq(typeof((em_estagio["dificuldade"] as Dictionary)["estagio"]), TYPE_INT, "estagio 2 e int")
+	# (c) degenerado: round-trip JSON preserva o int (JSON devolve float, int() restaura)
+	var texto: String = JSON.stringify(GameState.build(0, 0, "playing", true, 100, 100, false, 3))
+	var volta: Dictionary = JSON.parse_string(texto) as Dictionary
+	assert_eq(int((volta["dificuldade"] as Dictionary)["estagio"]), 3, "round-trip preserva estagio 3")
+
+
 func test_json_stringify_parseia_de_volta_igual() -> void:
 	var estado: Dictionary = GameState.build(5, 9, "lost", false)
 	var texto: String = JSON.stringify(estado)

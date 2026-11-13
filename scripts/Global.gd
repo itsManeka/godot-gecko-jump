@@ -40,6 +40,13 @@ var sem_derrota: bool = false
 func aplicar_modo_sem_derrota(raw: Variant, is_debug: bool) -> void:
 	sem_derrota = ModoSemDerrota.decide(raw, is_debug)
 
+# Progresso inicial da dificuldade (so smoke debug via `?progresso=`): 0.0 em release e sem o parametro.
+var progresso_inicial: float = 0.0
+
+# Aplica o progresso inicial a partir do valor bruto do parametro e da flag de build.
+func aplicar_progresso_inicial(raw: Variant, is_debug: bool) -> void:
+	progresso_inicial = ModoProgressoInicial.decide(raw, is_debug)
+
 # Espelho em memoria do "tutorial visto" (TutorialFlag.marcar): impede o card de reaparecer na mesma sessao se a
 # gravacao em disco falhar. Publico de proposito (seam de teste: before_each reseta).
 var tutorial_visto_espelho: bool = false
@@ -56,6 +63,7 @@ func _ready():
 	aplicar_modo_sem_derrota(ModoSemDerrota.read_raw(), OS.is_debug_build())
 	aplicar_modo_dica(ModoDicaToque.read_raw(), OS.is_debug_build())
 	aplicar_modo_tutorial(ModoTutorialVisto.read_raw(), OS.is_debug_build())
+	aplicar_progresso_inicial(ModoProgressoInicial.read_raw(), OS.is_debug_build())
 	_best_store = BestScoreStore.new()
 	pontuacao.load_best(_best_store.load_best())
 	pontuacao.best_changed.connect(_best_store.save_best)

@@ -160,3 +160,18 @@ func test_estagios_sem_mecanicas_e_ordenados_a_partir_de_zero() -> void:
 				_curva.estagios[i - 1].progresso_inicio,
 				"progresso_inicio estritamente crescente no estagio %d" % i
 			)
+
+
+func test_indice_estagio_da_curva_de_producao_com_fronteira_e_saturacao() -> void:
+	# C215: fronteira 0.35 (curva_dificuldade.tres) separa < de <=; fora de [0,1] satura.
+	assert_eq(_curva.indice_estagio(0.0), 0, "0.0")
+	assert_eq(_curva.indice_estagio(0.34), 0, "0.34")
+	assert_eq(_curva.indice_estagio(0.35), 1, "0.35 (fronteira)")
+	assert_eq(_curva.indice_estagio(0.7), 2, "0.7")
+	assert_eq(_curva.indice_estagio(1.0), 3, "1.0")
+	assert_eq(_curva.indice_estagio(-0.5), 0, "-0.5 satura em 0")
+	assert_eq(_curva.indice_estagio(1.5), 3, "1.5 satura em 3")
+
+
+func test_indice_estagio_sem_estagios_e_zero() -> void:
+	assert_eq(DifficultyCurve.new().indice_estagio(0.9), 0, "curva vazia")

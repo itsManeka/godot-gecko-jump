@@ -25,17 +25,23 @@ func progresso(pontos: float, segundos: float) -> float:
 	return clampf(maxf(por_pontos, por_tempo), 0.0, 1.0)
 
 
-## Parametros vigentes para pontos e segundos. Sem estagios, devolve os defaults do estagio 0.
-func avaliar(pontos: float, segundos: float) -> DifficultySnapshot:
-	if estagios.is_empty():
-		return DifficultySnapshot.new()
-	var p := progresso(pontos, segundos)
+## Indice do estagio vigente para um progresso (maior i com progresso_inicio <= p). Sem estagios, 0.
+func indice_estagio(p: float) -> int:
 	var indice := 0
 	for i in range(estagios.size()):
 		if estagios[i].progresso_inicio <= p:
 			indice = i
 		else:
 			break
+	return indice
+
+
+## Parametros vigentes para pontos e segundos. Sem estagios, devolve os defaults do estagio 0.
+func avaliar(pontos: float, segundos: float) -> DifficultySnapshot:
+	if estagios.is_empty():
+		return DifficultySnapshot.new()
+	var p := progresso(pontos, segundos)
+	var indice := indice_estagio(p)
 	var atual: DifficultyStage = estagios[indice]
 	if indice + 1 >= estagios.size():
 		return _snapshot_de(atual)
