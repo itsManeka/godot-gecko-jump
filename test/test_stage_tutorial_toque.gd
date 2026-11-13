@@ -121,11 +121,30 @@ func test_c213_pausa_com_card_aberto_overlay_consome_o_pular_e_o_card_volta_ao_r
 	assert_false(stage.tutorial_card.tratar_evento(_toque(pos)), "pausado: o card nao consome o Pular")
 	assert_true(stage.pause_overlay.tratar_evento(_toque(pos)), "o overlay consome tambem o toque no Pular")
 	assert_true(stage.tutorial_card.esta_aberto(), "o card segue aberto na pausa")
+	assert_false(stage.tutorial_card.visible, "pausado: o card fica escondido pelo fundo da pausa (12.5)")
+	stage._abrir_opcoes_da_pausa()
+	assert_false(stage.tutorial_card.visible, "Opcoes da pausa: o card segue oculto")
+	stage._abrir_tutorial_revisao()
+	stage._fechar_tutorial_revisao()
+	assert_true(get_tree().paused, "a volta da reabertura segue pausada")
+	assert_false(stage.tutorial_card.visible, "volta da reabertura a Opcoes da pausa: o card segue oculto")
+	assert_true(stage.tutorial_card.esta_aberto(), "o card segue aberto (nao fechou)")
 	stage._retomar()
 	assert_false(get_tree().paused, "retomou")
 	assert_true(stage.tutorial_card.esta_aberto(), "o card volta ao estado anterior")
+	assert_true(stage.tutorial_card.visible, "retomou: o card volta visivel")
 	assert_true(stage.tutorial_card.tratar_evento(_toque(pos)), "apos retomar o Pular volta a ser do card")
 	assert_true(stage.touch_controls.classificador.zonas_mortas.has(stage.tutorial_card.rect_pular()), "zona morta mantida")
+
+
+func test_c213_card_fechado_antes_da_pausa_segue_invisivel_ao_retomar() -> void:
+	var stage := await _stage_em_curso()
+	stage.tutorial_card.fechar(true)
+	assert_true(stage._pausar(), "pausa com o card fechado")
+	assert_false(stage.tutorial_card.visible, "pausado: sem card")
+	stage._retomar()
+	assert_false(stage.tutorial_card.esta_aberto(), "segue fechado")
+	assert_false(stage.tutorial_card.visible, "retomou: o card fechado nao reaparece")
 
 
 func test_c214_tutorial_visto_e_dica_nao_mostrada_sem_card_e_dica_segue() -> void:

@@ -257,12 +257,21 @@ func _pausar() -> bool:
 	touch_controls.cancelar_tudo()
 	pause_botao.cancelar()
 	pause_overlay.abrir()
+	_atualizar_card_partida()
 	return true
 
 func _retomar() -> void:
 	pause_state.retomar()
 	pause_overlay.fechar()
 	options_screen.fechar()
+	_atualizar_card_partida()
+
+# Regra unica do card da 1a partida (handoff 12.5): visivel = aberto, sem pausa e sem a reabertura por cima.
+# Aberto/fechado (`esta_aberto()`, fade, flag) nao mudam.
+func _atualizar_card_partida() -> void:
+	tutorial_card.visible = (
+		tutorial_card.esta_aberto() and not pause_state.esta_pausado() and not _card_partida_escondido
+	)
 
 # Opcoes pela pausa: o overlay sai de cena (fechar o deixa invisivel e sem entrada) e a arvore segue pausada
 func _abrir_opcoes_da_pausa() -> void:
@@ -294,8 +303,7 @@ func _voltar_opcoes() -> void:
 func _abrir_tutorial_revisao() -> void:
 	options_screen.fechar()
 	_card_partida_escondido = tutorial_card.esta_aberto()
-	if _card_partida_escondido:
-		tutorial_card.visible = false
+	_atualizar_card_partida()
 	var toque: bool = Global.toque_detectado or _tem_touchscreen()
 	tutorial_revisao.abrir(
 		TutorialCard.Variante.TOQUE if toque else TutorialCard.Variante.TECLADO, TutorialCard.Modo.REABERTURA
@@ -304,9 +312,8 @@ func _abrir_tutorial_revisao() -> void:
 # Voltar (ou Esc/P) do card reaberto: devolve o card da 1a partida e Opcoes, com foco em Ver tutorial
 func _fechar_tutorial_revisao() -> void:
 	tutorial_revisao.fechar(true)
-	if _card_partida_escondido:
-		_card_partida_escondido = false
-		tutorial_card.visible = tutorial_card.esta_aberto()
+	_card_partida_escondido = false
+	_atualizar_card_partida()
 	options_screen.abrir(OptionsScreen.Item.VER_TUTORIAL)
 
 # Republica o ultimo estado com os volumes atuais (ponte do smoke); estado ainda nao publicado nao e inventado

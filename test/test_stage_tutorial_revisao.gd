@@ -172,8 +172,10 @@ func test_c222_card_da_1a_partida_escondido_ao_reabrir_volta_ao_estado_ao_voltar
 	assert_false(stage.tutorial_card.visible, "card da 1a partida escondido durante a reabertura")
 	assert_true(stage.tutorial_card.esta_aberto(), "card da 1a partida segue aberto (so oculto)")
 	stage.tutorial_revisao.voltar.emit()
-	assert_true(stage.tutorial_card.visible, "card da 1a partida volta ao estado ao Voltar")
+	assert_false(stage.tutorial_card.visible, "Voltar devolve a Opcoes da pausa: o card segue oculto (C213)")
 	assert_true(stage.tutorial_card.esta_aberto(), "segue aberto")
+	stage._retomar()
+	assert_true(stage.tutorial_card.visible, "card da 1a partida volta ao estado ao retomar")
 	assert_false(stage.tutorial_flag.visto(), "a flag segue ausente")
 
 
