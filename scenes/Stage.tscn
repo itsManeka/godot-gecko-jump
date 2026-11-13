@@ -126,5 +126,6 @@ __meta__ = {
 
 [node name="LoseAudio" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 6 )
+bus = &"SFX"
 [connection signal="body_exited" from="CheckPlayer" to="." method="_on_CheckPlayer_body_exited"]
 [connection signal="button_down" from="CanvasLayer/Play" to="." method="_on_Play_button_down"]

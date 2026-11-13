@@ -95,4 +95,5 @@ shape = SubResource( 9 )
 
 [node name="JumpAudio" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 3 )
+bus = &"SFX"
 [connection signal="body_entered" from="DetectorPlataforma" to="." method="_on_DetectorPlataforma_body_entered"]
