@@ -198,6 +198,32 @@ func test_fechar_com_dedo_pressionado_grava_o_valor_arrastado() -> void:
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.0, "fechar no meio do gesto grava o valor arrastado")
 
 
+func test_app_perde_foco_no_meio_do_arrasto_grava_o_valor_arrastado() -> void:
+	var o := _nova()
+	var cy := o.rect_sfx().get_center().y
+	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_arrasto(Vector2(10, cy)))
+	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 1.0, "durante o arrasto o cfg ainda guarda o valor antigo")
+	o.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.0, "perder o foco no meio do gesto grava o valor arrastado")
+
+
+func test_pedido_de_fechar_janela_no_meio_do_arrasto_grava_o_valor_arrastado() -> void:
+	var o := _nova()
+	var cy := o.rect_sfx().get_center().y
+	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_arrasto(Vector2(10, cy)))
+	o.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.0, "fechar a janela no meio do gesto grava o valor arrastado")
+
+
+func test_notificacao_sem_arrasto_nao_grava_nada() -> void:
+	var o := _nova()
+	o.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	o.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
+	assert_false(FileAccess.file_exists(TEMP_PATH), "sem pendencia a notificacao nao cria o cfg")
+
+
 func test_passo_de_teclado_grava_na_hora() -> void:
 	Global.set_volume_music(0.5)
 	var o := _nova()

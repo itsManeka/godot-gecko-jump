@@ -76,7 +76,8 @@ var _aberta: bool = false
 # index do dedo -> item em que o toque comecou (-1 = fundo)
 var _toques: Dictionary = {}
 var _pressionado: int = -1
-# Valor aplicado no bus durante o arrasto e ainda nao gravado no cfg (grava ao soltar ou ao fechar)
+# Valor aplicado no bus durante o arrasto e ainda nao gravado no cfg (grava ao soltar, ao fechar ou na saida do app).
+# Flag unica, sem estado por dedo: no multitoque, gravar os dois volumes de uma vez e intencional.
 var _pendente: bool = false
 
 
@@ -128,6 +129,18 @@ func _ready() -> void:
 			_botao_rotulo = _novo_label(NOMES[i], TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_CENTER)
 			_botao_painel.add_child(_botao_rotulo)
 	_atualizar_visual()
+
+
+# Saida do app com o gesto em andamento (janela fechada, app em segundo plano, foco perdido, cena destruida):
+# grava o que o arrasto aplicou no bus. Sem pendencia nao faz nada.
+func _notification(what: int) -> void:
+	if (
+		what == NOTIFICATION_WM_CLOSE_REQUEST
+		or what == NOTIFICATION_APPLICATION_PAUSED
+		or what == NOTIFICATION_APPLICATION_FOCUS_OUT
+		or what == NOTIFICATION_EXIT_TREE
+	):
+		_persistir_pendente()
 
 
 func _input(event: InputEvent) -> void:
