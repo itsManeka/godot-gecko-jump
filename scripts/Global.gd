@@ -63,14 +63,22 @@ func usar_options_store(store: OptionsStore) -> void:
 	_aplicar_bus("Music", _volume_music)
 	_aplicar_bus("SFX", _volume_sfx)
 
-func set_volume_music(v: float) -> void:
+# Aplica no bus sempre; grava no store so com `persistir` (arrasto de slider aplica sem gravar e grava ao soltar).
+func set_volume_music(v: float, persistir: bool = true) -> void:
 	_volume_music = clampf(v, 0.0, 1.0)
 	_aplicar_bus("Music", _volume_music)
-	opcoes.save_music(_volume_music)
+	if persistir:
+		opcoes.save_music(_volume_music)
 
-func set_volume_sfx(v: float) -> void:
+func set_volume_sfx(v: float, persistir: bool = true) -> void:
 	_volume_sfx = clampf(v, 0.0, 1.0)
 	_aplicar_bus("SFX", _volume_sfx)
+	if persistir:
+		opcoes.save_sfx(_volume_sfx)
+
+# Grava no store os dois volumes atuais.
+func salvar_volumes() -> void:
+	opcoes.save_music(_volume_music)
 	opcoes.save_sfx(_volume_sfx)
 
 func get_volume_music() -> float:

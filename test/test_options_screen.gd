@@ -169,8 +169,40 @@ func test_c205_arrasto_atualiza_bus_sfx_em_tempo_real_e_persiste() -> void:
 	assert_eq(_db("SFX"), OptionsStore.MUTE_DB, "SFX em 0 vale o piso de dB")
 	o.tratar_evento(_arrasto(Vector2(90, cy)))
 	assert_false(_mudo("SFX"), "SFX volta a soar ao sair de 0")
+	o.tratar_evento(_toque(Vector2(90, cy), false))
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.5, "novo store no mesmo caminho le 0.5")
 	assert_eq(Global.get_volume_music(), 1.0, "Music nao muda ao arrastar SFX")
+
+
+func test_arrasto_aplica_no_bus_mas_so_grava_ao_soltar() -> void:
+	var o := _nova()
+	var cy := o.rect_sfx().get_center().y
+	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_arrasto(Vector2(60, cy)))
+	o.tratar_evento(_arrasto(Vector2(40, cy)))
+	o.tratar_evento(_arrasto(Vector2(30, cy)))
+	assert_lt(_db("SFX"), -6.0, "o bus ja segue o arrasto")
+	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 1.0, "durante o arrasto o cfg ainda guarda o valor antigo")
+	o.tratar_evento(_toque(Vector2(30, cy), false))
+	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), Global.get_volume_sfx(), "ao soltar o cfg guarda o valor novo")
+	assert_lt(Global.get_volume_sfx(), 0.5, "o valor novo veio do arrasto")
+
+
+func test_fechar_com_dedo_pressionado_grava_o_valor_arrastado() -> void:
+	var o := _nova()
+	var cy := o.rect_sfx().get_center().y
+	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_arrasto(Vector2(10, cy)))
+	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 1.0, "antes de fechar o cfg ainda guarda o valor antigo")
+	o.fechar()
+	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.0, "fechar no meio do gesto grava o valor arrastado")
+
+
+func test_passo_de_teclado_grava_na_hora() -> void:
+	Global.set_volume_music(0.5)
+	var o := _nova()
+	o.tratar_evento(_acao("ui_right"))
+	assert_almost_eq(OptionsStore.new(TEMP_PATH).load_music(), 0.55, 0.0001, "ui_right grava 55 sem esperar soltar")
 
 
 func test_c206_toque_no_fundo_consumido_e_mouse_emulado_nao_duplica() -> void:

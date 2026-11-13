@@ -76,6 +76,8 @@ var _aberta: bool = false
 # index do dedo -> item em que o toque comecou (-1 = fundo)
 var _toques: Dictionary = {}
 var _pressionado: int = -1
+# Valor aplicado no bus durante o arrasto e ainda nao gravado no cfg (grava ao soltar ou ao fechar)
+var _pendente: bool = false
 
 
 func _init() -> void:
@@ -237,6 +239,7 @@ func abrir() -> void:
 	_foco = Item.MUSIC
 	_toques.clear()
 	_pressionado = -1
+	_pendente = false
 	_valores[Item.MUSIC] = roundi(Global.get_volume_music() * SliderMath.VALOR_MAX)
 	_valores[Item.SFX] = roundi(Global.get_volume_sfx() * SliderMath.VALOR_MAX)
 	visible = true
@@ -244,6 +247,7 @@ func abrir() -> void:
 
 
 func fechar() -> void:
+	_persistir_pendente()
 	_aberta = false
 	_toques.clear()
 	_pressionado = -1
@@ -263,10 +267,10 @@ func _tratar_acao(event: InputEvent) -> bool:
 	var repetido := key != null and key.echo
 	if TIPOS[_foco] == Tipo.SLIDER:
 		if event.is_action_pressed("ui_left", true):
-			_definir_valor(_foco, SliderMath.passo(_valores[_foco], -1))
+			_definir_valor(_foco, SliderMath.passo(_valores[_foco], -1), true)
 			return true
 		if event.is_action_pressed("ui_right", true):
-			_definir_valor(_foco, SliderMath.passo(_valores[_foco], 1))
+			_definir_valor(_foco, SliderMath.passo(_valores[_foco], 1), true)
 			return true
 	if repetido:
 		return false
@@ -310,7 +314,7 @@ func _tratar_ponteiro(dedo: int, pressionado: bool, pos: Vector2) -> void:
 		var item := _item_em(pos)
 		_toques[dedo] = item
 		if item != -1 and TIPOS[item] == Tipo.SLIDER:
-			_definir_valor(item, SliderMath.valor_de_x(pos.x))
+			_definir_valor(item, SliderMath.valor_de_x(pos.x), false)
 		else:
 			_pressionado = item
 		_atualizar_visual()
@@ -318,6 +322,8 @@ func _tratar_ponteiro(dedo: int, pressionado: bool, pos: Vector2) -> void:
 	var inicio: int = _toques.get(dedo, -1)
 	_toques.erase(dedo)
 	_pressionado = -1
+	if inicio != -1 and TIPOS[inicio] == Tipo.SLIDER:
+		_persistir_pendente()
 	_atualizar_visual()
 	if inicio != -1 and TIPOS[inicio] == Tipo.BOTAO and (_rects[inicio] as Rect2).has_point(pos):
 		voltar.emit()
@@ -327,7 +333,7 @@ func _tratar_ponteiro(dedo: int, pressionado: bool, pos: Vector2) -> void:
 func _arrastar(dedo: int, pos: Vector2) -> void:
 	var item: int = _toques.get(dedo, -1)
 	if item != -1 and TIPOS[item] == Tipo.SLIDER:
-		_definir_valor(item, SliderMath.valor_de_x(pos.x))
+		_definir_valor(item, SliderMath.valor_de_x(pos.x), false)
 
 
 func _item_em(pos: Vector2) -> int:
@@ -337,17 +343,28 @@ func _item_em(pos: Vector2) -> int:
 	return -1
 
 
-# Muda o valor do slider e aplica no bus pelo Global (aplica e persiste); sem mudanca nao grava de novo.
-func _definir_valor(item: int, valor: int) -> void:
+# Muda o valor do slider e aplica no bus pelo Global; grava no cfg so com `persistir` (teclado). No arrasto fica
+# pendente e grava ao soltar ou ao fechar. Sem mudanca nao faz nada.
+func _definir_valor(item: int, valor: int, persistir: bool) -> void:
 	if valor == _valores[item]:
 		return
 	_valores[item] = valor
 	var linear := float(valor) / SliderMath.VALOR_MAX
 	if item == Item.MUSIC:
-		Global.set_volume_music(linear)
+		Global.set_volume_music(linear, persistir)
 	else:
-		Global.set_volume_sfx(linear)
+		Global.set_volume_sfx(linear, persistir)
+	if not persistir:
+		_pendente = true
 	_atualizar_visual()
+
+
+# Grava os volumes se algum valor foi aplicado sem gravar.
+func _persistir_pendente() -> void:
+	if not _pendente:
+		return
+	_pendente = false
+	Global.salvar_volumes()
 
 
 func _atualizar_visual() -> void:
