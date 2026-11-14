@@ -51,6 +51,10 @@ Restricoes que moldam a decisao:
   nao estende o prazo. Nos ultimos 0,3 s a plataforma treme no eixo X, sem som e sem asset novo (aviso que nao depende
   de cor). Ao fim, a colisao e desligada de vez, a flag `desmoronada` fica verdadeira e a plataforma sai da arvore.
   `player_color_changed` respeita a flag e nunca reativa a colisao de uma plataforma desmoronada.
+- **Modificador com estado por instancia:** a partir da mecanica de cor, existe modificador que guarda estado
+  proprio (sequencia e relogio). Ele nao entra na lista compartilhada da linha: o gerador cria uma instancia por
+  plataforma cicladora. Os tres hooks e o despacho acima valem para os dois tipos. Ver
+  [ADR 0010](0010-plataformas-cicladoras.md).
 - **Modo `Global.sem_derrota`:** a largura aplica e o desmoronamento nao age. Isso mantem o smoke deterministico, e a
   mecanica e coberta por teste de cena. Nenhuma mecanica existente tratava `sem_derrota`; esse comportamento e novo.
 

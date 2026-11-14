@@ -23,8 +23,9 @@ cor (#10). Faltava uma forma de a dificuldade subir com a partida, ajustavel sem
 - **Injecao:** o `Stage` cria o estado; o `ScrollLevel` recebe o snapshot e repassa a cada linha. Scroll e lido a cada
   frame; velocidade e K sao lidos quando a plataforma nasce, para a linha manter a velocidade ate sair da tela.
 - **Mecanicas:** cada estagio tem `mecanicas: Array[StringName]`, que liga mecanicas de forma discreta na fronteira do
-  estagio. As duas primeiras (plataformas menores e que caem) estao implementadas e o contrato delas esta no
-  [ADR 0009](0009-modificadores-de-plataforma.md). As proximas mecanicas ganham ADR proprio quando forem implementadas.
+  estagio. As plataformas menores e que caem estao no [ADR 0009](0009-modificadores-de-plataforma.md). A que muda de
+  cor ([ADR 0010](0010-plataformas-cicladoras.md)) usa `proporcao_cicladoras` e `periodo_ciclo`, campos por estagio que
+  interpolam como a largura. As proximas mecanicas ganham ADR proprio quando forem implementadas.
 - Os numeros ficam no `.tres`, nao neste ADR.
 
 ## Consequencias

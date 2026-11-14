@@ -14,3 +14,4 @@ antigo como "superado por".
 | [0007](0007-curva-de-dificuldade-em-resource.md)       | Curva de dificuldade progressiva em Resource `.tres`, avaliada por pontos e tempo | aceito                                                 |
 | [0008](0008-pausa-por-tree-paused.md)                  | Pausa por `get_tree().paused`, nao por `Global.iniciado`                          | aceito                                                 |
 | [0009](0009-modificadores-de-plataforma.md)            | Modificadores de plataforma por contrato; largura por shape duplicado             | aceito                                                 |
+| [0010](0010-plataformas-cicladoras.md)                 | Plataformas cicladoras: cor prevista no tempo, com trava e aviso visivel          | aceito                                                 |
