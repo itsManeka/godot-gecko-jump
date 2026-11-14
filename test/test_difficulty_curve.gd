@@ -398,3 +398,80 @@ func test_snapshot_sem_argumentos_devolve_padroes_de_movimento() -> void:
 	var posicional := DifficultySnapshot.new(30.0, 90.0, 4, 0.5, [], 50.0, 0.9, 0.2, 3.0)
 	assert_almost_eq(posicional.get_periodo_ciclo(), 3.0, EPS, "9 posicionais: periodo do ciclo preservado")
 	assert_almost_eq(posicional.get_amplitude_movimento(), 0.0, EPS, "9 posicionais: amplitude no padrao")
+
+
+func test_nomes_de_movimento_entram_nos_estagios_aprovados_e_nenhum_desconhecido() -> void:
+	# C288: speed por linha entra no E1, seno no E2, vai-e-vem no E3 (G1); os nomes novos resolvem no registro.
+	var e1: DifficultyStage = _curva.estagios[1]
+	var e2: DifficultyStage = _curva.estagios[2]
+	var e3: DifficultyStage = _curva.estagios[3]
+	assert_true(e1.mecanicas.has(PlatformModifiers.SPEED_POR_LINHA), "E1 com speed_por_linha")
+	assert_true(e2.mecanicas.has(PlatformModifiers.MOVIMENTO_SENO), "E2 com movimento_seno")
+	assert_true(e3.mecanicas.has(PlatformModifiers.MOVIMENTO_VAI_E_VEM), "E3 com movimento_vai_e_vem")
+	assert_false(e1.mecanicas.has(PlatformModifiers.MOVIMENTO_SENO), "seno ainda nao no E1")
+	assert_false(e2.mecanicas.has(PlatformModifiers.MOVIMENTO_VAI_E_VEM), "vai-e-vem ainda nao no E2")
+	for i in range(_curva.estagios.size()):
+		var e: DifficultyStage = _curva.estagios[i]
+		var snap := DifficultySnapshot.new(e.scroll, e.speed_moveis, e.k, e.proporcao_estaticas, e.mecanicas)
+		assert_eq(
+			PlatformModifiers.resolver(snap).size(), e.mecanicas.size(), "nome desconhecido no estagio %d" % i
+		)
+
+
+func test_estagios_de_movimento_com_valores_aprovados_e_antigos_intactos() -> void:
+	# C289: campos de movimento = padrao onde a mecanica nao entra; entrada com os valores aprovados (G1, Q3-Q5);
+	# valores antigos e ordem de mecanicas do E0..E3 preservados.
+	var e0: DifficultyStage = _curva.estagios[0]
+	var e1: DifficultyStage = _curva.estagios[1]
+	var e2: DifficultyStage = _curva.estagios[2]
+	var e3: DifficultyStage = _curva.estagios[3]
+	# E0 sem nenhum campo de movimento (padrao).
+	assert_almost_eq(e0.amplitude_movimento, 0.0, EPS, "E0 amplitude padrao")
+	assert_almost_eq(e0.periodo_movimento, 2.5, EPS, "E0 periodo padrao")
+	assert_almost_eq(e0.proporcao_oscilantes, 0.0, EPS, "E0 oscilantes padrao")
+	assert_almost_eq(e0.proporcao_vai_e_vem, 0.0, EPS, "E0 vai-e-vem padrao")
+	assert_almost_eq(e0.variacao_speed_linha, 0.0, EPS, "E0 variacao padrao")
+	# E1 liga so speed por linha (0,15); seno e vai-e-vem seguem no padrao.
+	assert_almost_eq(e1.variacao_speed_linha, 0.15, EPS, "E1 variacao 0.15 (G1)")
+	assert_almost_eq(e1.amplitude_movimento, 0.0, EPS, "E1 amplitude padrao")
+	assert_almost_eq(e1.periodo_movimento, 2.5, EPS, "E1 periodo padrao")
+	assert_almost_eq(e1.proporcao_oscilantes, 0.0, EPS, "E1 oscilantes padrao")
+	assert_almost_eq(e1.proporcao_vai_e_vem, 0.0, EPS, "E1 vai-e-vem padrao")
+	# E2 liga seno (6 px, 2,5 s, 0,4); speed por linha repetida do E1.
+	assert_almost_eq(e2.amplitude_movimento, 6.0, EPS, "E2 amplitude 6 (G1)")
+	assert_almost_eq(e2.periodo_movimento, 2.5, EPS, "E2 periodo 2,5 (G1)")
+	assert_almost_eq(e2.proporcao_oscilantes, 0.4, EPS, "E2 oscilantes 0,4 (G1)")
+	assert_almost_eq(e2.proporcao_vai_e_vem, 0.0, EPS, "E2 sem vai-e-vem")
+	assert_almost_eq(e2.variacao_speed_linha, 0.15, EPS, "E2 repete variacao do E1")
+	# E3 liga vai-e-vem (8 px, 2,5 s, 0,5; vai-e-vem 0,5); seno e speed por linha repetidos.
+	assert_almost_eq(e3.amplitude_movimento, 8.0, EPS, "E3 amplitude 8 (G1)")
+	assert_almost_eq(e3.periodo_movimento, 2.5, EPS, "E3 periodo 2,5 (G1)")
+	assert_almost_eq(e3.proporcao_oscilantes, 0.5, EPS, "E3 oscilantes 0,5 (G1)")
+	assert_almost_eq(e3.proporcao_vai_e_vem, 0.5, EPS, "E3 vai-e-vem 0,5 (G1)")
+	assert_almost_eq(e3.variacao_speed_linha, 0.15, EPS, "E3 repete variacao do E1")
+	# Valores antigos dos 4 estagios intactos.
+	assert_almost_eq(e0.scroll, 20.0, EPS, "E0 scroll antigo")
+	assert_almost_eq(e1.scroll, 26.0, EPS, "E1 scroll antigo")
+	assert_almost_eq(e2.scroll, 33.0, EPS, "E2 scroll antigo")
+	assert_almost_eq(e3.scroll, 40.0, EPS, "E3 scroll antigo")
+	assert_almost_eq(e0.speed_moveis, 60.0, EPS, "E0 speed antiga")
+	assert_almost_eq(e1.speed_moveis, 72.0, EPS, "E1 speed antiga")
+	assert_almost_eq(e2.speed_moveis, 86.0, EPS, "E2 speed antiga")
+	assert_almost_eq(e3.speed_moveis, 100.0, EPS, "E3 speed antiga")
+	assert_eq(e0.k, 3, "E0 k antigo")
+	assert_eq(e1.k, 4, "E1 k antigo")
+	assert_eq(e2.k, 5, "E2 k antigo")
+	assert_eq(e3.k, 6, "E3 k antigo")
+	assert_almost_eq(e0.largura_plataforma, 60.0, EPS, "E0 largura antiga")
+	assert_almost_eq(e1.largura_plataforma, 56.0, EPS, "E1 largura antiga")
+	assert_almost_eq(e2.largura_plataforma, 50.0, EPS, "E2 largura antiga")
+	assert_almost_eq(e3.largura_plataforma, 44.0, EPS, "E3 largura antiga")
+	assert_almost_eq(e3.proporcao_cicladoras, 0.3, EPS, "E3 proporcao do ciclo antiga")
+	assert_almost_eq(e3.periodo_ciclo, 3.0, EPS, "E3 periodo do ciclo antigo")
+	# Ordem original de mecanicas preservada; os nomes novos so acrescidos no fim.
+	assert_eq(e1.mecanicas[0], &"plataformas_menores", "E1 ordem antiga")
+	assert_eq(e2.mecanicas[0], &"plataformas_menores", "E2 ordem antiga 1")
+	assert_eq(e2.mecanicas[1], &"plataformas_que_caem", "E2 ordem antiga 2")
+	assert_eq(e3.mecanicas[0], &"plataformas_menores", "E3 ordem antiga 1")
+	assert_eq(e3.mecanicas[1], &"plataformas_que_caem", "E3 ordem antiga 2")
+	assert_eq(e3.mecanicas[2], &"plataformas_que_mudam_de_cor", "E3 ordem antiga 3")
