@@ -258,3 +258,52 @@ func test_snapshot_aceita_largura_e_atraso_como_ultimos_parametros() -> void:
 	assert_almost_eq(s.get_largura_plataforma(), 44.0, EPS)
 	assert_almost_eq(s.get_atraso_desmoronar(), 0.8, EPS)
 	assert_eq(s.get_mecanicas()[0], &"plataformas_menores")
+
+
+func _curva_duas_cicladoras() -> DifficultyCurve:
+	var a := DifficultyStage.new()
+	a.progresso_inicio = 0.0
+	a.proporcao_cicladoras = 0.0
+	a.periodo_ciclo = 3.0
+	var b := DifficultyStage.new()
+	b.progresso_inicio = 1.0
+	b.proporcao_cicladoras = 0.4
+	b.periodo_ciclo = 5.0
+	var curva := DifficultyCurve.new()
+	curva.estagios = [a, b]
+	curva.pontos_plato = 100.0
+	return curva
+
+
+func test_estagio_sem_campos_do_ciclo_devolve_proporcao_0_e_periodo_3() -> void:
+	assert_almost_eq(DifficultyStage.new().proporcao_cicladoras, 0.0, EPS, "default do estagio")
+	assert_almost_eq(DifficultyStage.new().periodo_ciclo, 3.0, EPS, "default do estagio")
+	var curva := DifficultyCurve.new()
+	curva.estagios = [DifficultyStage.new()]
+	var s := curva.avaliar(0.0, 0.0)
+	assert_almost_eq(s.get_proporcao_cicladoras(), 0.0, EPS, "proporcao sem campo = 0.0")
+	assert_almost_eq(s.get_periodo_ciclo(), 3.0, EPS, "periodo sem campo = 3.0")
+
+
+func test_snapshot_novo_devolve_proporcao_0_e_periodo_3() -> void:
+	var s := DifficultySnapshot.new()
+	assert_almost_eq(s.get_proporcao_cicladoras(), 0.0, EPS, "ausencia = 0.0")
+	assert_almost_eq(s.get_periodo_ciclo(), 3.0, EPS, "ausencia = 3.0")
+	# Posicional ate o 7o parametro continua valido; os campos do ciclo caem no default.
+	var posicional := DifficultySnapshot.new(30.0, 90.0, 4, 0.5, [], 50.0, 0.9)
+	assert_almost_eq(posicional.get_proporcao_cicladoras(), 0.0, EPS)
+	assert_almost_eq(posicional.get_periodo_ciclo(), 3.0, EPS)
+
+
+func test_interpolacao_do_ciclo_a_meio_de_dois_estagios_e_valor_exato() -> void:
+	var curva := _curva_duas_cicladoras()
+	var s := curva.avaliar(50.0, 0.0)
+	assert_almost_eq(s.get_proporcao_cicladoras(), 0.2, EPS, "proporcao no meio = media de 0.0 e 0.4")
+	assert_almost_eq(s.get_periodo_ciclo(), 4.0, EPS, "periodo no meio = media de 3.0 e 5.0")
+
+
+func test_teto_devolve_proporcao_e_periodo_do_ultimo_estagio() -> void:
+	var curva := _curva_duas_cicladoras()
+	var s := curva.avaliar(1e9, 0.0)
+	assert_almost_eq(s.get_proporcao_cicladoras(), 0.4, EPS, "teto = proporcao do ultimo estagio")
+	assert_almost_eq(s.get_periodo_ciclo(), 5.0, EPS, "teto = periodo do ultimo estagio")

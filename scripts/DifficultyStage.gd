@@ -9,6 +9,8 @@ const K_PADRAO: int = 3
 const PROPORCAO_PADRAO: float = 1.0 / 3.0
 const LARGURA_PLATAFORMA_PADRAO: float = 60.0
 const ATRASO_DESMORONAR_PADRAO: float = 1.0
+const PROPORCAO_CICLADORAS_PADRAO: float = 0.0
+const PERIODO_CICLO_PADRAO: float = 3.0
 
 ## Progresso (0..1) a partir do qual este estagio vale; interpola ate o proximo estagio.
 @export_range(0.0, 1.0) var progresso_inicio: float = 0.0
@@ -24,5 +26,9 @@ const ATRASO_DESMORONAR_PADRAO: float = 1.0
 @export var largura_plataforma: float = LARGURA_PLATAFORMA_PADRAO
 ## Segundos entre o pouso e o desmoronamento da plataforma (so vale com a mecanica plataformas_que_caem).
 @export var atraso_desmoronar: float = ATRASO_DESMORONAR_PADRAO
+## Fracao das plataformas moveis que trocam de cor sozinhas (so vale com a mecanica plataformas_que_mudam_de_cor).
+@export_range(0.0, 1.0) var proporcao_cicladoras: float = PROPORCAO_CICLADORAS_PADRAO
+## Segundos por cor de uma plataforma que muda de cor (so vale com a mecanica plataformas_que_mudam_de_cor).
+@export var periodo_ciclo: float = PERIODO_CICLO_PADRAO
 ## Mecanicas ligadas ao estagio (nomes conhecidos por PlatformModifiers). Nao interpolam: vem do estagio atual.
 @export var mecanicas: Array[StringName] = []

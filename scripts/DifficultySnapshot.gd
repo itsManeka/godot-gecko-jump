@@ -10,6 +10,8 @@ var _proporcao_estaticas: float
 var _mecanicas: Array[StringName]
 var _largura_plataforma: float
 var _atraso_desmoronar: float
+var _proporcao_cicladoras: float
+var _periodo_ciclo: float
 
 
 # Parametros novos entram sempre no fim: chamadas posicionais antigas (ate o 4o) continuam validas.
@@ -20,7 +22,9 @@ func _init(
 	proporcao_estaticas: float = DifficultyStage.PROPORCAO_PADRAO,
 	mecanicas: Array[StringName] = [],
 	largura_plataforma: float = DifficultyStage.LARGURA_PLATAFORMA_PADRAO,
-	atraso_desmoronar: float = DifficultyStage.ATRASO_DESMORONAR_PADRAO
+	atraso_desmoronar: float = DifficultyStage.ATRASO_DESMORONAR_PADRAO,
+	proporcao_cicladoras: float = DifficultyStage.PROPORCAO_CICLADORAS_PADRAO,
+	periodo_ciclo: float = DifficultyStage.PERIODO_CICLO_PADRAO
 ) -> void:
 	_scroll = scroll
 	_speed_moveis = speed_moveis
@@ -29,6 +33,8 @@ func _init(
 	_mecanicas = mecanicas.duplicate()
 	_largura_plataforma = largura_plataforma
 	_atraso_desmoronar = atraso_desmoronar
+	_proporcao_cicladoras = proporcao_cicladoras
+	_periodo_ciclo = periodo_ciclo
 
 
 func get_scroll() -> float:
@@ -57,6 +63,14 @@ func get_largura_plataforma() -> float:
 
 func get_atraso_desmoronar() -> float:
 	return _atraso_desmoronar
+
+
+func get_proporcao_cicladoras() -> float:
+	return _proporcao_cicladoras
+
+
+func get_periodo_ciclo() -> float:
+	return _periodo_ciclo
 
 
 # Foto vigente de um estado de dificuldade; sem estado (cena isolada, antes da injecao) = estagio 0
