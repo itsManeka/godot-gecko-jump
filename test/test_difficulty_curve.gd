@@ -307,3 +307,28 @@ func test_teto_devolve_proporcao_e_periodo_do_ultimo_estagio() -> void:
 	var s := curva.avaliar(1e9, 0.0)
 	assert_almost_eq(s.get_proporcao_cicladoras(), 0.4, EPS, "teto = proporcao do ultimo estagio")
 	assert_almost_eq(s.get_periodo_ciclo(), 5.0, EPS, "teto = periodo do ultimo estagio")
+
+
+func test_mecanica_de_cor_so_liga_no_e3_com_proporcao_e_periodo_aprovados() -> void:
+	# C259: E0..E2 sem o ciclo (proporcao 0 e sem o nome); E3 com o nome, proporcao 0.3 (Q1) e periodo 3.0.
+	var nome := PlatformModifiers.PLATAFORMAS_QUE_MUDAM_DE_COR
+	for i in range(3):
+		var e: DifficultyStage = _curva.estagios[i]
+		assert_almost_eq(e.proporcao_cicladoras, 0.0, EPS, "estagio %d sem ciclo" % i)
+		assert_false(e.mecanicas.has(nome), "estagio %d sem o nome da mecanica" % i)
+	var e3: DifficultyStage = _curva.estagios[3]
+	assert_true(e3.mecanicas.has(nome), "E3 com o nome da mecanica")
+	assert_almost_eq(e3.proporcao_cicladoras, 0.3, EPS, "E3 proporcao aprovada (Q1)")
+	assert_almost_eq(e3.periodo_ciclo, 3.0, EPS, "E3 periodo do ciclo")
+
+
+func test_nomes_de_mecanica_do_tres_sao_todos_conhecidos_pelo_registro() -> void:
+	# C260: cada nome do .tres resolve no registro; o nome de cor entra no E3 e nenhum outro aparece fora do registro.
+	for i in range(_curva.estagios.size()):
+		var e: DifficultyStage = _curva.estagios[i]
+		var snap := DifficultySnapshot.new(e.scroll, e.speed_moveis, e.k, e.proporcao_estaticas, e.mecanicas)
+		assert_eq(
+			PlatformModifiers.resolver(snap).size(), e.mecanicas.size(), "nome desconhecido no estagio %d" % i
+		)
+	var nomes_no_e3 := _curva.estagios[3].mecanicas
+	assert_true(nomes_no_e3.has(PlatformModifiers.PLATAFORMAS_QUE_MUDAM_DE_COR), "E3 resolve o nome de cor")

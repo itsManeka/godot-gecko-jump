@@ -8,6 +8,7 @@ const SPEED = 80                    # Velocidade horizontal do jogador
 const GRAVITY = 10                  # Força da gravidade aplicada por frame
 const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima)
 const GHOST_HALF_WIDTH = 16.0       # Meia largura visual do gecko (frame 32x32): o fantasma aparece quando ela cruza a borda
+const ESPERA_MAXIMA_S = 0.6         # Quanto o gecko pode esperar apos o pouso na linha de cima e ainda ter a cor valida
 
 # Cor atual do jogador (definida no editor)
 @export var color: Enums.COLOR = Enums.COR_INICIAL
@@ -26,6 +27,7 @@ var actual_platform : Platform = null  # Plataforma atual em que o jogador está
 var jumping = true                 # Se o jogador está pulando
 var end = false                    # Se o jogo terminou para este jogador
 var rng: RandomNumberGenerator = null  # Sorteio da cor no pouso; null usa o global (so teste fixa semente)
+var dificuldade: DifficultyState = null  # Injetada pela Stage (scroll vigente para a previsao); null = cena isolada
 
 # Inicializa o jogador definindo sua cor inicial
 func _ready():
@@ -148,7 +150,16 @@ func change_color_random():
 		# Modo sem derrota (smoke debug): sem sorteio, a cor fica COR_INICIAL
 		set_color(Enums.COR_INICIAL)
 		return
-	set_color(ReachableColors.cor_no_pouso(Global.platforms, actual_platform, PlayArea.LARGURA, rng))
+	# Janela de chegada: do pulo (dt_chegada, pelo scroll vigente) ate a espera maxima apos o pouso na linha de cima.
+	# Sem dificuldade injetada (Player isolado) = dt 0 e sem espera: cor do instante do pouso, como antes.
+	var dt_chegada: float = 0.0
+	var espera: float = 0.0
+	if dificuldade != null:
+		dt_chegada = ReachableColors.tempo_de_pulo(DifficultySnapshot.de(dificuldade).get_scroll())
+		espera = ESPERA_MAXIMA_S
+	set_color(
+		ReachableColors.cor_no_pouso(Global.platforms, actual_platform, PlayArea.LARGURA, rng, dt_chegada, espera)
+	)
 
 # Retorna se o jogador está atualmente pulando
 func is_jumping() -> bool:

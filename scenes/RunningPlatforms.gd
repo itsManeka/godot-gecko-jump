@@ -33,6 +33,10 @@ var primeira_cor_gecko_lida: int = -1
 # Snapshot e modificadores de plataforma lidos no nascimento da linha (null = ainda nao lidos)
 var _snapshot_nascimento: DifficultySnapshot = null
 var _modificadores: Array = []
+# A mecanica de ciclo de cor esta ligada neste gerador (nunca na linha garantir_cor_inicial)
+var _ciclo_ligado: bool = false
+# rng das sequencias das cicladoras: o do gerador (teste) ou um proprio quando rng e null
+var _rng_ciclo: RandomNumberGenerator = null
 
 # Inicializa o gerador de plataformas
 func _ready():
@@ -133,8 +137,13 @@ func _criar_plataforma(x: float):
 func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
 	_snapshot_nascimento = snapshot
 	_modificadores = []
+	_ciclo_ligado = false
 	for modificador in PlatformModifiers.resolver(snapshot):
 		if garantir_cor_inicial and not modificador.vale_em_linha_inicial():
+			continue
+		if modificador is PlatformColorCycle:
+			# Estado por plataforma: nunca entra na lista compartilhada da linha; cada cicladora ganha instancia propria
+			_ciclo_ligado = true
 			continue
 		_modificadores.append(modificador)
 
@@ -142,7 +151,32 @@ func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
 func _aplicar_mecanicas(platform: Platform) -> void:
 	if _snapshot_nascimento == null:
 		_ler_mecanicas(_snapshot())
-	platform.definir_modificadores(_modificadores, _snapshot_nascimento)
+	var lista: Array = _modificadores
+	if _ciclo_ligado and _sorteia_cicladora():
+		lista = _modificadores.duplicate()
+		lista.append(_novo_ciclo(platform.color))
+	platform.definir_modificadores(lista, _snapshot_nascimento)
+
+# Sorteio da cicladora: proporcao_cicladoras do snapshot do nascimento, pelo rng do gerador (randf global sem rng)
+func _sorteia_cicladora() -> bool:
+	var proporcao: float = _snapshot_nascimento.get_proporcao_cicladoras()
+	if proporcao <= 0.0:
+		return false
+	var sorteio: float = randf() if rng == null else rng.randf()
+	return sorteio < proporcao
+
+# Instancia propria de PlatformColorCycle: sequencia sorteada a partir da cor da plataforma e forcada a ter a cor do gecko
+func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:
+	if _rng_ciclo == null:
+		_rng_ciclo = rng
+		if _rng_ciclo == null:
+			_rng_ciclo = RandomNumberGenerator.new()
+			_rng_ciclo.randomize()
+	var periodo: float = _snapshot_nascimento.get_periodo_ciclo()
+	var ciclo := PlatformColorCycle.new()
+	ciclo.iniciar(cor_inicial, periodo, _rng_ciclo)
+	ciclo.definir_sequencia(ReachableColors.forcar_cor_cicladora(ciclo.get_sequencia(), int(Global.cor_gecko), periodo))
+	return ciclo
 
 # Inicia o timer para gerar próxima plataforma
 func start_generate_timer():

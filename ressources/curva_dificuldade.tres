@@ -43,7 +43,9 @@ k = 6
 proporcao_estaticas = 0.1
 largura_plataforma = 44.0
 atraso_desmoronar = 0.8
-mecanicas = Array[StringName]([&"plataformas_menores", &"plataformas_que_caem"])
+proporcao_cicladoras = 0.3
+periodo_ciclo = 3.0
+mecanicas = Array[StringName]([&"plataformas_menores", &"plataformas_que_caem", &"plataformas_que_mudam_de_cor"])
 
 [resource]
 script = ExtResource("1_curva")

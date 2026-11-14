@@ -35,6 +35,15 @@ func iniciar(cor_inicial: int, periodo: float, rng: RandomNumberGenerator) -> vo
 		_sequencia.append((anterior + 1 + rng.randi() % (total - 1)) % total)
 
 
+# Substitui a sequencia (o gerador aplica ReachableColors.forcar_cor_cicladora); mantem a fase atual (indice 0).
+func definir_sequencia(sequencia: Array) -> void:
+	if sequencia.is_empty():
+		return
+	_sequencia.assign(sequencia)
+	_indice = 0
+	_decorrido = 0.0
+
+
 func cor_atual() -> int:
 	return _sequencia[_indice]
 

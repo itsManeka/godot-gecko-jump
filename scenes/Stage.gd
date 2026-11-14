@@ -78,6 +78,8 @@ func _ready():
 	var scroll_level: Node = get_node_or_null("ScrollLevel")
 	if scroll_level != null:
 		scroll_level.dificuldade = dificuldade
+	# O Player le o scroll vigente da mesma dificuldade para prever a cor da janela de chegada
+	player.dificuldade = dificuldade
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
 	_publicar_estado(GameState.STATE_MENU, true)
