@@ -37,6 +37,8 @@ var _modificadores: Array = []
 var _ciclo_ligado: bool = false
 # rng das sequencias das cicladoras: o do gerador (teste) ou um proprio quando rng e null
 var _rng_ciclo: RandomNumberGenerator = null
+# A mecanica de speed por linha esta ligada neste gerador (nunca na linha garantir_cor_inicial)
+var _speed_variada: bool = false
 
 # Inicializa o gerador de plataformas
 func _ready():
@@ -54,12 +56,25 @@ func _ready():
 			create_static_platforms()
 		Enums.PLATFORM_TYPE.MOVE_TO_LEFT:
 			# Nasce a direita (x da cena, 210) e anda para a esquerda
+			_variar_speed(snapshot)
 			preencher_linha()
 		Enums.PLATFORM_TYPE.MOVE_TO_RIGHT:
 			# Nasce a esquerda (x = -30) e anda para a direita
 			check_generate.position.x = -30
+			_variar_speed(snapshot)
 			speed *= -1
 			preencher_linha()
+
+# Speed da linha = speed do estagio x fator sorteado uma vez (rng do gerador; sem rng, um proprio).
+# Sem a mecanica e em sem_derrota a speed fica como esta (linha inicial: _ler_mecanicas nem liga a mecanica).
+func _variar_speed(snapshot: DifficultySnapshot) -> void:
+	if not _speed_variada or Global.sem_derrota:
+		return
+	var fonte: RandomNumberGenerator = rng
+	if fonte == null:
+		fonte = RandomNumberGenerator.new()
+		fonte.randomize()
+	speed *= RowSpeedVariation.fator(fonte, snapshot.get_variacao_speed_linha())
 
 # Define o tipo de plataforma que será gerada
 func set_platform_type(type):
@@ -138,8 +153,13 @@ func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
 	_snapshot_nascimento = snapshot
 	_modificadores = []
 	_ciclo_ligado = false
+	_speed_variada = false
 	for modificador in PlatformModifiers.resolver(snapshot):
 		if garantir_cor_inicial and not modificador.vale_em_linha_inicial():
+			continue
+		if modificador is RowSpeedVariation:
+			# Mecanica de linha: aplicada na speed no _ready, nunca na lista de plataforma
+			_speed_variada = true
 			continue
 		if modificador is PlatformColorCycle:
 			# Estado por plataforma: nunca entra na lista compartilhada da linha; cada cicladora ganha instancia propria

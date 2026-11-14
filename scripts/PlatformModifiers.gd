@@ -6,6 +6,7 @@ extends RefCounted
 const PLATAFORMAS_MENORES: StringName = &"plataformas_menores"
 const PLATAFORMAS_QUE_CAEM: StringName = &"plataformas_que_caem"
 const PLATAFORMAS_QUE_MUDAM_DE_COR: StringName = &"plataformas_que_mudam_de_cor"
+const SPEED_POR_LINHA: StringName = &"speed_por_linha"
 
 # Nome -> script. Ja nasce com os modificadores reais; registrar/limpar servem a testes com fakes.
 static var _registro: Dictionary = _padrao()
@@ -16,6 +17,7 @@ static func _padrao() -> Dictionary:
 		PLATAFORMAS_MENORES: PlatformNarrower,
 		PLATAFORMAS_QUE_CAEM: PlatformCrumble,
 		PLATAFORMAS_QUE_MUDAM_DE_COR: PlatformColorCycle,
+		SPEED_POR_LINHA: RowSpeedVariation,
 	}
 
 
