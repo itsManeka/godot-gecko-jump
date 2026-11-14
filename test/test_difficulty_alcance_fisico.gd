@@ -102,6 +102,7 @@ func test_vertical_apice_mais_scroll_cobre_espacamento_por_estagio_e_teto() -> v
 
 
 # Largura efetiva da plataforma no snapshot: a do snapshot quando plataformas_menores esta ligada; senao a de producao.
+# Sem a mecanica usa 60 (SEMI_PLATAFORMA * 2); o prefab real mede ~59,5, folga coberta pela margem do piso fisico.
 func _largura(snap: DifficultySnapshot) -> float:
 	if snap.get_mecanicas().has(PlatformModifiers.PLATAFORMAS_MENORES):
 		return snap.get_largura_plataforma()

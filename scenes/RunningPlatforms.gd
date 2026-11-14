@@ -134,7 +134,7 @@ func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
 	_snapshot_nascimento = snapshot
 	_modificadores = []
 	for modificador in PlatformModifiers.resolver(snapshot):
-		if garantir_cor_inicial and modificador is PlatformCrumble:
+		if garantir_cor_inicial and not modificador.vale_em_linha_inicial():
 			continue
 		_modificadores.append(modificador)
 

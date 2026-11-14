@@ -34,7 +34,8 @@ Restricoes que moldam a decisao:
   plataforma despacha `ao_criar` no proprio `_ready`, porque os filhos `@onready` so existem la. `ao_pousar` e
   `ao_processar` sao despachados pela plataforma em cada evento.
 - **Linhas com `garantir_cor_inicial` nao recebem o modificador de desmoronar.** A linha inicial garante uma cor
-  alcancavel no comeco da partida, entao nunca pode desaparecer.
+  alcancavel no comeco da partida, entao nunca pode desaparecer. O gerador pergunta ao proprio modificador
+  (`vale_em_linha_inicial()`, padrao `true`; o de desmoronar devolve `false`), sem conhecer a classe concreta.
 - **Largura por shape duplicado.** `Platform.set_largura(w)` duplica o `RectangleShape2D` da instancia e ajusta so
   `size.x`; o sub-recurso da cena nao muda. O visual recorta o `Sprite2D` com `region_rect` centrado na largura
   (sem escala). **Nao** se usa `scale` no corpo fisico. `AreaCheck` e `VisibleOnScreenNotifier2D` ficam com o tamanho

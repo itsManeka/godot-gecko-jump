@@ -15,3 +15,8 @@ func ao_pousar(_plataforma: Platform, _snapshot: DifficultySnapshot) -> void:
 
 func ao_processar(_plataforma: Platform, _delta: float) -> void:
 	pass
+
+
+# Linha com garantir_cor_inicial: o gerador so entrega o modificador se ele vale ali (padrao: vale).
+func vale_em_linha_inicial() -> bool:
+	return true
