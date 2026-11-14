@@ -21,6 +21,8 @@ _Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 - **Ganhar pontos** a cada plataforma nova que tocar
 - **Mudar de cor automaticamente** após cada pulo bem-sucedido — a cor nova sempre existe numa plataforma da linha de cima
 - **Sobreviver** o máximo de tempo possível descendo pelas plataformas
+- **Aguentar a dificuldade**: com o tempo as plataformas ficam mais estreitas e, mais adiante, desmoronam pouco depois
+  do pouso (tremem antes de cair)
 - **Bater o recorde**: a maior pontuação fica salva e continua lá quando você abre o jogo de novo
 
 ## 🎮 Controles
@@ -136,12 +138,12 @@ Os roteiros conferem o estado da partida, nao so a tela. Isso so funciona no exp
 release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot nativo de **debug**, os mesmos parametros valem como argumentos de usuario depois de `--` (ex.: `godot --path . -- --seed=42 --semderrota=1`); `--nome` sem valor equivale a `?nome` (nao liga o modo: so o valor exato de cada parametro liga), e o build de release ignora:
 
 - `?seed=<numero>` no `path` do roteiro fixa o sorteio de cores e plataformas. Todo roteiro leva uma seed.
-- `?semderrota=1` liga o modo sem derrota (plataformas na cor inicial e paradas; a queda pela borda ainda encerra a
-  partida), usado pelos roteiros `retrato-pontua-1080x2772.smoke.json` (conferir que o gecko pontua),
+- `?semderrota=1` liga o modo sem derrota (plataformas na cor inicial e paradas, sem desmoronar; a largura do estagio
+  vale; a queda pela borda ainda encerra a partida), usado pelos roteiros `retrato-pontua-1080x2772.smoke.json` (conferir que o gecko pontua),
   `estagio.smoke.json` (conferir que a dificuldade sobe) e pelos roteiros longos (`gecko` e os `retrato-*` de cada
   tamanho), para o gecko nao morrer por cor errada entre os pulos (#39).
-- `?progresso=<0 a 1>` comeca a partida no ponto da curva de dificuldade indicado (valor invalido vale 0), usado pelo
-  roteiro `estagio.smoke.json`.
+- `?progresso=<0 a 1>` comeca a partida no ponto da curva de dificuldade indicado (valor invalido vale 0), usado pelos
+  roteiros `estagio.smoke.json` e `estagio-alto.smoke.json` (estagio 3, plataformas estreitas).
 - `?dica=1` força a dica de toque sem aparelho de toque, usado pelo roteiro `dica-toque.smoke.json`. O runner só
   clica com mouse, então tap e segurar por tempo não são jogados pelos roteiros (`toque.smoke.json` confere o início por clique).
 - `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
@@ -217,6 +219,8 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 - **Earn points** for each new platform you touch
 - **Change color automatically** after each successful jump — the new color is always on a platform in the row above
 - **Survive** as long as possible while descending through the platforms
+- **Handle the difficulty**: over time platforms get narrower and, later on, crumble shortly after you land (they shake
+  before falling)
 - **Beat your best score**: it is saved and still there the next time you open the game
 
 ### 🎮 Controls
