@@ -43,6 +43,8 @@ const TIMEOUT_MIN_APOS_QUEDA_MS: int = 3000
 # pos-derrota so ocorre ~2,3 s depois do Play; 1,5 s deixa folga para a sobrecarga do screenshot (issue #40).
 const ORCAMENTO_RAJADA_MOVING_MS: int = 1500
 const FREEZE_SHOTS_PADRAO: int = 4
+# Periodo de uma cor da cicladora (PlatformColorCycle, 3 s): o roteiro estagio-alto espera mais que isso entre os prints.
+const TROCA_COR_MS: int = 3000
 
 
 func _carregar(nome: String) -> Dictionary:
@@ -358,3 +360,20 @@ func test_estagio_alto_prova_estagio_3_com_progresso_1_e_semderrota() -> void:
 	assert_gte(int(passos[i_gte3].get("timeout_ms", 0)), TIMEOUT_MIN_APOS_QUEDA_MS, "o expect do estagio 3 deve ter timeout_ms >= 3000")
 	var ultimo: Dictionary = passos[passos.size() - 1]
 	assert_eq(ultimo.get("expect", {}), {"state": "playing"}, "o roteiro estagio-alto termina com expect state playing (gecko vivo)")
+	var i_antes: int = _indice_shots(nome, "antes-troca")
+	var i_depois: int = _indice_shots(nome, "depois-troca")
+	assert_gte(i_antes, 0, "o roteiro estagio-alto tira o print antes-troca")
+	assert_gt(i_depois, i_antes, "o print depois-troca vem depois do antes-troca")
+	var espera_ms: int = 0
+	for i in range(maxi(i_antes + 1, 0), maxi(i_depois, 0)):
+		if passos[i].has("wait"):
+			espera_ms += int(passos[i]["wait"])
+	assert_gt(espera_ms, TROCA_COR_MS, "entre antes-troca e depois-troca ha mais de 3 s (um periodo de cor da cicladora)")
+
+
+func _indice_shots(nome: String, rotulo: String) -> int:
+	var passos := _passos(nome)
+	for i in passos.size():
+		if str(passos[i].get("name", "")) == rotulo:
+			return i
+	return -1

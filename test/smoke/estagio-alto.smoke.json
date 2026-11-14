@@ -9,7 +9,9 @@
     { "up": "Space" },
     { "expect": { "state": "playing" }, "timeout_ms": 3000 },
     { "expect": { "dificuldade.estagio": { "gte": 3 } }, "timeout_ms": 8000 },
-    { "shots": 2, "every": 300, "name": "estagio3", "moving": false },
+    { "shots": 1, "name": "antes-troca", "moving": false },
+    { "wait": 3300 },
+    { "shots": 1, "name": "depois-troca", "moving": false },
     { "expect": { "state": "playing" }, "timeout_ms": 3000 }
   ]
 }
