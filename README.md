@@ -22,7 +22,8 @@ _Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 - **Mudar de cor automaticamente** após cada pulo bem-sucedido — a cor nova sempre existe numa plataforma da linha de cima
 - **Sobreviver** o máximo de tempo possível descendo pelas plataformas
 - **Aguentar a dificuldade**: com o tempo as plataformas ficam mais estreitas e, mais adiante, desmoronam pouco depois
-  do pouso (tremem antes de cair)
+  do pouso (tremem antes de cair); no estagio mais alto algumas trocam de cor sozinhas, piscando na proxima cor logo
+  antes da troca (enquanto o gecko esta em cima, a cor fica parada)
 - **Bater o recorde**: a maior pontuação fica salva e continua lá quando você abre o jogo de novo
 
 ## 🎮 Controles
@@ -143,7 +144,9 @@ release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot n
   `estagio.smoke.json` (conferir que a dificuldade sobe) e pelos roteiros longos (`gecko` e os `retrato-*` de cada
   tamanho), para o gecko nao morrer por cor errada entre os pulos (#39).
 - `?progresso=<0 a 1>` comeca a partida no ponto da curva de dificuldade indicado (valor invalido vale 0), usado pelos
-  roteiros `estagio.smoke.json` e `estagio-alto.smoke.json` (estagio 3, plataformas estreitas).
+  roteiros `estagio.smoke.json` e `estagio-alto.smoke.json` (estagio 3, plataformas estreitas e que trocam de cor; o
+  roteiro tira um print antes e outro depois de uma troca e aceita o fim da partida por queda, que o modo sem derrota
+  nao impede quando a plataforma troca para outra cor).
 - `?dica=1` força a dica de toque sem aparelho de toque, usado pelo roteiro `dica-toque.smoke.json`. O runner só
   clica com mouse, então tap e segurar por tempo não são jogados pelos roteiros (`toque.smoke.json` confere o início por clique).
 - `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
@@ -220,7 +223,8 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 - **Change color automatically** after each successful jump — the new color is always on a platform in the row above
 - **Survive** as long as possible while descending through the platforms
 - **Handle the difficulty**: over time platforms get narrower and, later on, crumble shortly after you land (they shake
-  before falling)
+  before falling); at the highest stage some of them change color on their own, flashing the next color right before
+  the change (while the gecko stands on one, its color holds)
 - **Beat your best score**: it is saved and still there the next time you open the game
 
 ### 🎮 Controls
@@ -287,7 +291,9 @@ build (the published one) ignores the parameters below and publishes nothing. On
   scores), the `estagio.smoke.json` script (to check that the difficulty rises) and the long scripts (`gecko` and the
   `retrato-*` of each size), so the gecko does not die by a wrong color between jumps (#39).
 - `?progresso=<0 to 1>` starts the match at that point of the difficulty curve (an invalid value means 0), used by the
-  `estagio.smoke.json` script.
+  `estagio.smoke.json` and `estagio-alto.smoke.json` scripts (stage 3, narrow platforms that change color; the script
+  takes one shot before and one after a change and accepts the match ending by a fall, which the no-defeat mode does
+  not prevent when a platform switches to another color).
 - `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` script. The runner only
   clicks with a mouse, so tap and hold by time are not played by the scripts (`toque.smoke.json` checks the start with a click).
 - `?tutorial=visto` marks the first-match tutorial as already seen (without saving anything), so the card does not
