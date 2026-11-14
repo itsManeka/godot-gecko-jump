@@ -60,7 +60,12 @@ func avaliar(pontos: float, segundos: float) -> DifficultySnapshot:
 		lerpf(atual.largura_plataforma, proximo.largura_plataforma, t),
 		lerpf(atual.atraso_desmoronar, proximo.atraso_desmoronar, t),
 		lerpf(atual.proporcao_cicladoras, proximo.proporcao_cicladoras, t),
-		lerpf(atual.periodo_ciclo, proximo.periodo_ciclo, t)
+		lerpf(atual.periodo_ciclo, proximo.periodo_ciclo, t),
+		lerpf(atual.amplitude_movimento, proximo.amplitude_movimento, t),
+		lerpf(atual.periodo_movimento, proximo.periodo_movimento, t),
+		lerpf(atual.proporcao_oscilantes, proximo.proporcao_oscilantes, t),
+		lerpf(atual.proporcao_vai_e_vem, proximo.proporcao_vai_e_vem, t),
+		lerpf(atual.variacao_speed_linha, proximo.variacao_speed_linha, t)
 	)
 
 
@@ -74,5 +79,10 @@ func _snapshot_de(estagio: DifficultyStage) -> DifficultySnapshot:
 		estagio.largura_plataforma,
 		estagio.atraso_desmoronar,
 		estagio.proporcao_cicladoras,
-		estagio.periodo_ciclo
+		estagio.periodo_ciclo,
+		estagio.amplitude_movimento,
+		estagio.periodo_movimento,
+		estagio.proporcao_oscilantes,
+		estagio.proporcao_vai_e_vem,
+		estagio.variacao_speed_linha
 	)

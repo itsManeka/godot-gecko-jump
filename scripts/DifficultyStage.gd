@@ -11,6 +11,11 @@ const LARGURA_PLATAFORMA_PADRAO: float = 60.0
 const ATRASO_DESMORONAR_PADRAO: float = 1.0
 const PROPORCAO_CICLADORAS_PADRAO: float = 0.0
 const PERIODO_CICLO_PADRAO: float = 3.0
+const AMPLITUDE_MOVIMENTO_PADRAO: float = 0.0
+const PERIODO_MOVIMENTO_PADRAO: float = 2.5
+const PROPORCAO_OSCILANTES_PADRAO: float = 0.0
+const PROPORCAO_VAI_E_VEM_PADRAO: float = 0.0
+const VARIACAO_SPEED_LINHA_PADRAO: float = 0.0
 
 ## Progresso (0..1) a partir do qual este estagio vale; interpola ate o proximo estagio.
 @export_range(0.0, 1.0) var progresso_inicio: float = 0.0
@@ -32,3 +37,13 @@ const PERIODO_CICLO_PADRAO: float = 3.0
 @export var periodo_ciclo: float = PERIODO_CICLO_PADRAO
 ## Mecanicas ligadas ao estagio (nomes conhecidos por PlatformModifiers). Nao interpolam: vem do estagio atual.
 @export var mecanicas: Array[StringName] = []
+## Amplitude do deslocamento horizontal oscilante, em px (so vale com a mecanica de movimento).
+@export var amplitude_movimento: float = AMPLITUDE_MOVIMENTO_PADRAO
+## Periodo da oscilacao, em segundos (so vale com a mecanica de movimento).
+@export var periodo_movimento: float = PERIODO_MOVIMENTO_PADRAO
+## Fracao das plataformas moveis que oscilam (0..1; so vale com a mecanica de movimento).
+@export_range(0.0, 1.0) var proporcao_oscilantes: float = PROPORCAO_OSCILANTES_PADRAO
+## Fracao das oscilantes que sao vai-e-vem; o resto e seno (0..1).
+@export_range(0.0, 1.0) var proporcao_vai_e_vem: float = PROPORCAO_VAI_E_VEM_PADRAO
+## Variacao sorteada da speed por linha movel, fracao da speed (0..1; so vale com a mecanica de speed por linha).
+@export_range(0.0, 1.0) var variacao_speed_linha: float = VARIACAO_SPEED_LINHA_PADRAO

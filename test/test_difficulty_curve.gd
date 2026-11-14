@@ -332,3 +332,69 @@ func test_nomes_de_mecanica_do_tres_sao_todos_conhecidos_pelo_registro() -> void
 		)
 	var nomes_no_e3 := _curva.estagios[3].mecanicas
 	assert_true(nomes_no_e3.has(PlatformModifiers.PLATAFORMAS_QUE_MUDAM_DE_COR), "E3 resolve o nome de cor")
+
+
+func test_estagio_sem_campos_de_movimento_devolve_padroes() -> void:
+	# C265: estagio sem os campos novos -> padroes (amplitude/proporcoes/variacao 0,0; periodo 2,5), nao 0 nem null.
+	var curva := DifficultyCurve.new()
+	curva.estagios = [DifficultyStage.new()]
+	var s := curva.avaliar(0.0, 0.0)
+	assert_almost_eq(s.get_amplitude_movimento(), 0.0, EPS, "amplitude sem campo = 0.0")
+	assert_almost_eq(s.get_periodo_movimento(), 2.5, EPS, "periodo sem campo = 2.5")
+	assert_almost_eq(s.get_proporcao_oscilantes(), 0.0, EPS, "proporcao oscilantes sem campo = 0.0")
+	assert_almost_eq(s.get_proporcao_vai_e_vem(), 0.0, EPS, "proporcao vai-e-vem sem campo = 0.0")
+	assert_almost_eq(s.get_variacao_speed_linha(), 0.0, EPS, "variacao de speed sem campo = 0.0")
+
+
+func _curva_dois_movimentos() -> DifficultyCurve:
+	var a := DifficultyStage.new()
+	a.progresso_inicio = 0.0
+	a.amplitude_movimento = 0.0
+	a.periodo_movimento = 2.0
+	a.proporcao_oscilantes = 0.2
+	a.proporcao_vai_e_vem = 0.0
+	a.variacao_speed_linha = 0.0
+	var b := DifficultyStage.new()
+	b.progresso_inicio = 1.0
+	b.amplitude_movimento = 8.0
+	b.periodo_movimento = 3.0
+	b.proporcao_oscilantes = 0.6
+	b.proporcao_vai_e_vem = 0.5
+	b.variacao_speed_linha = 0.2
+	var curva := DifficultyCurve.new()
+	curva.estagios = [a, b]
+	curva.pontos_plato = 100.0
+	return curva
+
+
+func test_interpolacao_do_movimento_a_meio_e_media_exata() -> void:
+	# C266: amplitude 0 e 8 a meio = 4.0 exato; demais campos tambem na media.
+	var curva := _curva_dois_movimentos()
+	var s := curva.avaliar(50.0, 0.0)
+	assert_almost_eq(s.get_amplitude_movimento(), 4.0, EPS, "amplitude no meio = media de 0 e 8")
+	assert_almost_eq(s.get_periodo_movimento(), 2.5, EPS, "periodo no meio = media de 2.0 e 3.0")
+	assert_almost_eq(s.get_proporcao_oscilantes(), 0.4, EPS, "oscilantes no meio = media de 0.2 e 0.6")
+	assert_almost_eq(s.get_proporcao_vai_e_vem(), 0.25, EPS, "vai-e-vem no meio = media de 0.0 e 0.5")
+	assert_almost_eq(s.get_variacao_speed_linha(), 0.1, EPS, "variacao no meio = media de 0.0 e 0.2")
+
+
+func test_teto_devolve_parametros_de_movimento_do_ultimo_estagio() -> void:
+	var s := _curva_dois_movimentos().avaliar(1e9, 0.0)
+	assert_almost_eq(s.get_amplitude_movimento(), 8.0, EPS, "teto = amplitude do ultimo estagio")
+	assert_almost_eq(s.get_periodo_movimento(), 3.0, EPS, "teto = periodo do ultimo estagio")
+	assert_almost_eq(s.get_proporcao_oscilantes(), 0.6, EPS, "teto = oscilantes do ultimo estagio")
+	assert_almost_eq(s.get_proporcao_vai_e_vem(), 0.5, EPS, "teto = vai-e-vem do ultimo estagio")
+	assert_almost_eq(s.get_variacao_speed_linha(), 0.2, EPS, "teto = variacao do ultimo estagio")
+
+
+func test_snapshot_sem_argumentos_devolve_padroes_de_movimento() -> void:
+	# C266: os campos novos no fim do _init nao deslocam os argumentos posicionais antigos.
+	var s := DifficultySnapshot.new()
+	assert_almost_eq(s.get_amplitude_movimento(), 0.0, EPS, "amplitude sem argumentos = 0.0")
+	assert_almost_eq(s.get_periodo_movimento(), 2.5, EPS, "periodo sem argumentos = 2.5")
+	assert_almost_eq(s.get_proporcao_oscilantes(), 0.0, EPS, "oscilantes sem argumentos = 0.0")
+	assert_almost_eq(s.get_proporcao_vai_e_vem(), 0.0, EPS, "vai-e-vem sem argumentos = 0.0")
+	assert_almost_eq(s.get_variacao_speed_linha(), 0.0, EPS, "variacao sem argumentos = 0.0")
+	var posicional := DifficultySnapshot.new(30.0, 90.0, 4, 0.5, [], 50.0, 0.9, 0.2, 3.0)
+	assert_almost_eq(posicional.get_periodo_ciclo(), 3.0, EPS, "9 posicionais: periodo do ciclo preservado")
+	assert_almost_eq(posicional.get_amplitude_movimento(), 0.0, EPS, "9 posicionais: amplitude no padrao")

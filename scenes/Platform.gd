@@ -28,6 +28,8 @@ var _atraso_total := 0.0
 var _tempo_restante := 0.0
 var _modificadores: Array = []
 var _snapshot: DifficultySnapshot = null
+# Desvio horizontal (px/s, negativo = esquerda) somado a `speed` pelo modificador de movimento; 0 = sem efeito
+var desvio_vx: float = 0.0
 
 # Referencias aos nós filhos
 @onready var sprite = $Sprite2D
@@ -101,8 +103,13 @@ func _physics_process(delta):
 	if !Global.is_iniciado():
 		return
 
-	velocity = Vector2(-speed, 0)
+	velocity = Vector2(-speed + desvio_vx, 0)
 	move_and_slide()
+
+# Verdadeiro quando a plataforma realmente anda: tem velocidade base e a partida ja comecou.
+# Modificador de movimento so avanca a fase com isto (evita deriva antes da partida e em plataforma parada).
+func em_movimento() -> bool:
+	return speed != 0 and Global.is_iniciado()
 
 # Define a velocidade de movimento da plataforma
 func set_speed(new_speed):
