@@ -39,6 +39,9 @@ var _ciclo_ligado: bool = false
 var _rng_ciclo: RandomNumberGenerator = null
 # A mecanica de speed por linha esta ligada neste gerador (nunca na linha garantir_cor_inicial)
 var _speed_variada: bool = false
+# Mecanicas de movimento oscilante ligadas (nomes separados); cada oscilante ganha instancia propria
+var _seno_ligado: bool = false
+var _vai_e_vem_ligado: bool = false
 
 # Inicializa o gerador de plataformas
 func _ready():
@@ -154,8 +157,17 @@ func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
 	_modificadores = []
 	_ciclo_ligado = false
 	_speed_variada = false
+	_seno_ligado = false
+	_vai_e_vem_ligado = false
 	for modificador in PlatformModifiers.resolver(snapshot):
 		if garantir_cor_inicial and not modificador.vale_em_linha_inicial():
+			continue
+		if modificador is PlatformSineMotion or modificador is PlatformPingPongMotion:
+			# Estado por plataforma (fase): nunca na lista compartilhada; o sorteio cria a instancia propria
+			if modificador is PlatformSineMotion:
+				_seno_ligado = true
+			else:
+				_vai_e_vem_ligado = true
 			continue
 		if modificador is RowSpeedVariation:
 			# Mecanica de linha: aplicada na speed no _ready, nunca na lista de plataforma
@@ -175,7 +187,43 @@ func _aplicar_mecanicas(platform: Platform) -> void:
 	if _ciclo_ligado and _sorteia_cicladora():
 		lista = _modificadores.duplicate()
 		lista.append(_novo_ciclo(platform.color))
+	var oscilante: PlatformModifier = _sorteia_oscilante()
+	if oscilante != null:
+		if is_same(lista, _modificadores):
+			lista = _modificadores.duplicate()
+		lista.append(oscilante)
 	platform.definir_modificadores(lista, _snapshot_nascimento)
+
+# Sorteio do movimento: so plataforma movel (nunca estatica nem linha inicial), com a mecanica ligada no nascimento.
+# proporcao_oscilantes decide quem oscila; entre as oscilantes, proporcao_vai_e_vem decide o tipo (so quando as duas
+# mecanicas estao ligadas; com uma so, todas as oscilantes sao dela). Devolve instancia propria com a fase sorteada.
+func _sorteia_oscilante() -> PlatformModifier:
+	if platform_type == Enums.PLATFORM_TYPE.STATIC or garantir_cor_inicial:
+		return null
+	if not (_seno_ligado or _vai_e_vem_ligado):
+		return null
+	var proporcao: float = _snapshot_nascimento.get_proporcao_oscilantes()
+	if proporcao <= 0.0 or _sorteio() >= proporcao:
+		return null
+	var vai_e_vem: bool = _vai_e_vem_ligado
+	if _seno_ligado and _vai_e_vem_ligado:
+		vai_e_vem = _sorteio() < _snapshot_nascimento.get_proporcao_vai_e_vem()
+	var movimento: PlatformModifier = PlatformPingPongMotion.new() if vai_e_vem else PlatformSineMotion.new()
+	movimento.iniciar(_fonte_rng())
+	return movimento
+
+# Sorteio em [0, 1): rng do gerador ou randf global sem rng
+func _sorteio() -> float:
+	return randf() if rng == null else rng.randf()
+
+# rng das sequencias/fases: o do gerador (teste) ou um proprio quando rng e null
+func _fonte_rng() -> RandomNumberGenerator:
+	if _rng_ciclo == null:
+		_rng_ciclo = rng
+		if _rng_ciclo == null:
+			_rng_ciclo = RandomNumberGenerator.new()
+			_rng_ciclo.randomize()
+	return _rng_ciclo
 
 # Sorteio da cicladora: proporcao_cicladoras do snapshot do nascimento, pelo rng do gerador (randf global sem rng)
 func _sorteia_cicladora() -> bool:
@@ -187,14 +235,9 @@ func _sorteia_cicladora() -> bool:
 
 # Instancia propria de PlatformColorCycle: sequencia sorteada a partir da cor da plataforma e forcada a ter a cor do gecko
 func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:
-	if _rng_ciclo == null:
-		_rng_ciclo = rng
-		if _rng_ciclo == null:
-			_rng_ciclo = RandomNumberGenerator.new()
-			_rng_ciclo.randomize()
 	var periodo: float = _snapshot_nascimento.get_periodo_ciclo()
 	var ciclo := PlatformColorCycle.new()
-	ciclo.iniciar(cor_inicial, periodo, _rng_ciclo)
+	ciclo.iniciar(cor_inicial, periodo, _fonte_rng())
 	var alcance_s: float = _alcance_s(periodo)
 	ciclo.definir_sequencia(
 		ReachableColors.forcar_cor_cicladora(ciclo.get_sequencia(), int(Global.cor_gecko), periodo, alcance_s)
