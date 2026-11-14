@@ -15,3 +15,4 @@ antigo como "superado por".
 | [0008](0008-pausa-por-tree-paused.md)                  | Pausa por `get_tree().paused`, nao por `Global.iniciado`                          | aceito                                                 |
 | [0009](0009-modificadores-de-plataforma.md)            | Modificadores de plataforma por contrato; largura por shape duplicado             | aceito                                                 |
 | [0010](0010-plataformas-cicladoras.md)                 | Plataformas cicladoras: cor prevista no tempo, com trava e aviso visivel          | aceito                                                 |
+| [0011](0011-movimento-de-plataformas.md)               | Movimento de plataformas: oscilacao como desvio de velocidade, sem inversao, so x | aceito                                                 |

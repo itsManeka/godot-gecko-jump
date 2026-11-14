@@ -25,7 +25,8 @@ cor (#10). Faltava uma forma de a dificuldade subir com a partida, ajustavel sem
 - **Mecanicas:** cada estagio tem `mecanicas: Array[StringName]`, que liga mecanicas de forma discreta na fronteira do
   estagio. As plataformas menores e que caem estao no [ADR 0009](0009-modificadores-de-plataforma.md). A que muda de
   cor ([ADR 0010](0010-plataformas-cicladoras.md)) usa `proporcao_cicladoras` e `periodo_ciclo`, campos por estagio que
-  interpolam como a largura. As proximas mecanicas ganham ADR proprio quando forem implementadas.
+  interpolam como a largura. As mecanicas de movimento (oscilacao e velocidade por linha) estao no
+  [ADR 0011](0011-movimento-de-plataformas.md). As proximas mecanicas ganham ADR proprio quando forem implementadas.
 - Os numeros ficam no `.tres`, nao neste ADR.
 
 ## Consequencias

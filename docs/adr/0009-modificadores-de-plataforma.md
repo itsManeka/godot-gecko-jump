@@ -9,7 +9,8 @@
 A curva de dificuldade ([ADR 0007](0007-curva-de-dificuldade-em-resource.md)) passou a ligar mecanicas por estagio
 pelo campo `mecanicas`. As duas primeiras mecanicas mudam a plataforma: uma nasce mais estreita e outra desmorona
 pouco depois do pouso do gecko. O ADR 0007 deixou o contrato de modificador para a primeira mecanica real, porque sem
-caso concreto ele seria chute. As mecanicas seguintes (cor, movimento, pisca) vao reaproveitar o mesmo contrato.
+caso concreto ele seria chute. As mecanicas de cor e de movimento ja reaproveitam o mesmo contrato ([ADR 0010](0010-plataformas-cicladoras.md),
+[ADR 0011](0011-movimento-de-plataformas.md)); o pisca vai reaproveitar.
 
 Restricoes que moldam a decisao:
 
@@ -55,8 +56,9 @@ Restricoes que moldam a decisao:
   proprio (sequencia e relogio). Ele nao entra na lista compartilhada da linha: o gerador cria uma instancia por
   plataforma cicladora. Os tres hooks e o despacho acima valem para os dois tipos. Ver
   [ADR 0010](0010-plataformas-cicladoras.md).
-- **Modo `Global.sem_derrota`:** a largura aplica e o desmoronamento nao age. Isso mantem o smoke deterministico, e a
-  mecanica e coberta por teste de cena. Nenhuma mecanica existente tratava `sem_derrota`; esse comportamento e novo.
+- **Modo `Global.sem_derrota`:** a largura aplica e o desmoronamento nao age; o movimento das plataformas tambem fica
+  inerte ([ADR 0011](0011-movimento-de-plataformas.md)). Isso mantem o smoke deterministico, e a mecanica e coberta por
+  teste de cena. Nenhuma mecanica existente tratava `sem_derrota`; esse comportamento e novo.
 
 ## Consequencias
 
