@@ -123,10 +123,15 @@ func add_platform(platform: Platform):
 func player_color_changed(player_color, actual_platform: Platform):
 	cor_gecko = player_color
 	for platform in platforms:
-		if is_instance_valid(platform) and platform != actual_platform:
-			var p := platform as Platform
-			if p:
-				p.player_color_changed(player_color)
+		if not is_instance_valid(platform):
+			continue
+		var p := platform as Platform
+		if not p:
+			continue
+		# A plataforma do gecko fica travada (o ciclo de cor congela); as demais destravam e reavaliam a colisao
+		p.definir_travada(platform == actual_platform)
+		if platform != actual_platform:
+			p.player_color_changed(player_color)
 
 # Atualiza a plataforma atual quando o jogador muda de cor
 func att_actual_platform(player_color, actual_platform):

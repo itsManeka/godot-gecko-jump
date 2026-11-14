@@ -10,9 +10,19 @@ class_name Platform
 # Tremor horizontal do sprite nos ultimos segundos do atraso de desmoronamento
 const AVISO_TREMOR_S := 0.3
 const TREMOR_AMPLITUDE := 1.0
+# Aviso de troca de cor (nos ultimos segundos do ciclo): alterna cor atual/proxima a ~6 Hz e pulsa o alfa
+# (pista nao cromatica, legivel a daltonico). Sem icone fixo.
+const AVISO_FASES_POR_S := 12.0
+const AVISO_ALFA_BAIXO := 0.55
+# Camada de fisica do corpo do gecko (Player, camada padrao 1)
+const CAMADA_GECKO := 1
 
 # Verdadeiro depois que o desmoronamento termina (colisao desligada de vez)
 var desmoronada := false
+var _travada := false
+var _cor_pendente := -1
+var _tempo_aviso := 0.0
+var _em_aviso_visual := false
 var _desmoronando := false
 var _atraso_total := 0.0
 var _tempo_restante := 0.0
@@ -83,8 +93,11 @@ func _avancar_desmoronamento(delta: float) -> void:
 func _physics_process(delta):
 	if _desmoronando:
 		_avancar_desmoronamento(delta)
+	if _cor_pendente >= 0 and not desmoronada and not _gecko_prenderia(_cor_pendente):
+		_aplicar_cor(_cor_pendente)
 	for modificador in _modificadores:
 		modificador.ao_processar(self, delta)
+	_atualizar_aviso(delta)
 	if !Global.is_iniciado():
 		return
 
@@ -111,6 +124,66 @@ func player_color_changed(player_color):
 		shape.disabled = false  # Jogador pode colidir (mesma cor)
 	else:
 		shape.disabled = true   # Jogador passa através (cor diferente)
+
+# Modificador de ciclo de cor desta plataforma (nulo se nao for cicladora)
+func obter_ciclo() -> PlatformColorCycle:
+	for modificador in _modificadores:
+		if modificador is PlatformColorCycle:
+			return modificador
+	return null
+
+# O gecko esta nesta plataforma: o ciclo congela (Global registra a cada player_color_changed)
+func esta_travada() -> bool:
+	return _travada
+
+func definir_travada(valor: bool) -> void:
+	_travada = valor
+
+# Troca a cor da plataforma (ciclo). Se o gecko esta com o corpo sobreposto e a troca a tornaria solida,
+# a troca espera ele sair (evita prende-lo dentro da colisao).
+func trocar_cor(nova: int) -> void:
+	if _gecko_prenderia(nova):
+		_cor_pendente = nova
+		return
+	_aplicar_cor(nova)
+
+func _aplicar_cor(nova: int) -> void:
+	color = nova as Enums.COLOR
+	_cor_pendente = -1
+	_tempo_aviso = 0.0
+	_em_aviso_visual = false
+	sprite.modulate = Enums.get_cor(color)
+	player_color_changed(Global.cor_gecko)
+
+# Verdadeiro se a cor `nova` tornaria a plataforma solida para o gecko que ainda sobrepoe o corpo dela
+func _gecko_prenderia(nova: int) -> bool:
+	if desmoronada or nova != int(Global.cor_gecko) or not shape.disabled:
+		return false
+	if not is_inside_tree():
+		return false
+	var consulta := PhysicsShapeQueryParameters2D.new()
+	consulta.shape = shape.shape
+	consulta.transform = shape.global_transform
+	consulta.collision_mask = CAMADA_GECKO
+	consulta.collide_with_bodies = true
+	return not get_world_2d().direct_space_state.intersect_shape(consulta, 1).is_empty()
+
+# Aviso visual nos segundos finais do ciclo: cor atual/proxima alternando e alfa pulsando; fora dele, normal
+func _atualizar_aviso(delta: float) -> void:
+	var ciclo := obter_ciclo()
+	var avisar := ciclo != null and ciclo.em_aviso() and not _travada and not desmoronada
+	if not avisar:
+		if _em_aviso_visual:
+			_em_aviso_visual = false
+			_tempo_aviso = 0.0
+			sprite.modulate = Enums.get_cor(color)
+		return
+	_em_aviso_visual = true
+	_tempo_aviso += delta
+	var fase_proxima := int(_tempo_aviso * AVISO_FASES_POR_S) % 2 == 1
+	var cor_aviso := Enums.get_cor(ciclo.proxima_cor() if fase_proxima else color)
+	cor_aviso.a = AVISO_ALFA_BAIXO if fase_proxima else 1.0
+	sprite.modulate = cor_aviso
 
 # Remove a plataforma quando sai da tela
 func _on_VisibilityNotifier2D_screen_exited():
