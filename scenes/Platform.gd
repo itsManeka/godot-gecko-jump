@@ -141,6 +141,8 @@ func definir_travada(valor: bool) -> void:
 
 # Troca a cor da plataforma (ciclo). Se o gecko esta com o corpo sobreposto e a troca a tornaria solida,
 # a troca espera ele sair (evita prende-lo dentro da colisao).
+# Com a troca adiada (_cor_pendente) o ciclo ja avancou o indice: ciclo.cor_atual() difere de `color` ate a troca
+# aplicar. Inofensivo para a previsao: o gecko esta sobreposto, entao nao ha pouso nem candidata nessa plataforma.
 func trocar_cor(nova: int) -> void:
 	if _gecko_prenderia(nova):
 		_cor_pendente = nova

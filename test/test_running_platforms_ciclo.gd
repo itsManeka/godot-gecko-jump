@@ -147,6 +147,31 @@ func test_c254_cicladoras_da_mesma_linha_tem_instancias_e_sequencias_independent
 	assert_true(a.get_sequencia() != b.get_sequencia(), "sequencias diferentes com o rng que as distingue")
 
 
+func test_cicladora_tem_a_cor_do_gecko_dentro_do_alcance_mesmo_com_ela_so_depois() -> void:
+	var gerador := _gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, _estado(1.0, 1.0))
+	var periodo: float = gerador._snapshot_nascimento.get_periodo_ciclo()
+	var entradas: int = int(ceil(gerador._alcance_s(periodo) / periodo))
+	assert_lt(entradas, PlatformColorCycle.CORES_NA_SEQUENCIA - 1, "o alcance cobre so o comeco da sequencia")
+	var achou := false
+	for semente in range(1, 300):
+		var sorteada := PlatformColorCycle.new()
+		sorteada.iniciar(Enums.COLOR.AZUL, periodo, _rng(semente))
+		var sequencia: Array = sorteada.get_sequencia()
+		var cor_gecko: int = sequencia[entradas]
+		if sequencia.slice(0, entradas).has(cor_gecko):
+			continue
+		achou = true
+		Global.cor_gecko = cor_gecko as Enums.COLOR
+		gerador._rng_ciclo = _rng(semente)
+		var ciclo: PlatformColorCycle = gerador._novo_ciclo(Enums.COLOR.AZUL)
+		assert_true(
+			ciclo.get_sequencia().slice(0, entradas).has(cor_gecko),
+			"semente %d: cor do gecko forcada dentro das %d primeiras entradas" % [semente, entradas]
+		)
+		break
+	assert_true(achou, "ha semente cuja sequencia so tem a cor do gecko fora do alcance")
+
+
 func test_c255_initial_xs_inalterado_e_sem_derrota_mantem_cor_inicial_com_ciclo() -> void:
 	var spawn_x := 210.0
 	var esperado: Array[float] = MovingRowFill.initial_xs(spawn_x, true, MovingRowFill.LARGURA_PADRAO, 60.0)

@@ -358,12 +358,15 @@ func test_estagio_alto_prova_estagio_3_com_progresso_1_e_semderrota() -> void:
 	var passos := _passos(nome)
 	assert_eq(passos[i_gte3]["expect"]["dificuldade.estagio"]["gte"], 3.0, "o gte e contra o estagio 3")
 	assert_gte(int(passos[i_gte3].get("timeout_ms", 0)), TIMEOUT_MIN_APOS_QUEDA_MS, "o expect do estagio 3 deve ter timeout_ms >= 3000")
-	var ultimo: Dictionary = passos[passos.size() - 1]
-	assert_eq(ultimo.get("expect", {}), {"state": "playing"}, "o roteiro estagio-alto termina com expect state playing (gecko vivo)")
 	var i_antes: int = _indice_shots(nome, "antes-troca")
 	var i_depois: int = _indice_shots(nome, "depois-troca")
 	assert_gte(i_antes, 0, "o roteiro estagio-alto tira o print antes-troca")
 	assert_gt(i_depois, i_antes, "o print depois-troca vem depois do antes-troca")
+	# O formato do smoke nao tem OU: a partida pode acabar por queda nos 3,3 s, entao nenhum expect de state depois do antes-troca
+	if i_antes >= 0:
+		for i in range(i_antes + 1, passos.size()):
+			var exigencia: Dictionary = passos[i].get("expect", {})
+			assert_false(exigencia.has("state"), "passo %d: sem expect state depois do antes-troca (aceita playing ou queda)" % i)
 	var espera_ms: int = 0
 	for i in range(maxi(i_antes + 1, 0), maxi(i_depois, 0)):
 		if passos[i].has("wait"):

@@ -175,8 +175,17 @@ func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:
 	var periodo: float = _snapshot_nascimento.get_periodo_ciclo()
 	var ciclo := PlatformColorCycle.new()
 	ciclo.iniciar(cor_inicial, periodo, _rng_ciclo)
-	ciclo.definir_sequencia(ReachableColors.forcar_cor_cicladora(ciclo.get_sequencia(), int(Global.cor_gecko), periodo))
+	var alcance_s: float = _alcance_s(periodo)
+	ciclo.definir_sequencia(
+		ReachableColors.forcar_cor_cicladora(ciclo.get_sequencia(), int(Global.cor_gecko), periodo, alcance_s)
+	)
 	return ciclo
+
+# Tempo em que a plataforma recem-nascida segue alcancavel: o tempo de pulo ate a linha dela (pelo scroll do snapshot do
+# nascimento) mais 1 periodo de espera em cima, com piso de 2 periodos (a cor do indice 0 e a ja pintada na plataforma).
+func _alcance_s(periodo: float) -> float:
+	var pulo: float = ReachableColors.tempo_de_pulo(_snapshot_nascimento.get_scroll())
+	return maxf(pulo, periodo) + periodo
 
 # Inicia o timer para gerar próxima plataforma
 func start_generate_timer():

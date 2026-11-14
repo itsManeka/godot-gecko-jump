@@ -11,7 +11,6 @@
     { "expect": { "dificuldade.estagio": { "gte": 3 } }, "timeout_ms": 8000 },
     { "shots": 1, "name": "antes-troca", "moving": false },
     { "wait": 3300 },
-    { "shots": 1, "name": "depois-troca", "moving": false },
-    { "expect": { "state": "playing" }, "timeout_ms": 3000 }
+    { "shots": 1, "name": "depois-troca", "moving": false }
   ]
 }
