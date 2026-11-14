@@ -23,7 +23,7 @@ _Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 - **Sobreviver** o máximo de tempo possível descendo pelas plataformas
 - **Aguentar a dificuldade**: com o tempo as plataformas ficam mais estreitas e, mais adiante, desmoronam pouco depois
   do pouso (tremem antes de cair); no estagio mais alto algumas trocam de cor sozinhas, piscando na proxima cor logo
-  antes da troca (enquanto o gecko esta em cima, a cor fica parada); mais adiante, as linhas passam a andar em velocidades diferentes e algumas plataformas oscilam para os lados, sempre no mesmo sentido
+  antes da troca (enquanto o gecko esta em cima, a cor fica parada); mais adiante, as linhas passam a andar em velocidades diferentes e algumas plataformas oscilam para os lados
 - **Bater o recorde**: a maior pontuação fica salva e continua lá quando você abre o jogo de novo
 
 ## 🎮 Controles
@@ -224,7 +224,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 - **Survive** as long as possible while descending through the platforms
 - **Handle the difficulty**: over time platforms get narrower and, later on, crumble shortly after you land (they shake
   before falling); at the highest stage some of them change color on their own, flashing the next color right before
-  the change (while the gecko stands on one, its color holds); further on, the lines start moving at different speeds and some platforms sway sideways, always in the same direction
+  the change (while the gecko stands on one, its color holds); further on, the lines start moving at different speeds and some platforms sway sideways
 - **Beat your best score**: it is saved and still there the next time you open the game
 
 ### 🎮 Controls

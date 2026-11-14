@@ -418,6 +418,20 @@ func test_nomes_de_movimento_entram_nos_estagios_aprovados_e_nenhum_desconhecido
 		)
 
 
+func test_pico_do_seno_fica_abaixo_do_limite_da_speed_em_todo_estagio_com_seno() -> void:
+	# O seno nao tem clamp no codigo: a ausencia de inversao e travada pelos dados do .tres.
+	var com_seno := 0
+	for i in range(_curva.estagios.size()):
+		var e: DifficultyStage = _curva.estagios[i]
+		if not e.mecanicas.has(PlatformModifiers.MOVIMENTO_SENO):
+			continue
+		com_seno += 1
+		var pico: float = e.amplitude_movimento * TAU / e.periodo_movimento
+		var limite: float = PlatformPingPongMotion.LIMITE_FRACAO_SPEED * e.speed_moveis * (1.0 - e.variacao_speed_linha)
+		assert_lt(pico, limite, "estagio %d: pico do seno %.2f px/s deve ficar abaixo do limite %.2f px/s" % [i, pico, limite])
+	assert_gt(com_seno, 0, "ao menos 1 estagio liga o seno")
+
+
 func test_estagios_de_movimento_com_valores_aprovados_e_antigos_intactos() -> void:
 	# C289: campos de movimento = padrao onde a mecanica nao entra; entrada com os valores aprovados (G1, Q3-Q5);
 	# valores antigos e ordem de mecanicas do E0..E3 preservados.

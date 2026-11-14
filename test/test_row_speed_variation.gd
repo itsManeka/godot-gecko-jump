@@ -115,6 +115,21 @@ func test_duas_linhas_do_mesmo_estagio_tem_speeds_diferentes_dentro_da_faixa() -
 	assert_ne(a.speed, b.speed, "duas linhas do mesmo estagio sorteiam speeds diferentes")
 
 
+func test_speed_da_linha_mantem_o_sinal_do_sentido_e_a_magnitude_na_faixa() -> void:
+	# A negacao do sentido direito vem depois do fator: o sinal nao pode ser perdido nem invertido.
+	var rng := _rng(467)
+	var estado := _estado(true)
+	for i in 6:
+		var esquerda := _gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, estado, rng, false, 100.0 + 40.0 * i)
+		var direita := _gerador(Enums.PLATFORM_TYPE.MOVE_TO_RIGHT, estado, rng, false, 120.0 + 40.0 * i)
+		assert_gt(esquerda.speed, 0.0, "sentido esquerdo: speed positiva")
+		assert_lt(direita.speed, 0.0, "sentido direito: speed negativa")
+		for g in [esquerda, direita]:
+			assert_between(absf(g.speed), SPEED_BASE * (1.0 - VARIACAO), SPEED_BASE * (1.0 + VARIACAO), "magnitude em [base*(1-v), base*(1+v)]")
+		for p in _plataformas(direita):
+			assert_lt(p.speed, 0.0, "plataforma do sentido direito herda o sinal negativo")
+
+
 func test_sem_a_mecanica_a_speed_e_a_do_snapshot_exata() -> void:
 	var rng := _rng(467)
 	var estado := _estado(false)

@@ -216,7 +216,9 @@ func _sorteia_oscilante() -> PlatformModifier:
 func _sorteio() -> float:
 	return randf() if rng == null else rng.randf()
 
-# rng das sequencias/fases: o do gerador (teste) ou um proprio quando rng e null
+# rng das sequencias/fases: o do gerador (teste) ou um proprio quando rng e null.
+# Compartilhado com o ciclo de cor: mudar o numero de sorteios de uma mecanica desloca a outra para a mesma semente
+# (so afeta a reprodutibilidade de teste).
 func _fonte_rng() -> RandomNumberGenerator:
 	if _rng_ciclo == null:
 		_rng_ciclo = rng

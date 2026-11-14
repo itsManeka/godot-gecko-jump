@@ -61,6 +61,8 @@ dependencias da jogabilidade e moldam a decisao:
     amplitude ou propagar o desvio ao jogador. O teste de cena mede e decide.
   - Os valores de amplitude, periodo, proporcoes e variacao sao sensacao de jogo. O teste prova alcance e espacamento,
     nao gosto; a confirmacao vem do dono jogando os estagios com o parametro de progresso de debug.
+- **Integracao:** `scripts/PlatformSineMotion.gd`, `scripts/PlatformPingPongMotion.gd` e `scripts/RowSpeedVariation.gd`
+  sao modificadores sem cena, registrados em `PlatformModifiers.gd` e sorteados pelo gerador.
 
 ## Alternativas consideradas
 
