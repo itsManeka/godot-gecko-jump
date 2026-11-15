@@ -56,7 +56,7 @@ static func tempo_de_pulo(scroll: float) -> float:
 
 
 # Converte plataformas vivas em pares {y, x, cor} (posicao global). Ignora null, instancia liberada e `excluir`.
-# Plataforma com ciclo de cor ganha tambem "ciclo" (PlatformColorCycle).
+# Plataforma com ciclo de cor ganha tambem "ciclo" (PlatformColorCycle); com piscar, "pisca" (PlatformBlink).
 static func entradas_de_plataformas(plataformas: Array, excluir: Object = null) -> Array:
 	var entradas: Array = []
 	for p in plataformas:
@@ -68,6 +68,10 @@ static func entradas_de_plataformas(plataformas: Array, excluir: Object = null) 
 			var ciclo: PlatformColorCycle = p.obter_ciclo()
 			if ciclo != null:
 				entrada["ciclo"] = ciclo
+		if p.has_method(&"obter_pisca"):
+			var pisca: PlatformBlink = p.obter_pisca()
+			if pisca != null:
+				entrada["pisca"] = pisca
 		entradas.append(entrada)
 	return entradas
 
@@ -75,7 +79,9 @@ static func entradas_de_plataformas(plataformas: Array, excluir: Object = null) 
 # Cores das entradas {y, x, cor[, ciclo]} da linha imediatamente acima de `y_ref` (y ~ y_ref - ESPACAMENTO) com x em [0, largura].
 # Pura: sem arvore nem Global. Pode devolver cores repetidas e a cor atual do gecko (D4).
 # Entrada com "ciclo": so contribui com a cor que vale em toda a janela [dt_chegada, dt_chegada + espera]; se a cor muda
-# dentro dela, nao contribui. Sem ciclo (ou dt/espera padrao) = cor estatica, como antes.
+# dentro dela, nao contribui. Entrada com "pisca": so contribui se a plataforma esta visivel em toda a mesma janela
+# (invisivel = sem colisao, nao serve de apoio). Com ciclo e pisca juntos vale a conjuncao. Sem ciclo/pisca (ou dt/espera
+# padrao) = cor estatica, como antes.
 static func coletar_cores_linha_acima(
 	entradas: Array, y_ref: float, largura: float, dt_chegada: float = 0.0, espera: float = 0.0
 ) -> Array:
@@ -87,13 +93,16 @@ static func coletar_cores_linha_acima(
 		var x: float = e["x"]
 		if x < 0.0 or x > largura:
 			continue
+		var cor: int = e["cor"]
 		var ciclo: Variant = e.get("ciclo")
-		if ciclo == null:
-			cores.append(e["cor"])
+		if ciclo != null:
+			cor = _cor_que_cobre_a_janela(ciclo, dt_chegada, espera)
+			if cor < 0:
+				continue
+		var pisca: PlatformBlink = e.get("pisca")
+		if pisca != null and not pisca.visivel_na_janela(dt_chegada, dt_chegada + espera):
 			continue
-		var cor_janela: int = _cor_que_cobre_a_janela(ciclo, dt_chegada, espera)
-		if cor_janela >= 0:
-			cores.append(cor_janela)
+		cores.append(cor)
 	return cores
 
 

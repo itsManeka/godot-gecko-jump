@@ -42,6 +42,15 @@ var _speed_variada: bool = false
 # Mecanicas de movimento oscilante ligadas (nomes separados); cada oscilante ganha instancia propria
 var _seno_ligado: bool = false
 var _vai_e_vem_ligado: bool = false
+# A mecanica que pisca esta ligada neste gerador (nunca na linha garantir_cor_inicial)
+var _pisca_ligado: bool = false
+# rng dedicado do piscar (derivado da semente do gerador, sem consumir o rng dele); criado so no 1o sorteio
+var _rng_pisca: RandomNumberGenerator = null
+# Mistura a semente do gerador para o rng do piscar nao repetir a sequencia do rng do gerador
+const SEMENTE_PISCA: int = 0x5B11C
+# Ancora: a plataforma criada imediatamente antes (movel) piscou / quantas piscaram na linha estatica em curso
+var _pisca_anterior: bool = false
+var _piscantes_na_linha: int = 0
 
 # Inicializa o gerador de plataformas
 func _ready():
@@ -92,6 +101,7 @@ func _on_Timer_timeout():
 func create_static_platforms():
 	var position_x = 5
 	var cores: Array = []
+	_piscantes_na_linha = 0
 	if garantir_cor_inicial:
 		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL)
 	for i in 3:
@@ -159,6 +169,7 @@ func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
 	_speed_variada = false
 	_seno_ligado = false
 	_vai_e_vem_ligado = false
+	_pisca_ligado = false
 	for modificador in PlatformModifiers.resolver(snapshot):
 		if garantir_cor_inicial and not modificador.vale_em_linha_inicial():
 			continue
@@ -177,6 +188,10 @@ func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
 			# Estado por plataforma: nunca entra na lista compartilhada da linha; cada cicladora ganha instancia propria
 			_ciclo_ligado = true
 			continue
+		if modificador is PlatformBlink:
+			# Estado por plataforma (fase): instancia propria no sorteio, nunca na lista compartilhada
+			_pisca_ligado = true
+			continue
 		_modificadores.append(modificador)
 
 # Entrega a lista de modificadores a plataforma antes do add_child (gerador fora da arvore le na 1a criacao)
@@ -184,7 +199,9 @@ func _aplicar_mecanicas(platform: Platform) -> void:
 	if _snapshot_nascimento == null:
 		_ler_mecanicas(_snapshot())
 	var lista: Array = _modificadores
+	var cicladora: bool = false
 	if _ciclo_ligado and _sorteia_cicladora():
+		cicladora = true
 		lista = _modificadores.duplicate()
 		lista.append(_novo_ciclo(platform.color))
 	var oscilante: PlatformModifier = _sorteia_oscilante()
@@ -192,7 +209,52 @@ func _aplicar_mecanicas(platform: Platform) -> void:
 		if is_same(lista, _modificadores):
 			lista = _modificadores.duplicate()
 		lista.append(oscilante)
+	var piscante: PlatformBlink = _sorteia_piscante(cicladora)
+	if piscante != null:
+		if is_same(lista, _modificadores):
+			lista = _modificadores.duplicate()
+		lista.append(piscante)
 	platform.definir_modificadores(lista, _snapshot_nascimento)
+
+# Sorteio do piscar (rng dedicado, so consumido quando a plataforma e elegivel):
+# - nunca com a mecanica desligada, em sem_derrota (D5) ou numa cicladora (D6);
+# - ancora: estatica so pisca se ainda nao piscaram 2 da linha de 3 (>= 1 fica estavel); movel nunca pisca logo depois
+#   de outra piscante na sequencia de criacao.
+func _sorteia_piscante(cicladora: bool) -> PlatformBlink:
+	var estatica: bool = platform_type == Enums.PLATFORM_TYPE.STATIC
+	if not _pisca_ligado or Global.sem_derrota or cicladora:
+		_pisca_anterior = false
+		return null
+	var proporcao: float = _snapshot_nascimento.get_proporcao_piscantes()
+	var ancora_livre: bool = _piscantes_na_linha < 2 if estatica else not _pisca_anterior
+	if proporcao <= 0.0 or not ancora_livre:
+		_pisca_anterior = false
+		return null
+	var fonte: RandomNumberGenerator = _fonte_pisca()
+	if fonte.randf() >= proporcao:
+		_pisca_anterior = false
+		return null
+	var pisca := PlatformBlink.new()
+	pisca.iniciar(
+		fonte,
+		_snapshot_nascimento.get_duracao_visivel(),
+		_snapshot_nascimento.get_duracao_invisivel(),
+		_snapshot_nascimento.get_aviso_pisca(),
+		proporcao
+	)
+	_pisca_anterior = true
+	_piscantes_na_linha += 1
+	return pisca
+
+# rng dedicado do piscar: semente derivada da do gerador (reprodutivel em teste); sem rng, aleatorio proprio
+func _fonte_pisca() -> RandomNumberGenerator:
+	if _rng_pisca == null:
+		_rng_pisca = RandomNumberGenerator.new()
+		if rng == null:
+			_rng_pisca.randomize()
+		else:
+			_rng_pisca.seed = rng.seed ^ SEMENTE_PISCA
+	return _rng_pisca
 
 # Sorteio do movimento: so plataforma movel (nunca estatica nem linha inicial), com a mecanica ligada no nascimento.
 # proporcao_oscilantes decide quem oscila; entre as oscilantes, proporcao_vai_e_vem decide o tipo (so quando as duas
