@@ -146,6 +146,22 @@ func test_c316_cicladora_e_piscante_nunca_na_mesma_plataforma() -> void:
 	assert_gt(_piscantes(sem_ciclo), 0, "controle: sem cicladoras ha piscantes")
 
 
+func test_movel_piscante_antes_de_cicladora_vira_inerte_nenhuma_ativa_antes_de_cicladora() -> void:
+	var ligadas: Array[StringName] = [PlatformModifiers.PLATAFORMAS_QUE_MUDAM_DE_COR, PlatformModifiers.PLATAFORMAS_QUE_PISCAM]
+	var neutralizadas := 0
+	for semente in SEMENTES:
+		var filhas := _movel_com_amostra(_estado(ligadas, 1.0, 0.7, 1.0), semente)
+		for i in range(filhas.size() - 1):
+			var atual: Platform = filhas[i]
+			var proxima: Platform = filhas[i + 1]
+			var pisca: PlatformBlink = atual.obter_pisca()
+			if pisca == null or proxima.obter_ciclo() == null:
+				continue
+			neutralizadas += 0 if pisca.esta_ativo() else 1
+			assert_false(pisca.esta_ativo(), "semente %d: piscante ativa antes de cicladora (indice %d)" % [semente, i])
+	assert_gt(neutralizadas, 0, "controle: ha piscante neutralizada antes de cicladora")
+
+
 func test_c317_mesma_semente_mesmas_piscantes_e_fases() -> void:
 	var a := _movel_com_amostra(_estado(_so_pisca(), 0.5, 0.0, 1.0), 42)
 	var b := _movel_com_amostra(_estado(_so_pisca(), 0.5, 0.0, 1.0), 42)

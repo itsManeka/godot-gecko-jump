@@ -245,16 +245,15 @@ func _sorteia_piscante(cicladora: bool) -> PlatformBlink:
 		# Movel cicladora logo depois de uma piscante: a piscante vira inerte (o par ficaria sem apoio garantido)
 		if cicladora and _pisca_anterior and not estatica and _ultima_pisca != null:
 			_neutralizar_pisca(_ultima_pisca)
-		_pisca_anterior = false
+		_sem_piscante_anterior()
 		return null
 	var proporcao: float = _snapshot_nascimento.get_proporcao_piscantes()
-	var ancora_livre: bool = _piscantes_na_linha < 2 if estatica else not (_pisca_anterior or ciclo_antes)
-	if proporcao <= 0.0 or not ancora_livre:
-		_pisca_anterior = false
+	if proporcao <= 0.0 or not _ancora_livre(estatica, ciclo_antes):
+		_sem_piscante_anterior()
 		return null
 	var fonte: RandomNumberGenerator = _fonte_pisca()
 	if fonte.randf() >= proporcao:
-		_pisca_anterior = false
+		_sem_piscante_anterior()
 		return null
 	var pisca := PlatformBlink.new()
 	pisca.iniciar(
@@ -268,6 +267,18 @@ func _sorteia_piscante(cicladora: bool) -> PlatformBlink:
 	_piscantes_na_linha += 1
 	_ultima_pisca = pisca
 	return pisca
+
+# Ancora do piscar: estatica so pisca se ainda nao piscaram 2 da linha de 3; movel nao pisca logo depois de piscante
+# nem de cicladora
+func _ancora_livre(estatica: bool, ciclo_antes: bool) -> bool:
+	if estatica:
+		return _piscantes_na_linha < 2
+	return not (_pisca_anterior or ciclo_antes)
+
+# A sequencia deixou de ter piscante anterior: solta tambem a referencia a ultima piscante
+func _sem_piscante_anterior() -> void:
+	_pisca_anterior = false
+	_ultima_pisca = null
 
 # Piscante que vira inerte (sempre visivel e solida): so o PlatformBlink e desligado, a plataforma segue como esta
 func _neutralizar_pisca(pisca: PlatformBlink) -> void:

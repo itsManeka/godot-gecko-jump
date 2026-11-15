@@ -47,6 +47,11 @@ func vale_em_linha_inicial() -> bool:
 	return false
 
 
+# Falso quando o modificador e inerte (duracao ou proporcao 0): sempre visivel e sem relogio.
+func esta_ativo() -> bool:
+	return _ativo
+
+
 func esta_visivel() -> bool:
 	return visivel_em(0.0)
 

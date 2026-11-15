@@ -16,7 +16,8 @@ const AVISO_FASES_POR_S := 12.0
 const AVISO_ALFA_BAIXO := 0.55
 # Camada de fisica do corpo do gecko (Player, camada padrao 1)
 const CAMADA_GECKO := 1
-# Plataforma que pisca: invisivel = fantasma (alfa baixo, sem colisao); aviso = flicker de alfa (~10 Hz) mantendo a cor.
+# Plataforma que pisca: invisivel = fantasma (alfa baixo, sem colisao); aviso = flicker de alfa (10 ciclos/s = 20 fases/s,
+# ver PISCA_AVISO_FASES_POR_S) mantendo a cor.
 # O alfa vive no proprio no (nao em sprite.modulate, canal de cor/aviso da cicladora).
 const PISCA_ALFA_FANTASMA := 0.2
 const PISCA_AVISO_ALFA_BAIXO := 0.35
@@ -231,7 +232,7 @@ func _atualizar_pisca(delta: float, inicial: bool = false) -> void:
 		return
 	if _pisca_pendente:
 		_resolver_pisca_pendente()
-	var inerte := Global.sem_derrota
+	var inerte := Global.sem_derrota or not pisca.esta_ativo()
 	if not inerte and not inicial and not Global.is_iniciado():
 		return
 	# Travada (gecko em cima) nunca some; o relogio do modificador ja esta congelado

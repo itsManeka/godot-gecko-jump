@@ -49,7 +49,8 @@ Restricoes que moldam a decisao:
 - **Ancora por linha.** Em cada linha estatica, pelo menos uma plataforma nao pisca. Entre as moveis, nunca ha duas
   piscantes consecutivas na ordem de criacao, e uma piscante nao vem logo depois de cicladora. Se uma linha estatica
   ficaria sem nenhuma plataforma plana, a ultima piscante vira inerte (sempre visivel e solida). Assim toda linha tem
-  apoio garantido na janela de chegada.
+  apoio garantido na janela de chegada. Da mesma forma, a piscante movel que vem logo antes de uma cicladora vira
+  inerte (sempre visivel e solida), para o par nao ficar sem apoio garantido.
 - **Invisivel vence a regra de cor.** Enquanto a plataforma esta invisivel, a colisao fica desligada, mesmo quando
   `player_color_changed` ou a troca de cor tentariam reabilita-la. Plataforma desmoronada nunca volta a ficar solida.
 - **Reaparecer com o gecko dentro espera.** Se a plataforma volta com a cor do gecko e o corpo dele a sobrepoe, a

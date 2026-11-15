@@ -155,6 +155,34 @@ func test_partida_nao_iniciada_nao_avanca_relogio_nem_muda_visibilidade() -> voi
 	assert_true(q.shape.disabled, "sem colisao")
 
 
+func _neutralizar(p: Platform) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	p.obter_pisca().iniciar(rng, 0.0, 0.0, 0.0, 0.0)
+
+
+func test_neutralizada_apos_o_ready_fica_visivel_e_solida_sem_esperar_a_partida() -> void:
+	Global.iniciado = false
+	var p := _nova(3.5)
+	Global.cor_gecko = p.color
+	assert_true(p.shape.disabled, "nasce fantasma")
+	_neutralizar(p)
+	p._physics_process(0.016)
+	assert_false(p.shape.disabled, "inerte: solida antes da partida")
+	assert_eq(p.modulate.a, 1.0, "inerte: visivel antes da partida")
+
+
+func test_neutralizada_apos_o_ready_com_partida_iniciada_fica_visivel_e_solida() -> void:
+	Global.iniciado = false
+	var p := _nova(3.5)
+	Global.cor_gecko = p.color
+	_neutralizar(p)
+	Global.iniciado = true
+	p._physics_process(0.016)
+	assert_false(p.shape.disabled, "inerte: solida com a partida iniciada")
+	assert_eq(p.modulate.a, 1.0, "inerte: visivel com a partida iniciada")
+
+
 func test_sem_derrota_deixa_a_mecanica_inerte() -> void:
 	Global.sem_derrota = true
 	var p := _nova(3.5)
