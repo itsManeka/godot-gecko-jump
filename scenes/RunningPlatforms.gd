@@ -51,6 +51,10 @@ const SEMENTE_PISCA: int = 0x5B11C
 # Ancora: a plataforma criada imediatamente antes (movel) piscou / quantas piscaram na linha estatica em curso
 var _pisca_anterior: bool = false
 var _piscantes_na_linha: int = 0
+# Ancora com cicladora: a cicladora nao e apoio garantido (a cor pode mudar na janela de chegada). Entre duas plataformas
+# moveis consecutivas nunca ha piscante ao lado de cicladora: a anterior era cicladora / a piscante anterior e neutralizada.
+var _ciclo_anterior: bool = false
+var _ultima_pisca: PlatformBlink = null
 
 # Inicializa o gerador de plataformas
 func _ready():
@@ -102,6 +106,11 @@ func create_static_platforms():
 	var position_x = 5
 	var cores: Array = []
 	_piscantes_na_linha = 0
+	# Plataformas criadas (add_child ao fim): se a linha ficar sem nenhuma plana (sem piscar e sem ciclar) a ultima
+	# piscante vira inerte, entao a linha sempre tem apoio garantido na janela de chegada
+	var criadas: Array = []
+	var planas: int = 0
+	var ultima_pisca: PlatformBlink = null
 	if garantir_cor_inicial:
 		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL)
 	for i in 3:
@@ -114,8 +123,16 @@ func create_static_platforms():
 		platform.position.x = position_x
 		_aplicar_mecanicas(platform)
 		platform.set_speed(0)  # Plataformas estáticas não se movem
-		add_child(platform)
+		if platform.obter_pisca() != null:
+			ultima_pisca = platform.obter_pisca()
+		elif platform.obter_ciclo() == null:
+			planas += 1
+		criadas.append(platform)
 		position_x += 85
+	if planas == 0 and ultima_pisca != null:
+		_neutralizar_pisca(ultima_pisca)
+	for platform in criadas:
+		add_child(platform)
 
 # Linha movel nasce preenchida: plataformas pre-colocadas (posicoes em MovingRowFill) e a do ponto de nascimento
 # criada na hora, sem esperar o timer; o ciclo area_exited -> timer segue a partir dela
@@ -222,11 +239,16 @@ func _aplicar_mecanicas(platform: Platform) -> void:
 #   de outra piscante na sequencia de criacao.
 func _sorteia_piscante(cicladora: bool) -> PlatformBlink:
 	var estatica: bool = platform_type == Enums.PLATFORM_TYPE.STATIC
+	var ciclo_antes: bool = _ciclo_anterior
+	_ciclo_anterior = cicladora
 	if not _pisca_ligado or Global.sem_derrota or cicladora:
+		# Movel cicladora logo depois de uma piscante: a piscante vira inerte (o par ficaria sem apoio garantido)
+		if cicladora and _pisca_anterior and not estatica and _ultima_pisca != null:
+			_neutralizar_pisca(_ultima_pisca)
 		_pisca_anterior = false
 		return null
 	var proporcao: float = _snapshot_nascimento.get_proporcao_piscantes()
-	var ancora_livre: bool = _piscantes_na_linha < 2 if estatica else not _pisca_anterior
+	var ancora_livre: bool = _piscantes_na_linha < 2 if estatica else not (_pisca_anterior or ciclo_antes)
 	if proporcao <= 0.0 or not ancora_livre:
 		_pisca_anterior = false
 		return null
@@ -244,7 +266,12 @@ func _sorteia_piscante(cicladora: bool) -> PlatformBlink:
 	)
 	_pisca_anterior = true
 	_piscantes_na_linha += 1
+	_ultima_pisca = pisca
 	return pisca
+
+# Piscante que vira inerte (sempre visivel e solida): so o PlatformBlink e desligado, a plataforma segue como esta
+func _neutralizar_pisca(pisca: PlatformBlink) -> void:
+	pisca.iniciar(_fonte_pisca(), 0.0, 0.0, 0.0, 0.0)
 
 # rng dedicado do piscar: semente derivada da do gerador (reprodutivel em teste); sem rng, aleatorio proprio
 func _fonte_pisca() -> RandomNumberGenerator:
