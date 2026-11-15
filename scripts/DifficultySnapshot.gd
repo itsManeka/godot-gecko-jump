@@ -17,6 +17,10 @@ var _periodo_movimento: float
 var _proporcao_oscilantes: float
 var _proporcao_vai_e_vem: float
 var _variacao_speed_linha: float
+var _proporcao_piscantes: float
+var _duracao_visivel: float
+var _duracao_invisivel: float
+var _aviso_pisca: float
 
 
 # Parametros novos entram sempre no fim: chamadas posicionais antigas (ate o 9o) continuam validas.
@@ -34,7 +38,11 @@ func _init(
 	periodo_movimento: float = DifficultyStage.PERIODO_MOVIMENTO_PADRAO,
 	proporcao_oscilantes: float = DifficultyStage.PROPORCAO_OSCILANTES_PADRAO,
 	proporcao_vai_e_vem: float = DifficultyStage.PROPORCAO_VAI_E_VEM_PADRAO,
-	variacao_speed_linha: float = DifficultyStage.VARIACAO_SPEED_LINHA_PADRAO
+	variacao_speed_linha: float = DifficultyStage.VARIACAO_SPEED_LINHA_PADRAO,
+	proporcao_piscantes: float = DifficultyStage.PROPORCAO_PISCANTES_PADRAO,
+	duracao_visivel: float = DifficultyStage.DURACAO_VISIVEL_PADRAO,
+	duracao_invisivel: float = DifficultyStage.DURACAO_INVISIVEL_PADRAO,
+	aviso_pisca: float = DifficultyStage.AVISO_PISCA_PADRAO
 ) -> void:
 	_scroll = scroll
 	_speed_moveis = speed_moveis
@@ -50,6 +58,10 @@ func _init(
 	_proporcao_oscilantes = proporcao_oscilantes
 	_proporcao_vai_e_vem = proporcao_vai_e_vem
 	_variacao_speed_linha = variacao_speed_linha
+	_proporcao_piscantes = proporcao_piscantes
+	_duracao_visivel = duracao_visivel
+	_duracao_invisivel = duracao_invisivel
+	_aviso_pisca = aviso_pisca
 
 
 func get_scroll() -> float:
@@ -106,6 +118,22 @@ func get_proporcao_vai_e_vem() -> float:
 
 func get_variacao_speed_linha() -> float:
 	return _variacao_speed_linha
+
+
+func get_proporcao_piscantes() -> float:
+	return _proporcao_piscantes
+
+
+func get_duracao_visivel() -> float:
+	return _duracao_visivel
+
+
+func get_duracao_invisivel() -> float:
+	return _duracao_invisivel
+
+
+func get_aviso_pisca() -> float:
+	return _aviso_pisca
 
 
 # Foto vigente de um estado de dificuldade; sem estado (cena isolada, antes da injecao) = estagio 0

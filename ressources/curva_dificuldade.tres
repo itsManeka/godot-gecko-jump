@@ -50,12 +50,16 @@ largura_plataforma = 44.0
 atraso_desmoronar = 0.8
 proporcao_cicladoras = 0.3
 periodo_ciclo = 3.0
-mecanicas = Array[StringName]([&"plataformas_menores", &"plataformas_que_caem", &"plataformas_que_mudam_de_cor", &"speed_por_linha", &"movimento_seno", &"movimento_vai_e_vem"])
+mecanicas = Array[StringName]([&"plataformas_menores", &"plataformas_que_caem", &"plataformas_que_mudam_de_cor", &"speed_por_linha", &"movimento_seno", &"movimento_vai_e_vem", &"plataformas_que_piscam"])
 amplitude_movimento = 8.0
 periodo_movimento = 2.5
 proporcao_oscilantes = 0.5
 proporcao_vai_e_vem = 0.5
 variacao_speed_linha = 0.15
+proporcao_piscantes = 0.25
+duracao_visivel = 3.0
+duracao_invisivel = 1.2
+aviso_pisca = 0.6
 
 [resource]
 script = ExtResource("1_curva")

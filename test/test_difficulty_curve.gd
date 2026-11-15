@@ -489,3 +489,90 @@ func test_estagios_de_movimento_com_valores_aprovados_e_antigos_intactos() -> vo
 	assert_eq(e3.mecanicas[0], &"plataformas_menores", "E3 ordem antiga 1")
 	assert_eq(e3.mecanicas[1], &"plataformas_que_caem", "E3 ordem antiga 2")
 	assert_eq(e3.mecanicas[2], &"plataformas_que_mudam_de_cor", "E3 ordem antiga 3")
+
+
+func _curva_dois_piscantes() -> DifficultyCurve:
+	var a := DifficultyStage.new()
+	a.progresso_inicio = 0.0
+	a.proporcao_piscantes = 0.0
+	a.duracao_visivel = 2.0
+	a.duracao_invisivel = 1.0
+	a.aviso_pisca = 0.4
+	var b := DifficultyStage.new()
+	b.progresso_inicio = 1.0
+	b.proporcao_piscantes = 0.5
+	b.duracao_visivel = 4.0
+	b.duracao_invisivel = 2.0
+	b.aviso_pisca = 0.8
+	var curva := DifficultyCurve.new()
+	curva.estagios = [a, b]
+	curva.pontos_plato = 100.0
+	return curva
+
+
+func test_estagio_sem_campos_do_pisca_devolve_proporcao_0_e_defaults() -> void:
+	# C295: mecanica inerte por default; curva sem estagios e snapshot sem argumentos idem.
+	var stage := DifficultyStage.new()
+	assert_almost_eq(stage.proporcao_piscantes, 0.0, EPS, "default do estagio = inerte")
+	var curva := DifficultyCurve.new()
+	curva.estagios = [stage]
+	var s := curva.avaliar(0.0, 0.0)
+	assert_almost_eq(s.get_proporcao_piscantes(), 0.0, EPS, "proporcao sem campo = 0.0")
+	assert_almost_eq(s.get_duracao_visivel(), DifficultyStage.DURACAO_VISIVEL_PADRAO, EPS, "visivel = padrao")
+	assert_almost_eq(s.get_duracao_invisivel(), DifficultyStage.DURACAO_INVISIVEL_PADRAO, EPS, "invisivel = padrao")
+	assert_almost_eq(s.get_aviso_pisca(), DifficultyStage.AVISO_PISCA_PADRAO, EPS, "aviso = padrao")
+	var vazia := DifficultyCurve.new().avaliar(10.0, 10.0)
+	assert_almost_eq(vazia.get_proporcao_piscantes(), 0.0, EPS, "curva sem estagios = inerte")
+	assert_almost_eq(vazia.get_duracao_visivel(), DifficultyStage.DURACAO_VISIVEL_PADRAO, EPS, "vazia: visivel")
+	var posicional := DifficultySnapshot.new(30.0, 90.0, 4, 0.5, [], 50.0, 0.9, 0.2, 3.0, 8.0, 2.5, 0.5, 0.5, 0.1)
+	assert_almost_eq(posicional.get_proporcao_piscantes(), 0.0, EPS, "14 posicionais: pisca inerte")
+	assert_almost_eq(posicional.get_variacao_speed_linha(), 0.1, EPS, "14 posicionais: variacao preservada")
+
+
+func test_interpolacao_da_proporcao_piscantes_a_meio_e_media_exata() -> void:
+	var s := _curva_dois_piscantes().avaliar(50.0, 0.0)
+	assert_almost_eq(s.get_proporcao_piscantes(), 0.25, EPS, "proporcao no meio = media de 0.0 e 0.5")
+
+
+func test_interpolacao_da_duracao_visivel_a_meio_e_media_exata() -> void:
+	var s := _curva_dois_piscantes().avaliar(50.0, 0.0)
+	assert_almost_eq(s.get_duracao_visivel(), 3.0, EPS, "visivel no meio = media de 2.0 e 4.0")
+
+
+func test_interpolacao_da_duracao_invisivel_a_meio_e_media_exata() -> void:
+	var s := _curva_dois_piscantes().avaliar(50.0, 0.0)
+	assert_almost_eq(s.get_duracao_invisivel(), 1.5, EPS, "invisivel no meio = media de 1.0 e 2.0")
+
+
+func test_interpolacao_do_aviso_pisca_a_meio_e_media_exata() -> void:
+	var s := _curva_dois_piscantes().avaliar(50.0, 0.0)
+	assert_almost_eq(s.get_aviso_pisca(), 0.6, EPS, "aviso no meio = media de 0.4 e 0.8")
+
+
+func test_teto_devolve_parametros_do_pisca_do_ultimo_estagio() -> void:
+	var s := _curva_dois_piscantes().avaliar(1e9, 0.0)
+	assert_almost_eq(s.get_proporcao_piscantes(), 0.5, EPS, "teto = proporcao do ultimo estagio")
+	assert_almost_eq(s.get_duracao_visivel(), 4.0, EPS, "teto = visivel do ultimo estagio")
+	assert_almost_eq(s.get_duracao_invisivel(), 2.0, EPS, "teto = invisivel do ultimo estagio")
+	assert_almost_eq(s.get_aviso_pisca(), 0.8, EPS, "teto = aviso do ultimo estagio")
+
+
+func test_pisca_so_liga_no_e3_com_valores_aprovados_e_ordem_antiga_intacta() -> void:
+	# C297: E0..E2 sem o nome e com proporcao 0; E3 liga com os valores do G1 (D1/D2), nome novo so no fim.
+	var nome := PlatformModifiers.PLATAFORMAS_QUE_PISCAM
+	for i in range(3):
+		var e: DifficultyStage = _curva.estagios[i]
+		assert_almost_eq(e.proporcao_piscantes, 0.0, EPS, "estagio %d sem piscantes" % i)
+		assert_false(e.mecanicas.has(nome), "estagio %d sem o nome da mecanica" % i)
+	var e3: DifficultyStage = _curva.estagios[3]
+	assert_true(e3.mecanicas.has(nome), "E3 com o nome da mecanica")
+	assert_eq(e3.mecanicas[e3.mecanicas.size() - 1], nome, "nome novo no fim")
+	assert_eq(e3.mecanicas[0], &"plataformas_menores", "E3 ordem antiga 1")
+	assert_eq(e3.mecanicas[1], &"plataformas_que_caem", "E3 ordem antiga 2")
+	assert_eq(e3.mecanicas[2], &"plataformas_que_mudam_de_cor", "E3 ordem antiga 3")
+	assert_almost_eq(e3.proporcao_piscantes, 0.25, EPS, "E3 proporcao aprovada (D2)")
+	assert_almost_eq(e3.duracao_visivel, 3.0, EPS, "E3 visivel aprovada (D2)")
+	assert_almost_eq(e3.duracao_invisivel, 1.2, EPS, "E3 invisivel aprovada (D2)")
+	assert_almost_eq(e3.aviso_pisca, 0.6, EPS, "E3 aviso aprovado (D2)")
+	var snap := DifficultySnapshot.new(e3.scroll, e3.speed_moveis, e3.k, e3.proporcao_estaticas, e3.mecanicas)
+	assert_eq(PlatformModifiers.resolver(snap).size(), e3.mecanicas.size(), "todo nome do E3 resolve no registro")

@@ -16,6 +16,10 @@ const PERIODO_MOVIMENTO_PADRAO: float = 2.5
 const PROPORCAO_OSCILANTES_PADRAO: float = 0.0
 const PROPORCAO_VAI_E_VEM_PADRAO: float = 0.0
 const VARIACAO_SPEED_LINHA_PADRAO: float = 0.0
+const PROPORCAO_PISCANTES_PADRAO: float = 0.0
+const DURACAO_VISIVEL_PADRAO: float = 3.0
+const DURACAO_INVISIVEL_PADRAO: float = 1.2
+const AVISO_PISCA_PADRAO: float = 0.6
 
 ## Progresso (0..1) a partir do qual este estagio vale; interpola ate o proximo estagio.
 @export_range(0.0, 1.0) var progresso_inicio: float = 0.0
@@ -47,3 +51,11 @@ const VARIACAO_SPEED_LINHA_PADRAO: float = 0.0
 @export_range(0.0, 1.0) var proporcao_vai_e_vem: float = PROPORCAO_VAI_E_VEM_PADRAO
 ## Variacao sorteada da speed por linha movel, fracao da speed (0..1; so vale com a mecanica de speed por linha).
 @export_range(0.0, 1.0) var variacao_speed_linha: float = VARIACAO_SPEED_LINHA_PADRAO
+## Fracao das plataformas (nao cicladoras) que piscam (0..1; so vale com a mecanica plataformas_que_piscam).
+@export_range(0.0, 1.0) var proporcao_piscantes: float = PROPORCAO_PISCANTES_PADRAO
+## Segundos que a plataforma piscante fica visivel e solida, contando o aviso (so vale com a mecanica que pisca).
+@export var duracao_visivel: float = DURACAO_VISIVEL_PADRAO
+## Segundos que a plataforma piscante fica invisivel e sem colisao (so vale com a mecanica que pisca).
+@export var duracao_invisivel: float = DURACAO_INVISIVEL_PADRAO
+## Segundos finais da janela visivel em que a plataforma avisa que vai sumir (so vale com a mecanica que pisca).
+@export var aviso_pisca: float = AVISO_PISCA_PADRAO
