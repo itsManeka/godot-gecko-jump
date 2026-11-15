@@ -147,6 +147,8 @@ release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot n
   roteiros `estagio.smoke.json` e `estagio-alto.smoke.json` (estagio 3, plataformas estreitas e que trocam de cor; o
   roteiro tira um print antes e outro depois de uma troca e aceita o fim da partida por queda, que o modo sem derrota
   nao impede quando a plataforma troca para outra cor).
+- `?moldura=fixa` deixa acesa a moldura de aviso de subida de estagio (sem o pulso, que acaba antes do print), usado
+  pelo roteiro `estagio-aviso-fixa.smoke.json`; `estagio-aviso.smoke.json` joga sem ele e confere que o aviso acende e apaga.
 - `?dica=1` força a dica de toque sem aparelho de toque, usado pelo roteiro `dica-toque.smoke.json`. O runner só
   clica com mouse, então tap e segurar por tempo não são jogados pelos roteiros (`toque.smoke.json` confere o início por clique).
 - `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
@@ -294,6 +296,8 @@ build (the published one) ignores the parameters below and publishes nothing. On
   `estagio.smoke.json` and `estagio-alto.smoke.json` scripts (stage 3, narrow platforms that change color; the script
   takes one shot before and one after a change and accepts the match ending by a fall, which the no-defeat mode does
   not prevent when a platform switches to another color).
+- `?moldura=fixa` keeps the stage-up warning frame lit (no pulse, which ends before the shot), used by the
+  `estagio-aviso-fixa.smoke.json` script; `estagio-aviso.smoke.json` plays without it and checks that the warning turns on and off.
 - `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` script. The runner only
   clicks with a mouse, so tap and hold by time are not played by the scripts (`toque.smoke.json` checks the start with a click).
 - `?tutorial=visto` marks the first-match tutorial as already seen (without saving anything), so the card does not
