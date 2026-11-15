@@ -59,6 +59,24 @@ func _toque(stage: Node, pressionado: bool, pos: Vector2) -> void:
 	stage.touch_controls._input(ev)
 
 
+func test_pausa_congela_o_pulso_da_moldura_e_despausar_termina_invisivel() -> void:
+	var stage := await _novo_stage()
+	var frame: LevelUpFrame = stage.level_up_frame
+	assert_ne(frame.process_mode, Node.PROCESS_MODE_ALWAYS, "a moldura e pausavel")
+	frame.pulsar(2)
+	await wait_process_frames(2)
+	stage.pause_state.pausar()
+	await wait_process_frames(1)
+	var alpha_pausado: float = frame.alpha()
+	await wait_process_frames(3)
+	assert_eq(frame.alpha(), alpha_pausado, "alpha estavel entre frames pausados")
+	assert_true(frame.pulsando(), "o pulso segue em curso durante a pausa")
+	stage.pause_state.retomar()
+	await wait_until(func() -> bool: return not frame.pulsando(), 3.0)
+	assert_eq(frame.alpha(), 0.0, "termina apagada")
+	assert_false(frame.visible, "termina invisivel")
+
+
 func test_arvore_pausada_nao_move_fisica_scroll_nem_dificuldade() -> void:
 	var stage := await _novo_stage()
 	await wait_physics_frames(3)

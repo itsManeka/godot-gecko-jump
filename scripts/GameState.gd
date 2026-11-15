@@ -14,7 +14,8 @@ const STATE_TUTORIAL_FECHADO := "fechado"
 
 # Monta o estado publicado: `score` e `best` (int), `state` ("menu"|"playing"|"lost"), `player.alive` (bool) e
 # `volume.music`/`volume.sfx` (int 0-100, o mesmo valor mostrado nos sliders de Opcoes) e
-# `tutorial` ("aberto"|"fechado": card do tutorial) e `dificuldade.estagio` (int, indice do estagio na curva; 0 = inicial)
+# `tutorial` ("aberto"|"fechado": card do tutorial) e `dificuldade.estagio` (int, indice do estagio na curva; 0 = inicial) e
+# `dificuldade.aviso` (bool, true enquanto a moldura de subida de estagio pulsa)
 static func build(
 	score: int,
 	best: int,
@@ -23,7 +24,8 @@ static func build(
 	music: int = 100,
 	sfx: int = 100,
 	tutorial_aberto: bool = false,
-	estagio: int = 0
+	estagio: int = 0,
+	aviso: bool = false
 ) -> Dictionary:
 	return {
 		"score": score,
@@ -32,7 +34,7 @@ static func build(
 		"player": {"alive": alive},
 		"volume": {"music": music, "sfx": sfx},
 		"tutorial": STATE_TUTORIAL_ABERTO if tutorial_aberto else STATE_TUTORIAL_FECHADO,
-		"dificuldade": {"estagio": estagio},
+		"dificuldade": {"estagio": estagio, "aviso": aviso},
 	}
 
 # Decisor puro da trava de publicacao: so web de debug publica (release ignora; headless/desktop nao tem web)

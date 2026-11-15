@@ -61,6 +61,24 @@ func test_build_publica_dificuldade_estagio_int_default_0() -> void:
 	assert_eq(int((volta["dificuldade"] as Dictionary)["estagio"]), 3, "round-trip preserva estagio 3")
 
 
+func test_build_publica_dificuldade_aviso_bool_default_false() -> void:
+	# (a) default: sem o argumento, aviso false (bool) e o estagio segue
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	var dif_padrao: Dictionary = padrao["dificuldade"] as Dictionary
+	assert_eq(dif_padrao["aviso"], false, "padrao: dificuldade.aviso false")
+	assert_eq(typeof(dif_padrao["aviso"]), TYPE_BOOL, "padrao: aviso e bool")
+	# (b) comum: aviso true reflete o argumento e o estagio segue
+	var avisando: Dictionary = GameState.build(7, 12, "playing", true, 100, 100, false, 2, true)
+	var dif_avisando: Dictionary = avisando["dificuldade"] as Dictionary
+	assert_eq(dif_avisando["aviso"], true, "aviso true publicado")
+	assert_eq(dif_avisando["estagio"], 2, "estagio segue com aviso true")
+	# (c) degenerado: aviso false explicito; round-trip JSON preserva o bool
+	var apagado: Dictionary = GameState.build(7, 12, "playing", true, 100, 100, false, 2, false)
+	assert_eq((apagado["dificuldade"] as Dictionary)["aviso"], false, "aviso false explicito")
+	var volta: Dictionary = JSON.parse_string(JSON.stringify(avisando)) as Dictionary
+	assert_eq((volta["dificuldade"] as Dictionary)["aviso"], true, "round-trip preserva aviso true")
+
+
 func test_json_stringify_parseia_de_volta_igual() -> void:
 	var estado: Dictionary = GameState.build(5, 9, "lost", false)
 	var texto: String = JSON.stringify(estado)

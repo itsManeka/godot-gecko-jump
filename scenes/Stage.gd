@@ -53,6 +53,9 @@ var ultimo_estado: Dictionary = {}
 var dificuldade: DifficultyState = null
 # Estagio da dificuldade na ultima publicacao da ponte; mudanca por tempo republica 1x (ver _physics_process)
 var _estagio_publicado: int = 0
+# Moldura de aviso de subida de estagio (filha da Stage, criada em _ready) e o `aviso` da ultima publicacao da ponte
+var level_up_frame: LevelUpFrame = null
+var _aviso_publicado: bool = false
 
 # Referencias aos nós da interface e jogo
 @onready var animation = $AnimationPlayer
@@ -93,6 +96,11 @@ func _ready():
 	touch_hint = TouchHint.new()
 	touch_hint.player = player
 	add_child(touch_hint)
+	# Moldura de subida de estagio (CanvasLayer 0: acima do jogo, abaixo do HUD layer 1 e da pausa layer 10); nasce apagada.
+	# Pausavel (herda o modo da Stage): pausar a arvore congela o pulso.
+	level_up_frame = LevelUpFrame.new()
+	add_child(level_up_frame)
+	dificuldade.estagio_mudou.connect(_on_estagio_mudou)
 	# Card do tutorial: depois da dica e antes do botao de pausa (abaixo dele no z-order). Fecha e grava a flag no
 	# Pular ou no 1o ponto; derrota antes disso nao grava (o card some com a cena e volta na partida seguinte).
 	tutorial_flag = TutorialFlag.new(Global.opcoes)
@@ -147,6 +155,8 @@ func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 	_layout_hud(visible_size, safe)
 	if touch_hint != null:
 		touch_hint.aplicar_layout(visible_size, safe)
+	if level_up_frame != null:
+		level_up_frame.aplicar_layout(visible_size, safe)
 	if tutorial_card != null:
 		tutorial_card.aplicar_layout(visible_size, safe)
 	if pause_botao != null:
@@ -203,8 +213,20 @@ func _process(delta):
 func _physics_process(delta: float) -> void:
 	dificuldade.tick(delta)
 	# O estagio sobe por tempo sem evento de ponto/Play: republica 1x por mudanca, nunca apos a derrota
-	if dificuldade.estagio() != _estagio_publicado and ultimo_estado.get("state", "") != GameState.STATE_LOST:
+	# O mesmo vale para o `aviso` (pulso da moldura comecou ou terminou)
+	if ultimo_estado.get("state", "") == GameState.STATE_LOST:
+		return
+	if dificuldade.estagio() != _estagio_publicado or _aviso_atual() != _aviso_publicado:
 		_republicar_estado()
+
+# Subida de estagio em partida: a moldura pulsa N vezes (N = estagio novo). Depois da derrota nao pulsa.
+func _on_estagio_mudou(novo: int) -> void:
+	if ultimo_estado.get("state", "") == GameState.STATE_LOST:
+		return
+	level_up_frame.pulsar(novo)
+
+func _aviso_atual() -> bool:
+	return level_up_frame != null and level_up_frame.pulsando()
 
 # Toque de jogo no menu inicia a partida. A TouchControls (filha) recebe o evento antes e ainda esta inerte,
 # entao o toque que inicia nao vira tap de jogo; depois da derrota started segue true e a guarda de
@@ -354,6 +376,7 @@ func _notification(what: int) -> void:
 func _on_CheckPlayer_body_exited(body):
 	if !body.is_jumping() && !body.is_end():
 		body.lose_game()
+		level_up_frame.interromper()
 		_sincronizar_tutorial()
 		loseaudio.play()
 		Global.set_score(points)
@@ -398,6 +421,7 @@ func _on_Play_button_down():
 # Monta e publica o estado na ponte do smoke (no-op fora de web debug); score nunca negativo (points inicia em -1)
 func _publicar_estado(state: String, alive: bool) -> void:
 	_estagio_publicado = dificuldade.estagio()
+	_aviso_publicado = _aviso_atual() and state != GameState.STATE_LOST
 	ultimo_estado = GameState.build(
 		maxi(points, 0),
 		Global.get_best_score(),
@@ -407,5 +431,6 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		roundi(Global.get_volume_sfx() * 100.0),
 		tutorial_card != null and tutorial_card.esta_aberto(),
 		_estagio_publicado,
+		_aviso_publicado,
 	)
 	GameState.publish(ultimo_estado)
