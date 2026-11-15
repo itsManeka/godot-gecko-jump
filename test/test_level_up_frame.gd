@@ -170,3 +170,34 @@ func test_c350_pulsando_so_durante_o_pulso() -> void:
 	assert_true(f.pulsando(), "verdadeiro no novo pulso")
 	f.interromper()
 	assert_false(f.pulsando(), "falso apos interromper")
+
+
+func test_fixa_pulsar_acende_direto_e_fica_acesa_depois_de_1_s() -> void:
+	var f := _nova()
+	f.fixa = true
+	f.pulsar(3)
+	assert_eq(f.alpha(), 1.0, "acende direto com alpha 1")
+	assert_true(f.visible, "visivel")
+	assert_true(f.pulsando(), "pulsando")
+	await wait_seconds(1.2)
+	assert_eq(f.alpha(), 1.0, "segue acesa depois de mais de 1 s")
+	assert_true(f.visible, "segue visivel")
+	assert_true(f.pulsando(), "segue pulsando")
+
+
+func test_fixa_interromper_apaga() -> void:
+	var f := _nova()
+	f.fixa = true
+	f.pulsar(1)
+	f.interromper()
+	assert_eq(f.alpha(), 0.0, "alpha 0")
+	assert_false(f.visible, "invisivel")
+	assert_false(f.pulsando(), "nao pulsa")
+
+
+func test_fixa_pulsar_zero_nao_acende() -> void:
+	var f := _nova()
+	f.fixa = true
+	f.pulsar(0)
+	assert_eq(f.alpha(), 0.0, "n=0 nao acende")
+	assert_false(f.pulsando(), "n=0 nao pulsa")

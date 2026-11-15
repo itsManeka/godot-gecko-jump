@@ -23,6 +23,8 @@ var _moldura: Rect2 = Rect2()
 var _tamanho: Vector2 = Vector2.ZERO
 var _tween: Tween = null
 var _pulsando: bool = false
+# Smoke debug (`?moldura=fixa`): o pulso acende direto e fica aceso ate `interromper` (o print do runner chega tarde)
+var fixa: bool = false
 
 
 func _ready() -> void:
@@ -67,6 +69,9 @@ func pulsar(n: int) -> void:
 		return
 	_pulsando = true
 	visible = true
+	if fixa:
+		_raiz.modulate.a = 1.0
+		return
 	_tween = create_tween()
 	for i in n:
 		_tween.tween_property(_raiz, "modulate:a", 1.0, SUBIDA_S).from(0.0)

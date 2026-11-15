@@ -99,6 +99,7 @@ func _ready():
 	# Moldura de subida de estagio (CanvasLayer 0: acima do jogo, abaixo do HUD layer 1 e da pausa layer 10); nasce apagada.
 	# Pausavel (herda o modo da Stage): pausar a arvore congela o pulso.
 	level_up_frame = LevelUpFrame.new()
+	level_up_frame.fixa = Global.moldura_fixa
 	add_child(level_up_frame)
 	dificuldade.estagio_mudou.connect(_on_estagio_mudou)
 	# Card do tutorial: depois da dica e antes do botao de pausa (abaixo dele no z-order). Fecha e grava a flag no

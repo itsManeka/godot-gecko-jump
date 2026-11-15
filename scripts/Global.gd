@@ -47,6 +47,13 @@ var progresso_inicial: float = 0.0
 func aplicar_progresso_inicial(raw: Variant, is_debug: bool) -> void:
 	progresso_inicial = ModoProgressoInicial.decide(raw, is_debug)
 
+# Moldura de subida de estagio fixa (so smoke debug via `?moldura=fixa`): fica acesa ate interromper. Nunca em release.
+var moldura_fixa: bool = false
+
+# Aplica a moldura fixa a partir do valor bruto do parametro e da flag de build.
+func aplicar_moldura_fixa(raw: Variant, is_debug: bool) -> void:
+	moldura_fixa = ModoMolduraFixa.decide(raw, is_debug)
+
 # Espelho em memoria do "tutorial visto" (TutorialFlag.marcar): impede o card de reaparecer na mesma sessao se a
 # gravacao em disco falhar. Publico de proposito (seam de teste: before_each reseta).
 var tutorial_visto_espelho: bool = false
@@ -64,6 +71,7 @@ func _ready():
 	aplicar_modo_dica(ModoDicaToque.read_raw(), OS.is_debug_build())
 	aplicar_modo_tutorial(ModoTutorialVisto.read_raw(), OS.is_debug_build())
 	aplicar_progresso_inicial(ModoProgressoInicial.read_raw(), OS.is_debug_build())
+	aplicar_moldura_fixa(ModoMolduraFixa.read_raw(), OS.is_debug_build())
 	_best_store = BestScoreStore.new()
 	pontuacao.load_best(_best_store.load_best())
 	pontuacao.best_changed.connect(_best_store.save_best)
