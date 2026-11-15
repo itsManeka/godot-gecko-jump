@@ -11,6 +11,11 @@ const COR_TEXTO: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
 const RAIO_BOTAO: int = 4
 
+## Tamanho nativo da fonte em px por em: unitsPerEm 1024, grade de 64 unidades = 1/16 em (docs/fonte-pixel-tamanho-nativo.md).
+const FONTE_NATIVO: int = 16
+## Escala de UI = multiplos inteiros do nativo: titulo/placar = 32, botao = 32 (ou 16), texto = 16.
+const TAMANHOS_UI: Array[int] = [16, 32]
+
 
 ## Caixa com fundo, borda e raio explicitos.
 static func estilo(fundo: Color, borda: int, cor_borda: Color, raio: int) -> StyleBoxFlat:

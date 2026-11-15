@@ -9,6 +9,21 @@ func test_dedo_mouse_e_1000() -> void:
 	assert_eq(UiHelpers.DEDO_MOUSE, 1000)
 
 
+## Medicao (02-impact.md): unitsPerEm 1024 e grade de 64 unidades = 1/16 em, logo 16 px por pixel da fonte.
+func test_fonte_nativo_e_16_e_tamanhos_ui_sao_multiplos_inteiros() -> void:
+	assert_eq(UiHelpers.FONTE_NATIVO, 16)
+	assert_gt(UiHelpers.TAMANHOS_UI.size(), 0)
+	for t in UiHelpers.TAMANHOS_UI:
+		assert_eq(t % 16, 0, "tamanho %d fora da grade nativa de 16" % t)
+
+
+func test_tamanhos_ui_so_16_e_32() -> void:
+	var esperado: Array[int] = [16, 32]
+	assert_eq(UiHelpers.TAMANHOS_UI, esperado)
+	for fora in [20, 26, 36]:
+		assert_false(UiHelpers.TAMANHOS_UI.has(fora), "tamanho %d nao e multiplo do nativo" % fora)
+
+
 func test_estilo_opcoes_botao_tem_raio_4_borda_e_cor() -> void:
 	var s: StyleBoxFlat = UiHelpers.estilo_opcoes(COR_BOTAO, 2, PRETO, COR_BOTAO)
 	assert_eq(s.bg_color, COR_BOTAO)
