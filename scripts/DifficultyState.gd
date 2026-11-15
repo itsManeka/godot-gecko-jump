@@ -4,6 +4,10 @@
 class_name DifficultyState
 extends RefCounted
 
+## Emitido 1x por subida de estagio (salto de varios estagios = 1x com o final). Nunca para o estagio 0, em queda
+## nem fora de partida. A linha de base nasce no estagio vigente do 1o tick/set_pontos (inclui progresso_inicial).
+signal estagio_mudou(novo: int)
+
 ## Progresso inicial de debug (0..1, saturado): entra como offset no canal do tempo
 ## (segundos efetivos = _segundos + progresso_inicial * segundos_plato); o tempo segue subindo com a partida.
 var progresso_inicial: float = 0.0:
@@ -13,6 +17,7 @@ var progresso_inicial: float = 0.0:
 var _curva: DifficultyCurve
 var _pontos: float = 0.0
 var _segundos: float = 0.0
+var _ultimo_estagio: int = -1
 
 
 func _init(curva: DifficultyCurve = null) -> void:
@@ -23,11 +28,13 @@ func _init(curva: DifficultyCurve = null) -> void:
 func tick(delta: float) -> void:
 	if Global.is_iniciado():
 		_segundos += maxf(delta, 0.0)
+	_observar_estagio()
 
 
 ## Pontos atuais da partida. Negativos (Stage inicia em -1) contam como 0.
 func set_pontos(pontos: int) -> void:
 	_pontos = maxf(float(pontos), 0.0)
+	_observar_estagio()
 
 
 ## Foto imutavel dos parametros vigentes para os pontos e o tempo acumulados.
@@ -38,6 +45,17 @@ func snapshot() -> DifficultySnapshot:
 ## Indice do estagio da curva para os pontos e o tempo vigentes (inclui o progresso inicial).
 func estagio() -> int:
 	return _curva.indice_estagio(_curva.progresso(_pontos, _segundos_efetivos()))
+
+
+## Compara o estagio vigente com o ultimo observado; a base sempre acompanha (subida fora de partida nao fica pendente).
+func _observar_estagio() -> void:
+	var atual := estagio()
+	var anterior := _ultimo_estagio
+	_ultimo_estagio = atual
+	if anterior < 0:
+		return
+	if atual > anterior and atual > 0 and Global.is_iniciado():
+		estagio_mudou.emit(atual)
 
 
 func _segundos_efetivos() -> float:

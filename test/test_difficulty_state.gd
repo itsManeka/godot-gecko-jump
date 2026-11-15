@@ -147,6 +147,122 @@ func test_progresso_inicial_meio_e_saturacao() -> void:
 	assert_eq(estado.estagio(), 0, "-1.0 satura em 0")
 
 
+# f469 T1: sinal estagio_mudou. Curva local de 4 estagios (fronteiras 0, 0.25, 0.5, 0.75),
+# pontos_plato e segundos_plato 100 -> 25 pontos ou 25 s = estagio 1, 50 = 2, 75 = 3.
+func _curva_quatro_estagios() -> DifficultyCurve:
+	var curva := DifficultyCurve.new()
+	curva.pontos_plato = 100.0
+	curva.segundos_plato = 100.0
+	for inicio in [0.0, 0.25, 0.5, 0.75]:
+		var e := DifficultyStage.new()
+		e.progresso_inicio = inicio
+		curva.estagios.append(e)
+	return curva
+
+
+func _estado_observado() -> DifficultyState:
+	var estado := DifficultyState.new(_curva_quatro_estagios())
+	watch_signals(estado)
+	return estado
+
+
+func _novo_de(estado: DifficultyState, indice: int) -> int:
+	return int(get_signal_parameters(estado, "estagio_mudou", indice)[0])
+
+
+func test_linha_de_base_no_primeiro_tick_fora_de_partida_nao_emite() -> void:
+	# C334: progresso_inicial 0.5 (estagio 2); tick no menu fixa a base; iniciar e ticar no mesmo estagio nao emite.
+	var estado := _estado_observado()
+	estado.progresso_inicial = 0.5
+	estado.tick(1.0)
+	Global.set_iniciado(true)
+	estado.tick(1.0)
+	assert_eq(get_signal_emit_count(estado, "estagio_mudou"), 0, "partida que nasce no estagio 2 nao avisa")
+
+
+func test_subida_0_para_1_por_tempo_emite_uma_vez() -> void:
+	# C335
+	var estado := _estado_observado()
+	Global.set_iniciado(true)
+	estado.tick(0.0)
+	estado.tick(25.0)
+	assert_signal_emit_count(estado, "estagio_mudou", 1, "1 emissao")
+	assert_eq(_novo_de(estado, 0), 1, "novo == 1")
+
+
+func test_subida_1_para_2_por_pontos_emite_uma_vez() -> void:
+	# C336
+	var estado := _estado_observado()
+	Global.set_iniciado(true)
+	estado.set_pontos(0)
+	estado.set_pontos(25)
+	estado.set_pontos(50)
+	assert_signal_emit_count(estado, "estagio_mudou", 2, "0->1 e 1->2")
+	assert_eq(_novo_de(estado, 1), 2, "novo == 2")
+
+
+func test_subida_2_para_3_emite_uma_vez() -> void:
+	# C337
+	var estado := _estado_observado()
+	Global.set_iniciado(true)
+	estado.set_pontos(50)
+	estado.set_pontos(75)
+	assert_signal_emit_count(estado, "estagio_mudou", 1, "so a subida 2->3 apos a base no 2")
+	assert_eq(_novo_de(estado, 0), 3, "novo == 3")
+
+
+func test_salto_de_varios_estagios_emite_uma_vez_com_o_final() -> void:
+	# C338: base no estagio 0, set_pontos(50) pula direto para o estagio 2.
+	var estado := _estado_observado()
+	Global.set_iniciado(true)
+	estado.set_pontos(0)
+	estado.set_pontos(50)
+	assert_signal_emit_count(estado, "estagio_mudou", 1, "1 emissao no salto")
+	assert_eq(_novo_de(estado, 0), 2, "estagio final")
+
+
+func test_estagio_0_ticks_repetidos_e_queda_nao_emitem() -> void:
+	# C339: 60 ticks no estagio 0 -> 0; ao cair de estagio (progresso_inicial 0.5 -> 0) -> 0 emissoes novas.
+	var estado := _estado_observado()
+	Global.set_iniciado(true)
+	for i in range(60):
+		estado.tick(0.1)
+	assert_eq(get_signal_emit_count(estado, "estagio_mudou"), 0, "estagio 0 nao emite")
+	estado.progresso_inicial = 0.5
+	estado.tick(0.1)
+	assert_eq(get_signal_emit_count(estado, "estagio_mudou"), 1, "subida por offset emite 1x")
+	estado.progresso_inicial = 0.0
+	estado.tick(0.1)
+	estado.tick(0.1)
+	assert_eq(get_signal_emit_count(estado, "estagio_mudou"), 1, "queda de estagio nao emite")
+
+
+func test_tick_fora_de_partida_cruzando_limiar_nao_emite_nem_fica_pendente() -> void:
+	# C340
+	var estado := _estado_observado()
+	estado.tick(0.0)
+	estado.progresso_inicial = 0.5
+	estado.tick(1.0)
+	Global.set_iniciado(true)
+	estado.tick(0.0)
+	assert_eq(
+		get_signal_emit_count(estado, "estagio_mudou"), 0, "subida fora de partida nao emite nem fica pendente"
+	)
+
+
+func test_nova_instancia_nasce_zerada_sem_baseline_nem_emissao() -> void:
+	# C341: a anterior sobe e emite; a nova nao herda base nem emissao.
+	var anterior := _estado_observado()
+	Global.set_iniciado(true)
+	anterior.set_pontos(0)
+	anterior.set_pontos(50)
+	assert_signal_emit_count(anterior, "estagio_mudou", 1, "pre-condicao: anterior emitiu")
+	var nova := _estado_observado()
+	assert_signal_emit_count(nova, "estagio_mudou", 0, "nova instancia sem emissao")
+	nova.set_pontos(50)
+	assert_signal_emit_count(nova, "estagio_mudou", 0, "base da nova nasce no estagio vigente")
+
+
 func test_snapshot_com_progresso_inicial_zero_igual_ao_da_curva() -> void:
 	# C216: offset 0 nao altera avaliar().
 	var estado := DifficultyState.new(_curva_teste())
