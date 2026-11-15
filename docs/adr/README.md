@@ -16,3 +16,4 @@ antigo como "superado por".
 | [0009](0009-modificadores-de-plataforma.md)            | Modificadores de plataforma por contrato; largura por shape duplicado             | aceito                                                 |
 | [0010](0010-plataformas-cicladoras.md)                 | Plataformas cicladoras: cor prevista no tempo, com trava e aviso visivel          | aceito                                                 |
 | [0011](0011-movimento-de-plataformas.md)               | Movimento de plataformas: oscilacao como desvio de velocidade, sem inversao, so x | aceito                                                 |
+| [0012](0012-plataformas-que-piscam.md)                 | Plataformas que piscam: somem e voltam em ritmo fixo, com aviso e trava           | aceito                                                 |

@@ -129,6 +129,10 @@ Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10)
    `user://options.cfg` so grava ao concluir ou pular (derrota antes do 1o pouso reabre o card). O item "Ver tutorial"
    de Opcoes reabre o card em modo modal, sobre o fundo da pausa, sem mudar a flag. Os smokes forcam o tutorial como visto
    por `?tutorial=visto` (so em build debug); `tutorial.smoke.json` joga a 1a partida com `user://` limpo.
+5. Plataformas que piscam ([ADR 0012](adr/0012-plataformas-que-piscam.md)): mecanica da curva que faz parte das
+   plataformas somirem (sem colisao) e voltarem em ritmo fixo, no ultimo estagio. Aviso visivel antes de sumir, nao
+   cromatico; gecko em cima segura o ciclo; fora da linha inicial e exclusiva da cicladora. Calibracao de ritmo e
+   legibilidade fica para o QA do epic.
 
 ## Regras de trabalho
 
