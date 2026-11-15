@@ -16,6 +16,11 @@ const AVISO_FASES_POR_S := 12.0
 const AVISO_ALFA_BAIXO := 0.55
 # Camada de fisica do corpo do gecko (Player, camada padrao 1)
 const CAMADA_GECKO := 1
+# Plataforma que pisca: invisivel = fantasma (alfa baixo, sem colisao); aviso = flicker de alfa (~10 Hz) mantendo a cor.
+# O alfa vive no proprio no (nao em sprite.modulate, canal de cor/aviso da cicladora).
+const PISCA_ALFA_FANTASMA := 0.2
+const PISCA_AVISO_ALFA_BAIXO := 0.35
+const PISCA_AVISO_FASES_POR_S := 20.0
 
 # Verdadeiro depois que o desmoronamento termina (colisao desligada de vez)
 var desmoronada := false
@@ -28,6 +33,11 @@ var _atraso_total := 0.0
 var _tempo_restante := 0.0
 var _modificadores: Array = []
 var _snapshot: DifficultySnapshot = null
+# Invisivel por piscar: a colisao fica desligada. _pisca_pendente = reaparecer adiado porque o gecko (mesma cor)
+# ainda sobrepoe o corpo; a colisao liga no frame em que ele sai.
+var _pisca_oculta := false
+var _pisca_pendente := false
+var _tempo_aviso_pisca := 0.0
 # Desvio horizontal (px/s, negativo = esquerda) somado a `speed` pelo modificador de movimento; 0 = sem efeito
 var desvio_vx: float = 0.0
 
@@ -44,6 +54,7 @@ func _ready():
 	# Os nos filhos so existem aqui: o ao_criar dos modificadores (ex.: set_largura) roda neste ponto
 	for modificador in _modificadores:
 		modificador.ao_criar(self, _snapshot)
+	_atualizar_pisca(0.0, true)
 
 # Sai de Global.platforms sempre que sai da arvore (queue_free do gerador, troca de cena, saida de tela)
 func _exit_tree():
@@ -98,8 +109,12 @@ func _physics_process(delta):
 	if _cor_pendente >= 0 and not desmoronada and not _gecko_prenderia(_cor_pendente):
 		_aplicar_cor(_cor_pendente)
 	for modificador in _modificadores:
+		# O relogio do piscar so corre com a partida em andamento (o menu/derrota nao o avanca) e fora do modo sem derrota
+		if modificador is PlatformBlink and not _pisca_corre():
+			continue
 		modificador.ao_processar(self, delta)
 	_atualizar_aviso(delta)
+	_atualizar_pisca(delta)
 	if !Global.is_iniciado():
 		return
 
@@ -125,8 +140,8 @@ func get_color():
 
 # Ativa/desativa a colisão baseado na cor do jogador
 func player_color_changed(player_color):
-	if desmoronada:
-		shape.disabled = true  # Desmoronada nunca reativa
+	if desmoronada or _pisca_oculta or _pisca_pendente:
+		shape.disabled = true  # Desmoronada e invisivel por piscar nunca reativam
 	elif player_color == color:
 		shape.disabled = false  # Jogador pode colidir (mesma cor)
 	else:
@@ -168,6 +183,10 @@ func _aplicar_cor(nova: int) -> void:
 func _gecko_prenderia(nova: int) -> bool:
 	if desmoronada or nova != int(Global.cor_gecko) or not shape.disabled:
 		return false
+	return _gecko_sobrepoe_corpo()
+
+# Verdadeiro se o corpo do gecko sobrepoe a forma de colisao desta plataforma agora
+func _gecko_sobrepoe_corpo() -> bool:
 	if not is_inside_tree():
 		return false
 	var consulta := PhysicsShapeQueryParameters2D.new()
@@ -193,6 +212,66 @@ func _atualizar_aviso(delta: float) -> void:
 	var cor_aviso := Enums.get_cor(ciclo.proxima_cor() if fase_proxima else color)
 	cor_aviso.a = AVISO_ALFA_BAIXO if fase_proxima else 1.0
 	sprite.modulate = cor_aviso
+
+# Modificador de piscar desta plataforma (nulo se nao for piscante)
+func obter_pisca() -> PlatformBlink:
+	for modificador in _modificadores:
+		if modificador is PlatformBlink:
+			return modificador
+	return null
+
+# O relogio do piscar corre so com a partida iniciada e fora do modo sem derrota (inerte)
+func _pisca_corre() -> bool:
+	return Global.is_iniciado() and not Global.sem_derrota
+
+# Aplica visibilidade/colisao/aviso do piscar. `inicial` aplica o estado de nascimento mesmo antes da partida.
+func _atualizar_pisca(delta: float, inicial: bool = false) -> void:
+	var pisca := obter_pisca()
+	if pisca == null:
+		return
+	if _pisca_pendente:
+		_resolver_pisca_pendente()
+	var inerte := Global.sem_derrota
+	if not inerte and not inicial and not Global.is_iniciado():
+		return
+	# Travada (gecko em cima) nunca some; o relogio do modificador ja esta congelado
+	var visivel := inerte or _travada or pisca.esta_visivel()
+	_definir_pisca_oculta(not visivel)
+	_atualizar_alfa_pisca(pisca, delta, inerte)
+
+func _definir_pisca_oculta(oculta: bool) -> void:
+	if oculta == _pisca_oculta:
+		return
+	_pisca_oculta = oculta
+	if oculta:
+		_pisca_pendente = false
+		shape.disabled = true
+		return
+	# Reaparecer: com o gecko (mesma cor) sobrepondo o corpo, a colisao espera ele sair
+	if int(Global.cor_gecko) == int(color) and not desmoronada and _gecko_sobrepoe_corpo():
+		_pisca_pendente = true
+		shape.disabled = true
+		return
+	player_color_changed(Global.cor_gecko)
+
+func _resolver_pisca_pendente() -> void:
+	if int(Global.cor_gecko) == int(color) and _gecko_sobrepoe_corpo():
+		return
+	_pisca_pendente = false
+	player_color_changed(Global.cor_gecko)
+
+func _atualizar_alfa_pisca(pisca: PlatformBlink, delta: float, inerte: bool) -> void:
+	var alfa := 1.0
+	if _pisca_oculta:
+		alfa = PISCA_ALFA_FANTASMA
+		_tempo_aviso_pisca = 0.0
+	elif pisca.em_aviso() and not _travada and not desmoronada and not inerte:
+		_tempo_aviso_pisca += delta
+		if int(_tempo_aviso_pisca * PISCA_AVISO_FASES_POR_S) % 2 == 1:
+			alfa = PISCA_AVISO_ALFA_BAIXO
+	else:
+		_tempo_aviso_pisca = 0.0
+	modulate.a = alfa
 
 # Remove a plataforma quando sai da tela
 func _on_VisibilityNotifier2D_screen_exited():
