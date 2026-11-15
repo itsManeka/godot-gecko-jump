@@ -34,7 +34,7 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
            ScrollLevel (scroll vindo da curva de dificuldade), TouchControls (toque -> acoes de input), TouchHint (dica das zonas),
            PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes, Ver tutorial),
-           TutorialCard (card da 1a partida e reabertura modal)
+           TutorialCard (card da 1a partida e reabertura modal), LevelUpFrame (moldura branca que pulsa N vezes na subida de estagio)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
            ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd / OptionsStore.gd (recorde e opcoes em user://; buses Music/SFX),
            PlatformTypePicker.gd (tipo do gerador, sem cena),
@@ -45,7 +45,7 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador),
            TouchClassifier.gd (tap x segurar e lado do toque, sem cena; ADR 0003),
            DifficultyCurve.gd / DifficultyStage.gd (curva de dificuldade, sem cena; ADR 0007), PlatformModifier(s).gd + PlatformNarrower/PlatformCrumble/PlatformColorCycle.gd (mecanicas de plataforma, sem cena; ADR 0009/0010),
-           DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sem cena),
+           DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sinal `estagio_mudou`, sem cena),
            PauseState.gd (pausa = `get_tree().paused`, nunca `Global.iniciado`; sem cena; ADR 0008),
            TutorialFlag.gd (flag "tutorial ja visto" no OptionsStore), DebugArgs.gd (args de usuario do nativo debug, `--nome=valor` depois de `--`), ModoTutorialVisto.gd (`?tutorial=` dos smokes, so debug), ModoProgressoInicial.gd (`?progresso=` dos smokes, so debug),
            UiHelpers.gd (estilo de caixa, label e chave do mouse das telas de UI, sem cena)

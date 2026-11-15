@@ -116,7 +116,7 @@ Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10)
 1. Dificuldade progressiva (#10, [ADR 0007](adr/0007-curva-de-dificuldade-em-resource.md)): a curva em
    `ressources/curva_dificuldade.tres` troca os literais de scroll, velocidade das moveis, K da garantia de cor e
    proporcao de estaticas por estagios com interpolacao, avaliados por pontos e tempo da partida (plato em cerca de 3
-   min). Silenciosa: nenhuma UI de nivel. Calibracao fina pelo playtest do dono no QA do epic.
+   min). Sem texto de nivel: so o aviso visual de subida (item 6). Calibracao fina pelo playtest do dono no QA do epic.
 2. Pausa (#12, [ADR 0008](adr/0008-pausa-por-tree-paused.md)): acao `pause` (Esc, P, start do controle), botao de
    toque no canto superior esquerdo, pausa automatica ao perder o foco e overlay Continuar/Opcoes, por
    `get_tree().paused`. Pausa por foco no web e no Android: verificacao manual no QA do epic.
@@ -133,6 +133,9 @@ Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10)
    plataformas somirem (sem colisao) e voltarem em ritmo fixo, no ultimo estagio. Aviso visivel antes de sumir, nao
    cromatico; gecko em cima segura o ciclo; fora da linha inicial e exclusiva da cicladora. Calibracao de ritmo e
    legibilidade fica para o QA do epic.
+6. Aviso de subida de estagio (#10): moldura branca na borda da tela que pulsa N vezes (N = estagio novo) nas 3 subidas,
+   sem texto. Sinal `estagio_mudou` do `DifficultyState`; a ponte publica `dificuldade.aviso` para os smokes. O som do
+   aviso fica para a #43. Sensacao e legibilidade sobre fundo claro: verificacao manual no QA do epic.
 
 ## Regras de trabalho
 
