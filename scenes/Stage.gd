@@ -19,6 +19,8 @@ const LAST_TOP: float = 230.0
 const LAST_BOTTOM: float = 247.0
 const BEST_TOP: float = 248.0
 const BEST_BOTTOM: float = 265.0
+# Faixa escura atras do bloco Last/Best (legibilidade sobre as plataformas); cor e alfa = fundo do overlay de pausa
+const COR_FAIXA_PLACAR: Color = PauseOverlay.COR_FUNDO
 # Curva de producao (estagios da dificuldade); o estado de cada partida e criado em _ready a partir dela
 const CURVA_DIFICULDADE: DifficultyCurve = preload("res://ressources/curva_dificuldade.tres")
 # Disparado a cada inicio efetivo da partida (a guarda de started impede repeticao)
@@ -64,6 +66,7 @@ var _aviso_publicado: bool = false
 @onready var playbutton = $CanvasLayer/Play
 @onready var lastscore = $CanvasLayer/Last
 @onready var bestscore = $CanvasLayer/Best
+@onready var faixaplacar: ColorRect = $CanvasLayer/FaixaPlacar
 @onready var loseaudio = $LoseAudio
 
 # Inicializa a tela do jogo
@@ -192,6 +195,8 @@ func _layout_hud(visible_size: Vector2, safe: Rect2) -> void:
 	_place(playbutton, play_left, top + PLAY_TOP, play_left + PLAY_WIDTH, top + PLAY_BOTTOM)
 	_place(lastscore, 0.0, top + LAST_TOP, visible_size.x, top + LAST_BOTTOM)
 	_place(bestscore, 0.0, top + BEST_TOP, visible_size.x, top + BEST_BOTTOM)
+	faixaplacar.color = COR_FAIXA_PLACAR
+	_place(faixaplacar, 0.0, top + LAST_TOP, visible_size.x, top + BEST_BOTTOM)
 
 func _place(control: Control, left: float, top: float, right: float, bottom: float) -> void:
 	control.offset_left = left
@@ -359,6 +364,7 @@ func _mostrar_menu(valor: bool) -> void:
 	playbutton.visible = valor
 	lastscore.visible = valor
 	bestscore.visible = valor
+	faixaplacar.visible = valor
 	if valor:
 		opcoes_botao.mostrar()
 	else:

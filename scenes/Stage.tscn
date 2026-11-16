@@ -96,6 +96,14 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="FaixaPlacar" type="ColorRect" parent="CanvasLayer"]
+mouse_filter = 2
+offset_top = 230.0
+offset_right = 180.0
+offset_bottom = 265.0
+focus_mode = 0
+color = Color( 0, 0, 0, 0.6 )
+
 [node name="Last" type="Label" parent="CanvasLayer"]
 offset_top = 230.0
 offset_right = 180.0
