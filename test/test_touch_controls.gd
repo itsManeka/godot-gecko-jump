@@ -415,3 +415,162 @@ func test_c359_teto_de_seguranca_solta_o_lateral_que_nunca_decola() -> void:
 	_tick()
 	_p.on_ground = true
 	assert_false(Input.is_action_pressed("ui_left"), "no teto (%d ticks) o lateral e solto" % teto)
+
+
+# T3 (issue #44): bordas do lateral sustentado do tap — posse pelo hold, tap no ar, pausa, derrota,
+# teclado externo, wrap lateral e taps em sequencia.
+func test_c361_hold_no_voo_do_tap_assume_o_lateral_e_solta_so_no_release() -> void:
+	_spawn()
+	_tap(ESQ)
+	_tick()
+	assert_true(Input.is_action_pressed("ui_left"), "pre-condicao: lateral do tap sustentado no voo")
+	_toque(DIR, true)  # novo toque no ar que vira hold (lado oposto ao tap)
+	_t += 250  # passa do limiar de 200 ms
+	_tick()  # tick em que o hold assume
+	assert_false(Input.is_action_pressed("ui_left"), "o hold assume: o lateral do tap sai da posse do tap")
+	assert_true(Input.is_action_pressed("ui_right"), "o hold pressiona o proprio lateral")
+	_p.on_ground = true  # pouso com o dedo do hold ainda na tela
+	_tick()
+	assert_true(Input.is_action_pressed("ui_right"), "o pouso nao solta o lateral enquanto o dedo segue")
+	_toque(DIR, false)
+	assert_true(_nenhuma_pressionada(), "o lateral solta so no release do dedo")
+
+
+func test_c362_tap_no_ar_troca_o_lateral_ate_o_pouso_e_nao_pula() -> void:
+	_spawn()
+	await _entrar_no_quadro_fisico()
+	_tap(ESQ)
+	var voo: Dictionary = _medir_voo()
+	assert_gt(voo["ticks"], 40, "pre-condicao: voo inteiro do tap")
+	assert_true(Input.is_action_pressed("ui_left"), "pre-condicao: lateral do tap sustentado")
+	_toque(DIR, true)  # tap no ar (Q2=b): troca/estende o lateral para o lado tocado
+	_toque(DIR, false)
+	assert_false(Input.is_action_pressed("ui_left"), "o tap no ar troca o lateral: o lado anterior sai")
+	assert_true(Input.is_action_pressed("ui_right"), "o tap no ar assume o lado tocado")
+	var pulou: bool = false
+	for i in 5:
+		_tick()  # segue caindo ate o pouso
+		if _p.velocity.y <= PLAYER_SCRIPT.JUMP_POWER + PLAYER_SCRIPT.GRAVITY:
+			pulou = true
+	assert_false(pulou, "tap no ar nao gera pulo no ar (BUFFER_PULO_MS = 0)")
+	_p.on_ground = true
+	_tick()
+	assert_gt(
+		_p.velocity.y,
+		float(PLAYER_SCRIPT.JUMP_POWER + PLAYER_SCRIPT.GRAVITY),
+		"pouso nao pula de novo (BUFFER_PULO_MS = 0)"
+	)
+	assert_true(_nenhuma_pressionada(), "no pouso o lateral trocado solta (sem residual)")
+
+
+func test_c363_cancelar_tudo_solta_lateral_e_jump_sem_residual() -> void:
+	_spawn()
+	_tap(ESQ)
+	assert_true(Input.is_action_pressed("ui_left"), "pre-condicao: lateral sustentado")
+	assert_true(Input.is_action_pressed("jump"), "pre-condicao: jump no pulso")
+	_c.cancelar_tudo()
+	assert_true(_nenhuma_pressionada(), "cancelar_tudo solta lateral e jump")
+	for i in 5:
+		_tick()
+		assert_true(_nenhuma_pressionada(), "tick %d apos o resume: sem acao residual" % i)
+	assert_eq(_p.velocity.x, 0.0, "sem movimento residual apos o resume")
+
+
+func test_c364_derrota_solta_o_lateral_no_tick_seguinte() -> void:
+	_spawn()
+	_tap(ESQ)
+	_tick()
+	assert_true(Input.is_action_pressed("ui_left"), "pre-condicao: lateral sustentado")
+	_p.end = true
+	_tick()
+	assert_true(_nenhuma_pressionada(), "derrota solta o lateral no tick seguinte")
+	for i in 3:
+		_tick()
+		assert_true(_nenhuma_pressionada(), "tick %d apos a derrota: sem acao residual" % i)
+
+
+func test_c365_teclado_ja_pressionado_nao_e_assumido_nem_soltado() -> void:
+	_spawn()
+	Input.action_press("ui_right")  # teclado externo, fora da camada
+	_tap(ESQ)
+	assert_true(Input.is_action_pressed("ui_left"), "o tap assume so o proprio lateral")
+	assert_true(Input.is_action_pressed("ui_right"), "o teclado segue pressionado durante o tap")
+	var voo: Dictionary = _medir_voo()
+	assert_gt(voo["ticks"], 40, "pre-condicao: voo inteiro")
+	assert_true(Input.is_action_pressed("ui_right"), "ui_right do teclado segue ate o fim do voo")
+	_p.on_ground = true
+	_tick()
+	assert_false(Input.is_action_pressed("ui_left"), "o lateral do tap solta no pouso")
+	assert_true(Input.is_action_pressed("ui_right"), "ui_right do teclado continua pressionada apos o pouso")
+	_c._soltar_tudo()
+	assert_true(Input.is_action_pressed("ui_right"), "ui_right continua apos _soltar_tudo (nao e da camada)")
+	_toque(DIR, true)  # hold direito depois: a camada nao assume a acao do teclado
+	_t += 250
+	_tick()
+	assert_true(Input.is_action_pressed("ui_right"), "hold direito nao assumiu a acao do teclado")
+	_toque(DIR, false)
+	_tick()
+	_tick()
+	assert_true(Input.is_action_pressed("ui_right"), "release do hold nao solta a acao do teclado")
+
+
+func test_c366_tap_que_atravessa_o_wrap_segue_ate_o_pouso() -> void:
+	_spawn()
+	await _entrar_no_quadro_fisico()
+	_p.position = Vector2(PlayArea.LARGURA - 10.0, 100.0)  # perto da borda direita
+	_tap(DIR)
+	var atravessou: bool = false
+	var voo: Dictionary = {"vxs": [], "ticks": 0}
+	for i in 70:
+		_tick()
+		voo["vxs"].append(_p.velocity.x)
+		voo["ticks"] = i + 1
+		if _p.position.x < 90.0:  # entrou pelo lado esquerdo depois do wrap
+			atravessou = true
+		if i > 0 and _p.velocity.y >= 0.0 and _p.position.y >= 100.0:
+			break
+	assert_true(atravessou, "pre-condicao: o voo atravessou o wrap lateral")
+	assert_gt(voo["ticks"], 40, "voo inteiro, nao 4 ticks")
+	for i in voo["vxs"].size():
+		assert_eq(
+			voo["vxs"][i],
+			float(PLAYER_SCRIPT.SPEED),
+			"tick %d: lateral ativo no wrap (velocity.x == SPEED)" % i
+		)
+	_p.on_ground = true
+	_tick()
+	assert_true(_nenhuma_pressionada(), "solto no pouso, sem travar no wrap")
+
+
+func test_c367_segundo_tap_parte_de_estado_limpo() -> void:
+	_spawn()
+	await _entrar_no_quadro_fisico()
+	_p.position = Vector2(90.0, 100.0)
+	_tap(ESQ)
+	var voo1: Dictionary = _medir_voo()
+	assert_gt(voo1["ticks"], 40, "pre-condicao: 1o voo inteiro")
+	_p.on_ground = true
+	_tick()
+	assert_true(_nenhuma_pressionada(), "primeiro tap termina limpo no pouso")
+	assert_eq(_p.velocity.x, 0.0, "e para o movimento ao pousar")
+	_tap(DIR)  # 2o tap, lado oposto: parte de estado limpo
+	var esq_presa: bool = false
+	var voo2: Dictionary = {"vxs": [], "ticks": 0}
+	for i in 70:
+		_tick()
+		voo2["vxs"].append(_p.velocity.x)
+		voo2["ticks"] = i + 1
+		esq_presa = esq_presa or Input.is_action_pressed("ui_left")
+		if i > 0 and _p.velocity.y >= 0.0 and _p.position.y >= 100.0:
+			break
+	assert_false(esq_presa, "nenhuma ui_left presa durante o 2o voo")
+	assert_gt(voo2["ticks"], 40, "2o voo inteiro")
+	for i in voo2["vxs"].size():
+		assert_eq(
+			voo2["vxs"][i],
+			float(PLAYER_SCRIPT.SPEED),
+			"tick %d do 2o voo: so o lado tocado (velocity.x == SPEED)" % i
+		)
+	_p.on_ground = true
+	_tick()
+	assert_true(_nenhuma_pressionada(), "2o tap tambem termina limpo")
