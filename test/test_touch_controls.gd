@@ -574,3 +574,122 @@ func test_c367_segundo_tap_parte_de_estado_limpo() -> void:
 	_p.on_ground = true
 	_tick()
 	assert_true(_nenhuma_pressionada(), "2o tap tambem termina limpo")
+
+
+# T4 (issue #44, Q6): depois do limiar o hold anda na MESMA velocidade do teclado (mesma acao lida pelo Player por
+# polling); o unico custo e o atraso medido em test_c369. Valor esperado = Player.SPEED (80 px/s), nunca o observado.
+const HOLD_TICKS_MEDIDOS: int = 10
+
+
+# Roda HOLD_TICKS_MEDIDOS ticks com o hold ja alem do limiar (relogio avancando 16 ms/tick) e devolve {vxs, dxs}.
+func _hold_por_tick(x: float, y: float, toque_x: float) -> Dictionary:
+	_spawn()
+	await _entrar_no_quadro_fisico()
+	_p.position = Vector2(x, y)
+	_p.on_ground = true
+	_toque(toque_x, true)  # press sem release: vira hold ao passar do limiar (toque_x define o lado)
+	_t += TouchClassifier.LIMIAR_MS
+	var r: Dictionary = {"vxs": [], "dxs": []}
+	for i in HOLD_TICKS_MEDIDOS:
+		_t += 16
+		var antes: float = _p.position.x
+		_tick()
+		r["vxs"].append(_p.velocity.x)
+		r["dxs"].append(_delta_x(antes, _p.position.x))
+	_toque(toque_x, false)
+	_limpar()
+	return r
+
+
+# Idem com a acao de teclado externa (Input.action_press), sem toque nenhum na camada.
+func _teclado_por_tick(acao: String, x: float, y: float) -> Dictionary:
+	_spawn()
+	await _entrar_no_quadro_fisico()
+	_p.position = Vector2(x, y)
+	_p.on_ground = true
+	Input.action_press(acao)
+	var r: Dictionary = {"vxs": [], "dxs": []}
+	for i in HOLD_TICKS_MEDIDOS:
+		_t += 16
+		var antes: float = _p.position.x
+		_tick()
+		r["vxs"].append(_p.velocity.x)
+		r["dxs"].append(_delta_x(antes, _p.position.x))
+	Input.action_release(acao)
+	_limpar()
+	return r
+
+
+func test_c368_hold_move_na_mesma_velocidade_do_teclado() -> void:
+	var esperado: float = float(PLAYER_SCRIPT.SPEED)  # 80 px/s (Player.gd), nao o valor observado
+	var por_tick: float = esperado * TICK  # 80 px/s x 1/60 s = 1,333 px por tick
+	# [x do Player, y, acao do teclado, sinal, lado, x do toque]: o toque decide o lado (DIR = 160, ESQ = 20).
+	var casos: Array = [[60.0, 100.0, "ui_right", 1.0, "direita", DIR], [120.0, 100.0, "ui_left", -1.0, "esquerda", ESQ]]
+	for c in casos:
+		var x: float = c[0]
+		var y: float = c[1]
+		var acao: String = c[2]
+		var sinal: float = c[3]
+		var lado: String = c[4]
+		var toque_x: float = c[5]
+		var hold: Dictionary = await _hold_por_tick(x, y, toque_x)
+		var teclado: Dictionary = await _teclado_por_tick(acao, x, y)
+		for i in HOLD_TICKS_MEDIDOS:
+			assert_eq(
+				hold["vxs"][i],
+				sinal * esperado,
+				"hold %s, tick %d: velocity.x == %+.0f px/s (Player.SPEED)" % [lado, i, sinal * esperado]
+			)
+			assert_eq(
+				teclado["vxs"][i],
+				sinal * esperado,
+				"teclado %s, tick %d: velocity.x == %+.0f px/s (Player.SPEED)" % [lado, i, sinal * esperado]
+			)
+			assert_almost_eq(
+				hold["dxs"][i],
+				sinal * por_tick,
+				0.01,
+				"hold %s, tick %d: %.3f px/tick (SPEED x 1/60)" % [lado, i, sinal * por_tick]
+			)
+			assert_almost_eq(
+				hold["dxs"][i],
+				teclado["dxs"][i],
+				0.01,
+				"hold %s, tick %d: deslocamento por tick igual ao teclado" % [lado, i]
+			)
+
+
+# Mede o atraso do hold: ticks de 16 ms entre o press e o primeiro movimento. LIMIAR_MS = 200 (~12,5 ticks) => o hold
+# anda no 13o tick (208 ms); tolerancia de +-1 tick. Se a velocidade diferisse, o teste falharia no assert final e o
+# worker pararia (SPEED nao muda sem decisao do dono).
+func test_c369_atraso_do_hold_ate_o_primeiro_movimento() -> void:
+	_spawn()
+	_p.position = Vector2(120.0, 100.0)
+	_p.on_ground = true
+	_toque(ESQ, true)  # press sem release
+	var ticks_ate_mover: int = -1
+	var ticks_parado: int = 0
+	for i in 30:
+		_t += 16  # 1 tick fisico = 16 ms (60 Hz)
+		_tick()
+		if _p.velocity.x != 0.0:
+			ticks_ate_mover = i + 1
+			break
+		ticks_parado += 1
+	assert_gt(ticks_ate_mover, 0, "o hold anda depois do limiar")
+	assert_lt(ticks_parado * 16, TouchClassifier.LIMIAR_MS, "antes de LIMIAR_MS (%d ms) o hold ainda nao anda" % TouchClassifier.LIMIAR_MS)
+	assert_gte(ticks_ate_mover * 16, TouchClassifier.LIMIAR_MS, "anda no tick em que cruza LIMIAR_MS")
+	var esperado: float = float(TouchClassifier.LIMIAR_MS) / 16.0
+	assert_almost_eq(
+		float(ticks_ate_mover),
+		esperado,
+		1.0,
+		"atraso do hold: %d ticks (%d ms) ~ LIMIAR_MS/16 = %.1f ticks" % [ticks_ate_mover, ticks_ate_mover * 16, esperado]
+	)
+	assert_eq(
+		_p.velocity.x,
+		-float(PLAYER_SCRIPT.SPEED),
+		"no primeiro movimento: velocity.x == -SPEED (mesma velocidade do teclado)"
+	)
+	_toque(ESQ, false)
+	_limpar()
