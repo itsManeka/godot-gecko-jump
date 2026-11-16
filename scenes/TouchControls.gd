@@ -21,6 +21,10 @@ const ACEITAR_MOUSE: bool = false
 # arvore, entao o 1o tick da camada pode preceder o do Player: soltar so no 2o garante o tick inteiro.
 const TICKS_MINIMOS: int = 2
 
+# Teto de seguranca do lateral do tap (ticks): tap que nunca decola (pulo descartado no ar) nao pode deixar a acao
+# presa para sempre. ~120 ticks (2 s) = ~2,4x o voo do pulo (~50 ticks): o pouso normal solta muito antes.
+const TICKS_TETO_LATERAL_TAP: int = 120
+
 const ACAO_ESQUERDA: String = "ui_left"
 const ACAO_DIREITA: String = "ui_right"
 const ACAO_PULO: String = "jump"
@@ -44,6 +48,11 @@ var _dedo: int = -1
 var _t_press_ms: int = 0
 var _lado: int = TouchClassifier.Lado.NENHUM
 var _andando: bool = false
+# Lateral do tap sustentado ate o pouso: sai quando player.on_ground volta a true depois de ter decolado (flag
+# `_lateral_tap_decolou`), no teto de seguranca ou em _soltar_tudo. `jump` NAO entra aqui (segue pulso).
+var _lateral_tap: String = ""
+var _lateral_tap_ticks: int = 0
+var _lateral_tap_decolou: bool = false
 
 
 func _input(event: InputEvent) -> void:
@@ -73,8 +82,10 @@ func _physics_process(_delta: float) -> void:
 		return
 	if classificador.ativo() and not _andando and TouchClassifier.eh_hold(_agora() - _t_press_ms):
 		_andando = true
+		_soltar_lateral_tap()  # o hold assume o lateral: a posse do tap termina aqui
 		_pressionar(_acao_do_lado(_lado))
 	_avancar_pulso()
+	_avancar_lateral_tap()
 
 
 func _notification(what: int) -> void:
@@ -115,6 +126,7 @@ func _pressionou(dedo: int, pos: Vector2) -> void:
 	_lado = TouchClassifier.lado_de(pos.x, classificador.largura_visivel)
 	_andando = false
 	if pulo_no_pressionar:
+		_soltar_lateral_tap()
 		_pulsar([_acao_do_lado(_lado), ACAO_PULO])
 
 
@@ -125,8 +137,11 @@ func _soltou(dedo: int) -> void:
 	var lado: int = r["lado"]
 	if r["resultado"] == TouchClassifier.Resultado.TAP:
 		if not pulo_no_pressionar:
-			_pulsar([_acao_do_lado(lado), ACAO_PULO])
+			# Lateral sustentado ate o pouso; o pulo continua no pulso de TICKS_MINIMOS (sem repulo ao pousar).
+			_sustentar_lateral_tap(lado)
+			_pulsar([ACAO_PULO])
 	elif r["resultado"] == TouchClassifier.Resultado.HOLD:
+		_soltar_lateral_tap()  # o hold passa a ser o dono do lateral
 		if _andando:
 			_soltar(_acao_do_lado(lado))
 		else:
@@ -170,6 +185,41 @@ func _pulsar(acoes: Array) -> void:
 	_pulso_ticks = TICKS_MINIMOS
 
 
+# Lateral do tap: pressiona no ato e o mantem ate o pouso. Novo tap no ar troca/estende o lado (Q2=b); o lado
+# oposto e solto antes de assumir o novo.
+func _sustentar_lateral_tap(lado: int) -> void:
+	var acao: String = _acao_do_lado(lado)
+	if _lateral_tap != "" and _lateral_tap != acao:
+		_soltar(_lateral_tap)
+	_pressionar(acao)
+	_lateral_tap = acao
+	_lateral_tap_ticks = 0
+	_lateral_tap_decolou = false
+
+
+# Solta o lateral do tap so depois de ter visto o Player sair do chao e voltar (on_ground false -> true), ou no teto.
+func _avancar_lateral_tap() -> void:
+	if _lateral_tap == "":
+		return
+	_lateral_tap_ticks += 1
+	if player != null and player.get("on_ground") == true:
+		if _lateral_tap_decolou:
+			_soltar_lateral_tap()
+			return
+	else:
+		_lateral_tap_decolou = true
+	if _lateral_tap_ticks >= TICKS_TETO_LATERAL_TAP:
+		_soltar_lateral_tap()
+
+
+func _soltar_lateral_tap() -> void:
+	if _lateral_tap != "":
+		_soltar(_lateral_tap)
+	_lateral_tap = ""
+	_lateral_tap_ticks = 0
+	_lateral_tap_decolou = false
+
+
 func _avancar_pulso() -> void:
 	if _pulso_acoes.is_empty():
 		return
@@ -206,6 +256,7 @@ func _soltar(acao: String) -> void:
 
 
 func _soltar_tudo() -> void:
+	_soltar_lateral_tap()
 	for acao in _pressionadas.keys():
 		_soltar(acao)
 	_pulso_acoes.clear()
