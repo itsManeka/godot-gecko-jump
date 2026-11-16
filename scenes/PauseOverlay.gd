@@ -25,9 +25,9 @@ const BOTAO_ALTURA: float = 32.0
 const BOTAO_LARGURA: float = 112.0
 const BOTAO_ESPACO: float = 8.0
 const LARGURA: float = 180.0
-const TAMANHO_TITULO: int = 36
-const TAMANHO_CONTINUAR: int = 26
-const TAMANHO_OPCOES: int = 20
+const TAMANHO_TITULO: int = UiHelpers.TAMANHO_TITULO
+const TAMANHO_CONTINUAR: int = UiHelpers.TAMANHO_TEXTO
+const TAMANHO_OPCOES: int = UiHelpers.TAMANHO_TEXTO
 const CONTORNO_TITULO: int = 2
 const CONTORNO_BOTAO: int = 1
 # Acima do botao de pausa (7.4)

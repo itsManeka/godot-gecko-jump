@@ -47,8 +47,8 @@ const BOTAO_LARGURA: float = 112.0
 const BOTAO_ALTURA: float = 32.0
 const CURSOR_NORMAL: Vector2 = Vector2(12.0, 16.0)
 const CURSOR_ARRASTANDO: Vector2 = Vector2(14.0, 20.0)
-const TAMANHO_TITULO: int = 36
-const TAMANHO_TEXTO: int = 20
+const TAMANHO_TITULO: int = UiHelpers.TAMANHO_TITULO
+const TAMANHO_TEXTO: int = UiHelpers.TAMANHO_TEXTO
 const CONTORNO_TITULO: int = 2
 const CONTORNO_TEXTO: int = 1
 

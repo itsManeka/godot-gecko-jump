@@ -42,7 +42,7 @@ const LEGENDA_Y: float = 149.0
 const CONTROLE_Y: float = 187.0
 const CELULA_LARGURA: float = 74.0
 const CELULAS_X: Array[float] = [16.0, 90.0]
-const TAMANHO_TEXTO: int = 20
+const TAMANHO_TEXTO: int = UiHelpers.TAMANHO_TEXTO
 const CONTORNO_TEXTO: int = 1
 
 const TEXTO_TITULO: String = "Como jogar"

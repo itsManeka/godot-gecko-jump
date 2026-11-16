@@ -66,23 +66,23 @@ func test_estilo_raio_explicito_para_pausa_e_opcoes_botao() -> void:
 
 
 func test_novo_label_desenho_do_pause_overlay() -> void:
-	var l: Label = autofree(UiHelpers.novo_label("Pausado", 36, 2))
+	var l: Label = autofree(UiHelpers.novo_label("Pausado", 32, 2))
 	assert_eq(l.text, "Pausado")
 	assert_eq(l.mouse_filter, Control.MOUSE_FILTER_IGNORE)
 	assert_eq(l.focus_mode, Control.FOCUS_NONE)
 	assert_eq(l.horizontal_alignment, HORIZONTAL_ALIGNMENT_CENTER)
 	assert_eq(l.vertical_alignment, VERTICAL_ALIGNMENT_CENTER)
 	assert_eq(l.get_theme_font("font"), load("res://fonts/alterebro-pixel-font.ttf"))
-	assert_eq(l.get_theme_font_size("font_size"), 36)
+	assert_eq(l.get_theme_font_size("font_size"), 32)
 	assert_eq(l.get_theme_color("font_color"), Color(1.0, 1.0, 1.0, 1.0))
 	assert_eq(l.get_theme_color("font_outline_color"), PRETO)
 	assert_eq(l.get_theme_constant("outline_size"), 2)
 
 
 func test_novo_label_alinhamento_explicito_das_opcoes() -> void:
-	var esq: Label = autofree(UiHelpers.novo_label("Music", 20, 1, HORIZONTAL_ALIGNMENT_LEFT))
-	var dir: Label = autofree(UiHelpers.novo_label("", 20, 1, HORIZONTAL_ALIGNMENT_RIGHT))
+	var esq: Label = autofree(UiHelpers.novo_label("Music", 16, 1, HORIZONTAL_ALIGNMENT_LEFT))
+	var dir: Label = autofree(UiHelpers.novo_label("", 16, 1, HORIZONTAL_ALIGNMENT_RIGHT))
 	assert_eq(esq.horizontal_alignment, HORIZONTAL_ALIGNMENT_LEFT)
 	assert_eq(dir.horizontal_alignment, HORIZONTAL_ALIGNMENT_RIGHT)
-	assert_eq(esq.get_theme_font_size("font_size"), 20)
+	assert_eq(esq.get_theme_font_size("font_size"), 16)
 	assert_eq(esq.get_theme_constant("outline_size"), 1)

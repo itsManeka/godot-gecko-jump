@@ -15,6 +15,10 @@ const RAIO_BOTAO: int = 4
 const FONTE_NATIVO: int = 16
 ## Escala de UI = multiplos inteiros do nativo: titulo/placar = 32, botao = 32 (ou 16), texto = 16.
 const TAMANHOS_UI: Array[int] = [16, 32]
+## Papeis da escala: titulo/placar e botao grande = 2x o nativo, texto e botoes de menu = 1x.
+const TAMANHO_TITULO: int = 32
+const TAMANHO_BOTAO: int = 32
+const TAMANHO_TEXTO: int = 16
 
 
 ## Caixa com fundo, borda e raio explicitos.

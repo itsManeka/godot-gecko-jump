@@ -14,7 +14,8 @@ Fonte: `fonts/alterebro-pixel-font.ttf`. Constantes: `UiHelpers.FONTE_NATIVO` e 
   pixel da fonte cai em fracao de pixel de tela e as hastes alternam 1 e 2 px.
 - Escala aprovada: **titulo/placar = 32, botao = 32 (ou 16 se a altura nao comportar), texto/Last/Best/Opcoes = 16**.
   48 nao e necessario; 32 em "Melhor pontuacao: 1000" estoura os 180 px.
-- Import previsto (T2): hinting None, subpixel Disabled, oversampling 1.0.
+- Import aplicado em `fonts/alterebro-pixel-font.ttf.import`: hinting 0 (None), subpixel_positioning 0 (Disabled),
+  oversampling 1.0, antialiasing 0. Papeis: `UiHelpers.TAMANHO_TITULO` 32, `TAMANHO_BOTAO` 32 (Play), `TAMANHO_TEXTO` 16.
 
 ## Prova
 

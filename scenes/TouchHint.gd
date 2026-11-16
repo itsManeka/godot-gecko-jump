@@ -10,7 +10,7 @@ extends CanvasLayer
 signal ocultada
 
 const FONTE: Font = preload("res://fonts/alterebro-pixel-font.ttf")
-const FONT_SIZE: int = 20
+const FONT_SIZE: int = UiHelpers.TAMANHO_TEXTO
 const COR: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_LINHA: Color = Color(1.0, 1.0, 1.0, 0.6)
