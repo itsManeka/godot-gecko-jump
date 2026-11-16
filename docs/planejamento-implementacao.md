@@ -50,7 +50,7 @@ Divisao em epics (as fases 1 a 3 acima formam o E1):
 | --------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------- |
 | E1. Migracao e base solida                          | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3) | #8, #14, #7, #3, #4, #5, #6, #9                      | concluido (2026-11-09)              |
 | E2. CI, tela mobile e jogabilidade da base          | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel                | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
-| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes e tutorial          | #36, #37, #39, #11, #10, #12                         | em andamento                        |
+| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes e tutorial          | #36, #37, #39, #40, #42, #11, #10, #12              | aguardando playtest do dono        |
 | E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                      | #16, #17                                             | planejado                           |
 | E5. Ranking online por modo                         | Ranking por modo de jogo; depende do E4 e do ChumGames E1                                       | #29                                                  | planejado                           |
 | E6. Arte final e audio                              | Arte final em pixel art, sons e musica                                                          | #18, #13                                             | planejado                           |
@@ -111,19 +111,25 @@ lateral com toque no aparelho (o jogo ainda nao le toque, #11).
 
 Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10) e pausa, opcoes e tutorial (#12).
 
-**Estado: em andamento** (branch `epic/gecko-e3-controles-e-progressao`).
+**Estado: aguardando playtest do dono** (branch `epic/gecko-e3-controles-e-progressao`). O QA da maquina esta verde no
+HEAD: o oraculo do repo (import, compile, GUT, run) passa; os 23 roteiros de smoke (18 anteriores + 5 novos: tap/hold de
+toque, volume persistido apos recarregar, estagios 1 e 2 e cruzamento 2->3) passam no export web de debug; o game-bot
+nativo do HEAD contra a `main` nao mostra regressao (as divergencias sao a UI nova do epic: pausa, opcoes, tutorial,
+dica de toque, estagios). As issues #36, #37, #39, #40 e #42 estao resolvidas no epic; o que falta da #11, #10 e #12
+(toque no aparelho, calibracao da curva, pausa por foco) a maquina nao julga e fica para o playtest do dono.
 
 1. Dificuldade progressiva (#10, [ADR 0007](adr/0007-curva-de-dificuldade-em-resource.md)): a curva em
    `ressources/curva_dificuldade.tres` troca os literais de scroll, velocidade das moveis, K da garantia de cor e
    proporcao de estaticas por estagios com interpolacao, avaliados por pontos e tempo da partida (plato em cerca de 3
-   min). Sem texto de nivel: so o aviso visual de subida (item 6). Calibracao fina pelo playtest do dono no QA do epic.
+   min). Sem texto de nivel: so o aviso visual de subida (item 6). Calibracao fina pelo playtest do dono (pendente).
 2. Pausa (#12, [ADR 0008](adr/0008-pausa-por-tree-paused.md)): acao `pause` (Esc, P, start do controle), botao de
    toque no canto superior esquerdo, pausa automatica ao perder o foco e overlay Continuar/Opcoes, por
-   `get_tree().paused`. Pausa por foco no web e no Android: verificacao manual no QA do epic.
+   `get_tree().paused`. Pausa por foco no web e no Android: verificacao manual no playtest do dono.
 3. Opcoes (#12): buses `Music` e `SFX` (os sons do jogo vao para `SFX`; `Music` sem faixa ate o E6), volumes salvos em
    `user://options.cfg` (mesma escrita atomica do recorde) e aplicados no boot e ao mudar. Tela de Opcoes (sliders
    Music/SFX e Voltar) aberta pelo botao Opcoes do menu inicial e pelo overlay de pausa; o arrasto aplica o volume na hora
-   e grava ao soltar. Persistencia apos recarga no web e nivel audivel: verificacao manual no QA do epic.
+   e grava ao soltar. Persistencia apos recarga no web: provada pelo smoke do QA do epic; nivel audivel no aparelho:
+   verificacao manual no playtest do dono.
 4. Tutorial da 1a partida (#12): card com os controles (variante de toque ou de teclado, pela mesma conta da dica)
    aberto na 1a partida, que fecha no 1o pouso ou em Pular, com fade de 0.3 s; a flag `tutorial/visto` em
    `user://options.cfg` so grava ao concluir ou pular (derrota antes do 1o pouso reabre o card). O item "Ver tutorial"
@@ -132,16 +138,16 @@ Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10)
 5. Plataformas que piscam ([ADR 0012](adr/0012-plataformas-que-piscam.md)): mecanica da curva que faz parte das
    plataformas somirem (sem colisao) e voltarem em ritmo fixo, no ultimo estagio. Aviso visivel antes de sumir, nao
    cromatico; gecko em cima segura o ciclo; fora da linha inicial e exclusiva da cicladora. Calibracao de ritmo e
-   legibilidade fica para o QA do epic.
+   legibilidade fica para o playtest do dono.
 6. Aviso de subida de estagio (#10): moldura branca na borda da tela que pulsa N vezes (N = estagio novo) nas 3 subidas,
    sem texto. Sinal `estagio_mudou` do `DifficultyState`; a ponte publica `dificuldade.aviso` para os smokes. O som do
-   aviso fica para a #43. Sensacao e legibilidade sobre fundo claro: verificacao manual no QA do epic.
+   aviso fica para a #43. Sensacao e legibilidade sobre fundo claro: verificacao manual no playtest do dono.
 7. Legibilidade das fontes da UI (#42): a fonte pixel tem tamanho nativo de 16 px
    ([nota de medicao](fonte-pixel-tamanho-nativo.md)); toda a UI usa so multiplos inteiros dele (`UiHelpers`: titulo,
    placar e Play em 32; texto, botoes de menu e dica em 16), com o import sem hinting nem subpixel, para as hastes sairem
    com espessura uniforme. Texto sobre as plataformas (placar Last/Best e dica de toque) ganha uma faixa de fundo
    translucida, na mesma cor do fundo da pausa (contraste acima de 4,5:1 sobre a plataforma amarela). Legibilidade no
-   aparelho: verificacao manual no QA do epic.
+   aparelho: verificacao manual no playtest do dono.
 
 ## Regras de trabalho
 
