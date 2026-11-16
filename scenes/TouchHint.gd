@@ -14,6 +14,8 @@ const FONT_SIZE: int = UiHelpers.TAMANHO_TEXTO
 const COR: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_LINHA: Color = Color(1.0, 1.0, 1.0, 0.6)
+# Faixa atras dos textos de cada bloco (legibilidade sobre as plataformas): mesma cor da faixa do placar
+const COR_FAIXA: Color = UiHelpers.COR_FUNDO_OVERLAY
 const OUTLINE_SIZE: int = 1
 
 # Textos (handoff 8.2). D6: "segura: anda" cabe em 76 px? se nao, vira "segura" (so este simbolo muda).
@@ -176,6 +178,11 @@ func _novo_controle() -> Control:
 
 func _montar_bloco(lado: int) -> Control:
 	var bloco := _novo_controle()
+	var faixa := ColorRect.new()
+	faixa.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	faixa.focus_mode = Control.FOCUS_NONE
+	faixa.color = COR_FAIXA
+	bloco.add_child(faixa)
 	var seta := _novo_controle()
 	seta.size = Vector2(SETA, SETA)
 	seta.draw.connect(_desenhar_seta.bind(seta, lado))
@@ -197,7 +204,10 @@ func _posicionar_bloco(bloco: Control, r: Rect2) -> void:
 	bloco.position = r.position
 	bloco.size = r.size
 	for filho in bloco.get_children():
-		if filho is Label:
+		if filho is ColorRect:
+			filho.position = Vector2(0.0, SETA + SETA_ESPACO)
+			filho.size = Vector2(r.size.x, TEXTO_ALTURA * 2.0)
+		elif filho is Label:
 			filho.position = Vector2(0.0, filho.get_meta("y"))
 			filho.size = Vector2(r.size.x, TEXTO_ALTURA)
 		else:

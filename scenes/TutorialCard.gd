@@ -20,7 +20,7 @@ enum Variante { TOQUE, TECLADO }
 enum Modo { PARTIDA, REABERTURA }
 
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
-const COR_FUNDO: Color = Color(0.0, 0.0, 0.0, 0.6)
+const COR_FUNDO: Color = UiHelpers.COR_FUNDO_OVERLAY
 const COR_BOTAO: Color = Color("#5b8a4a")
 const COR_SEM_FUNDO: Color = Color(0.0, 0.0, 0.0, 0.0)
 # Entre a dica (0) e o botao de pausa (2) na partida; acima de Opcoes (11) na reabertura

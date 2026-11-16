@@ -58,10 +58,9 @@ func _composta(faixa: Color, plataforma: Color) -> Color:
 func test_c350_faixa_existe_com_cor_da_pausa_e_cobre_last_e_best() -> void:
 	var faixa := _stage.get_node_or_null("CanvasLayer/FaixaPlacar") as ColorRect
 	assert_not_null(faixa, "faixa de fundo do placar existe")
-	if faixa == null:
-		return
-	assert_eq(faixa.color, PauseOverlay.COR_FUNDO, "cor/alfa da faixa = COR_FUNDO do PauseOverlay")
-	var r := faixa.get_global_rect()
+	var cor: Color = faixa.color if faixa != null else Color(1.0, 0.0, 1.0, 1.0)
+	var r: Rect2 = faixa.get_global_rect() if faixa != null else Rect2()
+	assert_eq(cor, PauseOverlay.COR_FUNDO, "cor/alfa da faixa = COR_FUNDO do PauseOverlay")
 	assert_true(r.encloses(_no("Last").get_global_rect()), "faixa cobre Last")
 	assert_true(r.encloses(_no("Best").get_global_rect()), "faixa cobre Best")
 

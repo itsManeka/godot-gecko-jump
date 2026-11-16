@@ -138,6 +138,13 @@ func test_c348_play_e_botoes_de_menu_comportam_o_rotulo() -> void:
 	assert_lte(l_tutorial, opcoes.rect_ver_tutorial().size.x, "'> Ver tutorial' cabe no botao")
 
 
+# T2 corr1: o Play da Stage usa o papel TAMANHO_BOTAO da escala.
+func test_c348_play_da_stage_usa_tamanho_botao() -> void:
+	var stage: Node = add_child_autofree(load(STAGE).instantiate())
+	var play := stage.get_node("CanvasLayer/Play") as Button
+	assert_eq(play.get_theme_font_size("font_size"), UiHelpers.TAMANHO_BOTAO, "Play = TAMANHO_BOTAO")
+
+
 # C349: placar com valores de 4 digitos a 16 px cabe nos 180 px do Last/Best.
 func test_c349_ultima_e_melhor_pontuacao_de_4_digitos_cabem_em_180() -> void:
 	for texto in ["Ultima pontuacao: 1000", "Melhor pontuacao: 1000", "Melhor pontuacao: 9999"]:

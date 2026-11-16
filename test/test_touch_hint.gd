@@ -159,6 +159,26 @@ func test_c173_nenhum_no_da_dica_filtra_mouse() -> void:
 		assert_eq(ctl.focus_mode, Control.FOCUS_NONE, "%s sem foco" % ctl.get_class())
 
 
+func test_f472_faixa_de_fundo_atras_dos_textos_de_cada_bloco() -> void:
+	var h := _nova_dica(false)
+	for bloco in [h._bloco_esq, h._bloco_dir]:
+		var faixas: Array = []
+		var labels: Array = []
+		for filho in (bloco as Control).get_children():
+			if filho is ColorRect:
+				faixas.append(filho)
+			elif filho is Label:
+				labels.append(filho)
+		assert_eq(faixas.size(), 1, "uma faixa por bloco")
+		assert_eq(labels.size(), 2, "pula e segura: anda")
+		var faixa := faixas[0] as ColorRect
+		assert_eq(faixa.color, UiHelpers.COR_FUNDO_OVERLAY, "faixa usa a cor do fundo do overlay")
+		assert_eq(faixa.mouse_filter, Control.MOUSE_FILTER_IGNORE, "faixa nao recebe mouse")
+		assert_eq(faixa.get_index(), 0, "faixa fica atras dos textos")
+		for l in labels:
+			assert_true(faixa.get_global_rect().encloses((l as Label).get_global_rect()), "faixa cobre '%s'" % l.text)
+
+
 func test_c174_geometria_em_180x320() -> void:
 	var h := _nova_dica(false)
 	h.aplicar_layout(PEQUENA, Rect2(Vector2.ZERO, PEQUENA))

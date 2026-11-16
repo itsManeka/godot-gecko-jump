@@ -20,7 +20,7 @@ const LAST_BOTTOM: float = 247.0
 const BEST_TOP: float = 248.0
 const BEST_BOTTOM: float = 265.0
 # Faixa escura atras do bloco Last/Best (legibilidade sobre as plataformas); cor e alfa = fundo do overlay de pausa
-const COR_FAIXA_PLACAR: Color = PauseOverlay.COR_FUNDO
+const COR_FAIXA_PLACAR: Color = UiHelpers.COR_FUNDO_OVERLAY
 # Curva de producao (estagios da dificuldade); o estado de cada partida e criado em _ready a partir dela
 const CURVA_DIFICULDADE: DifficultyCurve = preload("res://ressources/curva_dificuldade.tres")
 # Disparado a cada inicio efetivo da partida (a guarda de started impede repeticao)

@@ -136,6 +136,12 @@ Escopo: as issues herdadas do E2 (#36, #37, #39), toque (#11), dificuldade (#10)
 6. Aviso de subida de estagio (#10): moldura branca na borda da tela que pulsa N vezes (N = estagio novo) nas 3 subidas,
    sem texto. Sinal `estagio_mudou` do `DifficultyState`; a ponte publica `dificuldade.aviso` para os smokes. O som do
    aviso fica para a #43. Sensacao e legibilidade sobre fundo claro: verificacao manual no QA do epic.
+7. Legibilidade das fontes da UI (#42): a fonte pixel tem tamanho nativo de 16 px
+   ([nota de medicao](fonte-pixel-tamanho-nativo.md)); toda a UI usa so multiplos inteiros dele (`UiHelpers`: titulo,
+   placar e Play em 32; texto, botoes de menu e dica em 16), com o import sem hinting nem subpixel, para as hastes sairem
+   com espessura uniforme. Texto sobre as plataformas (placar Last/Best e dica de toque) ganha uma faixa de fundo
+   translucida, na mesma cor do fundo da pausa (contraste acima de 4,5:1 sobre a plataforma amarela). Legibilidade no
+   aparelho: verificacao manual no QA do epic.
 
 ## Regras de trabalho
 

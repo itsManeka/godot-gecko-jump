@@ -18,7 +18,7 @@ enum Item { MUSIC, SFX, VER_TUTORIAL, VOLTAR }
 enum Tipo { SLIDER, BOTAO }
 
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
-const COR_FUNDO: Color = Color(0.0, 0.0, 0.0, 0.6)
+const COR_FUNDO: Color = UiHelpers.COR_FUNDO_OVERLAY
 const COR_BOTAO: Color = Color("#5b8a4a")
 const COR_PREENCHIMENTO: Color = Color("#5b8a4a")
 const COR_TRILHA: Color = Color(0.0, 0.0, 0.0, 1.0)

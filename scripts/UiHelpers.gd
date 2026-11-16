@@ -10,6 +10,8 @@ const FONTE: Font = preload("res://fonts/alterebro-pixel-font.ttf")
 const COR_TEXTO: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
 const RAIO_BOTAO: int = 4
+## Fundo translucido compartilhado: overlay de pausa, faixa do placar e faixa da dica de toque.
+const COR_FUNDO_OVERLAY: Color = Color(0.0, 0.0, 0.0, 0.6)
 
 ## Tamanho nativo da fonte em px por em: unitsPerEm 1024, grade de 64 unidades = 1/16 em (docs/fonte-pixel-tamanho-nativo.md).
 const FONTE_NATIVO: int = 16

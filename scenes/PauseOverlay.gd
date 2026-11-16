@@ -14,7 +14,7 @@ signal opcoes
 enum Botao { CONTINUAR, OPCOES }
 
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
-const COR_FUNDO: Color = Color(0.0, 0.0, 0.0, 0.6)
+const COR_FUNDO: Color = UiHelpers.COR_FUNDO_OVERLAY
 const COR_BOTAO: Color = Color("#5b8a4a")
 
 # Medidas em px logicos (handoff 9.2)
