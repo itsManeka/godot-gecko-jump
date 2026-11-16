@@ -436,6 +436,25 @@ func test_c361_hold_no_voo_do_tap_assume_o_lateral_e_solta_so_no_release() -> vo
 	assert_true(_nenhuma_pressionada(), "o lateral solta so no release do dedo")
 
 
+# Hold do mesmo lado do tap (o caso comum com um polegar): o hold assume o mesmo lateral, que segue pressionado sem
+# buraco, nao solta no pouso e sai so no release do dedo.
+func test_c361b_hold_no_voo_do_mesmo_lado_do_tap_segue_sem_buraco_e_solta_no_release() -> void:
+	_spawn()
+	_tap(ESQ)
+	_tick()
+	assert_true(Input.is_action_pressed("ui_left"), "pre-condicao: lateral do tap sustentado no voo")
+	_toque(ESQ, true)  # novo toque no ar, mesmo lado do tap, que vira hold
+	_t += 250  # passa do limiar de 200 ms
+	_tick()  # tick em que o hold assume
+	assert_true(Input.is_action_pressed("ui_left"), "o hold do mesmo lado mantem o lateral pressionado")
+	_p.on_ground = true  # pouso com o dedo do hold ainda na tela
+	_tick()
+	_tick()
+	assert_true(Input.is_action_pressed("ui_left"), "o pouso nao solta o lateral do hold (posse saiu do tap)")
+	_toque(ESQ, false)
+	assert_true(_nenhuma_pressionada(), "o lateral solta so no release do dedo")
+
+
 func test_c362_tap_no_ar_troca_o_lateral_ate_o_pouso_e_nao_pula() -> void:
 	_spawn()
 	await _entrar_no_quadro_fisico()

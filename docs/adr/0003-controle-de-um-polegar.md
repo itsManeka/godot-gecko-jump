@@ -34,6 +34,8 @@ inteira como area de toque (Leap Day, Tower Climb, Color Jump), sem botoes virtu
   lado tocado (ou se estende) e segue ate o pouso: com um polegar so, o jogador corrige a rota no meio do voo.
 - **Hold no meio do voo** assume a posse do lateral: solta o lateral do tap (de qualquer lado), anda enquanto o dedo
   esta na tela e o solta no release do dedo. O pouso nao devolve o lateral ao tap.
+- **Modo pulo ao pressionar** (`PULO_NO_PRESSIONAR = true`, opcional, fora do default): o lateral do pulo segue so o
+  pulso curto de `TICKS_MINIMOS`; o lateral sustentado ate o pouso vale so para o tap no release.
 - **Acao ja pressionada por outro** (teclado, joypad) nunca e assumida nem solta pela camada de toque.
 - **Atraso do hold** (#44): como tap x hold so e decidido no release, o hold so comeca a andar ~200 ms (~12 ticks,
   ~16 px) depois de tocar. A velocidade depois disso e a mesma do teclado (80 px/s, mesma acao); o atraso fica

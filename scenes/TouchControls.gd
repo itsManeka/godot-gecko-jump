@@ -11,6 +11,7 @@ signal gesto_concluido(resultado: int, lado: int)
 
 # Decisoes do G1, cada uma em UM simbolo (a troca e de uma linha).
 # D1b: false = pulo ao soltar (tap); true = pulo ao pressionar (e anda se passar do limiar).
+# Com true, o lateral do pulo e so o pulso de TICKS_MINIMOS (sem o lateral sustentado ate o pouso do #44).
 const PULO_NO_PRESSIONAR: bool = false
 # D3: janela (ms) em que o jump segue pressionado depois do tap; 0 = so o minimo (tap no ar e perdido, como o teclado).
 const BUFFER_PULO_MS: int = 0
@@ -202,6 +203,7 @@ func _avancar_lateral_tap() -> void:
 	if _lateral_tap == "":
 		return
 	_lateral_tap_ticks += 1
+	# player nulo ou sem on_ground (get -> null) cai no else: conta como decolado e so o teto solta o lateral.
 	if player != null and player.get("on_ground") == true:
 		if _lateral_tap_decolou:
 			_soltar_lateral_tap()
