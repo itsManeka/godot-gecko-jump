@@ -1,0 +1,18 @@
+{
+  "path": "index.html?seed=462&semderrota=1&tutorial=visto",
+  "viewport": [720, 1280],
+  "boot_ms": 6000,
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "tap": [360, 640] },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "toque-inicio", "moving": true },
+    { "hold": [100, 640, 400] },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "toque-hold-esq", "moving": true },
+    { "tap": [620, 640] },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "toque-tap-dir", "moving": true },
+    { "expect": { "state": "playing", "player.alive": true }, "timeout_ms": 3000 }
+  ]
+}
