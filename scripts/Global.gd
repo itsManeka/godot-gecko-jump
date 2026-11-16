@@ -89,6 +89,22 @@ func usar_options_store(store: OptionsStore) -> void:
 	_volume_sfx = store.load_sfx()
 	_aplicar_bus("Music", _volume_music)
 	_aplicar_bus("SFX", _volume_sfx)
+	_touch_mode = TouchMode.de_valor(store.load_value(TouchMode.SECTION, TouchMode.KEY, TouchMode.SEM_VALOR))
+	touch_mode_changed.emit(_touch_mode)
+
+# Modo de toque (TouchMode): consultado por TouchControls/TouchHint; o sinal avisa a troca.
+signal touch_mode_changed(modo: int)
+var _touch_mode: TouchMode.Modo = TouchMode.padrao()
+
+# Aplica o modo na hora; grava no store so com `persistir`.
+func set_touch_mode(m: int, persistir: bool = true) -> void:
+	_touch_mode = TouchMode.de_valor(m)
+	if persistir:
+		opcoes.save_value(TouchMode.SECTION, TouchMode.KEY, int(_touch_mode))
+	touch_mode_changed.emit(_touch_mode)
+
+func get_touch_mode() -> TouchMode.Modo:
+	return _touch_mode
 
 # Aplica no bus sempre; grava no store so com `persistir` (arrasto de slider aplica sem gravar e grava ao soltar).
 func set_volume_music(v: float, persistir: bool = true) -> void:
