@@ -15,6 +15,8 @@ const PROFUNDIDADE: float = 20.0
 const SUBIDA_S: float = 0.06
 const QUEDA_S: float = 0.19
 const INTERVALO_S: float = 0.05
+# Multiplicador das duracoes do pulso com `lenta` (so smoke debug); com `lenta` o teto de ~1 s nao se aplica
+const LENTA_VEZES: float = 20.0
 # Acima do jogo, abaixo do HUD (CanvasLayer da Stage, layer 1)
 const CAMADA: int = 0
 
@@ -25,6 +27,9 @@ var _tween: Tween = null
 var _pulsando: bool = false
 # Smoke debug (`?moldura=fixa`): o pulso acende direto e fica aceso ate `interromper` (o print do runner chega tarde)
 var fixa: bool = false
+# Smoke debug (`?moldura=lenta`): pulso em camera lenta (duracoes multiplicadas por LENTA_VEZES) para o print do
+# runner pegar o Tween real no meio do pulso. Nunca liga em release (decisor `ModoMolduraLenta`).
+var lenta: bool = false
 
 
 func _ready() -> void:
@@ -88,12 +93,19 @@ func pulsar(n: int) -> void:
 	if fixa:
 		_raiz.modulate.a = 1.0
 		return
+	var subida := SUBIDA_S
+	var queda := QUEDA_S
+	var intervalo := INTERVALO_S
+	if lenta:
+		subida *= LENTA_VEZES
+		queda *= LENTA_VEZES
+		intervalo *= LENTA_VEZES
 	_tween = create_tween()
 	for i in n:
-		_tween.tween_property(_raiz, "modulate:a", 1.0, SUBIDA_S).from(0.0)
-		_tween.tween_property(_raiz, "modulate:a", 0.0, QUEDA_S)
+		_tween.tween_property(_raiz, "modulate:a", 1.0, subida).from(0.0)
+		_tween.tween_property(_raiz, "modulate:a", 0.0, queda)
 		if i < n - 1:
-			_tween.tween_interval(INTERVALO_S)
+			_tween.tween_interval(intervalo)
 	_tween.tween_callback(_terminar)
 
 
