@@ -1,16 +1,16 @@
 class_name LevelUpFrame
 extends CanvasLayer
 
-# Aviso visual de subida de estagio: moldura branca na borda da safe area que pulsa N vezes (N = estagio novo).
-# So desenho: nenhum no recebe entrada (mouse_filter IGNORE, sem foco) e nao ha texto. Montada por codigo; a Stage a
-# instancia e injeta o layout (`aplicar_layout`). O pulso e um Tween do proprio no: pausar a arvore congela o pulso.
-# `pulsar` exige o no dentro da arvore (o Tween nasce dele).
+# Aviso visual de subida de estagio: vinheta branca colada nas bordas da safe area (alpha de pico na borda, decaindo
+# para o miolo, que fica transparente) que pulsa N vezes (N = estagio novo). So desenho: nenhum no recebe entrada
+# (mouse_filter IGNORE, sem foco) e nao ha texto. Montada por codigo; a Stage a instancia e injeta o layout
+# (`aplicar_layout`). O pulso e um Tween do proprio no: pausar a arvore congela o pulso. `pulsar` exige o no dentro da
+# arvore (o Tween nasce dele).
 
 const COR: Color = Color(1.0, 1.0, 1.0, 1.0)
-const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 0.6)
-# Espessura da moldura e do contorno escuro interno, em px logicos
-const ESPESSURA: float = 4.0
-const ESPESSURA_CONTORNO: float = 1.0
+# Vinheta (D1 = A): alpha de pico na borda da safe area e profundidade do gradiente para dentro, em px logicos
+const ALPHA_PICO: float = 0.5
+const PROFUNDIDADE: float = 20.0
 # Um pulso dura 0,3 s: acende rapido, apaga em fade, pausa curta entre pulsos (3 pulsos < 1 s)
 const SUBIDA_S: float = 0.06
 const QUEDA_S: float = 0.19
@@ -50,6 +50,22 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 # Retangulo externo da moldura (coordenadas logicas).
 func rect_moldura() -> Rect2:
 	return _moldura
+
+
+# Alpha do desenho em um ponto logico (sem o modulate do pulso): pico na borda da safe area, decaindo ate 0 a
+# PROFUNDIDADE para dentro; 0 fora da safe area e no miolo.
+func intensidade_em(ponto: Vector2) -> float:
+	var borda := _distancia_da_borda(ponto)
+	if borda < 0.0 or borda >= PROFUNDIDADE:
+		return 0.0
+	return ALPHA_PICO * (1.0 - borda / PROFUNDIDADE)
+
+
+# Distancia ate a borda mais proxima da safe area (negativa quando o ponto esta fora do retangulo).
+func _distancia_da_borda(ponto: Vector2) -> float:
+	var dx := minf(ponto.x - _moldura.position.x, _moldura.end.x - ponto.x)
+	var dy := minf(ponto.y - _moldura.position.y, _moldura.end.y - ponto.y)
+	return minf(dx, dy)
 
 
 # Alpha atual da moldura (0 = apagada).
@@ -102,13 +118,29 @@ func _aplicar() -> void:
 
 
 func _desenhar() -> void:
-	_borda(_moldura, ESPESSURA, COR)
-	_borda(_moldura.grow(-ESPESSURA), ESPESSURA_CONTORNO, COR_CONTORNO)
+	var d := minf(PROFUNDIDADE, minf(_moldura.size.x, _moldura.size.y) * 0.5)
+	if d <= 0.0:
+		return
+	var x0 := _moldura.position.x
+	var y0 := _moldura.position.y
+	var x1 := _moldura.end.x
+	var y1 := _moldura.end.y
+	# Faixas das 4 bordas (sem os cantos, para nao sobrepor alpha) e os 4 cantos: quads com gradiente por vertice,
+	# sem textura nem shader (vale no export web).
+	_quad(Vector2(x0 + d, y0), Vector2(x1 - d, y0), Vector2(x1 - d, y0 + d), Vector2(x0 + d, y0 + d))
+	_quad(Vector2(x0 + d, y1 - d), Vector2(x1 - d, y1 - d), Vector2(x1 - d, y1), Vector2(x0 + d, y1))
+	_quad(Vector2(x0, y0 + d), Vector2(x0 + d, y0 + d), Vector2(x0 + d, y1 - d), Vector2(x0, y1 - d))
+	_quad(Vector2(x1 - d, y0 + d), Vector2(x1, y0 + d), Vector2(x1, y1 - d), Vector2(x1 - d, y1 - d))
+	_quad(Vector2(x0, y0), Vector2(x0 + d, y0), Vector2(x0 + d, y0 + d), Vector2(x0, y0 + d))
+	_quad(Vector2(x1 - d, y0), Vector2(x1, y0), Vector2(x1, y0 + d), Vector2(x1 - d, y0 + d))
+	_quad(Vector2(x0, y1 - d), Vector2(x0 + d, y1 - d), Vector2(x0 + d, y1), Vector2(x0, y1))
+	_quad(Vector2(x1 - d, y1 - d), Vector2(x1, y1 - d), Vector2(x1, y1), Vector2(x1 - d, y1))
 
 
-# Quatro faixas de largura `esp` por dentro do retangulo `r`.
-func _borda(r: Rect2, esp: float, cor: Color) -> void:
-	_raiz.draw_rect(Rect2(r.position.x, r.position.y, r.size.x, esp), cor)
-	_raiz.draw_rect(Rect2(r.position.x, r.end.y - esp, r.size.x, esp), cor)
-	_raiz.draw_rect(Rect2(r.position.x, r.position.y + esp, esp, r.size.y - 2.0 * esp), cor)
-	_raiz.draw_rect(Rect2(r.end.x - esp, r.position.y + esp, esp, r.size.y - 2.0 * esp), cor)
+# Quadrilatero pintado com o alpha de `intensidade_em` em cada vertice (o gradiente da vinheta).
+func _quad(p1: Vector2, p2: Vector2, p3: Vector2, p4: Vector2) -> void:
+	var pontos := PackedVector2Array([p1, p2, p3, p4])
+	var cores := PackedColorArray()
+	for p in pontos:
+		cores.append(Color(COR.r, COR.g, COR.b, intensidade_em(p)))
+	_raiz.draw_polygon(pontos, cores)

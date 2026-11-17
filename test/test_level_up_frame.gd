@@ -201,3 +201,102 @@ func test_fixa_pulsar_zero_nao_acende() -> void:
 	f.pulsar(0)
 	assert_eq(f.alpha(), 0.0, "n=0 nao acende")
 	assert_false(f.pulsando(), "n=0 nao pulsa")
+
+
+# Forma da vinheta (f490 T1, D1 = A): alpha de pico 0,5 na borda da safe area, decaindo ate 0 a 20 px para dentro, 0
+# fora da safe area. Valores esperados vem do spec (D2), nao da implementacao.
+
+func test_c442_miolo_da_safe_e_ponto_fora_dela_nao_desenham() -> void:
+	var f := _nova()
+	var safe := f.rect_moldura()
+	assert_eq(f.intensidade_em(safe.get_center()), 0.0, "centro do miolo transparente")
+	assert_eq(f.intensidade_em(safe.position + Vector2(60.0, 60.0)), 0.0, "miolo longe das bordas segue 0")
+	f.aplicar_layout(VISIVEL, Rect2(6.0, 24.0, 160.0, 270.0))
+	var deslocada := f.rect_moldura()
+	assert_eq(f.intensidade_em(deslocada.get_center()), 0.0, "centro da safe deslocada transparente")
+	assert_eq(f.intensidade_em(Vector2(0.0, deslocada.get_center().y)), 0.0, "ponto fora da safe injetada nao desenha")
+
+
+func test_c443_borda_externa_esquerda_tem_alpha_de_pico() -> void:
+	var f := _nova()
+	var safe := f.rect_moldura()
+	assert_eq(LevelUpFrame.ALPHA_PICO, 0.5, "pico do spec (D2)")
+	assert_eq(f.intensidade_em(Vector2(safe.position.x, safe.get_center().y)), 0.5, "borda externa esquerda = ALPHA_PICO")
+
+
+func test_c444_intensidade_decresce_para_dentro_e_zera_a_20_px() -> void:
+	var f := _nova()
+	var safe := f.rect_moldura()
+	var y := safe.get_center().y
+	var anterior := INF
+	for d in [0.0, 5.0, 10.0, 15.0]:
+		var v := f.intensidade_em(Vector2(safe.position.x + d, y))
+		assert_almost_eq(v, 0.5 * (1.0 - d / 20.0), 0.0001, "amostra a %s px segue o gradiente do spec" % d)
+		assert_lte(v, anterior, "amostra a %s px nao cresce para dentro" % d)
+		anterior = v
+	assert_eq(f.intensidade_em(Vector2(safe.position.x + 20.0, y)), 0.0, "zera a 20 px (PROFUNDIDADE)")
+	assert_eq(f.intensidade_em(Vector2(safe.position.x + 25.0, y)), 0.0, "segue 0 alem da PROFUNDIDADE")
+
+
+func test_c445_borda_esquerda_acende_a_2_px_dentro() -> void:
+	var f := _nova()
+	var safe := f.rect_moldura()
+	assert_gt(f.intensidade_em(Vector2(safe.position.x + 2.0, safe.get_center().y)), 0.0, "2 px dentro da borda esquerda")
+
+
+func test_c446_borda_direita_acende_a_2_px_dentro() -> void:
+	var f := _nova()
+	var safe := f.rect_moldura()
+	assert_gt(f.intensidade_em(Vector2(safe.end.x - 2.0, safe.get_center().y)), 0.0, "2 px dentro da borda direita")
+
+
+func test_c447_borda_de_cima_acende_a_2_px_dentro() -> void:
+	var f := _nova()
+	var safe := f.rect_moldura()
+	assert_gt(f.intensidade_em(Vector2(safe.get_center().x, safe.position.y + 2.0)), 0.0, "2 px dentro da borda de cima")
+
+
+func test_c448_borda_de_baixo_acende_a_2_px_dentro() -> void:
+	var f := _nova()
+	var safe := f.rect_moldura()
+	assert_gt(f.intensidade_em(Vector2(safe.get_center().x, safe.end.y - 2.0)), 0.0, "2 px dentro da borda de baixo")
+
+
+func test_c449_forma_acompanha_a_safe_area_deslocada() -> void:
+	var f := _nova()
+	f.aplicar_layout(VISIVEL, Rect2(6.0, 24.0, 160.0, 270.0))
+	var safe := f.rect_moldura()
+	assert_eq(f.intensidade_em(Vector2(safe.position.x, safe.get_center().y)), 0.5, "borda externa da safe deslocada = ALPHA_PICO")
+	assert_eq(f.intensidade_em(Vector2(0.0, safe.get_center().y)), 0.0, "x = 0 (borda se a safe fosse a origem) nao acende")
+
+
+func test_c450_vinheta_nao_cobre_o_miolo() -> void:
+	var f := _nova()
+	var safe := f.rect_moldura()
+	var menor := minf(safe.size.x, safe.size.y)
+	assert_lt(LevelUpFrame.ALPHA_PICO, 1.0, "ALPHA_PICO < 1: o aviso nunca fica opaco")
+	assert_lte(LevelUpFrame.PROFUNDIDADE, menor * 0.15, "PROFUNDIDADE <= 15 % da menor dimensao da safe")
+	assert_eq(f.intensidade_em(Vector2(safe.position.x + menor * 0.15, safe.get_center().y)), 0.0, "a 15 % para dentro ja e miolo")
+
+
+func test_c451_cantos_nao_vazam_para_fora_nem_passam_do_pico() -> void:
+	var f := _nova()
+	var safe := f.rect_moldura()
+	var inicio := safe.position
+	var fim := safe.end
+	assert_eq(f.intensidade_em(inicio + Vector2(-1.0, -1.0)), 0.0, "1 px fora do canto superior esquerdo = 0")
+	assert_eq(f.intensidade_em(Vector2(fim.x + 1.0, inicio.y - 1.0)), 0.0, "1 px fora do canto superior direito = 0")
+	assert_eq(f.intensidade_em(Vector2(inicio.x - 1.0, fim.y + 1.0)), 0.0, "1 px fora do canto inferior esquerdo = 0")
+	assert_eq(f.intensidade_em(fim + Vector2(1.0, 1.0)), 0.0, "1 px fora do canto inferior direito = 0")
+	var canto := f.intensidade_em(inicio + Vector2(1.0, 1.0))
+	assert_gt(canto, 0.0, "o canto interno (onde 2 faixas se sobrepoem) acende")
+	assert_lte(canto, LevelUpFrame.ALPHA_PICO, "o canto interno nao passa de ALPHA_PICO")
+
+
+func test_c452_constantes_da_moldura_antiga_foram_removidas() -> void:
+	var f := _nova()
+	var constantes: Dictionary = f.get_script().get_script_constant_map()
+	for nome in ["ESPESSURA", "ESPESSURA_CONTORNO", "COR_CONTORNO"]:
+		assert_false(constantes.has(nome), "%s nao existe mais no no" % nome)
+	assert_true(constantes.has("PROFUNDIDADE"), "PROFUNDIDADE e a constante da forma nova")
+	assert_true(constantes.has("ALPHA_PICO"), "ALPHA_PICO e a constante da forma nova")
