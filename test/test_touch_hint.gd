@@ -328,9 +328,9 @@ func test_c420_trocar_o_modo_rearma_a_dica_ja_mostrada() -> void:
 func test_c177_dica_visivel_nao_muda_a_classificacao_do_toque() -> void:
 	var sem := await _classificar_tap(false)
 	var com := await _classificar_tap(true)
-	assert_eq(sem.size(), 2, "o tap gera um gesto sem a dica")
-	assert_eq(com, sem, "mesmo tap, mesmo resultado e lado com a dica visivel")
-	assert_eq(sem[0], TouchClassifier.Resultado.TAP, "o tap rapido e classificado como TAP")
+	assert_eq(sem.size(), 3, "o tap gera as 3 acoes lidas apos o press")
+	assert_true(sem.has(true), "o toque aciona alguma acao sem a dica")
+	assert_eq(com, sem, "mesmo toque, mesmas acoes com a dica visivel")
 
 
 func _classificar_tap(com_dica: bool) -> Array:
@@ -349,12 +349,15 @@ func _classificar_tap(com_dica: bool) -> Array:
 		h = _nova_dica(true)
 		await wait_process_frames(2)
 		assert_true(h.visible, "pre-condicao: dica visivel")
-	var visto: Array = []
-	c.gesto_concluido.connect(func(r: int, l: int) -> void: visto.append_array([r, l]))
 	var e := _toque(true)
 	c._input(e)
+	var visto: Array = []
+	for acao in ["ui_left", "ui_right", "jump"]:
+		visto.append(Input.is_action_pressed(acao))
 	t[0] = 50
 	c._input(_toque(false))
+	for acao in ["ui_left", "ui_right", "jump"]:
+		Input.action_release(acao)
 	if h != null:
 		h._input(e)
 	return visto

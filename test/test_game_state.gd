@@ -79,6 +79,74 @@ func test_build_publica_dificuldade_aviso_bool_default_false() -> void:
 	assert_eq((volta["dificuldade"] as Dictionary)["aviso"], true, "round-trip preserva aviso true")
 
 
+func test_build_publica_player_xy_inteiros_arredondados() -> void:
+	# (a) default: sem posicao, 0/0 inteiros
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	assert_eq((padrao["player"] as Dictionary)["x"], 0, "padrao: player.x 0")
+	assert_eq((padrao["player"] as Dictionary)["y"], 0, "padrao: player.y 0")
+	# (b) comum: positivo arredonda para cima, negativo para o mais proximo
+	var pos: Dictionary = (
+		GameState.build(1, 2, "playing", true, 100, 100, false, 0, false, 12.6, -12.4)["player"] as Dictionary
+	)
+	assert_eq(pos["x"], 13, "12.6 -> 13")
+	assert_eq(pos["y"], -12, "-12.4 -> -12")
+	assert_eq(typeof(pos["x"]), TYPE_INT, "player.x e int")
+	assert_eq(typeof(pos["y"]), TYPE_INT, "player.y e int")
+	# (c) degenerado: sinais trocados
+	var inv: Dictionary = (
+		GameState.build(1, 2, "playing", true, 100, 100, false, 0, false, -12.6, 12.4)["player"] as Dictionary
+	)
+	assert_eq(inv["x"], -13, "-12.6 -> -13")
+	assert_eq(inv["y"], 12, "12.4 -> 12")
+
+
+func test_build_alive_false_preserva_posicao_e_demais_campos() -> void:
+	var estado: Dictionary = GameState.build(3, 9, "lost", false, 40, 50, false, 2, false, 30.0, 70.0)
+	var jogador: Dictionary = estado["player"] as Dictionary
+	assert_eq(jogador["alive"], false, "alive false")
+	assert_eq(jogador["x"], 30, "x preservado")
+	assert_eq(jogador["y"], 70, "y preservado")
+	assert_eq(estado["score"], 3, "score igual")
+	assert_eq((estado["volume"] as Dictionary)["music"], 40, "volume igual")
+	assert_eq((estado["dificuldade"] as Dictionary)["estagio"], 2, "dificuldade igual")
+
+
+func _nova_stage() -> Node:
+	var stage: Node = (load("res://scenes/Stage.tscn") as PackedScene).instantiate()
+	add_child_autofree(stage)
+	return stage
+
+
+func test_stage_republica_so_quando_par_arredondado_muda() -> void:
+	var stage: Node = _nova_stage()
+	stage._on_Play_button_down()
+	stage.player.global_position = Vector2(50.0, 80.0)
+	stage._physics_process(0.016)
+	assert_eq((stage.ultimo_estado["player"] as Dictionary)["x"], 50, "publicou x inicial")
+	# parado: mesmo par -> nao republica (o dicionario publicado e o mesmo objeto)
+	var antes: Dictionary = stage.ultimo_estado
+	stage._physics_process(0.016)
+	assert_same(stage.ultimo_estado, antes, "parado nao republica")
+	# mudanca sub-pixel que nao troca o arredondado: nao republica
+	stage.player.global_position = Vector2(50.2, 80.0)
+	stage._physics_process(0.016)
+	assert_same(stage.ultimo_estado, antes, "mesmo par arredondado nao republica")
+	# par muda -> republica
+	stage.player.global_position = Vector2(53.0, 81.0)
+	stage._physics_process(0.016)
+	var jogador: Dictionary = stage.ultimo_estado["player"] as Dictionary
+	assert_eq(jogador["x"], 53, "republicou x")
+	assert_eq(jogador["y"], 81, "republicou y")
+
+
+func test_stage_fora_de_partida_nao_publica_posicao() -> void:
+	var stage: Node = _nova_stage()
+	var menu: Dictionary = stage.ultimo_estado
+	stage.player.global_position = Vector2(90.0, 200.0)
+	stage._physics_process(0.016)
+	assert_same(stage.ultimo_estado, menu, "menu: posicao nova nao republica")
+
+
 func test_json_stringify_parseia_de_volta_igual() -> void:
 	var estado: Dictionary = GameState.build(5, 9, "lost", false)
 	var texto: String = JSON.stringify(estado)

@@ -8,13 +8,18 @@ const SAFE_TOTAL := Rect2(0.0, 0.0, 180.0, 320.0)
 const SAFE_COM_TOPO := Rect2(0.0, 20.0, 180.0, 294.0)
 
 
+var _modo_original: TouchMode.Modo = TouchMode.padrao()
+
+
 func before_each() -> void:
+	_modo_original = Global.get_touch_mode()
 	Global.tutorial_visto_espelho = true
 	Global.platforms = []
 	Global.iniciado = false
 
 
 func after_each() -> void:
+	Global.set_touch_mode(_modo_original)
 	Input.action_release("jump")
 	get_tree().paused = false
 	Global.platforms = []
@@ -103,13 +108,29 @@ func test_voltar_restaura_o_menu_com_foco_no_botao_e_o_inicio_volta() -> void:
 func test_toque_real_em_ver_tutorial_abre_o_tutorial_reaberto_sem_iniciar() -> void:
 	var stage := await _novo_stage()
 	_abrir_pelo_botao(stage)
-	assert_true(stage.options_screen.rect_ver_tutorial() == Rect2(34, 198, 112, 32), "Ver tutorial y[198,230] em 180x320")
+	assert_true(stage.options_screen.rect_ver_tutorial() == Rect2(34, 218, 112, 32), "Ver tutorial y[218,250] em 180x320")
 	var centro: Vector2 = stage.options_screen.rect_ver_tutorial().get_center()
 	await _toque_real(true, centro)
 	await _toque_real(false, centro)
 	assert_true(stage.tutorial_revisao.esta_aberto(), "Ver tutorial abre o card reaberto")
 	assert_false(stage.options_screen.esta_aberta(), "Opcoes some enquanto o tutorial esta aberto")
 	assert_false(stage.started, "o toque em Ver tutorial nao inicia a partida")
+
+
+func test_c413_toque_no_seletor_no_menu_nao_inicia_aplica_o_modo_e_rearma_so_a_dica() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var stage := await _novo_stage()
+	_abrir_pelo_botao(stage)
+	Global.dica_toque_mostrada = true
+	var centro: Vector2 = stage.options_screen.rect_toque().get_center()
+	await _toque_real(true, centro)
+	await _toque_real(false, centro)
+	assert_false(stage.started, "o toque no seletor nao inicia a partida")
+	assert_false(Input.is_action_pressed("jump"), "o toque no seletor nao vaza ao jogo")
+	assert_true(stage.options_screen.esta_aberta(), "a tela segue aberta")
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "o modo foi aplicado de imediato")
+	assert_false(Global.dica_toque_mostrada, "trocar o modo rearma a dica (Q8)")
+	assert_true(Global.tutorial_visto_espelho, "trocar o modo nao rearma o tutorial")
 
 
 func test_play_volta_a_iniciar_depois_de_voltar() -> void:

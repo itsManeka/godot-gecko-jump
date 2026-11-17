@@ -15,7 +15,8 @@ const STATE_TUTORIAL_FECHADO := "fechado"
 # Monta o estado publicado: `score` e `best` (int), `state` ("menu"|"playing"|"lost"), `player.alive` (bool) e
 # `volume.music`/`volume.sfx` (int 0-100, o mesmo valor mostrado nos sliders de Opcoes) e
 # `tutorial` ("aberto"|"fechado": card do tutorial) e `dificuldade.estagio` (int, indice do estagio na curva; 0 = inicial) e
-# `dificuldade.aviso` (bool, true enquanto a moldura de subida de estagio pulsa)
+# `dificuldade.aviso` (bool, true enquanto a moldura de subida de estagio pulsa) e
+# `player.x`/`player.y` (int, pixels logicos arredondados de `player_x`/`player_y`)
 static func build(
 	score: int,
 	best: int,
@@ -25,13 +26,15 @@ static func build(
 	sfx: int = 100,
 	tutorial_aberto: bool = false,
 	estagio: int = 0,
-	aviso: bool = false
+	aviso: bool = false,
+	player_x: float = 0.0,
+	player_y: float = 0.0
 ) -> Dictionary:
 	return {
 		"score": score,
 		"best": best,
 		"state": state,
-		"player": {"alive": alive},
+		"player": {"alive": alive, "x": roundi(player_x), "y": roundi(player_y)},
 		"volume": {"music": music, "sfx": sfx},
 		"tutorial": STATE_TUTORIAL_ABERTO if tutorial_aberto else STATE_TUTORIAL_FECHADO,
 		"dificuldade": {"estagio": estagio, "aviso": aviso},

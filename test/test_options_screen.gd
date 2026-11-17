@@ -72,29 +72,32 @@ func _mudo(bus: String) -> bool:
 
 func test_c199_retangulos_batem_com_a_tabela_do_handoff_10_2_com_ver_tutorial() -> void:
 	var o := _nova()
-	assert_true(o.rect_music() == Rect2(8, 111, 164, 24), "180x320: Music x[8,172] y[111,135]")
-	assert_true(o.rect_sfx() == Rect2(8, 162, 164, 24), "180x320: SFX x[8,172] y[162,186]")
-	assert_true(o.rect_ver_tutorial() == Rect2(34, 198, 112, 32), "180x320: Ver tutorial x[34,146] y[198,230]")
-	assert_true(o.rect_voltar() == Rect2(34, 238, 112, 32), "180x320: Voltar x[34,146] y[238,270]")
+	assert_true(o.rect_music() == Rect2(8, 91, 164, 24), "180x320: Music x[8,172] y[91,115]")
+	assert_true(o.rect_sfx() == Rect2(8, 142, 164, 24), "180x320: SFX x[8,172] y[142,166]")
+	assert_true(o.rect_toque() == Rect2(34, 178, 112, 32), "180x320: Toque x[34,146] y[178,210]")
+	assert_true(o.rect_ver_tutorial() == Rect2(34, 218, 112, 32), "180x320: Ver tutorial x[34,146] y[218,250]")
+	assert_true(o.rect_voltar() == Rect2(34, 258, 112, 32), "180x320: Voltar x[34,146] y[258,290]")
 
 
 func test_c217_retangulos_de_ver_tutorial_e_voltar_em_320_e_em_400() -> void:
 	var o := _nova()
-	assert_true(o.rect_ver_tutorial() == Rect2(34, 198, 112, 32), "180x320: Ver tutorial y[198,230]")
-	assert_true(o.rect_voltar() == Rect2(34, 238, 112, 32), "180x320: Voltar y[238,270]")
+	assert_true(o.rect_ver_tutorial() == Rect2(34, 218, 112, 32), "180x320: Ver tutorial y[218,250]")
+	assert_true(o.rect_voltar() == Rect2(34, 258, 112, 32), "180x320: Voltar y[258,290]")
 	var alta := _nova(Vector2(180.0, 400.0))
-	assert_true(alta.rect_ver_tutorial() == Rect2(34, 238, 112, 32), "180x400: Ver tutorial y[238,270]")
-	assert_true(alta.rect_voltar() == Rect2(34, 278, 112, 32), "180x400: Voltar y[278,310]")
+	assert_true(alta.rect_toque() == Rect2(34, 218, 112, 32), "180x400: Toque y[218,250]")
+	assert_true(alta.rect_ver_tutorial() == Rect2(34, 258, 112, 32), "180x400: Ver tutorial y[258,290]")
+	assert_true(alta.rect_voltar() == Rect2(34, 298, 112, 32), "180x400: Voltar y[298,330]")
 
 
 func test_c200_com_safe_area_todos_os_retangulos_ficam_dentro() -> void:
 	var safe := Rect2(0, 20, 180, 294)
 	var o := _nova(PEQUENA, safe)
-	assert_true(o.rect_music() == Rect2(8, 118, 164, 24), "s_top 20 / s_bottom 6: Music y[118,142]")
-	assert_true(o.rect_sfx() == Rect2(8, 169, 164, 24), "s_top 20 / s_bottom 6: SFX y[169,193]")
-	assert_true(o.rect_ver_tutorial() == Rect2(34, 205, 112, 32), "s_top 20 / s_bottom 6: Ver tutorial y[205,237]")
-	assert_true(o.rect_voltar() == Rect2(34, 245, 112, 32), "s_top 20 / s_bottom 6: Voltar y[245,277]")
-	for r in [o.rect_music(), o.rect_sfx(), o.rect_ver_tutorial(), o.rect_voltar()]:
+	assert_true(o.rect_music() == Rect2(8, 98, 164, 24), "s_top 20 / s_bottom 6: Music y[98,122]")
+	assert_true(o.rect_sfx() == Rect2(8, 149, 164, 24), "s_top 20 / s_bottom 6: SFX y[149,173]")
+	assert_true(o.rect_toque() == Rect2(34, 185, 112, 32), "s_top 20 / s_bottom 6: Toque y[185,217]")
+	assert_true(o.rect_ver_tutorial() == Rect2(34, 225, 112, 32), "s_top 20 / s_bottom 6: Ver tutorial y[225,257]")
+	assert_true(o.rect_voltar() == Rect2(34, 265, 112, 32), "s_top 20 / s_bottom 6: Voltar y[265,297]")
+	for r in [o.rect_music(), o.rect_sfx(), o.rect_toque(), o.rect_ver_tutorial(), o.rect_voltar()]:
 		assert_true(safe.encloses(r), "retangulo %s dentro da safe area" % str(r))
 
 
@@ -153,7 +156,12 @@ func test_c204_foco_circula_music_sfx_ver_tutorial_voltar_e_accept_emite() -> vo
 	assert_eq(_voltou, 0, "ui_accept em slider nao emite voltar")
 	assert_eq(tutoriais[0], 0, "ui_accept em slider nao emite ver_tutorial")
 	o.tratar_evento(_acao("ui_down"))
-	assert_eq(o.foco_atual(), OptionsScreen.Item.VER_TUTORIAL, "ui_down em SFX vai a Ver tutorial")
+	assert_eq(o.foco_atual(), OptionsScreen.Item.TOQUE, "ui_down em SFX vai a Toque")
+	o.tratar_evento(_acao("ui_accept"))
+	assert_eq(_voltou, 0, "ui_accept em Toque nao emite voltar")
+	assert_eq(tutoriais[0], 0, "ui_accept em Toque nao emite ver_tutorial")
+	o.tratar_evento(_acao("ui_down"))
+	assert_eq(o.foco_atual(), OptionsScreen.Item.VER_TUTORIAL, "ui_down em Toque vai a Ver tutorial")
 	o.tratar_evento(_acao("ui_accept"))
 	assert_eq(tutoriais[0], 1, "ui_accept em Ver tutorial emite ver_tutorial")
 	assert_eq(_voltou, 0, "ui_accept em Ver tutorial nao emite voltar")
@@ -270,6 +278,84 @@ func test_passo_de_teclado_grava_na_hora() -> void:
 	var o := _nova()
 	o.tratar_evento(_acao("ui_right"))
 	assert_almost_eq(OptionsStore.new(TEMP_PATH).load_music(), 0.55, 0.0001, "ui_right grava 55 sem esperar soltar")
+
+
+func _tocar_seletor(o: OptionsScreen) -> void:
+	var centro := o.rect_toque().get_center()
+	o.tratar_evento(_toque(centro, true))
+	o.tratar_evento(_toque(centro, false))
+
+
+func test_c408_tocar_o_seletor_vai_de_a_para_b() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	assert_eq(o.texto_toque(), "Toque: A", "abre mostrando o modo corrente")
+	_tocar_seletor(o)
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "A -> B no Global")
+	assert_eq(o.texto_toque(), "Toque: B", "rotulo mostra Toque: B")
+
+
+func test_c409_tocar_o_seletor_vai_de_b_para_c() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var o := _nova()
+	_tocar_seletor(o)
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.C, "B -> C no Global")
+	assert_eq(o.texto_toque(), "Toque: C", "rotulo mostra Toque: C")
+
+
+func test_c410_tocar_o_seletor_vai_de_c_para_a() -> void:
+	Global.set_touch_mode(TouchMode.Modo.C, false)
+	var o := _nova()
+	_tocar_seletor(o)
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.A, "C -> A no Global")
+	assert_eq(o.texto_toque(), "Toque: A", "rotulo mostra Toque: A")
+	assert_eq(_voltou, 0, "o seletor nao emite voltar")
+
+
+func test_c411_ui_accept_cicla_e_reabrir_mostra_o_modo_salvo() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	o.abrir(OptionsScreen.Item.TOQUE)
+	o.tratar_evento(_acao("ui_accept"))
+	assert_eq(o.texto_toque(), "Toque: B", "ui_accept com foco no item vai de A para B")
+	var salvo: Variant = OptionsStore.new(TEMP_PATH).load_value(TouchMode.SECTION, TouchMode.KEY, TouchMode.SEM_VALOR)
+	assert_eq(int(salvo), int(TouchMode.Modo.B), "o modo ficou gravado no store temporario")
+	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
+	o.fechar()
+	o.abrir()
+	assert_eq(o.texto_toque(), "Toque: B", "reabrir a tela mostra o modo salvo")
+
+
+func test_c412_bloco_de_5_itens_cabe_em_180x320_sem_sobrepor_voltar() -> void:
+	var tela := Rect2(0.0, 0.0, 180.0, 320.0)
+	var o := _nova()
+	assert_true(tela.encloses(o.rect_toque()), "Toque dentro de 180x320")
+	assert_true(tela.encloses(o.rect_voltar()), "Voltar dentro de 180x320")
+	assert_false(o.rect_toque().intersects(o.rect_voltar()), "Toque nao sobrepoe Voltar")
+	assert_false(o.rect_toque().intersects(o.rect_ver_tutorial()), "Toque nao sobrepoe Ver tutorial")
+	assert_false(o.rect_toque().intersects(o.rect_sfx()), "Toque nao sobrepoe SFX")
+	var safe := Rect2(0, 20, 180, 294)
+	var com_safe := _nova(PEQUENA, safe)
+	assert_true(safe.encloses(com_safe.rect_music()), "Music dentro da safe area")
+	assert_true(safe.encloses(com_safe.rect_toque()), "Toque dentro da safe area")
+	assert_true(safe.encloses(com_safe.rect_voltar()), "Voltar dentro da safe area")
+	assert_false(com_safe.rect_toque().intersects(com_safe.rect_voltar()), "com safe area: Toque nao sobrepoe Voltar")
+	var largura := UiHelpers.FONTE.get_string_size("> Toque: B", HORIZONTAL_ALIGNMENT_LEFT, -1, OptionsScreen.TAMANHO_TEXTO).x
+	assert_lte(largura, o.rect_toque().size.x, "'> Toque: B' cabe no botao")
+
+
+func test_c414_foco_percorre_os_5_itens_na_ordem_e_esc_continua_voltando() -> void:
+	var o := _nova()
+	var ordem: Array[int] = [OptionsScreen.Item.SFX, OptionsScreen.Item.TOQUE, OptionsScreen.Item.VER_TUTORIAL, OptionsScreen.Item.VOLTAR, OptionsScreen.Item.MUSIC]
+	for esperado in ordem:
+		o.tratar_evento(_acao("ui_down"))
+		assert_eq(o.foco_atual(), esperado, "ui_down segue a ordem Music, SFX, Toque, Ver tutorial, Voltar")
+	o.tratar_evento(_acao("pause"))
+	assert_eq(_voltou, 1, "Esc continua emitindo voltar")
+	var dentro := o.rect_voltar().get_center()
+	o.tratar_evento(_toque(dentro, true))
+	o.tratar_evento(_toque(dentro, false))
+	assert_eq(_voltou, 2, "Voltar por toque continua igual")
 
 
 func test_c206_toque_no_fundo_consumido_e_mouse_emulado_nao_duplica() -> void:

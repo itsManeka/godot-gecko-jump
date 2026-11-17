@@ -160,7 +160,7 @@ func test_c222_reabertura_consome_todo_toque_fora_do_botao_e_a_dica_nao_aparece(
 	Input.flush_buffered_events()
 	await wait_frames(2)
 	assert_false(stage.started, "toque real na reabertura nao inicia a partida")
-	assert_false(stage.touch_controls.classificador.ativo(), "toque nao vira pulo nem andar")
+	assert_false(stage.touch_controls.gesto_ativo(), "toque nao vira pulo nem andar")
 	assert_false(stage.touch_hint.esta_mostrando(), "a dica nao aparece")
 
 

@@ -26,7 +26,7 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-1170x2532",
 	"retrato-720x1280",
 ]
-const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "dificuldade.estagio"]
+const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio"]
 const ROTEIROS_SEMDERROTA: Array[String] = [
 	"retrato-pontua-1080x2772",
 	"estagio",

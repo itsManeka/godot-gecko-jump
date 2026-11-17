@@ -7,14 +7,15 @@ extends CanvasLayer
 # O toque pertence ao slider desde o pressionar na area e se mantem fora dela, com x limitado (eixo vertical ignorado).
 # Voltar aciona ao soltar com o dedo dentro do retangulo. Esc/P (acao `pause`) = Voltar, nunca retoma a partida.
 # Layout por lista de itens (TIPOS/ESPACO_ANTES): acrescentar um item e inserir nas listas TIPOS/ESPACO_ANTES/NOMES,
-# no enum Item e em _valores; as contas de y seguem a lista. Botoes: Ver tutorial (sinal `ver_tutorial`) e Voltar.
+# no enum Item e em _valores; as contas de y seguem a lista. Botoes: Toque (alterna o modo A/B/C pelo Global),
+# Ver tutorial (sinal `ver_tutorial`) e Voltar.
 
 # Emitido por Voltar e pela acao `pause` com a tela aberta.
 signal voltar
 # Emitido por Ver tutorial (toque solto dentro ou `ui_accept` com o foco nele).
 signal ver_tutorial
 
-enum Item { MUSIC, SFX, VER_TUTORIAL, VOLTAR }
+enum Item { MUSIC, SFX, TOQUE, VER_TUTORIAL, VOLTAR }
 enum Tipo { SLIDER, BOTAO }
 
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
@@ -28,9 +29,9 @@ const COR_CURSOR: Color = Color(1.0, 1.0, 1.0, 1.0)
 const CAMADA: int = 11
 
 # Itens na ordem de foco e de cima para baixo; espaco acima de cada item (handoff 10.2)
-const TIPOS: Array[int] = [Tipo.SLIDER, Tipo.SLIDER, Tipo.BOTAO, Tipo.BOTAO]
-const ESPACO_ANTES: Array[float] = [12.0, 8.0, 12.0, 8.0]
-const NOMES: Array[String] = ["Music", "SFX", "Ver tutorial", "Voltar"]
+const TIPOS: Array[int] = [Tipo.SLIDER, Tipo.SLIDER, Tipo.BOTAO, Tipo.BOTAO, Tipo.BOTAO]
+const ESPACO_ANTES: Array[float] = [12.0, 8.0, 12.0, 8.0, 8.0]
+const NOMES: Array[String] = ["Music", "SFX", "Toque", "Ver tutorial", "Voltar"]
 
 # Medidas em px logicos (handoff 10.2)
 const LARGURA: float = 180.0
@@ -69,7 +70,7 @@ var _botao_rotulos: Array[Label] = []
 # Area de toque do slider ou retangulo do botao, por item
 var _rects: Array[Rect2] = []
 # Valor 0-100 por item (so os sliders usam)
-var _valores: Array[int] = [100, 100, 0, 0]
+var _valores: Array[int] = [100, 100, 0, 0, 0]
 var _foco: int = Item.MUSIC
 var _aberta: bool = false
 # index do dedo -> item em que o toque comecou (-1 = fundo)
@@ -232,6 +233,15 @@ func rect_sfx() -> Rect2:
 	return _rects[Item.SFX]
 
 
+func rect_toque() -> Rect2:
+	return _rects[Item.TOQUE]
+
+
+# Texto do seletor de modo de toque sem o marcador de foco ("Toque: A").
+func texto_toque() -> String:
+	return _texto_item(Item.TOQUE)
+
+
 func rect_ver_tutorial() -> Rect2:
 	return _rects[Item.VER_TUTORIAL]
 
@@ -352,8 +362,23 @@ func _tratar_ponteiro(dedo: int, pressionado: bool, pos: Vector2) -> void:
 func _acionar(item: int) -> void:
 	if item == Item.VER_TUTORIAL:
 		ver_tutorial.emit()
+	elif item == Item.TOQUE:
+		_alternar_modo_toque()
 	else:
 		voltar.emit()
+
+
+# Percorre A -> B -> C -> A: o Global grava no store e avisa (TouchControls cancela o gesto, TouchHint rearma a dica).
+func _alternar_modo_toque() -> void:
+	var proximo := (int(Global.get_touch_mode()) + 1) % TouchMode.NOMES.size()
+	Global.set_touch_mode(proximo)
+	_atualizar_visual()
+
+
+func _texto_item(item: int) -> String:
+	if item == Item.TOQUE:
+		return "%s: %s" % [NOMES[item], TouchMode.nome(Global.get_touch_mode())]
+	return NOMES[item]
 
 
 # Arrasto de um dedo que comecou num slider: so o eixo horizontal conta, x limitado pela conta do valor.
@@ -417,7 +442,7 @@ func _atualizar_visual() -> void:
 		else:
 			var pressed: bool = _pressionado == i
 			_botao_paineis[i].add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO, COR_BOTAO))
-			_botao_rotulos[i].text = ("> " if _foco == i else "") + NOMES[i]
+			_botao_rotulos[i].text = ("> " if _foco == i else "") + _texto_item(i)
 			_botao_rotulos[i].position = Vector2(0.0, 1.0 if pressed else 0.0)
 
 

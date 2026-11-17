@@ -142,6 +142,10 @@ func test_c348_play_e_botoes_de_menu_comportam_o_rotulo() -> void:
 	opcoes.aplicar_layout(Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA))
 	var l_tutorial := UiHelpers.FONTE.get_string_size("> Ver tutorial", HORIZONTAL_ALIGNMENT_LEFT, -1, OptionsScreen.TAMANHO_TEXTO).x
 	assert_lte(l_tutorial, opcoes.rect_ver_tutorial().size.x, "'> Ver tutorial' cabe no botao")
+	for nome in TouchMode.NOMES:
+		var l_toque := UiHelpers.FONTE.get_string_size("> Toque: %s" % nome, HORIZONTAL_ALIGNMENT_LEFT, -1, OptionsScreen.TAMANHO_TEXTO).x
+		assert_lte(l_toque, opcoes.rect_toque().size.x, "'> Toque: %s' cabe no botao" % nome)
+	assert_true(Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA).encloses(opcoes.rect_voltar()), "Voltar dentro de 180x320 com 5 itens")
 
 
 # T2 corr1: o Play da Stage usa o papel TAMANHO_BOTAO da escala.

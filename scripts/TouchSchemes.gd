@@ -16,7 +16,7 @@ static func implementado(modo: int) -> bool:
 	return false
 
 
-# Esquema do modo, ou null enquanto o modo ainda usa o esquema legado (provisorio ate a T9).
+# Esquema do modo, ou null se o modo nao esta implementado (a camada fica inerte).
 static func criar(modo: int) -> TouchScheme:
 	if not implementado(modo):
 		return null

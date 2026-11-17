@@ -58,6 +58,8 @@ var _estagio_publicado: int = 0
 # Moldura de aviso de subida de estagio (filha da Stage, criada em _ready) e o `aviso` da ultima publicacao da ponte
 var level_up_frame: LevelUpFrame = null
 var _aviso_publicado: bool = false
+# Par arredondado de player.x/y na ultima publicacao da ponte
+var _posicao_publicada: Vector2i = Vector2i.ZERO
 
 # Referencias aos nós da interface e jogo
 @onready var animation = $AnimationPlayer
@@ -224,6 +226,14 @@ func _physics_process(delta: float) -> void:
 		return
 	if dificuldade.estagio() != _estagio_publicado or _aviso_atual() != _aviso_publicado:
 		_republicar_estado()
+		return
+	# Posicao do jogador (par arredondado) em partida: republica 1x por mudanca; parado ou fora de partida, nunca
+	if started and ultimo_estado.get("state", "") == GameState.STATE_PLAYING and _posicao_atual() != _posicao_publicada:
+		_republicar_estado()
+
+# Par arredondado (pixels logicos) da posicao do jogador, o mesmo publicado em `player.x/y`
+func _posicao_atual() -> Vector2i:
+	return Vector2i(roundi(player.global_position.x), roundi(player.global_position.y))
 
 # Subida de estagio em partida: a moldura pulsa N vezes (N = estagio novo). Depois da derrota nao pulsa.
 func _on_estagio_mudou(novo: int) -> void:
@@ -429,6 +439,7 @@ func _on_Play_button_down():
 func _publicar_estado(state: String, alive: bool) -> void:
 	_estagio_publicado = dificuldade.estagio()
 	_aviso_publicado = _aviso_atual() and state != GameState.STATE_LOST
+	_posicao_publicada = _posicao_atual()
 	ultimo_estado = GameState.build(
 		maxi(points, 0),
 		Global.get_best_score(),
@@ -439,5 +450,7 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		tutorial_card != null and tutorial_card.esta_aberto(),
 		_estagio_publicado,
 		_aviso_publicado,
+		float(_posicao_publicada.x),
+		float(_posicao_publicada.y),
 	)
 	GameState.publish(ultimo_estado)
