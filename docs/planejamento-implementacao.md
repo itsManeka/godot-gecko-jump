@@ -142,9 +142,11 @@ da curva, pausa por foco) e a sensacao do limite da camera (#46) a maquina nao j
    plataformas somirem (sem colisao) e voltarem em ritmo fixo, no ultimo estagio. Aviso visivel antes de sumir, nao
    cromatico; gecko em cima segura o ciclo; fora da linha inicial e exclusiva da cicladora. Calibracao de ritmo e
    legibilidade fica para o playtest do dono.
-6. Aviso de subida de estagio (#10): moldura branca na borda da tela que pulsa N vezes (N = estagio novo) nas 3 subidas,
-   sem texto. Sinal `estagio_mudou` do `DifficultyState`; a ponte publica `dificuldade.aviso` para os smokes. O som do
-   aviso fica para a #43. Sensacao e legibilidade sobre fundo claro: verificacao manual no playtest do dono.
+6. Aviso de subida de estagio (#10): vinheta branca nas 4 bordas da safe area (alpha de pico na borda, decaindo para o
+   miolo transparente) que pulsa N vezes (N = estagio novo) nas 3 subidas, sem texto. Sinal `estagio_mudou` do
+   `DifficultyState`; a ponte publica `dificuldade.aviso` para os smokes. O som do aviso fica para a #43. O visual da
+   moldura original foi redesenhado para vinheta pela f490 (fecha #45), que junto com a f489 destrava `Closes #10` no PR
+   do epic. Sensacao e legibilidade sobre fundo claro: verificacao manual no playtest do dono.
 7. Modos de toque alternaveis (#47, [ADR 0013](adr/0013-modos-de-toque-alternaveis.md)): tres esquemas selecionaveis
    nas Opcoes — A (arrastar + flick, um polegar), B (dois polegares, zonas invisiveis) e C (metades + 2o toque) —
    com pulo reto, correcao de direcao no ar e comeco a andar no press. Padrao provisorio C ate o playtest; valores de

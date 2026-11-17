@@ -34,7 +34,7 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
            ScrollLevel (scroll vindo da curva de dificuldade + avanco quando o gecko sobe acima do limite de topo), TouchControls (toque -> acoes de input, esquemas A/B/C selecionaveis; ADR 0013), TouchHint (dica das zonas),
            PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes, modo de toque, Ver tutorial),
-           TutorialCard (card da 1a partida e reabertura modal), LevelUpFrame (moldura branca que pulsa N vezes na subida de estagio)
+           TutorialCard (card da 1a partida e reabertura modal), LevelUpFrame (vinheta branca nas 4 bordas da safe area que pulsa N vezes na subida de estagio)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
            ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd / OptionsStore.gd (recorde e opcoes em user://; buses Music/SFX),
            PlatformTypePicker.gd (tipo do gerador, sem cena),
@@ -51,7 +51,7 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sinal `estagio_mudou`, sem cena),
            CameraFollow.gd (limite de topo do gecko = 0,40 da altura visivel e excesso de subida que o mundo avanca, sem cena),
            PauseState.gd (pausa = `get_tree().paused`, nunca `Global.iniciado`; sem cena; ADR 0008),
-           TutorialFlag.gd (flag "tutorial ja visto" no OptionsStore), DebugArgs.gd (args de usuario do nativo debug, `--nome=valor` depois de `--`), ModoTutorialVisto.gd (`?tutorial=` dos smokes, so debug), ModoProgressoInicial.gd (`?progresso=` dos smokes, so debug), ModoToqueInicial.gd (`?toque=` dos smokes, so debug), ModoMolduraFixa.gd (`?moldura=fixa`, so debug),
+           TutorialFlag.gd (flag "tutorial ja visto" no OptionsStore), DebugArgs.gd (args de usuario do nativo debug, `--nome=valor` depois de `--`), ModoTutorialVisto.gd (`?tutorial=` dos smokes, so debug), ModoProgressoInicial.gd (`?progresso=` dos smokes, so debug), ModoToqueInicial.gd (`?toque=` dos smokes, so debug), ModoMolduraFixa.gd (`?moldura=fixa`, so debug), ModoMolduraLenta.gd (`?moldura=lenta`, pulso em camera lenta dos smokes, so debug),
            UiHelpers.gd (estilo de caixa, label e chave do mouse das telas de UI, sem cena)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 test/smoke/ roteiros do game-smoke (export web): `gecko.smoke.json` (fluxo), `retrato-*` (telas de celular) e
