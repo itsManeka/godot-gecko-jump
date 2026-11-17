@@ -295,21 +295,26 @@ func test_c408_tocar_o_seletor_vai_de_a_para_b() -> void:
 	assert_eq(o.texto_toque(), "Toque: B", "rotulo mostra Toque: B")
 
 
-func test_c409_tocar_o_seletor_vai_de_b_para_c() -> void:
+func test_c409_tocar_o_seletor_vai_de_b_para_a() -> void:
 	Global.set_touch_mode(TouchMode.Modo.B, false)
 	var o := _nova()
 	_tocar_seletor(o)
-	assert_eq(Global.get_touch_mode(), TouchMode.Modo.C, "B -> C no Global")
-	assert_eq(o.texto_toque(), "Toque: C", "rotulo mostra Toque: C")
-
-
-func test_c410_tocar_o_seletor_vai_de_c_para_a() -> void:
-	Global.set_touch_mode(TouchMode.Modo.C, false)
-	var o := _nova()
-	_tocar_seletor(o)
-	assert_eq(Global.get_touch_mode(), TouchMode.Modo.A, "C -> A no Global")
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.A, "B -> A no Global")
 	assert_eq(o.texto_toque(), "Toque: A", "rotulo mostra Toque: A")
 	assert_eq(_voltou, 0, "o seletor nao emite voltar")
+
+
+func test_c452_duas_pulsacoes_voltam_de_b_para_b_e_gravam_no_store() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var o := _nova()
+	_tocar_seletor(o)
+	var salvo: Variant = OptionsStore.new(TEMP_PATH).load_value(TouchMode.SECTION, TouchMode.KEY, TouchMode.SEM_VALOR)
+	assert_eq(int(salvo), int(TouchMode.Modo.A), "C452: B -> A gravado no store temporario")
+	_tocar_seletor(o)
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "C452: A -> B volta ao inicio")
+	assert_eq(o.texto_toque(), "Toque: B", "C452: rotulo volta a Toque: B")
+	salvo = OptionsStore.new(TEMP_PATH).load_value(TouchMode.SECTION, TouchMode.KEY, TouchMode.SEM_VALOR)
+	assert_eq(int(salvo), int(TouchMode.Modo.B), "C452: B gravado no store temporario")
 
 
 func test_c411_ui_accept_cicla_e_reabrir_mostra_o_modo_salvo() -> void:

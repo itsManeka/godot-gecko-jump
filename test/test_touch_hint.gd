@@ -220,7 +220,7 @@ func test_c175_blocos_nao_cobrem_placar_nem_hud_nos_dois_tamanhos() -> void:
 
 
 func test_c176_textos_de_cada_modo_cabem_no_bloco_com_a_fonte_real() -> void:
-	for modo in [TouchMode.Modo.B, TouchMode.Modo.C]:
+	for modo in [TouchMode.Modo.B]:
 		for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
 			for t in TouchHint.textos_bloco(modo, lado):
 				assert_lte(TouchHint.largura_texto(t), BLOCO_LARGURA_MAX, "'%s' cabe em 76 px" % t)
@@ -265,20 +265,17 @@ func test_c416_modo_b_mostra_linha_em_x_90_e_blocos_com_texto_do_modo_b() -> voi
 	assert_false(h.bloco_visivel(TouchHint.Lado.CENTRO), "sem bloco central")
 
 
-func test_c417_modo_c_mostra_linha_em_x_90_e_blocos_com_texto_do_modo_c() -> void:
-	Global.set_touch_mode(TouchMode.Modo.C, false)
+func test_c417_padrao_sem_store_mostra_o_layout_do_modo_b() -> void:
 	var h := _nova_dica(true)
-	assert_eq(h.rect_linha().position.x, 90.0, "linha divisoria em x = 90")
-	assert_true(h._linha.visible, "linha visivel")
-	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), ["anda", "2o dedo pula"], "bloco esquerdo com o texto do modo C")
-	assert_eq(h.textos_atuais(TouchHint.Lado.DIREITA), ["anda", "2o dedo pula"], "bloco direito com o texto do modo C")
-	assert_true(h.bloco_visivel(TouchHint.Lado.ESQUERDA) and h.bloco_visivel(TouchHint.Lado.DIREITA), "blocos laterais visiveis")
+	assert_eq(h.modo_exibido(), TouchMode.Modo.B, "store vazio exibe o modo B")
+	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), ["anda", "segura aqui"], "bloco esquerdo do B")
+	assert_eq(h.textos_atuais(TouchHint.Lado.DIREITA), ["pula", "toque aqui"], "bloco direito do B")
 	assert_false(h.bloco_visivel(TouchHint.Lado.CENTRO), "sem bloco central")
 
 
 func test_c418_textos_renderizados_diferem_entre_os_modos_e_sem_o_esquema_velho() -> void:
 	var vistos: Array = []
-	for modo in [TouchMode.Modo.A, TouchMode.Modo.B, TouchMode.Modo.C]:
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		Global.set_touch_mode(modo, false)
 		var h := _nova_dica(true)
 		var textos := _todos_os_textos(h)
@@ -289,11 +286,11 @@ func test_c418_textos_renderizados_diferem_entre_os_modos_e_sem_o_esquema_velho(
 				visiveis.append_array(h.textos_atuais(lado))
 		assert_false(vistos.has(visiveis), "modo %s renderiza textos diferentes dos outros" % TouchMode.nome(modo))
 		vistos.append(visiveis)
-	assert_eq(vistos.size(), 3, "3 modos, 3 conjuntos de textos")
+	assert_eq(vistos.size(), 2, "2 modos, 2 conjuntos de textos")
 
 
-func test_c420_fade_preservado_nos_3_modos() -> void:
-	for modo in [TouchMode.Modo.A, TouchMode.Modo.B, TouchMode.Modo.C]:
+func test_c420_fade_preservado_nos_2_modos() -> void:
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		Global.set_touch_mode(modo, false)
 		Global.dica_toque_mostrada = false
 		Global.iniciado = true
@@ -310,7 +307,7 @@ func test_c420_fade_preservado_nos_3_modos() -> void:
 
 
 func test_c420_trocar_o_modo_rearma_a_dica_ja_mostrada() -> void:
-	Global.set_touch_mode(TouchMode.Modo.C, false)
+	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var h := _nova_dica(true)
 	Global.iniciado = true
 	await wait_process_frames(2)
@@ -339,14 +336,14 @@ func test_corr_hint_desconecta_o_sinal_ao_sair_da_arvore() -> void:
 func test_corr_hint_volta_a_arvore_com_o_modo_trocado_enquanto_fora() -> void:
 	var h := _nova_dica(false)
 	assert_eq(h.modo_exibido(), TouchMode.padrao(), "pre-condicao: modo padrao exibido")
-	var novo: int = TouchMode.Modo.B if TouchMode.padrao() != TouchMode.Modo.B else TouchMode.Modo.C
+	var novo: int = TouchMode.Modo.A
 	Global.dica_toque_mostrada = true
 	remove_child(h)
 	Global.set_touch_mode(novo, false)
 	assert_eq(h.modo_exibido(), TouchMode.padrao(), "fora da arvore: a dica nao ouve a troca")
 	add_child(h)
 	assert_eq(h.modo_exibido(), novo, "de volta na arvore: alcanca o modo trocado enquanto fora")
-	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), TouchHint.textos_bloco(novo, TouchHint.Lado.ESQUERDA), "texto do modo novo")
+	assert_eq(h.textos_atuais(TouchHint.Lado.CENTRO), TouchHint.textos_bloco(novo, TouchHint.Lado.CENTRO), "texto do modo novo")
 	assert_false(Global.dica_toque_mostrada, "a dica e rearmada como o sinal ao vivo faria")
 
 
@@ -375,6 +372,7 @@ func _classificar_tap(com_dica: bool) -> Array:
 		await wait_process_frames(2)
 		assert_true(h.visible, "pre-condicao: dica visivel")
 	var e := _toque(true)
+	e.position = Vector2(160.0, 200.0)
 	c._input(e)
 	var visto: Array = []
 	for acao in ["ui_left", "ui_right", "jump"]:

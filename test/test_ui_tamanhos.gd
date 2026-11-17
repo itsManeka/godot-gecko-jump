@@ -102,7 +102,7 @@ func test_c347_tutorial_e_dica_cabem_na_viewport_180x320() -> void:
 	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
 		var r := hint.rect_bloco(lado)
 		assert_true(tela.encloses(r), "bloco da dica %d dentro de 180x320" % lado)
-		for modo in [TouchMode.Modo.B, TouchMode.Modo.C]:
+		for modo in [TouchMode.Modo.B]:
 			for t in TouchHint.textos_bloco(modo, lado):
 				assert_lte(TouchHint.largura_texto(t), r.size.x, "'%s' cabe no bloco" % t)
 	var centro := hint.rect_bloco(TouchHint.Lado.CENTRO)

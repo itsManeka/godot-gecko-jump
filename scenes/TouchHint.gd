@@ -19,12 +19,10 @@ const COR_FAIXA: Color = UiHelpers.COR_FUNDO_OVERLAY
 const OUTLINE_SIZE: int = 1
 
 # Textos por modo de toque (issue #47). Cada bloco tem 2 linhas e precisa caber em 76 px (lateral) / 166 px (centro).
-# A: sem zonas, um bloco central; B e C: linha em x = 90 e um bloco por lado.
+# A: sem zonas, um bloco central; B: linha em x = 90 e um bloco por lado.
 const TEXTOS_A: Array[String] = ["arraste: anda", "flick: pula"]
 const TEXTOS_B_ESQ: Array[String] = ["anda", "segura aqui"]
 const TEXTOS_B_DIR: Array[String] = ["pula", "toque aqui"]
-const TEXTOS_C_ESQ: Array[String] = ["anda", "2o dedo pula"]
-const TEXTOS_C_DIR: Array[String] = ["anda", "2o dedo pula"]
 
 # Medidas em px logicos (handoff 8.2)
 const DIVISAO_X: float = 90.0
@@ -150,10 +148,7 @@ static func textos_bloco(modo: int, lado: int) -> Array[String]:
 			if lado == Lado.ESQUERDA:
 				return TEXTOS_B_ESQ
 			return TEXTOS_B_DIR if lado == Lado.DIREITA else ([] as Array[String])
-		_:
-			if lado == Lado.ESQUERDA:
-				return TEXTOS_C_ESQ
-			return TEXTOS_C_DIR if lado == Lado.DIREITA else ([] as Array[String])
+	return [] as Array[String]
 
 
 # Modo de toque exibido agora.
@@ -176,7 +171,7 @@ func textos_atuais(lado: int) -> Array[String]:
 	return out
 
 
-# O bloco do lado dado esta desenhado (A so desenha o centro; B e C so os laterais).
+# O bloco do lado dado esta desenhado (A so desenha o centro; B so os laterais).
 func bloco_visivel(lado: int) -> bool:
 	return _bloco_de(lado).visible
 

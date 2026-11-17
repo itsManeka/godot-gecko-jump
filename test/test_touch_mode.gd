@@ -37,7 +37,54 @@ func test_c370_chave_ausente_devolve_padrao() -> void:
 	cfg.save(TEMP_PATH)
 	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
 	assert_eq(Global.get_touch_mode(), TouchMode.padrao(), "C370: cfg sem controle/toque_modo vale o padrao")
-	assert_eq(TouchMode.padrao(), TouchMode.Modo.C, "C370: padrao provisorio e C")
+	assert_eq(TouchMode.padrao(), TouchMode.Modo.B, "C370: padrao e B")
+
+
+func test_c442_padrao_e_b() -> void:
+	assert_eq(TouchMode.padrao(), TouchMode.Modo.B, "C442: padrao() = B")
+
+
+func test_c443_null_devolve_b() -> void:
+	assert_eq(TouchMode.de_valor(null), TouchMode.Modo.B, "C443: null = B")
+
+
+func test_c444_valor_do_antigo_c_devolve_b() -> void:
+	assert_eq(TouchMode.de_valor(2), TouchMode.Modo.B, "C444: 2 (antigo C) = B")
+
+
+func test_c445_sem_valor_devolve_b() -> void:
+	assert_eq(TouchMode.de_valor(TouchMode.SEM_VALOR), TouchMode.Modo.B, "C445: -1 (SEM_VALOR) = B")
+
+
+func test_c446_string_devolve_b() -> void:
+	assert_eq(TouchMode.de_valor("x"), TouchMode.Modo.B, "C446: string = B")
+	assert_eq(TouchMode.de_valor("B"), TouchMode.Modo.B, "C446: string com rotulo = B")
+
+
+func test_c447_fracionario_devolve_b() -> void:
+	assert_eq(TouchMode.de_valor(1.5), TouchMode.Modo.B, "C447: fracionario = B")
+
+
+func test_c448_valores_validos_inalterados() -> void:
+	assert_eq(TouchMode.de_valor(0), TouchMode.Modo.A, "C448: 0 = A")
+	assert_eq(TouchMode.de_valor(1), TouchMode.Modo.B, "C448: 1 = B")
+
+
+func test_c449_store_sem_chave_usa_b() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("audio", "music", 0.5)
+	cfg.save(TEMP_PATH)
+	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "C449: store sem controle/toque_modo = B")
+
+
+func test_c450_store_com_valor_antigo_do_c_usa_b_e_zero_usa_a() -> void:
+	_escrever_modo(2)
+	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "C450: toque_modo = 2 (antigo C) = B")
+	_escrever_modo(0)
+	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.A, "C450: toque_modo = 0 (save antigo em A) = A")
 
 
 func test_c425_string_ou_fracionario_devolve_padrao() -> void:
@@ -63,7 +110,7 @@ func test_c426_negativo_ou_fora_da_faixa_devolve_padrao_e_validos_voltam_iguais(
 	assert_eq(TouchMode.de_valor(NAN), padrao, "C426: NaN")
 	assert_eq(TouchMode.de_valor(0), TouchMode.Modo.A, "C426: 0 = A")
 	assert_eq(TouchMode.de_valor(1), TouchMode.Modo.B, "C426: 1 = B")
-	assert_eq(TouchMode.de_valor(2), TouchMode.Modo.C, "C426: 2 = C")
+	assert_eq(TouchMode.de_valor(2), padrao, "C426: 2 (antigo C) cai no padrao")
 	_escrever_modo(0)
 	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
 	assert_eq(Global.get_touch_mode(), TouchMode.Modo.A, "C426: A salvo volta como A")
@@ -122,7 +169,7 @@ func test_c374_options_cfg_real_nao_muda() -> void:
 	var mtime := FileAccess.get_modified_time(OptionsStore.DEFAULT_PATH) if existia else 0
 	Global.usar_options_store(_store_original)
 	Global.set_touch_mode(TouchMode.Modo.A, true)
-	Global.set_touch_mode(TouchMode.Modo.C, true)
+	Global.set_touch_mode(TouchMode.Modo.B, true)
 	assert_eq(FileAccess.file_exists(OptionsStore.DEFAULT_PATH), existia, "C374: options.cfg real nao criado/removido")
 	if existia:
 		assert_eq(FileAccess.get_modified_time(OptionsStore.DEFAULT_PATH), mtime, "C374: options.cfg real nao mudou")
@@ -131,5 +178,5 @@ func test_c374_options_cfg_real_nao_muda() -> void:
 func test_nome_devolve_rotulo_e_fora_da_faixa_cai_no_padrao() -> void:
 	assert_eq(TouchMode.nome(TouchMode.Modo.A), "A", "nome A")
 	assert_eq(TouchMode.nome(TouchMode.Modo.B), "B", "nome B")
-	assert_eq(TouchMode.nome(TouchMode.Modo.C), "C", "nome C")
-	assert_eq(TouchMode.nome(9), "C", "fora da faixa vale o nome do padrao")
+	assert_eq(TouchMode.nome(9), "B", "fora da faixa vale o nome do padrao")
+	assert_eq(TouchMode.nome(TouchMode.padrao()), "B", "nome do padrao e B")

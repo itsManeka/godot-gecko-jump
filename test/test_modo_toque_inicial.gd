@@ -17,13 +17,12 @@ func after_each() -> void:
 	Global.opcoes.save_value(TouchMode.SECTION, TouchMode.KEY, _salvo_antes)
 
 
-func test_c375_toque_a_b_c_forca_modo_sem_gravar() -> void:
-	Global.set_touch_mode(TouchMode.Modo.C, true)
+func test_c375_toque_a_b_forca_modo_sem_gravar() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, true)
 	var salvo_antes: Variant = Global.opcoes.load_value(TouchMode.SECTION, TouchMode.KEY, TouchMode.SEM_VALOR)
 
 	assert_eq(ModoToqueInicial.decide("a", true), TouchMode.Modo.A, "decide: a -> A")
 	assert_eq(ModoToqueInicial.decide("b", true), TouchMode.Modo.B, "decide: b -> B")
-	assert_eq(ModoToqueInicial.decide("c", true), TouchMode.Modo.C, "decide: c -> C")
 
 	Global.aplicar_modo_toque_inicial("a", true)
 	assert_eq(Global.get_touch_mode(), TouchMode.Modo.A, "o parametro a forca A na sessao")
@@ -32,6 +31,16 @@ func test_c375_toque_a_b_c_forca_modo_sem_gravar() -> void:
 		salvo_antes,
 		"forcar o modo nao grava no store (user:// intocado)"
 	)
+
+
+func test_c451_decide_c_nao_forca_a_b_forcam() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	assert_eq(ModoToqueInicial.decide("c", true), ModoToqueInicial.SEM_FORCA, "C451: c (modo removido) nao forca")
+	assert_eq(ModoToqueInicial.decide("a", true), TouchMode.Modo.A, "C451: a forca em debug")
+	assert_eq(ModoToqueInicial.decide("b", true), TouchMode.Modo.B, "C451: b forca em debug")
+	assert_eq(ModoToqueInicial.decide("a", false), ModoToqueInicial.SEM_FORCA, "C451: release ignora a")
+	assert_eq(ModoToqueInicial.decide("b", false), ModoToqueInicial.SEM_FORCA, "C451: release ignora b")
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "C451: decide e puro, o modo nao muda")
 
 
 func test_c376_valor_invalido_vazio_ausente_nao_muda_modo() -> void:

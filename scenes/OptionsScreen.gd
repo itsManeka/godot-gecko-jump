@@ -7,7 +7,7 @@ extends CanvasLayer
 # O toque pertence ao slider desde o pressionar na area e se mantem fora dela, com x limitado (eixo vertical ignorado).
 # Voltar aciona ao soltar com o dedo dentro do retangulo. Esc/P (acao `pause`) = Voltar, nunca retoma a partida.
 # Layout por lista de itens (TIPOS/ESPACO_ANTES): acrescentar um item e inserir nas listas TIPOS/ESPACO_ANTES/NOMES,
-# no enum Item e em _valores; as contas de y seguem a lista. Botoes: Toque (alterna o modo A/B/C pelo Global),
+# no enum Item e em _valores; as contas de y seguem a lista. Botoes: Toque (alterna o modo A/B pelo Global),
 # Ver tutorial (sinal `ver_tutorial`) e Voltar.
 
 # Emitido por Voltar e pela acao `pause` com a tela aberta.
@@ -368,7 +368,7 @@ func _acionar(item: int) -> void:
 		voltar.emit()
 
 
-# Percorre A -> B -> C -> A: o Global grava no store e avisa (TouchControls cancela o gesto, TouchHint rearma a dica).
+# Alterna A <-> B: o Global grava no store e avisa (TouchControls cancela o gesto, TouchHint rearma a dica).
 func _alternar_modo_toque() -> void:
 	var proximo := (int(Global.get_touch_mode()) + 1) % TouchMode.NOMES.size()
 	Global.set_touch_mode(proximo)

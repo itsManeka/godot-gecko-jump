@@ -15,7 +15,7 @@ const METADE := 90.0
 var _p: Node
 var _c: Node
 var _t: int = 0
-var _modo_anterior: int = TouchMode.Modo.C
+var _modo_anterior: int = TouchMode.Modo.B
 var _fisica_ticks: int = 60
 var _escala_tempo: float = 1.0
 

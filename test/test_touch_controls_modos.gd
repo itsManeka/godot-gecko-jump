@@ -10,13 +10,13 @@ const TICK := 1.0 / 60.0
 const ESQ := 20.0
 const DIR := 160.0
 const ACOES := ["ui_left", "ui_right", "jump"]
-const MODOS := [TouchMode.Modo.A, TouchMode.Modo.B, TouchMode.Modo.C]
+const MODOS := [TouchMode.Modo.A, TouchMode.Modo.B]
 const PULSO_ESPERADO: int = 2
 
 var _c: Node
 var _t: int = 0
 var _esquemas: Array = []
-var _modo_anterior: int = TouchMode.Modo.C
+var _modo_anterior: int = TouchMode.Modo.B
 
 
 # Esquema falso do contrato: dedo na metade esquerda = esquerda, na direita = direita; todo press pede 1 pulo (evento).
@@ -265,4 +265,3 @@ func test_fabrica_de_esquemas_so_entrega_o_que_esta_implementado() -> void:
 		assert_eq(esquema != null, TouchSchemes.implementado(modo), "modo %s: null = esquema legado" % TouchMode.nome(modo))
 	assert_true(TouchSchemeA.new() is TouchScheme, "A cumpre o contrato")
 	assert_true(TouchSchemeB.new() is TouchScheme, "B cumpre o contrato")
-	assert_true(TouchSchemeC.new() is TouchScheme, "C cumpre o contrato")

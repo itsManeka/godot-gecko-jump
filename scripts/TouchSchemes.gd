@@ -11,8 +11,6 @@ static func implementado(modo: int) -> bool:
 			return TouchSchemeA.IMPLEMENTADO
 		TouchMode.Modo.B:
 			return TouchSchemeB.IMPLEMENTADO
-		TouchMode.Modo.C:
-			return TouchSchemeC.IMPLEMENTADO
 	return false
 
 
@@ -25,6 +23,4 @@ static func criar(modo: int) -> TouchScheme:
 			return TouchSchemeA.new()
 		TouchMode.Modo.B:
 			return TouchSchemeB.new()
-		TouchMode.Modo.C:
-			return TouchSchemeC.new()
 	return null
