@@ -60,6 +60,8 @@ var level_up_frame: LevelUpFrame = null
 var _aviso_publicado: bool = false
 # Par arredondado de player.x/y na ultima publicacao da ponte
 var _posicao_publicada: Vector2i = Vector2i.ZERO
+# y do limite de topo da camera (fracao da altura visivel em CameraFollow); recalculado a cada apply_layout
+var _limite_camera: float = 0.0
 
 # Referencias aos nós da interface e jogo
 @onready var animation = $AnimationPlayer
@@ -73,6 +75,10 @@ var _posicao_publicada: Vector2i = Vector2i.ZERO
 
 # Inicializa a tela do jogo
 func _ready():
+	# Avanco da camera do topo (issue #46) roda depois do Player: mesma prioridade 0 da arvore (Stage vem antes dos
+	# filhos), entao a Stage precisa de prioridade 1 de physics para ler o y do gecko ja movido neste frame
+	process_physics_priority = 1
+
 	# Atualiza displays de pontuação
 	lastscore.text = "Last Score: " + str(Global.get_last_score())
 	bestscore.text = "Best Score: " + str(Global.get_best_score())
@@ -153,6 +159,7 @@ func _on_viewport_size_changed() -> void:
 # Sobrescreve a shape e a posicao literais da CollisionShape2D do Stage.tscn (a cena guarda so o valor de 180x320).
 func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 	safe_area = safe
+	_limite_camera = CameraFollow.limite_y(visible_size.y)
 	var shape := RectangleShape2D.new()
 	shape.size = Vector2(visible_size.x, CHECK_THICKNESS)
 	var collision: CollisionShape2D = $CheckPlayer/CollisionShape2D
@@ -219,6 +226,8 @@ func _process(delta):
 
 # Acumula o tempo da partida na dificuldade (DifficultyState so conta com Global.is_iniciado())
 func _physics_process(delta: float) -> void:
+	# Camera do topo antes de tudo: depois do Player (process_physics_priority = 1) e antes de publicar player.y na ponte
+	_avancar_camera()
 	dificuldade.tick(delta)
 	# O estagio sobe por tempo sem evento de ponto/Play: republica 1x por mudanca, nunca apos a derrota
 	# O mesmo vale para o `aviso` (pulso da moldura comecou ou terminou)
@@ -230,6 +239,17 @@ func _physics_process(delta: float) -> void:
 	# Posicao do jogador (par arredondado) em partida: republica 1x por mudanca; parado ou fora de partida, nunca
 	if started and ultimo_estado.get("state", "") == GameState.STATE_PLAYING and _posicao_atual() != _posicao_publicada:
 		_republicar_estado()
+
+# Aplica o avanco da camera do topo (issue #46) no ScrollLevel, que sobe o mundo quando o gecko passa do limite.
+# A guarda de partida iniciada e a do proprio ScrollLevel (a mesma do scroll da curva); sem ScrollLevel (Stage
+# isolada em teste) ou antes do primeiro apply_layout nao ha o que avancar.
+func _avancar_camera() -> void:
+	if _limite_camera <= 0.0:
+		return
+	var scroll_level: Node = get_node_or_null("ScrollLevel")
+	if scroll_level == null:
+		return
+	scroll_level.avancar_camera(player, _limite_camera)
 
 # Par arredondado (pixels logicos) da posicao do jogador, o mesmo publicado em `player.x/y`
 func _posicao_atual() -> Vector2i:

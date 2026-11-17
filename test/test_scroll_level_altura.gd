@@ -40,6 +40,8 @@ func _spawn(altura: int, fisica_ligada: bool = false) -> void:
 	if not fisica_ligada:
 		_scroll.set_physics_process(false)
 		_p.set_physics_process(false)
+		# Camera do topo (f489) e da Stage: com o gecko parado perto do limite ela deslocaria o mundo e o y de nascimento
+		_stage.set_physics_process(false)
 	await wait_process_frames(1)
 
 

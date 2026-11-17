@@ -120,7 +120,8 @@ func _nova_stage() -> Node:
 func test_stage_republica_so_quando_par_arredondado_muda() -> void:
 	var stage: Node = _nova_stage()
 	stage._on_Play_button_down()
-	stage.player.global_position = Vector2(50.0, 80.0)
+	# y abaixo do limite de topo da camera (f489): acima dele a Stage devolveria o gecko ao limite
+	stage.player.global_position = Vector2(50.0, 180.0)
 	stage._physics_process(0.016)
 	assert_eq((stage.ultimo_estado["player"] as Dictionary)["x"], 50, "publicou x inicial")
 	# parado: mesmo par -> nao republica (o dicionario publicado e o mesmo objeto)
@@ -128,15 +129,15 @@ func test_stage_republica_so_quando_par_arredondado_muda() -> void:
 	stage._physics_process(0.016)
 	assert_same(stage.ultimo_estado, antes, "parado nao republica")
 	# mudanca sub-pixel que nao troca o arredondado: nao republica
-	stage.player.global_position = Vector2(50.2, 80.0)
+	stage.player.global_position = Vector2(50.2, 180.0)
 	stage._physics_process(0.016)
 	assert_same(stage.ultimo_estado, antes, "mesmo par arredondado nao republica")
 	# par muda -> republica
-	stage.player.global_position = Vector2(53.0, 81.0)
+	stage.player.global_position = Vector2(53.0, 181.0)
 	stage._physics_process(0.016)
 	var jogador: Dictionary = stage.ultimo_estado["player"] as Dictionary
 	assert_eq(jogador["x"], 53, "republicou x")
-	assert_eq(jogador["y"], 81, "republicou y")
+	assert_eq(jogador["y"], 181, "republicou y")
 
 
 func test_stage_fora_de_partida_nao_publica_posicao() -> void:
