@@ -32,8 +32,8 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ```
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
-           ScrollLevel (scroll vindo da curva de dificuldade), TouchControls (toque -> acoes de input), TouchHint (dica das zonas),
-           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes, Ver tutorial),
+           ScrollLevel (scroll vindo da curva de dificuldade), TouchControls (toque -> acoes de input, esquemas A/B/C selecionaveis; ADR 0013), TouchHint (dica das zonas),
+           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes, modo de toque, Ver tutorial),
            TutorialCard (card da 1a partida e reabertura modal), LevelUpFrame (moldura branca que pulsa N vezes na subida de estagio)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
            ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd / OptionsStore.gd (recorde e opcoes em user://; buses Music/SFX),
@@ -43,16 +43,19 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            MovingRowFill.gd (x pre-colocados das linhas moveis a partir do ponto de nascimento, sem cena),
            ReachableColors.gd (cor do gecko alcancavel no pouso e nas plataformas moveis, sem cena),
            PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador),
-           TouchClassifier.gd (tap x segurar e lado do toque, sem cena; ADR 0003),
+           TouchClassifier.gd (lado do toque para os esquemas B e C, sem cena),
+           TouchMode.gd (modos de toque A/B/C: enum, padrao provisorio e validacao do valor salvo, sem cena),
+           TouchTuning.gd (valores de sensacao do toque — zona morta, flick, janela — um simbolo cada),
+           TouchScheme.gd / TouchSchemes.gd / TouchSchemeA/B/C.gd (contrato e esquemas de toque, sem cena; ADR 0013),
            DifficultyCurve.gd / DifficultyStage.gd (curva de dificuldade, sem cena; ADR 0007), PlatformModifier(s).gd + PlatformNarrower/PlatformCrumble/PlatformColorCycle.gd (mecanicas de plataforma, sem cena; ADR 0009/0010),
            DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sinal `estagio_mudou`, sem cena),
            PauseState.gd (pausa = `get_tree().paused`, nunca `Global.iniciado`; sem cena; ADR 0008),
-           TutorialFlag.gd (flag "tutorial ja visto" no OptionsStore), DebugArgs.gd (args de usuario do nativo debug, `--nome=valor` depois de `--`), ModoTutorialVisto.gd (`?tutorial=` dos smokes, so debug), ModoProgressoInicial.gd (`?progresso=` dos smokes, so debug), ModoMolduraFixa.gd (`?moldura=fixa`, so debug),
+           TutorialFlag.gd (flag "tutorial ja visto" no OptionsStore), DebugArgs.gd (args de usuario do nativo debug, `--nome=valor` depois de `--`), ModoTutorialVisto.gd (`?tutorial=` dos smokes, so debug), ModoProgressoInicial.gd (`?progresso=` dos smokes, so debug), ModoToqueInicial.gd (`?toque=` dos smokes, so debug), ModoMolduraFixa.gd (`?moldura=fixa`, so debug),
            UiHelpers.gd (estilo de caixa, label e chave do mouse das telas de UI, sem cena)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 test/smoke/ roteiros do game-smoke (export web): `gecko.smoke.json` (fluxo), `retrato-*` (telas de celular) e
            `janela-larga-1280x720` (coluna de 180 com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os.
-           Todos usam `?tutorial=visto`, menos `tutorial.smoke.json` (1a partida com `user://` limpo); `estagio.smoke.json` (`?progresso=`) prova a subida de `dificuldade.estagio`; `?semderrota=1` em pontua, estagio e nos roteiros longos (queda pela borda segue); roteiros longos esperam `playing` antes de cada rajada
+           Todos usam `?tutorial=visto`, menos `tutorial.smoke.json` (1a partida com `user://` limpo); `estagio.smoke.json` (`?progresso=`) prova a subida de `dificuldade.estagio`; `toque-modo-{a,b,c}.smoke.json` (`?toque=`) prova a direcao/diagonal/flick/multitoque do modo de toque por `player.x/y`; `?semderrota=1` em pontua, estagio e nos roteiros longos (queda pela borda segue); roteiros longos esperam `playing` antes de cada rajada
 addons/    GUT v9.7.1 (vendorizado; nao editar)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
 export/    saida de build (ignorada; so o .gdignore e versionado, para o Godot nao importar o build)

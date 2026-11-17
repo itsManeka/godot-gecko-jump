@@ -1,6 +1,7 @@
 # 0003 — Controle de toque de um polegar
 
-- **Status:** aceito
+- **Status:** superado por [0013](0013-modos-de-toque-alternaveis.md) (o esquema tap x segurar foi removido na #47; a
+  ideia de um polegar sobrevive no modo A)
 - **Data:** 2026-11-08
 - **Decisores:** itsManeka + Claude
 
