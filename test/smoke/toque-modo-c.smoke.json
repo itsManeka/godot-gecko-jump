@@ -1,0 +1,37 @@
+{
+  "path": "index.html?seed=473&semderrota=1&tutorial=visto&toque=c",
+  "viewport": [720, 1280],
+  "boot_ms": 6000,
+  "notes": "Modo C (segurar + 2o toque), viewport 720x1280 = 4x o logico 180x320 (metade esquerda x < 360, direita x >= 360; janela de simultaneidade 80 ms). player.x/y em px logicos pela ponte; o sinal de cada limite vem da regra do modo: dois toques simultaneos (< 80 ms) nas metades opostas = pulo reto (y menor, x na margem); segurar anda para o lado do dedo sem pular; segurar + 2o toque = diagonal para o lado segurado. Limites medidos rodando o roteiro SEM o gesto: x inicial 95, y desce ~18 px/s (~196 em 1 s). Detalhe deterministico segue no GUT.",
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "tap": [360, 640] },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "wait": 400 },
+    {
+      "touches": [
+        { "from": [200, 1000], "ms": 150 },
+        { "from": [540, 1000], "at": 0, "ms": 150 }
+      ]
+    },
+    { "expect": { "player.y": { "lt": 170 } }, "timeout_ms": 3000 },
+    { "expect": { "player.x": { "gt": 85 } }, "timeout_ms": 3000 },
+    { "expect": { "player.x": { "lt": 105 } }, "timeout_ms": 3000 },
+    { "wait": 900 },
+    { "hold": [200, 1000, 80] },
+    { "wait": 300 },
+    { "expect": { "player.x": { "lt": 90 } }, "timeout_ms": 3000 },
+    { "expect": { "player.y": { "gt": 190 } }, "timeout_ms": 3000 },
+    { "wait": 500 },
+    {
+      "touches": [
+        { "from": [200, 1000], "ms": 400 },
+        { "from": [540, 1000], "at": 200, "ms": 150 }
+      ]
+    },
+    { "expect": { "player.y": { "lt": 190 } }, "timeout_ms": 3000 },
+    { "expect": { "player.x": { "lt": 70 } }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "modo-c-fim", "moving": true },
+    { "expect": { "state": "playing", "player.alive": true }, "timeout_ms": 3000 }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "path": "index.html?seed=471&semderrota=1&tutorial=visto&toque=a",
+  "viewport": [720, 1280],
+  "boot_ms": 6000,
+  "notes": "Modo A (arrastar + flick), viewport 720x1280 = 4x o logico 180x320 (zona morta 6 px = 24 px). player.x/y em px logicos pela ponte; o sinal de cada limite vem da regra do modo: tap seco nao move nem sobe; flick com o dedo na zona morta sobe reto (x na margem); flick com o dedo deslocado sobe para o lado dele; arrasto anda para o lado do dedo. Limites medidos rodando o roteiro SEM o gesto: x inicial 95, y desce ~18 px/s (~205 em 1 s, 243 em 3,5 s). Flicks de 300 px em 100 ms (o flick curto, 120 px, nao dispara o pulo no export: issue #48). Detalhe deterministico segue no GUT.",
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "tap": [360, 640] },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "wait": 450 },
+    { "tap": [360, 1000] },
+    { "wait": 200 },
+    { "expect": { "player.x": { "gt": 90 } }, "timeout_ms": 3000 },
+    { "expect": { "player.x": { "lt": 100 } }, "timeout_ms": 3000 },
+    { "expect": { "player.y": { "gt": 195 } }, "timeout_ms": 3000 },
+    { "drag": [360, 1100, 360, 800, 100] },
+    { "expect": { "player.y": { "lt": 190 } }, "timeout_ms": 3000 },
+    { "expect": { "player.x": { "gt": 90 } }, "timeout_ms": 3000 },
+    { "expect": { "player.x": { "lt": 100 } }, "timeout_ms": 3000 },
+    { "wait": 450 },
+    { "drag": [360, 1100, 260, 800, 100] },
+    { "expect": { "player.x": { "lt": 90 } }, "timeout_ms": 3000 },
+    { "wait": 450 },
+    { "drag": [300, 1000, 460, 1000, 300] },
+    { "expect": { "player.x": { "gt": 100 } }, "timeout_ms": 3000 },
+    { "drag": [460, 1000, 300, 1000, 300] },
+    { "expect": { "player.x": { "lt": 90 } }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "modo-a-fim", "moving": true },
+    { "expect": { "state": "playing", "player.alive": true }, "timeout_ms": 3000 }
+  ]
+}
