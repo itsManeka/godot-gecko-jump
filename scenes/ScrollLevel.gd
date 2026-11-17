@@ -1,3 +1,4 @@
+class_name ScrollLevel
 extends Node2D
 
 # Sistema que gerencia o scroll infinito do level e geração de plataformas

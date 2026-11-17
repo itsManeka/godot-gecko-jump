@@ -89,7 +89,7 @@ func _ready():
 	# Progresso inicial de debug (?progresso=, 0.0 fora do web debug): a partida ja nasce nesse ponto da curva
 	dificuldade.progresso_inicial = Global.progresso_inicial
 	# Linhas do .tscn e as de ScrollLevel._ready ja nasceram (estagio 0); as novas recebem o estado
-	var scroll_level: Node = get_node_or_null("ScrollLevel")
+	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
 	if scroll_level != null:
 		scroll_level.dificuldade = dificuldade
 	# O Player le o scroll vigente da mesma dificuldade para prever a cor da janela de chegada
@@ -246,7 +246,7 @@ func _physics_process(delta: float) -> void:
 func _avancar_camera() -> void:
 	if _limite_camera <= 0.0:
 		return
-	var scroll_level: Node = get_node_or_null("ScrollLevel")
+	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
 	if scroll_level == null:
 		return
 	scroll_level.avancar_camera(player, _limite_camera)
