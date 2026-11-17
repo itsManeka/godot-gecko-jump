@@ -18,9 +18,13 @@ const COR_LINHA: Color = Color(1.0, 1.0, 1.0, 0.6)
 const COR_FAIXA: Color = UiHelpers.COR_FUNDO_OVERLAY
 const OUTLINE_SIZE: int = 1
 
-# Textos (handoff 8.2). D6: "segura: anda" cabe em 76 px? se nao, vira "segura" (so este simbolo muda).
-const TEXTO_PULA: String = "pula"
-const TEXTO_SEGURA: String = "segura: anda"
+# Textos por modo de toque (issue #47). Cada bloco tem 2 linhas e precisa caber em 76 px (lateral) / 166 px (centro).
+# A: sem zonas, um bloco central; B e C: linha em x = 90 e um bloco por lado.
+const TEXTOS_A: Array[String] = ["arraste: anda", "flick: pula"]
+const TEXTOS_B_ESQ: Array[String] = ["anda", "segura aqui"]
+const TEXTOS_B_DIR: Array[String] = ["pula", "toque aqui"]
+const TEXTOS_C_ESQ: Array[String] = ["anda", "2o dedo pula"]
+const TEXTOS_C_DIR: Array[String] = ["anda", "2o dedo pula"]
 
 # Medidas em px logicos (handoff 8.2)
 const DIVISAO_X: float = 90.0
@@ -41,7 +45,7 @@ const CAMADA: int = 0
 # Fade-out ao 1o toque de jogo: proposta provisoria (handoff 8.4)
 const FADE_S: float = 0.3
 
-enum Lado { ESQUERDA, DIREITA }
+enum Lado { ESQUERDA, DIREITA, CENTRO }
 
 var player: Node = null
 # Callable() -> bool que substitui DisplayServer.is_touchscreen_available() (teste).
@@ -54,6 +58,8 @@ var _raiz: Control
 var _linha: Control
 var _bloco_esq: Control
 var _bloco_dir: Control
+var _bloco_centro: Control
+var _modo: int = TouchMode.padrao()
 var _linha_rect: Rect2 = Rect2()
 var _mostrando: bool = false
 var _fade: Tween = null
@@ -69,8 +75,13 @@ func _ready() -> void:
 	_raiz.add_child(_linha)
 	_bloco_esq = _montar_bloco(Lado.ESQUERDA)
 	_bloco_dir = _montar_bloco(Lado.DIREITA)
+	_bloco_centro = _montar_bloco(Lado.CENTRO)
 	_raiz.add_child(_bloco_esq)
 	_raiz.add_child(_bloco_dir)
+	_raiz.add_child(_bloco_centro)
+	_modo = Global.get_touch_mode()
+	_aplicar_modo()
+	Global.touch_mode_changed.connect(_ao_trocar_modo)
 
 
 func _process(_delta: float) -> void:
@@ -116,21 +127,88 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 	_posicionar_bloco(_bloco_esq, Rect2(esq_x, y0, ESQ_X_FIM - esq_x, BLOCO_ALTURA))
 	var dir_fim := minf(DIR_X_MAX, visible_size.x - s_right - MARGEM_SAFE)
 	_posicionar_bloco(_bloco_dir, Rect2(DIR_X_INI, y0, dir_fim - DIR_X_INI, BLOCO_ALTURA))
+	_posicionar_bloco(_bloco_centro, Rect2(esq_x, y0, dir_fim - esq_x, BLOCO_ALTURA))
+
+
+# Textos (2 linhas) do bloco do lado dado no modo dado; vazio quando o modo nao tem esse bloco (A so tem o centro).
+static func textos_bloco(modo: int, lado: int) -> Array[String]:
+	match modo:
+		TouchMode.Modo.A:
+			return TEXTOS_A if lado == Lado.CENTRO else ([] as Array[String])
+		TouchMode.Modo.B:
+			if lado == Lado.ESQUERDA:
+				return TEXTOS_B_ESQ
+			return TEXTOS_B_DIR if lado == Lado.DIREITA else ([] as Array[String])
+		_:
+			if lado == Lado.ESQUERDA:
+				return TEXTOS_C_ESQ
+			return TEXTOS_C_DIR if lado == Lado.DIREITA else ([] as Array[String])
+
+
+# Modo de toque exibido agora.
+func modo_exibido() -> int:
+	return _modo
 
 
 # Retangulo do bloco do lado dado (coordenadas logicas).
 func rect_bloco(lado: int) -> Rect2:
-	var bloco := _bloco_esq if lado == Lado.ESQUERDA else _bloco_dir
+	var bloco := _bloco_de(lado)
 	return Rect2(bloco.position, bloco.size)
 
 
-# Retangulo da linha divisoria (largura 1; x = 90).
+# Textos hoje nas 2 linhas do bloco do lado dado.
+func textos_atuais(lado: int) -> Array[String]:
+	var out: Array[String] = []
+	for filho in _bloco_de(lado).get_children():
+		if filho is Label:
+			out.append((filho as Label).text)
+	return out
+
+
+# O bloco do lado dado esta desenhado (A so desenha o centro; B e C so os laterais).
+func bloco_visivel(lado: int) -> bool:
+	return _bloco_de(lado).visible
+
+
+# Retangulo da linha divisoria (largura 1; x = 90); vazio no modo A (sem zonas).
 func rect_linha() -> Rect2:
-	return _linha_rect
+	return _linha_rect if _modo != TouchMode.Modo.A else Rect2()
 
 
 func esta_mostrando() -> bool:
 	return _mostrando
+
+
+func _bloco_de(lado: int) -> Control:
+	if lado == Lado.ESQUERDA:
+		return _bloco_esq
+	return _bloco_dir if lado == Lado.DIREITA else _bloco_centro
+
+
+# Troca o modo: reescreve textos/zonas e rearma a dica (Q8) para ser mostrada de novo na partida em curso.
+func _ao_trocar_modo(modo: int) -> void:
+	if modo == _modo:
+		return
+	_modo = modo
+	_aplicar_modo()
+	Global.dica_toque_mostrada = false
+
+
+func _aplicar_modo() -> void:
+	var com_zonas := _modo != TouchMode.Modo.A
+	_linha.visible = com_zonas
+	_bloco_esq.visible = com_zonas
+	_bloco_dir.visible = com_zonas
+	_bloco_centro.visible = not com_zonas
+	for lado in [Lado.ESQUERDA, Lado.DIREITA, Lado.CENTRO]:
+		var textos := textos_bloco(_modo, lado)
+		if textos.is_empty():
+			continue
+		var i := 0
+		for filho in _bloco_de(lado).get_children():
+			if filho is Label:
+				(filho as Label).text = textos[i]
+				i += 1
 
 
 func _tem_touchscreen() -> bool:
@@ -183,12 +261,13 @@ func _montar_bloco(lado: int) -> Control:
 	faixa.focus_mode = Control.FOCUS_NONE
 	faixa.color = COR_FAIXA
 	bloco.add_child(faixa)
-	var seta := _novo_controle()
-	seta.size = Vector2(SETA, SETA)
-	seta.draw.connect(_desenhar_seta.bind(seta, lado))
-	bloco.add_child(seta)
-	bloco.add_child(_novo_label(TEXTO_PULA, SETA + SETA_ESPACO))
-	bloco.add_child(_novo_label(TEXTO_SEGURA, SETA + SETA_ESPACO + TEXTO_ALTURA))
+	if lado != Lado.CENTRO:
+		var seta := _novo_controle()
+		seta.size = Vector2(SETA, SETA)
+		seta.draw.connect(_desenhar_seta.bind(seta, lado))
+		bloco.add_child(seta)
+	bloco.add_child(_novo_label("", SETA + SETA_ESPACO))
+	bloco.add_child(_novo_label("", SETA + SETA_ESPACO + TEXTO_ALTURA))
 	return bloco
 
 

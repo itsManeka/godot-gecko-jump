@@ -22,6 +22,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	Global.set_touch_mode(TouchMode.padrao(), false)
 	get_tree().paused = false
 	for acao in ["jump", "ui_left", "ui_right"]:
 		Input.action_release(acao)
@@ -161,6 +162,15 @@ func test_c215_dica_mostrada_e_tutorial_nao_visto_card_sem_dica() -> void:
 	var stage := await _stage_em_curso()
 	assert_true(stage.tutorial_card.esta_aberto(), "tutorial nao visto: card aparece")
 	assert_false(stage.touch_hint.esta_mostrando(), "dica ja mostrada: sem dica")
+
+
+func test_c419_card_da_stage_com_toque_mostra_o_texto_do_modo_e_a_dica_o_mesmo_modo() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var stage := await _stage_em_curso()
+	var controle := stage.tutorial_card.find_child("Controle", true, false) as Label
+	assert_eq(controle.text, TutorialCard.texto_controle_toque(TouchMode.Modo.B), "card com o texto do modo B")
+	assert_eq(stage.touch_hint.modo_exibido(), TouchMode.Modo.B, "dica no mesmo modo")
+	Global.set_touch_mode(TouchMode.padrao(), false)
 
 
 func test_c216_ambas_ausentes_card_e_dica_juntos_ambas_setadas_nenhum() -> void:

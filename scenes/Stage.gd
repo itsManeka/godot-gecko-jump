@@ -183,7 +183,7 @@ func _atualizar_zonas_mortas() -> void:
 	var mortas: Array[Rect2] = [pause_botao.rect_botao()]
 	if tutorial_card != null and tutorial_card.esta_aberto():
 		mortas.append(tutorial_card.rect_pular())
-	touch_controls.classificador.zonas_mortas = mortas
+	touch_controls.zonas_mortas = mortas
 
 # HUD no topo da safe area: Pontos junto a borda direita visivel, menu com o y de 180x320 deslocado por safe.position.y
 # e centrado na largura visivel. Posicao calculada do tamanho injetado (o pai Control so reflete o viewport real).

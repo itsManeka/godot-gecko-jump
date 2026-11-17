@@ -90,7 +90,8 @@ func test_c346_import_da_fonte_sem_hinting_nem_subpixel() -> void:
 func test_c347_tutorial_e_dica_cabem_na_viewport_180x320() -> void:
 	var card: TutorialCard = add_child_autofree(TutorialCard.new())
 	card.aplicar_layout(Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA))
-	var textos: Array[String] = ["Pise na cor dele.", "Pouso troca a cor.", "Toque nas metades", "Setas e espaco", "diferente"]
+	var textos: Array[String] = ["Pise na cor dele.", "Pouso troca a cor.", "Setas e espaco", "diferente"]
+	textos.append_array(TutorialCard.TEXTO_CONTROLE_TOQUE_POR_MODO)
 	for t in textos:
 		assert_lte(TutorialCard.largura_texto(t), TutorialCard.LARGURA_CONTEUDO, "'%s' cabe em 148 px" % t)
 	var tela := Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA)
@@ -101,8 +102,13 @@ func test_c347_tutorial_e_dica_cabem_na_viewport_180x320() -> void:
 	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
 		var r := hint.rect_bloco(lado)
 		assert_true(tela.encloses(r), "bloco da dica %d dentro de 180x320" % lado)
-		assert_lte(TouchHint.largura_texto(TouchHint.TEXTO_SEGURA), r.size.x, "'segura: anda' cabe no bloco")
-		assert_lte(TouchHint.largura_texto(TouchHint.TEXTO_PULA), r.size.x, "'pula' cabe no bloco")
+		for modo in [TouchMode.Modo.B, TouchMode.Modo.C]:
+			for t in TouchHint.textos_bloco(modo, lado):
+				assert_lte(TouchHint.largura_texto(t), r.size.x, "'%s' cabe no bloco" % t)
+	var centro := hint.rect_bloco(TouchHint.Lado.CENTRO)
+	assert_true(tela.encloses(centro), "bloco central da dica dentro de 180x320")
+	for t in TouchHint.textos_bloco(TouchMode.Modo.A, TouchHint.Lado.CENTRO):
+		assert_lte(TouchHint.largura_texto(t), centro.size.x, "'%s' cabe no bloco central" % t)
 
 
 # C348: botoes comportam o rotulo (fonte real) sem corte em 180x320.

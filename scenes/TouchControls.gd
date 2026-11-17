@@ -39,6 +39,20 @@ var largura_visivel_fixa: float = 0.0
 var pulo_no_pressionar: bool = PULO_NO_PRESSIONAR
 var buffer_pulo_ms: int = BUFFER_PULO_MS
 var aceitar_mouse: bool = ACEITAR_MOUSE
+# Zonas mortas do toque de jogo (botao de pausa, Pular do tutorial): ficam aqui e valem em qualquer esquema, inclusive
+# o legado (propaga para o classificador) e o esquema do modo ativo.
+var zonas_mortas: Array[Rect2] = []:
+	set(valor):
+		zonas_mortas = valor
+		classificador.zonas_mortas = valor
+		if _esquema != null:
+			_esquema.zonas_mortas = valor
+# Callable(modo: int) -> TouchScheme que substitui TouchSchemes.criar (teste); invalido = a fabrica de producao.
+var fabrica_esquema: Callable = Callable()
+
+# Esquema do modo ativo (contrato TouchScheme); null = esquema legado (tap/hold), provisorio ate a T9.
+var _esquema: TouchScheme = null
+var _modo_ativo: int = -1
 
 # Acoes que a camada pressionou (so estas ela solta).
 var _pressionadas: Dictionary = {}
@@ -56,8 +70,17 @@ var _lateral_tap_ticks: int = 0
 var _lateral_tap_decolou: bool = false
 
 
+func _enter_tree() -> void:
+	if not Global.touch_mode_changed.is_connected(_ao_trocar_modo):
+		Global.touch_mode_changed.connect(_ao_trocar_modo)
+
+
 func _input(event: InputEvent) -> void:
-	if event is InputEventScreenTouch:
+	_sincronizar_modo()
+	if event is InputEventScreenDrag:
+		var arrasto := event as InputEventScreenDrag
+		_arrastou(arrasto.index, arrasto.position)
+	elif event is InputEventScreenTouch:
 		var toque := event as InputEventScreenTouch
 		if toque.canceled:
 			_cancelar(toque.index)
@@ -73,13 +96,18 @@ func _input(event: InputEvent) -> void:
 			_pressionou(UiHelpers.DEDO_MOUSE, mouse.position)
 		else:
 			_soltou(UiHelpers.DEDO_MOUSE)
-	# InputEventScreenDrag nao muda nada: o lado e decidido no pressionar.
+	# Esquema legado: InputEventScreenDrag nao muda nada (o lado e decidido no pressionar).
 
 
 func _physics_process(_delta: float) -> void:
+	_sincronizar_modo()
 	if not _em_curso():
-		if _dedo != -1 or not _pressionadas.is_empty():
+		if _dedo != -1 or not _pressionadas.is_empty() or (_esquema != null and _esquema.ativo()):
 			_cancelar_tudo()
+		return
+	if _esquema != null:
+		_aplicar_intencao()
+		_avancar_pulso()
 		return
 	if classificador.ativo() and not _andando and TouchClassifier.eh_hold(_agora() - _t_press_ms):
 		_andando = true
@@ -95,7 +123,53 @@ func _notification(what: int) -> void:
 
 
 func _exit_tree() -> void:
+	if Global.touch_mode_changed.is_connected(_ao_trocar_modo):
+		Global.touch_mode_changed.disconnect(_ao_trocar_modo)
+	if _esquema != null:
+		_esquema.cancelar_tudo()
 	_soltar_tudo()  # saida da arvore
+
+
+func _ao_trocar_modo(_modo: int) -> void:
+	_sincronizar_modo()
+
+
+# Segue o modo de Global: ao trocar, cancela o gesto (solta as acoes da camada) e recria o esquema do novo modo.
+func _sincronizar_modo() -> void:
+	var modo: int = Global.get_touch_mode()
+	if modo == _modo_ativo:
+		return
+	_modo_ativo = modo
+	_cancelar_tudo()  # troca de modo: solta o que o esquema anterior pressionou
+	_esquema = fabrica_esquema.call(modo) if fabrica_esquema.is_valid() else TouchSchemes.criar(modo)
+	if _esquema != null:
+		_esquema.zonas_mortas = zonas_mortas
+
+
+# Traduz a intencao do esquema em acoes: esquerda/direita seguem o nivel; `pulo` e evento e vira o pulso de
+# TICKS_MINIMOS (nao repula enquanto o dedo segura). A posse (`_pressionadas`) e do `_pressionar`/`_soltar`.
+func _aplicar_intencao() -> void:
+	if _esquema == null:
+		return
+	var intencao: Dictionary = _esquema.intencao(_agora())
+	_seguir_nivel(ACAO_ESQUERDA, bool(intencao.get("esquerda", false)))
+	_seguir_nivel(ACAO_DIREITA, bool(intencao.get("direita", false)))
+	if bool(intencao.get("pulo", false)):
+		_pulsar([ACAO_PULO])
+
+
+func _seguir_nivel(acao: String, ativa: bool) -> void:
+	if ativa:
+		_pressionar(acao)
+	else:
+		_soltar(acao)
+
+
+func _arrastou(dedo: int, pos: Vector2) -> void:
+	if _esquema == null or not _em_curso():
+		return
+	_esquema.mover(dedo, pos, _agora())
+	_aplicar_intencao()
 
 
 func _em_curso() -> bool:
@@ -120,6 +194,11 @@ func _pressionou(dedo: int, pos: Vector2) -> void:
 	else:
 		classificador.largura_visivel = get_viewport().get_visible_rect().size.x
 	var t: int = _agora()
+	if _esquema != null:
+		_esquema.largura_visivel = classificador.largura_visivel
+		_esquema.press(dedo, t, pos)
+		_aplicar_intencao()
+		return
 	if not classificador.press(dedo, t, pos):
 		return
 	_dedo = dedo
@@ -132,6 +211,10 @@ func _pressionou(dedo: int, pos: Vector2) -> void:
 
 
 func _soltou(dedo: int) -> void:
+	if _esquema != null:
+		_esquema.release(dedo, _agora())
+		_aplicar_intencao()
+		return
 	var r: Dictionary = classificador.release(dedo, _agora())
 	if r["resultado"] == TouchClassifier.Resultado.IGNORADO:
 		return
@@ -154,6 +237,10 @@ func _soltou(dedo: int) -> void:
 
 
 func _cancelar(dedo: int) -> void:
+	if _esquema != null:
+		_esquema.cancelar(dedo)
+		_aplicar_intencao()
+		return
 	var r: Dictionary = classificador.cancelar(dedo)
 	if r["resultado"] == TouchClassifier.Resultado.IGNORADO:
 		return
@@ -169,6 +256,8 @@ func cancelar_tudo() -> void:
 
 
 func _cancelar_tudo() -> void:
+	if _esquema != null:
+		_esquema.cancelar_tudo()
 	if _dedo != -1:
 		_cancelar(_dedo)
 	_soltar_tudo()

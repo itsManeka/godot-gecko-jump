@@ -76,6 +76,8 @@ func _ready():
 	pontuacao.load_best(_best_store.load_best())
 	pontuacao.best_changed.connect(_best_store.save_best)
 	usar_options_store(OptionsStore.new())
+	# Depois do store: o modo forcado por `?toque=` (so smoke debug) vence o salvo, sem gravar.
+	aplicar_modo_toque_inicial(ModoToqueInicial.read_raw(), OS.is_debug_build())
 
 # Opcoes de audio: store publico de proposito (seam de teste; test/gut_pre_run.gd o troca por um de caminho temporario).
 var opcoes: OptionsStore
@@ -105,6 +107,12 @@ func set_touch_mode(m: int, persistir: bool = true) -> void:
 
 func get_touch_mode() -> TouchMode.Modo:
 	return _touch_mode
+
+# Aplica o modo forcado por `?toque=` (so smoke debug; release devolve SEM_FORCA). Nunca grava no store.
+func aplicar_modo_toque_inicial(raw: Variant, is_debug: bool) -> void:
+	var forcado := ModoToqueInicial.decide(raw, is_debug)
+	if forcado != ModoToqueInicial.SEM_FORCA:
+		set_touch_mode(forcado, false)
 
 # Aplica no bus sempre; grava no store so com `persistir` (arrasto de slider aplica sem gravar e grava ao soltar).
 func set_volume_music(v: float, persistir: bool = true) -> void:

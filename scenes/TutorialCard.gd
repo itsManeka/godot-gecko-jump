@@ -49,7 +49,8 @@ const TEXTO_TITULO: String = "Como jogar"
 const TEXTO_PULAR: String = "Pular"
 const TEXTO_VOLTAR: String = "Voltar"
 const TEXTO_REGRA: Array[String] = ["Pise na cor dele.", "Pouso troca a cor."]
-const TEXTO_CONTROLE_TOQUE: String = "Toque nas metades"
+# Linha de controle do toque por modo (indice = TouchMode.Modo); cada texto cabe em 148 px
+const TEXTO_CONTROLE_TOQUE_POR_MODO: Array[String] = ["Arraste e flick", "Dois polegares", "Metades e 2o dedo"]
 const TEXTO_CONTROLE_TECLADO: String = "Setas e espaco"
 const NOMES_LEGENDA: Array[String] = ["amarelo", "verde", "azul", "vermelho"]
 const CORES_LEGENDA: Array[int] = [Enums.COLOR.AMARELO, Enums.COLOR.VERDE, Enums.COLOR.AZUL, Enums.COLOR.VERMELHO]
@@ -295,7 +296,12 @@ func _acionar() -> void:
 func _atualizar_textos() -> void:
 	if _controle == null:
 		return
-	_controle.text = TEXTO_CONTROLE_TECLADO if _variante == Variante.TECLADO else TEXTO_CONTROLE_TOQUE
+	_controle.text = TEXTO_CONTROLE_TECLADO if _variante == Variante.TECLADO else texto_controle_toque(Global.get_touch_mode())
+
+
+# Texto da linha de controle no toque para o modo dado (fora da faixa, vale o padrao).
+static func texto_controle_toque(modo: int) -> String:
+	return TEXTO_CONTROLE_TOQUE_POR_MODO[TouchMode.de_valor(modo)]
 
 
 func _atualizar_botao() -> void:

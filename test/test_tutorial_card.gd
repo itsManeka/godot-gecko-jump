@@ -132,14 +132,22 @@ func test_c198_variante_teclado_mostra_setas_e_espaco() -> void:
 	var c := _novo(TutorialCard.Variante.TECLADO)
 	assert_eq(c.variante(), TutorialCard.Variante.TECLADO, "variante guardada")
 	assert_true(_textos(c).has("Setas e espaco"), "teclado mostra 'Setas e espaco'")
-	assert_false(_textos(c).has("Toque nas metades"), "teclado nao mostra o texto de toque")
+	for texto in TutorialCard.TEXTO_CONTROLE_TOQUE_POR_MODO:
+		assert_false(_textos(c).has(texto), "teclado nao mostra o texto de toque '%s'" % texto)
 
 
-func test_c198_variante_toque_mostra_toque_nas_metades() -> void:
-	var c := _novo(TutorialCard.Variante.TOQUE)
-	assert_eq(c.variante(), TutorialCard.Variante.TOQUE, "variante guardada")
-	assert_true(_textos(c).has("Toque nas metades"), "toque mostra 'Toque nas metades'")
-	assert_false(_textos(c).has("Setas e espaco"), "toque nao mostra o texto de teclado")
+func test_c419_variante_toque_mostra_o_texto_do_modo_e_so_ele() -> void:
+	var esperado: Array[String] = ["Arraste e flick", "Dois polegares", "Metades e 2o dedo"]
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B, TouchMode.Modo.C]:
+		Global.set_touch_mode(modo, false)
+		var c := _novo(TutorialCard.Variante.TOQUE)
+		assert_eq(c.variante(), TutorialCard.Variante.TOQUE, "variante guardada")
+		assert_true(_textos(c).has(esperado[modo]), "modo %s mostra '%s'" % [TouchMode.nome(modo), esperado[modo]])
+		for outro in [TouchMode.Modo.A, TouchMode.Modo.B, TouchMode.Modo.C]:
+			if outro != modo:
+				assert_false(_textos(c).has(esperado[outro]), "modo %s nao mostra o texto do modo %s" % [TouchMode.nome(modo), TouchMode.nome(outro)])
+		assert_false(_textos(c).has("Setas e espaco"), "toque nao mostra o texto de teclado")
+	Global.set_touch_mode(TouchMode.padrao(), false)
 
 
 func test_c199_amostras_diferem_por_marca_e_rotulo_nao_so_por_cor() -> void:

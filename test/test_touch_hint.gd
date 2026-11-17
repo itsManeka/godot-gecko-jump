@@ -26,9 +26,11 @@ func before_each() -> void:
 	Global.iniciado = false
 	Global.toque_detectado = false
 	Global.dica_toque_mostrada = false
+	Global.set_touch_mode(TouchMode.padrao(), false)
 
 
 func after_each() -> void:
+	Global.set_touch_mode(TouchMode.padrao(), false)
 	Global.platforms = []
 	Global.iniciado = false
 	Global.toque_detectado = false
@@ -217,15 +219,110 @@ func test_c175_blocos_nao_cobrem_placar_nem_hud_nos_dois_tamanhos() -> void:
 		assert_gte(stage.touch_hint.rect_linha().position.y, placar.end.y + 2.0, "linha comeca abaixo do placar")
 
 
-func test_c176_texto_segura_cabe_em_76_px_com_a_fonte_real() -> void:
-	assert_lte(TouchHint.largura_texto(TouchHint.TEXTO_SEGURA), BLOCO_LARGURA_MAX, "TEXTO_SEGURA cabe em 76 px")
-	assert_lte(TouchHint.largura_texto(TouchHint.TEXTO_PULA), BLOCO_LARGURA_MAX, "TEXTO_PULA cabe em 76 px")
+func test_c176_textos_de_cada_modo_cabem_no_bloco_com_a_fonte_real() -> void:
+	for modo in [TouchMode.Modo.B, TouchMode.Modo.C]:
+		for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
+			for t in TouchHint.textos_bloco(modo, lado):
+				assert_lte(TouchHint.largura_texto(t), BLOCO_LARGURA_MAX, "'%s' cabe em 76 px" % t)
+	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var h := _nova_dica(false)
-	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
+	var centro: float = h.rect_bloco(TouchHint.Lado.CENTRO).size.x
+	for t in TouchHint.textos_bloco(TouchMode.Modo.A, TouchHint.Lado.CENTRO):
+		assert_lte(TouchHint.largura_texto(t), centro, "'%s' cabe no bloco central" % t)
+	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA, TouchHint.Lado.CENTRO]:
 		var largura: float = h.rect_bloco(lado).size.x
-		for filho in h._bloco_esq.get_children() if lado == TouchHint.Lado.ESQUERDA else h._bloco_dir.get_children():
-			if filho is Label:
+		for filho in h._bloco_de(lado).get_children():
+			if filho is Label and filho.text != "":
 				assert_lte((filho as Label).get_minimum_size().x, largura, "label '%s' cabe no bloco" % filho.text)
+
+
+func _todos_os_textos(h: TouchHint) -> Array[String]:
+	var out: Array[String] = []
+	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA, TouchHint.Lado.CENTRO]:
+		out.append_array(h.textos_atuais(lado))
+	return out
+
+
+func test_c415_modo_a_mostra_o_texto_curto_e_nao_desenha_zonas() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var h := _nova_dica(true)
+	assert_eq(h.textos_atuais(TouchHint.Lado.CENTRO), ["arraste: anda", "flick: pula"], "bloco central com o texto do modo A")
+	assert_true(h.bloco_visivel(TouchHint.Lado.CENTRO), "bloco central visivel")
+	assert_false(h.bloco_visivel(TouchHint.Lado.ESQUERDA), "sem bloco esquerdo")
+	assert_false(h.bloco_visivel(TouchHint.Lado.DIREITA), "sem bloco direito")
+	assert_false(h._linha.visible, "sem linha divisoria")
+	assert_eq(h.rect_linha(), Rect2(), "modo A nao tem zona: retangulo da linha vazio")
+
+
+func test_c416_modo_b_mostra_linha_em_x_90_e_blocos_com_texto_do_modo_b() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var h := _nova_dica(true)
+	assert_eq(h.rect_linha().position.x, 90.0, "linha divisoria em x = 90")
+	assert_true(h._linha.visible, "linha visivel")
+	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), ["anda", "segura aqui"], "bloco esquerdo com o texto do modo B")
+	assert_eq(h.textos_atuais(TouchHint.Lado.DIREITA), ["pula", "toque aqui"], "bloco direito com o texto do modo B")
+	assert_true(h.bloco_visivel(TouchHint.Lado.ESQUERDA) and h.bloco_visivel(TouchHint.Lado.DIREITA), "blocos laterais visiveis")
+	assert_false(h.bloco_visivel(TouchHint.Lado.CENTRO), "sem bloco central")
+
+
+func test_c417_modo_c_mostra_linha_em_x_90_e_blocos_com_texto_do_modo_c() -> void:
+	Global.set_touch_mode(TouchMode.Modo.C, false)
+	var h := _nova_dica(true)
+	assert_eq(h.rect_linha().position.x, 90.0, "linha divisoria em x = 90")
+	assert_true(h._linha.visible, "linha visivel")
+	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), ["anda", "2o dedo pula"], "bloco esquerdo com o texto do modo C")
+	assert_eq(h.textos_atuais(TouchHint.Lado.DIREITA), ["anda", "2o dedo pula"], "bloco direito com o texto do modo C")
+	assert_true(h.bloco_visivel(TouchHint.Lado.ESQUERDA) and h.bloco_visivel(TouchHint.Lado.DIREITA), "blocos laterais visiveis")
+	assert_false(h.bloco_visivel(TouchHint.Lado.CENTRO), "sem bloco central")
+
+
+func test_c418_textos_renderizados_diferem_entre_os_modos_e_sem_o_esquema_velho() -> void:
+	var vistos: Array = []
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B, TouchMode.Modo.C]:
+		Global.set_touch_mode(modo, false)
+		var h := _nova_dica(true)
+		var textos := _todos_os_textos(h)
+		assert_false(textos.has("segura: anda"), "texto antigo 'segura: anda' ausente no modo %s" % TouchMode.nome(modo))
+		var visiveis: Array[String] = []
+		for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA, TouchHint.Lado.CENTRO]:
+			if h.bloco_visivel(lado):
+				visiveis.append_array(h.textos_atuais(lado))
+		assert_false(vistos.has(visiveis), "modo %s renderiza textos diferentes dos outros" % TouchMode.nome(modo))
+		vistos.append(visiveis)
+	assert_eq(vistos.size(), 3, "3 modos, 3 conjuntos de textos")
+
+
+func test_c420_fade_preservado_nos_3_modos() -> void:
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B, TouchMode.Modo.C]:
+		Global.set_touch_mode(modo, false)
+		Global.dica_toque_mostrada = false
+		Global.iniciado = true
+		var h := _nova_dica(true)
+		await wait_process_frames(2)
+		assert_true(h.visible, "modo %s: dica visivel" % TouchMode.nome(modo))
+		h._input(_toque())
+		await wait_seconds(0.15)
+		assert_true(h.visible, "modo %s: durante o fade segue visivel" % TouchMode.nome(modo))
+		assert_lt(h.get_child(0).modulate.a, 1.0, "modo %s: alpha decresce" % TouchMode.nome(modo))
+		await wait_seconds(0.4)
+		assert_false(h.visible, "modo %s: apos o fade a dica fica oculta" % TouchMode.nome(modo))
+		h.free()
+
+
+func test_c420_trocar_o_modo_rearma_a_dica_ja_mostrada() -> void:
+	Global.set_touch_mode(TouchMode.Modo.C, false)
+	var h := _nova_dica(true)
+	Global.iniciado = true
+	await wait_process_frames(2)
+	h._input(_toque())
+	await wait_seconds(0.6)
+	assert_false(h.visible, "pre-condicao: dica oculta apos o fade")
+	assert_true(Global.dica_toque_mostrada, "pre-condicao: flag marcada")
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	assert_false(Global.dica_toque_mostrada, "trocar o modo rearma a flag")
+	await wait_process_frames(2)
+	assert_true(h.visible, "a dica reaparece na partida em curso")
+	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), TouchHint.TEXTOS_B_ESQ, "reaparece com o texto do modo novo")
 
 
 func test_c177_dica_visivel_nao_muda_a_classificacao_do_toque() -> void:
