@@ -46,17 +46,17 @@ env `GODOT_PATH`.
 
 Divisao em epics (as fases 1 a 3 acima formam o E1):
 
-| Epic                                                | Conteudo                                                                                        | Issues                                               | Estado                              |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------- |
-| E1. Migracao e base solida                          | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3) | #8, #14, #7, #3, #4, #5, #6, #9                      | concluido (2026-11-09)              |
-| E2. CI, tela mobile e jogabilidade da base          | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel                | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
-| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes e tutorial          | #36, #37, #39, #40, #42, #11, #10, #12, #47          | aguardando playtest do dono         |
-| E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                      | #16, #17                                             | planejado                           |
-| E5. Ranking online por modo                         | Ranking por modo de jogo; depende do E4 e do ChumGames E1                                       | #29                                                  | planejado                           |
-| E6. Arte final e audio                              | Arte final em pixel art, sons e musica                                                          | #18, #13                                             | planejado                           |
-| E7. Publicacao                                      | Web no itch.io; build Android                                                                   | #19, #20                                             | planejado                           |
-| E8. Monetizacao e Play Store                        | Anuncios, remocao paga e publicacao na Play Store                                               | #30                                                  | planejado                           |
-| ChumGames E1 (ecossistema proprio, fora deste repo) | Backend Firebase compartilhado de ranking + addon Godot; pre-requisito do E5                    | —                                                    | planejado                           |
+| Epic                                                | Conteudo                                                                                                                     | Issues                                               | Estado                              |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------- |
+| E1. Migracao e base solida                          | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3)                              | #8, #14, #7, #3, #4, #5, #6, #9                      | concluido (2026-11-09)              |
+| E2. CI, tela mobile e jogabilidade da base          | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel                                             | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
+| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes, tutorial e camera que acompanha o gecko no alto | #36, #37, #39, #40, #42, #11, #10, #12, #47, #46     | aguardando playtest do dono         |
+| E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                                                   | #16, #17                                             | planejado                           |
+| E5. Ranking online por modo                         | Ranking por modo de jogo; depende do E4 e do ChumGames E1                                                                    | #29                                                  | planejado                           |
+| E6. Arte final e audio                              | Arte final em pixel art, sons e musica                                                                                       | #18, #13                                             | planejado                           |
+| E7. Publicacao                                      | Web no itch.io; build Android                                                                                                | #19, #20                                             | planejado                           |
+| E8. Monetizacao e Play Store                        | Anuncios, remocao paga e publicacao na Play Store                                                                            | #30                                                  | planejado                           |
+| ChumGames E1 (ecossistema proprio, fora deste repo) | Backend Firebase compartilhado de ranking + addon Godot; pre-requisito do E5                                                 | —                                                    | planejado                           |
 
 Herdadas do E2 no E3: #36 (EOL dos `.import`), #37 (enum `MOVE_TO_LEFT`/`MOVE_TO_RIGHT` invertido) e #39 (smoke
 intermitente por sorteio da partida).
@@ -118,8 +118,8 @@ cruzamento 2->3) passam no export web de debug; nos pares
 amostrados do game-bot nativo do HEAD contra a `main` nao ha regressao (as divergencias sao a UI nova do epic: pausa,
 opcoes, tutorial, dica de toque, estagios); o toque por modo foi provado por GUT (deterministico) e pelos roteiros de
 smoke no export web de debug; a sensacao no aparelho, a legibilidade e a escolha do padrao ficam para o playtest. As
-issues #36, #37, #39, #40 e #42 estao resolvidas no epic; o que falta da #11, #10 e #12 (toque no aparelho, calibracao
-da curva, pausa por foco) a maquina nao julga e fica para o playtest do dono.
+issues #36, #37, #39, #40, #42 e #46 estao resolvidas no epic; o que falta da #11, #10 e #12 (toque no aparelho, calibracao
+da curva, pausa por foco) e a sensacao do limite da camera (#46) a maquina nao julga e fica para o playtest do dono.
 
 1. Dificuldade progressiva (#10, [ADR 0007](adr/0007-curva-de-dificuldade-em-resource.md)): a curva em
    `ressources/curva_dificuldade.tres` troca os literais de scroll, velocidade das moveis, K da garantia de cor e
@@ -157,6 +157,11 @@ da curva, pausa por foco) a maquina nao julga e fica para o playtest do dono.
    com espessura uniforme. Texto sobre as plataformas (placar Last/Best e dica de toque) ganha uma faixa de fundo
    translucida, na mesma cor do fundo da pausa (contraste acima de 4,5:1 sobre a plataforma amarela). Legibilidade no
    aparelho: verificacao manual no playtest do dono.
+9. Camera que acompanha o gecko no alto (#46): quando o gecko sobe acima do limite de topo (0,40 da altura visivel,
+   `scripts/CameraFollow.gd`), o mundo avanca o excesso no mesmo frame (plataformas, gatilho de linhas novas e gecko
+   deslocados juntos), entao ele nunca sai pelo topo; o scroll da curva de dificuldade segue como piso (nunca diminui) e,
+   sem partida iniciada (menu), nada se move. Sem roteiro de smoke: nenhum roteiro com seed fixa leva o gecko ao limite
+   de forma deterministica (#48); cobertura por GUT e a sensacao do limite pelo playtest do dono.
 
 ## Regras de trabalho
 
