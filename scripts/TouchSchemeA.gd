@@ -24,6 +24,7 @@ var _pulo_pendente: bool = false
 
 func _ao_pressionar(dedo: int, t_ms: int, pos: Vector2) -> void:
 	if _dedo_principal != -1:
+		_dedos.erase(dedo)  # 2o dedo: ignorado
 		return
 	_dedo_principal = dedo
 	_ancora_x = pos.x

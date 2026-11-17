@@ -28,20 +28,29 @@ _Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 
 ## 🎮 Controles
 
-| Ação                    | Teclas                           | Toque (um polegar)                                                  |
-| ----------------------- | -------------------------------- | ------------------------------------------------------------------- |
-| **Pular**               | `Espaço`, `W` ou `↑`             | Toque rápido numa metade da tela: pulo na diagonal para aquele lado |
-| **Mover para Esquerda** | `A` ou `←`                       | Segure na metade esquerda                                           |
-| **Mover para Direita**  | `D` ou `→`                       | Segure na metade direita                                            |
-| **Pausar / Continuar**  | `Esc` ou `P` (start no controle) | Botão de pausa no canto superior esquerdo                           |
+| Ação                    | Teclas                           | Toque                                     |
+| ----------------------- | -------------------------------- | ----------------------------------------- |
+| **Pular**               | `Espaço`, `W` ou `↑`             | Depende do modo de toque (abaixo)         |
+| **Mover para Esquerda** | `A` ou `←`                       | Depende do modo de toque (abaixo)         |
+| **Mover para Direita**  | `D` ou `→`                       | Depende do modo de toque (abaixo)         |
+| **Pausar / Continuar**  | `Esc` ou `P` (start no controle) | Botão de pausa no canto superior esquerdo |
 
-No celular, uma dica discreta mostra as duas metades na primeira partida e some sozinha.
+O toque tem três modos, escolhidos em **Opções → Toque** (o padrão provisório é o C, até o playtest fixar um):
+
+- **A — arrastar + flick (um polegar):** arraste para um lado para andar; um movimento rápido para cima pula, reto
+  com o dedo parado ou na diagonal com o dedo deslocado.
+- **B — dois polegares:** a metade esquerda dirige pelo arraste; a metade direita pula ao tocar.
+- **C — metades + 2º toque:** segure uma metade para andar para ela; um 2º toque em qualquer ponto pula naquela
+  direção; tocar as duas metades juntas pula reto.
+
+No celular, uma dica discreta mostra como jogar no modo escolhido na primeira partida e some sozinha.
 
 A partida também pausa sozinha quando a janela ou a aba perde o foco, ou quando o app vai para segundo plano. Para
 voltar, use **Continuar**, `Esc` ou `P`. No desktop, o botão de pausa e o menu de pausa também aceitam clique do mouse.
 
 **Opções** (botão no menu inicial, entre Play e Last, ou no menu de pausa): volume da música e dos efeitos sonoros, de
-0 (mudo) a 100%, por arrasto ou com `←`/`→`. Os volumes ficam salvos e continuam valendo quando você abre o jogo de novo.
+0 (mudo) a 100%, por arrasto ou com `←`/`→`, e o modo de toque (A, B ou C). Volumes e modo ficam salvos e continuam
+valendo quando você abre o jogo de novo.
 No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
 
 Na primeira partida, um cartão mostra os controles e some no primeiro pouso (ou em **Pular**). Para vê-lo de novo,
@@ -98,7 +107,7 @@ godot-gecko-jump/
 
 ## 📱 Compatibilidade
 
-A tela é pensada para celular (retrato, 180 px de largura) e o jogo aceita toque com um polegar, além de teclado.
+A tela é pensada para celular (retrato, 180 px de largura) e o jogo aceita toque (três modos), além de teclado.
 
 **Requisitos:**
 
@@ -149,11 +158,14 @@ release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot n
   nao impede quando a plataforma troca para outra cor).
 - `?moldura=fixa` deixa acesa a moldura de aviso de subida de estagio (sem o pulso, que acaba antes do print), usado
   pelo roteiro `estagio-aviso-fixa.smoke.json`; `estagio-aviso.smoke.json` joga sem ele e confere que o aviso acende e apaga.
-- `?dica=1` força a dica de toque sem aparelho de toque, usado pelo roteiro `dica-toque.smoke.json`. O runner só
-  clica com mouse, então tap e segurar por tempo não são jogados pelos roteiros (`toque.smoke.json` confere o início por clique).
+- `?dica=1` força a dica de toque sem aparelho de toque, usado pelo roteiro `dica-toque.smoke.json`.
+- `?toque=a|b|c` força o modo de toque da sessão (sem gravar a escolha; ignorado em release), usado pelos roteiros
+  `toque-modo-{a,b,c}.smoke.json`, que jogam toque de verdade com os passos `tap`, `hold`, `drag` (arraste) e
+  `touches` (vários dedos) e conferem a direção pelo `player.x`/`player.y`.
 - `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
   tela. Todo roteiro leva o parâmetro, menos `tutorial.smoke.json`, que joga a primeira partida com o armazenamento limpo.
-- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`), `player.alive` e
+- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`), `player.alive`,
+  `player.x`/`player.y` (posição do gecko em px lógicos, inteiros, só durante a partida) e
   `dificuldade.estagio` (inteiro, 0 no inicio da partida; republicado quando o estagio muda).
   O passo `expect` do roteiro le esses campos, por exemplo `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
   O roteiro `estagio.smoke.json` prova que o estagio sobe de 0 para 1 ou mais durante a partida.
@@ -231,20 +243,29 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 
 ### 🎮 Controls
 
-| Action             | Keys                              | Touch (one thumb)                                               |
-| ------------------ | --------------------------------- | --------------------------------------------------------------- |
-| **Jump**           | `Space`, `W` or `↑`               | Quick tap on one half of the screen: diagonal jump to that side |
-| **Move Left**      | `A` or `←`                        | Hold on the left half                                           |
-| **Move Right**     | `D` or `→`                        | Hold on the right half                                          |
-| **Pause / Resume** | `Esc` or `P` (start on a gamepad) | Pause button in the top-left corner                             |
+| Action             | Keys                              | Touch                               |
+| ------------------ | --------------------------------- | ----------------------------------- |
+| **Jump**           | `Space`, `W` or `↑`               | Depends on the touch mode (below)   |
+| **Move Left**      | `A` or `←`                        | Depends on the touch mode (below)   |
+| **Move Right**     | `D` or `→`                        | Depends on the touch mode (below)   |
+| **Pause / Resume** | `Esc` or `P` (start on a gamepad) | Pause button in the top-left corner |
 
-On phones, a subtle hint shows both halves in the first match and fades out on its own.
+Touch has three modes, chosen in **Opcoes → Toque** (the provisional default is C, until playtesting settles one):
+
+- **A — drag + flick (one thumb):** drag to one side to walk; a quick upward swipe jumps, straight with the finger
+  still or diagonally with the finger shifted.
+- **B — two thumbs:** the left half steers by dragging; the right half jumps on touch.
+- **C — halves + 2nd touch:** hold one half to walk toward it; a 2nd touch anywhere jumps in that direction; touching
+  both halves together jumps straight up.
+
+On phones, a subtle hint shows how to play the chosen mode in the first match and fades out on its own.
 
 The match also pauses on its own when the window or tab loses focus, or when the app goes to the background. To resume,
 use **Continuar**, `Esc` or `P`. On desktop, the pause button and the pause menu also accept mouse clicks.
 
 **Options** (button on the start menu, between Play and Last, or in the pause menu): music and sound effects volume,
-from 0 (muted) to 100%, by dragging or with `←`/`→`. Volumes are saved and still apply the next time you open the game.
+from 0 (muted) to 100%, by dragging or with `←`/`→`, and the touch mode (A, B or C). Volumes and mode are saved and
+still apply the next time you open the game.
 On the menu, `↓` moves the focus to **Opcoes** and `Enter` opens the screen.
 
 In the first match, a card shows the controls and fades out on the first landing (or on **Pular**). To see it again,
@@ -298,12 +319,15 @@ build (the published one) ignores the parameters below and publishes nothing. On
   not prevent when a platform switches to another color).
 - `?moldura=fixa` keeps the stage-up warning frame lit (no pulse, which ends before the shot), used by the
   `estagio-aviso-fixa.smoke.json` script; `estagio-aviso.smoke.json` plays without it and checks that the warning turns on and off.
-- `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` script. The runner only
-  clicks with a mouse, so tap and hold by time are not played by the scripts (`toque.smoke.json` checks the start with a click).
+- `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` script.
+- `?toque=a|b|c` forces the session's touch mode (without saving the choice; ignored in release), used by the
+  `toque-modo-{a,b,c}.smoke.json` scripts, which play real touch with the `tap`, `hold`, `drag` and `touches`
+  (several fingers) steps and check the direction through `player.x`/`player.y`.
 - `?tutorial=visto` marks the first-match tutorial as already seen (without saving anything), so the card does not
   cover the screen. Every script carries it, except `tutorial.smoke.json`, which plays the first match with clean storage.
 - The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`),
-  `player.alive` and `dificuldade.estagio` (an integer, 0 at the start of the match; republished when the stage changes).
+  `player.alive`, `player.x`/`player.y` (the gecko's position in logical px, integers, only during the match) and
+  `dificuldade.estagio` (an integer, 0 at the start of the match; republished when the stage changes).
   The script `expect` step reads those fields, for example `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
   The `estagio.smoke.json` script checks that the stage rises from 0 to 1 or more during the match.
 
@@ -317,7 +341,7 @@ more, 4 by default) must end within 1500 ms of Play (`wait` + `(shots-1)*every`)
 
 ### 📱 Compatibility
 
-The screen is designed for phones (portrait, 180 px wide) and the game accepts one-thumb touch as well as a keyboard.
+The screen is designed for phones (portrait, 180 px wide) and the game accepts touch (three modes) as well as a keyboard.
 
 **Requirements:**
 

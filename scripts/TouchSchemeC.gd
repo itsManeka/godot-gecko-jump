@@ -26,7 +26,8 @@ func _lado_de(pos: Vector2) -> int:
 
 func _ao_pressionar(dedo: int, t_ms: int, pos: Vector2) -> void:
 	if _lados.size() >= MAX_DEDOS:
-		return  # 3o dedo: ignorado
+		_dedos.erase(dedo)  # 3o dedo: ignorado
+		return
 	var lado: int = _lado_de(pos)
 	if _lados.is_empty() or _caminhante == -1:
 		# 1o toque (ou novo press com os dedos restantes mudos): anda para o lado dele.

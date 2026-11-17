@@ -86,6 +86,10 @@ Restricoes que moldam a decisao:
   `expect` medidos no viewport de cada roteiro (so web de debug).
 - **Padrao provisorio C** ate o playtest do dono; o resultado alimenta uma feature de fechamento (fixar padrao e
   podar os modos perdedores).
+- **Pontos do playtest (decisao na feature `f495-fixar-padrao-de-toque-e-podar-modos`):** (1) nos modos A e B,
+  depois de deslocar e parar com o dedo apoiado, o personagem segue andando (o lado so inverte, nao volta a parado
+  sem soltar o dedo); (2) no modo A, arrasto vertical longo repula a cada ~24 px (pulso no pouso, comportamento do
+  flick consumindo o historico).
 - **Criterio de poda dos modos** (sugestao, nao decidida): manter o vencedor + no maximo 1 alternativa.
 - **Status "Proposto"** ate o playtest validar a sensacao dos tres esquemas no aparelho.
 

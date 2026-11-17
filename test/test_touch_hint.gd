@@ -325,6 +325,31 @@ func test_c420_trocar_o_modo_rearma_a_dica_ja_mostrada() -> void:
 	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), TouchHint.TEXTOS_B_ESQ, "reaparece com o texto do modo novo")
 
 
+func test_corr_hint_desconecta_o_sinal_ao_sair_da_arvore() -> void:
+	var h := _nova_dica(false)
+	assert_true(Global.touch_mode_changed.is_connected(h._ao_trocar_modo), "pre-condicao: conectado na arvore")
+	remove_child(h)
+	assert_false(Global.touch_mode_changed.is_connected(h._ao_trocar_modo), "fora da arvore: sinal desconectado")
+	add_child(h)
+	assert_true(Global.touch_mode_changed.is_connected(h._ao_trocar_modo), "de volta na arvore: reconectado uma vez")
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	assert_eq(h.modo_exibido(), TouchMode.Modo.B, "reconectado: segue a troca de modo")
+
+
+func test_corr_hint_volta_a_arvore_com_o_modo_trocado_enquanto_fora() -> void:
+	var h := _nova_dica(false)
+	assert_eq(h.modo_exibido(), TouchMode.padrao(), "pre-condicao: modo padrao exibido")
+	var novo: int = TouchMode.Modo.B if TouchMode.padrao() != TouchMode.Modo.B else TouchMode.Modo.C
+	Global.dica_toque_mostrada = true
+	remove_child(h)
+	Global.set_touch_mode(novo, false)
+	assert_eq(h.modo_exibido(), TouchMode.padrao(), "fora da arvore: a dica nao ouve a troca")
+	add_child(h)
+	assert_eq(h.modo_exibido(), novo, "de volta na arvore: alcanca o modo trocado enquanto fora")
+	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), TouchHint.textos_bloco(novo, TouchHint.Lado.ESQUERDA), "texto do modo novo")
+	assert_false(Global.dica_toque_mostrada, "a dica e rearmada como o sinal ao vivo faria")
+
+
 func test_c177_dica_visivel_nao_muda_a_classificacao_do_toque() -> void:
 	var sem := await _classificar_tap(false)
 	var com := await _classificar_tap(true)

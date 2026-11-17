@@ -81,7 +81,18 @@ func _ready() -> void:
 	_raiz.add_child(_bloco_centro)
 	_modo = Global.get_touch_mode()
 	_aplicar_modo()
-	Global.touch_mode_changed.connect(_ao_trocar_modo)
+
+
+func _enter_tree() -> void:
+	if not Global.touch_mode_changed.is_connected(_ao_trocar_modo):
+		Global.touch_mode_changed.connect(_ao_trocar_modo)
+	if _raiz != null:
+		_ao_trocar_modo(Global.get_touch_mode())  # voltou a arvore: alcanca o modo trocado enquanto fora
+
+
+func _exit_tree() -> void:
+	if Global.touch_mode_changed.is_connected(_ao_trocar_modo):
+		Global.touch_mode_changed.disconnect(_ao_trocar_modo)
 
 
 func _process(_delta: float) -> void:

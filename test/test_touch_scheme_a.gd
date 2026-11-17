@@ -258,6 +258,15 @@ func test_c392_correcao_de_direcao_no_ar_muda_velocity_x() -> void:
 	assert_eq(_p.velocity.x, -float(PLAYER_SCRIPT.SPEED), "arrastar para o lado oposto no voo inverte velocity.x")
 
 
+func test_corr_a_segundo_dedo_recusado_nao_fica_ativo() -> void:
+	var esquema := TouchSchemeA.new()
+	esquema.press(0, 0, Vector2(X0, Y0))
+	esquema.press(1, 10, Vector2(X0 + 20.0, Y0))
+	esquema.release(0, 20)
+	assert_false(esquema.tem_dedo(1), "o 2o dedo recusado pelo modo A nao fica registrado")
+	assert_false(esquema.ativo(), "soltar o dedo principal deixa o esquema inativo")
+
+
 func test_c393_soltar_o_dedo_ou_canceled_para_o_lateral_e_solta_jump() -> void:
 	await _entrar_no_quadro_fisico()
 	_spawn()

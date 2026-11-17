@@ -217,6 +217,17 @@ func test_c406_soltar_o_hold_para_o_lateral_e_soltar_um_dedo_nao_reativa_o_outro
 	assert_true(Input.is_action_pressed("ui_left"), "novo press volta a andar")
 
 
+func test_corr_c_terceiro_dedo_recusado_nao_fica_ativo() -> void:
+	var esquema := TouchSchemeC.new()
+	esquema.press(0, 0, Vector2(ESQ, 200.0))
+	esquema.press(1, 200, Vector2(DIR, 200.0))
+	esquema.press(2, 300, Vector2(ESQ2, 200.0))
+	esquema.release(0, 400)
+	esquema.release(1, 410)
+	assert_false(esquema.tem_dedo(2), "o 3o dedo recusado pelo modo C nao fica registrado")
+	assert_false(esquema.ativo(), "soltar os 2 dedos aceitos deixa o esquema inativo")
+
+
 func test_c407_segundo_toque_em_zona_morta_nao_pula() -> void:
 	_spawn()
 	var mortas: Array[Rect2] = [Rect2(0.0, 0.0, 40.0, 40.0)]
