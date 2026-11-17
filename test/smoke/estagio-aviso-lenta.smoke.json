@@ -11,8 +11,12 @@
     { "expect": { "state": "playing" }, "timeout_ms": 3000 },
     { "expect": { "dificuldade.estagio": { "eq": 1 } }, "timeout_ms": 3000 },
     { "expect": { "dificuldade.aviso": true }, "timeout_ms": 8000 },
+    { "expect": { "dificuldade.alpha": { "gt": 0.1 } }, "timeout_ms": 8000 },
     { "shots": 1, "name": "pulso-real", "moving": false, "holds": true },
-    { "expect": { "dificuldade.aviso": false }, "timeout_ms": 30000 },
+    {
+      "expect": { "dificuldade.aviso": false, "dificuldade.alpha": { "eq": 0 }, "state": "playing" },
+      "timeout_ms": 30000
+    },
     { "expect": { "dificuldade.estagio": { "gte": 2 } }, "timeout_ms": 3000 },
     { "shots": 1, "name": "aviso-apagado", "moving": false, "holds": true }
   ]

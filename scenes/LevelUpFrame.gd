@@ -16,7 +16,7 @@ const SUBIDA_S: float = 0.06
 const QUEDA_S: float = 0.19
 const INTERVALO_S: float = 0.05
 # Multiplicador das duracoes do pulso com `lenta` (so smoke debug); com `lenta` o teto de ~1 s nao se aplica
-const LENTA_VEZES: float = 20.0
+const LENTA_VEZES: float = 6.0
 # Acima do jogo, abaixo do HUD (CanvasLayer da Stage, layer 1)
 const CAMADA: int = 0
 

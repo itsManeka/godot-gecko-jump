@@ -58,6 +58,8 @@ var _estagio_publicado: int = 0
 # Moldura de aviso de subida de estagio (filha da Stage, criada em _ready) e o `aviso` da ultima publicacao da ponte
 var level_up_frame: LevelUpFrame = null
 var _aviso_publicado: bool = false
+# Alpha da moldura na ultima publicacao (arredondado a 0,01): durante o pulso republica a cada mudanca (prova do smoke)
+var _alpha_publicado: float = 0.0
 # Par arredondado de player.x/y na ultima publicacao da ponte
 var _posicao_publicada: Vector2i = Vector2i.ZERO
 # y do limite de topo da camera (fracao da altura visivel em CameraFollow); recalculado a cada apply_layout
@@ -234,7 +236,11 @@ func _physics_process(delta: float) -> void:
 	# O mesmo vale para o `aviso` (pulso da moldura comecou ou terminou)
 	if ultimo_estado.get("state", "") == GameState.STATE_LOST:
 		return
-	if dificuldade.estagio() != _estagio_publicado or _aviso_atual() != _aviso_publicado:
+	if (
+		dificuldade.estagio() != _estagio_publicado
+		or _aviso_atual() != _aviso_publicado
+		or _alpha_atual() != _alpha_publicado
+	):
 		_republicar_estado()
 		return
 	# Posicao do jogador (par arredondado) em partida: republica 1x por mudanca; parado ou fora de partida, nunca
@@ -264,6 +270,12 @@ func _on_estagio_mudou(novo: int) -> void:
 
 func _aviso_atual() -> bool:
 	return level_up_frame != null and level_up_frame.pulsando()
+
+# Alpha da moldura (0-1, arredondado a 0,01) enquanto pulsa; 0 com a moldura apagada
+func _alpha_atual() -> float:
+	if not _aviso_atual():
+		return 0.0
+	return snappedf(level_up_frame.alpha(), 0.01)
 
 # Toque de jogo no menu inicia a partida. A TouchControls (filha) recebe o evento antes e ainda esta inerte,
 # entao o toque que inicia nao vira tap de jogo; depois da derrota started segue true e a guarda de
@@ -461,6 +473,7 @@ func _publicar_estado(state: String, alive: bool) -> void:
 	_estagio_publicado = dificuldade.estagio()
 	_aviso_publicado = _aviso_atual() and state != GameState.STATE_LOST
 	_posicao_publicada = _posicao_atual()
+	_alpha_publicado = _alpha_atual() if state != GameState.STATE_LOST else 0.0
 	ultimo_estado = GameState.build(
 		maxi(points, 0),
 		Global.get_best_score(),
@@ -473,5 +486,6 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		_aviso_publicado,
 		float(_posicao_publicada.x),
 		float(_posicao_publicada.y),
+		_alpha_publicado,
 	)
 	GameState.publish(ultimo_estado)

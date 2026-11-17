@@ -234,6 +234,41 @@ func test_apply_layout_repassa_a_safe_area_a_moldura() -> void:
 	assert_eq(stage.level_up_frame.rect_moldura(), Rect2(0.0, 0.0, 180.0, 320.0), "layout novo reaplicado")
 
 
+func _alpha_na_ponte(stage: Node) -> float:
+	return float((stage.ultimo_estado["dificuldade"] as Dictionary)["alpha"])
+
+
+func test_ponte_publica_o_alpha_do_pulso_e_zera_ao_terminar_e_na_derrota() -> void:
+	Global.progresso_inicial = 0.34
+	var stage = _stage()
+	stage._on_Play_button_down()
+	assert_eq(_alpha_na_ponte(stage), 0.0, "alpha 0 ao dar Play")
+	for i in TICKS_ATE_ESTAGIO_1:
+		stage._physics_process(TICK)
+	assert_true(stage.level_up_frame.pulsando(), "pulso em curso")
+	await wait_until(func() -> bool: return stage.level_up_frame.alpha() > 0.2, 3.0)
+	stage._physics_process(1.0 / 60.0)
+	assert_gt(_alpha_na_ponte(stage), 0.0, "alpha publicado sobe junto com o pulso")
+	assert_eq(_alpha_na_ponte(stage), snappedf(stage.level_up_frame.alpha(), 0.01), "alpha da ponte = alpha da moldura")
+	await wait_until(func() -> bool: return not stage.level_up_frame.pulsando(), 3.0)
+	stage._physics_process(1.0 / 60.0)
+	assert_eq(_alpha_na_ponte(stage), 0.0, "pulso terminado: alpha 0")
+	var depois: Dictionary = stage.ultimo_estado
+	for i in 60:
+		stage._physics_process(1.0 / 60.0)
+	assert_true(is_same(stage.ultimo_estado, depois), "fora do pulso nao republica")
+	stage.dificuldade.progresso_inicial = 0.7
+	stage._physics_process(TICK)
+	await wait_until(func() -> bool: return stage.level_up_frame.alpha() > 0.2, 3.0)
+	var corpo := SpyBody.new()
+	add_child_autofree(corpo)
+	stage._on_CheckPlayer_body_exited(corpo)
+	assert_eq(_alpha_na_ponte(stage), 0.0, "derrota: alpha publicado 0")
+	var perdido: Dictionary = stage.ultimo_estado
+	stage._physics_process(1.0 / 60.0)
+	assert_true(is_same(stage.ultimo_estado, perdido), "nada publicado depois da derrota")
+
+
 func test_ponte_aviso_true_no_tick_do_pulso_republica_ao_terminar_e_apos_derrota() -> void:
 	Global.progresso_inicial = 0.34
 	var stage = _stage()

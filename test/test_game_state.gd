@@ -79,6 +79,23 @@ func test_build_publica_dificuldade_aviso_bool_default_false() -> void:
 	assert_eq((volta["dificuldade"] as Dictionary)["aviso"], true, "round-trip preserva aviso true")
 
 
+func test_build_publica_dificuldade_alpha_float_default_zero() -> void:
+	# (a) default: sem o argumento, alpha 0.0 (float)
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	var dif_padrao: Dictionary = padrao["dificuldade"] as Dictionary
+	assert_eq(dif_padrao["alpha"], 0.0, "padrao: dificuldade.alpha 0")
+	assert_eq(typeof(dif_padrao["alpha"]), TYPE_FLOAT, "padrao: alpha e float")
+	# (b) comum: alpha passado e publicado, o aviso e o estagio seguem
+	var pulsando: Dictionary = GameState.build(1, 2, "playing", true, 100, 100, false, 1, true, 0.0, 0.0, 0.75)
+	var dif_pulsando: Dictionary = pulsando["dificuldade"] as Dictionary
+	assert_eq(dif_pulsando["alpha"], 0.75, "alpha 0.75 publicado")
+	assert_eq(dif_pulsando["aviso"], true, "aviso segue")
+	assert_eq(dif_pulsando["estagio"], 1, "estagio segue")
+	# (c) degenerado: round-trip JSON preserva o valor
+	var volta: Dictionary = JSON.parse_string(JSON.stringify(pulsando)) as Dictionary
+	assert_eq((volta["dificuldade"] as Dictionary)["alpha"], 0.75, "round-trip preserva alpha")
+
+
 func test_build_publica_player_xy_inteiros_arredondados() -> void:
 	# (a) default: sem posicao, 0/0 inteiros
 	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
