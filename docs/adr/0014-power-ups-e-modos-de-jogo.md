@@ -113,6 +113,14 @@ tempo; B: Zen; C: Desafio diario, depende da f517).
 - **Fallback da Segunda chance:** sem plataforma da cor do gecko visivel, a f522 define a regra (proposta: plataforma
   mais proxima, o gecko assume a cor dela).
 
+## Nota: seed por partida (f517)
+
+A partida com seed existe: `Stage.semente_partida` e repassada a `ScrollLevel.semente` antes de a cena entrar na arvore;
+nao toca `Global`. Cada linha recebe dois rngs de `scripts/RowSeed.gd` pelo indice do y local (`layout` e `cor_movel`);
+a cor das moveis segue o gecko (decisao (d) acima). Sem seed a partida sorteia como antes. A f523 (seletor de modo) e a
+f528 (Desafio diario por data UTC) consomem `Stage.semente_partida`; `?seed=` e `Global.aplicar_seed` seguem so para
+debug/smoke.
+
 ## Alternativas consideradas
 
 - **"Escolha de cor" como quarto power-up:** fora; o dono manteve os 3 aprovados (feature f516).

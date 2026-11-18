@@ -39,6 +39,7 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd / OptionsStore.gd (recorde e opcoes em user://; buses Music/SFX),
            PlatformTypePicker.gd (tipo do gerador, sem cena),
            StaticPlatformColors.gd (cores das estaticas iniciais, sem cena),
+           RowSeed.gd (rng por linha da partida com seed: indice pelo y local e canais layout/cor_movel, sem cena; `ScrollLevel.semente`),
            InitialRows.gd (ys das linhas iniciais pela altura visivel, sem cena),
            MovingRowFill.gd (x pre-colocados das linhas moveis a partir do ponto de nascimento, sem cena),
            ReachableColors.gd (cor do gecko alcancavel no pouso e nas plataformas moveis, sem cena),
