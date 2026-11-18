@@ -2,14 +2,22 @@ class_name TouchSchemeA
 extends TouchScheme
 
 # Modo A: arrastar + flick. Um dedo em qualquer lugar da tela (o 1o aceito; os demais sao ignorados).
-# - Lateral: deslocamento horizontal relativo a uma ancora que acompanha o dedo. Passou de ZONA_MORTA_PX para um lado =
+# - Lateral: deslocamento horizontal relativo a uma ancora que acompanha o dedo. Passou da zona morta (px da
+#   sensibilidade, TouchTuning.zona_morta_a) para um lado =
 #   anda para ele e a ancora vai junto com o dedo (extremo do arrasto); o lado so inverte quando o dedo volta mais que
-#   ZONA_MORTA_PX contra a direcao, sem recuar ate o ponto de contato. Dedo que nunca saiu da zona morta = parado.
-# - Pulo: flick para cima (dy >= FLICK_DY_MIN_PX dentro de FLICK_JANELA_MS) pede 1 pulo (evento). O lateral do instante
+#   a zona morta contra a direcao, sem recuar ate o ponto de contato. Dedo que nunca saiu da zona morta = parado.
+# - Pulo: flick para cima (dy >= dy minimo da sensibilidade, TouchTuning.flick_dy_min_a, dentro de FLICK_JANELA_MS) pede
+#   1 pulo (evento). O lateral do instante
 #   decide reto (zona morta) ou diagonal. Cada flick consome o historico e desarma o esquema: o proximo so vale depois
 #   de o dedo parar ou recuar para baixo (TouchTuning.REARME_*), entao arrasto vertical continuo gera UM pulso.
 # Enquanto IMPLEMENTADO for false a TouchControls usa o esquema legado neste modo.
 const IMPLEMENTADO: bool = true
+
+# Sensibilidade do modo A (TouchTuning.SENSIBILIDADE_*; a TouchControls injeta o valor do Global ao criar o esquema e
+# ao mudar): quanto maior, menores os limiares. Valor invalido cai no padrao pela mesma funcao do store.
+var sensibilidade: float = TouchTuning.SENSIBILIDADE_PADRAO:
+	set(valor):
+		sensibilidade = TouchTuning.sensibilidade_de_valor(valor)
 
 const NENHUM: int = 0
 const ESQUERDA: int = -1
@@ -47,7 +55,7 @@ func _ao_mover(dedo: int, pos: Vector2, t_ms: int) -> void:
 
 
 func _atualizar_lado(x: float) -> void:
-	var zona: float = TouchTuning.ZONA_MORTA_PX
+	var zona: float = TouchTuning.zona_morta_a(sensibilidade)
 	var dx: float = x - _ancora_x
 	if _lado == DIREITA:
 		if dx > 0.0:
@@ -94,7 +102,7 @@ func _detectar_flick(y: float, t_ms: int) -> void:
 	var y_max: float = y
 	for a in _amostras:
 		y_max = maxf(y_max, a.y)
-	if y_max - y >= TouchTuning.FLICK_DY_MIN_PX:
+	if y_max - y >= TouchTuning.flick_dy_min_a(sensibilidade):
 		_pulo_pendente = true
 		_armado = false
 		_y_topo = y

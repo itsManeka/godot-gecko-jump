@@ -45,6 +45,8 @@ var _pulso_ticks: int = 0
 func _enter_tree() -> void:
 	if not Global.touch_mode_changed.is_connected(_ao_trocar_modo):
 		Global.touch_mode_changed.connect(_ao_trocar_modo)
+	if not Global.touch_sensibilidade_changed.is_connected(_ao_trocar_sensibilidade):
+		Global.touch_sensibilidade_changed.connect(_ao_trocar_sensibilidade)
 
 
 func _input(event: InputEvent) -> void:
@@ -89,6 +91,8 @@ func _notification(what: int) -> void:
 func _exit_tree() -> void:
 	if Global.touch_mode_changed.is_connected(_ao_trocar_modo):
 		Global.touch_mode_changed.disconnect(_ao_trocar_modo)
+	if Global.touch_sensibilidade_changed.is_connected(_ao_trocar_sensibilidade):
+		Global.touch_sensibilidade_changed.disconnect(_ao_trocar_sensibilidade)
 	if _esquema != null:
 		_esquema.cancelar_tudo()
 	_soltar_tudo()  # saida da arvore
@@ -103,6 +107,12 @@ func _ao_trocar_modo(_modo: int) -> void:
 	_sincronizar_modo()
 
 
+# Sensibilidade do modo A mudou: reinjeta no esquema ativo (so o A le a sensibilidade; o B continua fixo).
+func _ao_trocar_sensibilidade(valor: float) -> void:
+	if _esquema is TouchSchemeA:
+		(_esquema as TouchSchemeA).sensibilidade = valor
+
+
 # Segue o modo de Global: ao trocar, cancela o gesto (solta as acoes da camada) e recria o esquema do novo modo.
 func _sincronizar_modo() -> void:
 	var modo: int = Global.get_touch_mode()
@@ -113,6 +123,8 @@ func _sincronizar_modo() -> void:
 	_esquema = fabrica_esquema.call(modo) if fabrica_esquema.is_valid() else TouchSchemes.criar(modo)
 	if _esquema != null:
 		_esquema.zonas_mortas = zonas_mortas
+		if _esquema is TouchSchemeA:
+			(_esquema as TouchSchemeA).sensibilidade = Global.get_touch_sensibilidade()
 
 
 # Traduz a intencao do esquema em acoes: esquerda/direita seguem o nivel; `pulo` e evento e vira o pulso de

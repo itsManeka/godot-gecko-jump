@@ -414,3 +414,48 @@ func test_c393_soltar_o_dedo_ou_canceled_para_o_lateral_e_solta_jump() -> void:
 	assert_false(Input.is_action_pressed("jump"), "canceled: jump solto ao fim do pulso, sem repulso")
 	_ticks(3)
 	assert_true(_nenhuma_pressionada(), "sem residual depois do canceled")
+
+
+# T4 (f495): sensibilidade do modo A. Valor esperado vem da decisao do G1 (maxima 2,0x -> zona morta 3 px e flick
+# 12 px; minima 0,5x -> 12 px e 48 px), nunca da saida da implementacao.
+
+
+func test_c468_sensibilidade_maxima_e_minima_exigem_gestos_diferentes() -> void:
+	var maximo := TouchSchemeA.new()
+	maximo.sensibilidade = TouchTuning.SENSIBILIDADE_MAX
+	maximo.press(0, 0, Vector2(X0, Y0))
+	maximo.mover(0, Vector2(X0 + 3.5, Y0), 10)
+	var anda: Dictionary = maximo.intencao(10)
+	assert_true(anda["direita"], "arrasto de 3,5 px (> zona morta de 3 px no maximo) anda")
+	maximo.mover(0, Vector2(X0 + 3.5, Y0 - 13.0), 100)
+	var pula: Dictionary = maximo.intencao(100)
+	assert_true(pula["pulo"], "flick de 13 px (> dy minimo de 12 px no maximo) pula")
+
+	var minimo := TouchSchemeA.new()
+	minimo.sensibilidade = TouchTuning.SENSIBILIDADE_MIN
+	minimo.press(0, 0, Vector2(X0, Y0))
+	minimo.mover(0, Vector2(X0 + 3.5, Y0), 10)
+	var para: Dictionary = minimo.intencao(10)
+	assert_false(para["direita"], "o mesmo arrasto de 3,5 px nao anda na minima (zona morta de 12 px)")
+	minimo.mover(0, Vector2(X0 + 3.5, Y0 - 13.0), 100)
+	var nao_pula: Dictionary = minimo.intencao(100)
+	assert_false(nao_pula["pulo"], "o mesmo flick de 13 px nao pula na minima (dy minimo de 48 px)")
+
+
+func test_sensibilidade_invalida_no_esquema_cai_no_padrao() -> void:
+	var e := TouchSchemeA.new()
+	e.sensibilidade = 3.0
+	assert_eq(e.sensibilidade, TouchTuning.SENSIBILIDADE_PADRAO, "3,0 fora da faixa: o setter cai no padrao")
+
+
+func test_c470_touch_controls_reinjeta_a_sensibilidade_no_esquema_a_ao_mudar() -> void:
+	await _entrar_no_quadro_fisico()
+	var anterior: float = Global.get_touch_sensibilidade()
+	Global.set_touch_sensibilidade(TouchTuning.SENSIBILIDADE_MAX, false)
+	_spawn()
+	assert_eq(_c._esquema.sensibilidade, TouchTuning.SENSIBILIDADE_MAX, "esquema A criado com a sensibilidade do Global")
+	var esquema: TouchSchemeA = _c._esquema
+	Global.set_touch_sensibilidade(TouchTuning.SENSIBILIDADE_MIN, false)
+	assert_eq(_c._esquema.sensibilidade, TouchTuning.SENSIBILIDADE_MIN, "troca de sensibilidade reinjeta no esquema A")
+	assert_eq(_c._esquema, esquema, "o mesmo esquema continua ativo (reinjecao, nao recriacao)")
+	Global.set_touch_sensibilidade(anterior, false)

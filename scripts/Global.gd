@@ -102,6 +102,14 @@ func usar_options_store(store: OptionsStore) -> void:
 	_aplicar_bus("SFX", _volume_sfx)
 	_touch_mode = TouchMode.de_valor(store.load_value(TouchMode.SECTION, TouchMode.KEY, TouchMode.SEM_VALOR))
 	touch_mode_changed.emit(_touch_mode)
+	_touch_sensibilidade = TouchTuning.sensibilidade_de_valor(
+		store.load_value(
+			TouchTuning.SENSIBILIDADE_SECTION,
+			TouchTuning.SENSIBILIDADE_KEY,
+			TouchTuning.SENSIBILIDADE_SEM_VALOR
+		)
+	)
+	touch_sensibilidade_changed.emit(_touch_sensibilidade)
 
 # Modo de toque (TouchMode): consultado por TouchControls/TouchHint; o sinal avisa a troca.
 signal touch_mode_changed(modo: int)
@@ -116,6 +124,21 @@ func set_touch_mode(m: int, persistir: bool = true) -> void:
 
 func get_touch_mode() -> TouchMode.Modo:
 	return _touch_mode
+
+# Sensibilidade do modo A (TouchTuning): 1,0 = comportamento padrao; valor invalido cai no padrao. O sinal avisa a
+# troca (a TouchControls reinjeta no esquema A).
+signal touch_sensibilidade_changed(valor: float)
+var _touch_sensibilidade: float = TouchTuning.SENSIBILIDADE_PADRAO
+
+# Aplica a sensibilidade na hora; grava no store so com `persistir` (o slider das Opcoes aplica no arrasto sem gravar).
+func set_touch_sensibilidade(v: float, persistir: bool = true) -> void:
+	_touch_sensibilidade = TouchTuning.sensibilidade_de_valor(v)
+	if persistir:
+		opcoes.save_value(TouchTuning.SENSIBILIDADE_SECTION, TouchTuning.SENSIBILIDADE_KEY, _touch_sensibilidade)
+	touch_sensibilidade_changed.emit(_touch_sensibilidade)
+
+func get_touch_sensibilidade() -> float:
+	return _touch_sensibilidade
 
 # Aplica o modo forcado por `?toque=` (so smoke debug; release devolve SEM_FORCA). Nunca grava no store.
 func aplicar_modo_toque_inicial(raw: Variant, is_debug: bool) -> void:

@@ -179,3 +179,21 @@ func test_c400_zona_morta_e_relativa_ao_ponto_de_contato() -> void:
 	_arrasto(67.0, 0)  # 7 px do contato
 	_tick()
 	assert_true(Input.is_action_pressed("ui_right"), "7 px do contato anda para a direita")
+
+
+# T4 (f495): a sensibilidade e "do modo A" (G1); a zona morta do B fica fixa em 6 px para qualquer valor.
+
+
+func test_c469_zona_morta_do_b_nao_e_escalada_pela_sensibilidade() -> void:
+	var anterior: float = Global.get_touch_sensibilidade()
+	Global.set_touch_sensibilidade(TouchTuning.SENSIBILIDADE_MAX, false)
+	_toque(60.0, true, 0)
+	_arrasto(66.0, 0)  # 6 px do contato: dentro da zona morta
+	_tick()
+	assert_false(Input.is_action_pressed("ui_right"), "sensibilidade maxima: 6 px continua dentro da zona morta do B")
+	assert_false(Input.is_action_pressed("ui_left"), "sensibilidade maxima: 6 px nao sai da zona morta (esquerda)")
+	_arrasto(67.0, 0)  # 7 px do contato
+	_tick()
+	assert_true(Input.is_action_pressed("ui_right"), "sensibilidade maxima: 7 px do contato anda (limiar fixo em 6 px)")
+	_toque(67.0, false, 0)
+	Global.set_touch_sensibilidade(anterior, false)
