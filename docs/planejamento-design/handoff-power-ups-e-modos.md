@@ -23,7 +23,8 @@ area e as zonas ocupadas do [handoff de telas novas](handoff-telas-novas.md) (se
   do tamanho nativo de 16 px por em (`docs/fonte-pixel-tamanho-nativo.md`; `scripts/UiHelpers.gd:9-23`).
 - O [handoff de telas novas](handoff-telas-novas.md) secao 2 usa **36/26/20** e esta defasado nisso: nenhum valor
   deste handoff usa 36, 26 ou 20 como tamanho de fonte.
-- Contorno preto: 2 px no tamanho 32, 1 px no tamanho 16 (`scripts/UiHelpers.gd:11`, `scenes/Stage.tscn`).
+- Contorno preto (cor em `scripts/UiHelpers.gd:11`): 2 px no tamanho 32 (`scenes/Stage.tscn:71`), 1 px no tamanho 16
+  (`scenes/Stage.tscn:91`); a largura entra pelo `outline_size` de `scripts/UiHelpers.gd:55`.
 
 ### 1.2 Paleta, botao e alvo minimo
 
@@ -54,11 +55,11 @@ cor. Nao e alvo de toque (a coleta e o pouso), entao o minimo de 24x24 da secao 
 
 | Item             | Medida                             | Detalhe                                          | Origem                                                                                                    |
 | ---------------- | ---------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Icone (desenho)  | 16x16, centrado no x da plataforma | base 2 px acima do topo da plataforma            | `token ausente: tamanho de icone 16x16` (16 e o nativo, `scripts/UiHelpers.gd:17`); base 2 px: spec f516   |
+| Icone (desenho)  | 16x16, centrado no x da plataforma | base 2 px acima do topo da plataforma            | `token ausente: tamanho de icone 16x16` (16 e o nativo, `scripts/UiHelpers.gd:17`); `token ausente: base do icone 2 px acima da plataforma`   |
 | Fundo do icone   | branco com contorno preto de 1 px  | legivel sobre qualquer plataforma                | branco `scripts/Enums.gd:33`; contorno `scripts/UiHelpers.gd:11`                                           |
 | Camaleao         | quadrado partido nas 4 cores       | 4 quadrantes: amarelo, verde, azul, vermelho     | `scripts/Enums.gd:26,28,30,32`                                                                            |
-| Desacelera       | ampulheta                          | forma de ampulheta (duas piramides)              | spec f516 (arte provisoria, E6 refaz)                                                                      |
-| Segunda chance   | "+"                                | sinal de mais                                    | spec f516 (arte provisoria, E6 refaz)                                                                      |
+| Desacelera       | ampulheta                          | forma de ampulheta (duas piramides)              | `token ausente: forma provisoria do icone` (E6 refaz)                                                                      |
+| Segunda chance   | "+"                                | sinal de mais                                    | `token ausente: forma provisoria do icone` (E6 refaz)                                                                      |
 
 Ancoragem: o icone acompanha a plataforma (gerador de plataformas do jogo), nao a safe area. A posicao e relativa ao
 topo da plataforma, entao e a mesma em 180x320 e 180x400 (a altura so muda quantas plataformas ficam visiveis).
@@ -67,11 +68,11 @@ Nunca nas linhas iniciais (raridade no [ADR 0014](../adr/0014-power-ups-e-modos-
 ```
  escala aproximada: 1 coluna = 2 px; vale a tabela, nao o desenho
         ..................
-        :  +---+-------+  :   icone 16x16 centrado no x da plataforma
-        :  |  A |  V   |  :   Camaleao: quadrado partido nas 4 cores
-        :  +---+-------+  :   (Desacelera: ampulheta; Segunda chance: "+")
-        :  | Az |  Vm  |  :   base 2 px acima do topo da plataforma
-        :  +---+-------+  :
+        :  +----+----+  :   icone 16x16 centrado no x da plataforma
+        :  | A  | V  |  :   Camaleao: quadrado partido em 4 quadrantes iguais (8x8)
+        :  +----+----+  :   (Desacelera: ampulheta; Segunda chance: "+")
+        :  | Az | Vm |  :   base 2 px acima do topo da plataforma
+        :  +----+----+  :
         ====================   topo da plataforma
 ```
 
@@ -83,12 +84,12 @@ chance e o relogio do Contra o tempo. Classe **topo** (cola no topo, como Pontos
 
 | Elemento                    | Retangulo          | Detalhe                                                              | Origem                                                               |
 | --------------------------- | ------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Linha (faixa)               | x 0-180, y 30-46   | sob a pausa, mesma altura do placar                                   | spec f516 (y 30-46)                                                   |
+| Linha (faixa)               | x 0-180, y 30-46   | sob a pausa e o placar, 16 px de altura                                   | `token ausente: faixa de HUD y 30-46`                                                   |
 | Icone do temporizado ativo  | x 2-18, y 30-46    | mesmo desenho do mockup 1 (16x16)                                     | `token ausente: tamanho de icone 16x16`                               |
 | Barra de duracao            | x 22-62, y 36-40   | 40x4; branca, moldura preta 1 px; esvazia da direita para a esquerda | branco `scripts/Enums.gd:33`; moldura `scripts/UiHelpers.gd:11`      |
 | Segundos restantes          | x 66-82, y 30-46   | fonte 16, contorno 1, inteiro arredondado para cima                   | fonte `scripts/UiHelpers.gd:23`; contorno `scripts/UiHelpers.gd:11`  |
-| Carga de Segunda chance     | x 90-106, y 30-46  | icone "+" 16x16; ausente sem carga                                    | icone: spec f516; posicao x: proposta do orchestrator (f516)         |
-| Relogio (so Contra o tempo) | x 138-178, y 30-46 | `m:ss`, fonte 16, contorno 1, alinhado a direita                      | posicao x: proposta do orchestrator (f516); fonte `scripts/UiHelpers.gd:23` |
+| Carga de Segunda chance     | x 90-106, y 30-46  | icone "+" 16x16; ausente sem carga                                    | `token ausente: carga em x 90-106`         |
+| Relogio (so Contra o tempo) | x 138-178, y 30-46 | `m:ss`, fonte 16, contorno 1, alinhado a direita                      | `token ausente: relogio em x 138-178`; fonte `scripts/UiHelpers.gd:23` |
 
 Ancoragem: topo, offset `o` = 30. Formula `y0 = s_top + 30`; com `s_top` = 0 fica y 30-46 em 180x320 e em 180x400
 (mesma medida nas duas alturas, como o placar e a pausa).
@@ -103,6 +104,11 @@ Visibilidade (quando cada elemento some):
 
 Cor nunca e a unica pista: forma do icone + barra (extensao) + numero dos segundos; a barra esvazia da direita para
 a esquerda, entao a leitura nao depende so de cor.
+
+Zona ocupada: a faixa x 0-180, y 30-46 passa a ser zona ocupada durante a partida (soma-se a tabela da secao 5 do
+[handoff de telas novas](handoff-telas-novas.md)). Ela cruza o card do tutorial da 1a partida (x 8-172, y 38-210,
+secao 12 daquele handoff): enquanto o card esta visivel, a linha de duracao inteira fica oculta, inclusive o relogio
+do Contra o tempo, e volta quando o card fecha (`token ausente: linha de HUD oculta sob o card do tutorial`).
 
 ```
  escala aproximada: 1 coluna = 5 px; mostra 180x320 (mesmo em 180x400); vale a tabela
@@ -124,9 +130,9 @@ Classe **topo** (cola no topo), offset `o` = 113. Mesma medida em 180x320 e 180x
 
 | Item                 | Medida                       | Detalhe                                                  | Origem                                          |
 | -------------------- | ---------------------------- | -------------------------------------------------------- | ----------------------------------------------- |
-| Botao `Modo: <nome>` | x 34-146, y 113-137 (112x24) | fonte 16, contorno 1; 10 px acima do Play (y 147-173)    | Play: `scenes/Stage.gd:15-17`; posicao y: spec f516 |
+| Botao `Modo: <nome>` | x 34-146, y 113-137 (112x24) | fonte 16, contorno 1; 10 px acima do Play (y 147-173)    | Play: `scenes/Stage.gd:15-17`; `token ausente: botao Modo em y 113-137` |
 
-Rotulos curtos (para caber em 112 px, proposta do orchestrator — spec f516): "Tempo" para Contra o tempo e "Diario"
+Rotulos curtos (para caber em 112 px; `token ausente: rotulos curtos "Tempo" e "Diario"`): "Tempo" para Contra o tempo e "Diario"
 para Desafio diario. O botao nao sobrepoe Play nem Opcoes (folga de 10 px entre o fim do botao e o Play) e a pausa
 nao existe no menu.
 
@@ -158,9 +164,15 @@ implementador arredonda para o pixel inteiro da grade).
 | Indicador de posicao    | centrado, y 177-185                  | 5 marcas de 4x4 com folga 4; a atual tem 8x4 (forma, nao so cor)  | `token ausente: marca do indicador 4x4/8x4`                             |
 | Botao `OK`              | x 34-146, y 197-229 (112x32)         | volta ao menu com o modo exibido selecionado                      | fundo `#5b8a4a` (`ressources/Button.tres:8`)                            |
 
-Troca de modo: toque nas setas ou arrasto horizontal de pelo menos 16 px sobre a faixa da imagem/nome/descricao
-(`token ausente: limiar de arrasto 16 px`; limiar: proposta do orchestrator). O modo exibido ja e o selecionado; `OK`
-so fecha (proposta do orchestrator). As imagens sao placeholder neste epic; o epic de arte (E6, issue #18) ganha a
+Com a tela Modos aberta, Play, Last, Best, o botao Modo e o botao Opcoes do menu ficam **ocultos** (nao so cobertos):
+nao recebem toque, e a tecla `jump` que inicia o jogo no menu fica suspensa, como na tela de Opcoes
+([handoff de telas novas](handoff-telas-novas.md), secao 10.1). Toque no fundo, fora dos controles, e consumido e nao
+faz nada. A tela so abre com o jogo nao iniciado.
+
+Troca de modo: toque nas setas ou arrasto horizontal de pelo menos 16 px que comeca na faixa de arrasto, x 30-150,
+y 42-169 do bloco (imagem, nome e descricao; 2 px de folga das setas, fora do indicador e do `OK`)
+(`token ausente: limiar de arrasto 16 px`; `token ausente: faixa de arrasto x 30-150, y 42-169`). O modo exibido ja e o selecionado; `OK`
+so fecha (`token ausente: modo exibido ja selecionado, OK so fecha`). As imagens sao placeholder neste epic; o epic de arte (E6, issue #18) ganha a
 feature das imagens dos modos.
 
 ```
@@ -181,4 +193,6 @@ feature das imagens dos modos.
 
 ## 5. Agrupamento em blocos (para o epic)
 
-Agrupamento do epic: 3 power-ups e 4 modos novos (5 no seletor com o Classico); a f522 entrega os power-ups em 2 blocos (A: Camaleao + Desacelera; B: Segunda chance) e a f524 entrega os modos em 3 blocos (A: Puro + Contra o tempo; B: Zen; C: Desafio diario, depende da f517).
+Agrupamento do epic: 3 power-ups e 4 modos novos (5 no seletor com o Classico); a f522 entrega os power-ups em
+2 blocos (A: Camaleao + Desacelera; B: Segunda chance) e a f524 entrega os modos em 3 blocos (A: Puro + Contra o
+tempo; B: Zen; C: Desafio diario, depende da f517).

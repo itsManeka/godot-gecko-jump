@@ -45,7 +45,7 @@ Restricoes que moldam a decisao:
 
 | Modo           | Regra                                                                                                                                          | Power-ups | Recorde                                                                        |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------ |
-| Classico       | infinito atual                                                                                                                                 | sim       | herda `user://best_score.cfg` (`score.best`; `scripts/BestScoreStore.gd:9-11`) |
+| Classico       | infinito atual (geracao `scenes/RunningPlatforms.gd:60-82`)                                                                                                                                 | sim       | herda `user://best_score.cfg` (`score.best`; `scripts/BestScoreStore.gd:9-11`) |
 | Puro           | infinito atual, identico ao Classico de hoje (geracao `scenes/RunningPlatforms.gd:60-82`, cor das moveis `scenes/RunningPlatforms.gd:156-169`) | nao       | proprio, comeca em 0                                                           |
 | Desafio diario | seed = data UTC (secao da seed abaixo); uma tentativa por dia                                                                                  | nao       | resultado do dia                                                               |
 | Zen            | sem scroll forcado; ao cair, o gecko volta a ultima plataforma segura e a partida nao encerra; sai pela pausa                                  | nao       | nao grava (mostra so os pontos da sessao)                                      |
@@ -101,7 +101,9 @@ Restricoes que moldam a decisao:
 
 ### Consequencias para o epic
 
-Agrupamento do epic: 3 power-ups e 4 modos novos (5 no seletor com o Classico); a f522 entrega os power-ups em 2 blocos (A: Camaleao + Desacelera; B: Segunda chance) e a f524 entrega os modos em 3 blocos (A: Puro + Contra o tempo; B: Zen; C: Desafio diario, depende da f517).
+Agrupamento do epic: 3 power-ups e 4 modos novos (5 no seletor com o Classico); a f522 entrega os power-ups em
+2 blocos (A: Camaleao + Desacelera; B: Segunda chance) e a f524 entrega os modos em 3 blocos (A: Puro + Contra o
+tempo; B: Zen; C: Desafio diario, depende da f517).
 
 ## O que ficou aberto
 
