@@ -2,6 +2,7 @@
   "path": "index.html?seed=453&semderrota=1&tutorial=visto",
   "viewport": [360, 640],
   "boot_ms": 6000,
+  "notes": "A ponte nao publica a pausa: com o jogo pausado o state continua playing. Quem prova pausado x retomado sao as rajadas: still depois de pausar e moving depois de retomar (P, botao, Esc e Espaco); o expect state playing so confirma que a partida nao acabou.",
   "steps": [
     { "expect": { "state": "menu" }, "timeout_ms": 3000 },
     { "down": "Space" },
