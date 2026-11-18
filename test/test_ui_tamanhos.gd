@@ -161,3 +161,31 @@ func test_c349_ultima_e_melhor_pontuacao_de_4_digitos_cabem_em_180() -> void:
 	for texto in ["Ultima pontuacao: 1000", "Melhor pontuacao: 1000", "Melhor pontuacao: 9999"]:
 		var l := UiHelpers.FONTE.get_string_size(texto, HORIZONTAL_ALIGNMENT_LEFT, -1, UiHelpers.TAMANHO_TEXTO).x
 		assert_lte(l, LARGURA_TELA, "'%s' cabe em 180 px sem quebra" % texto)
+
+
+# C474: com o slider de Sensibilidade (A) o bloco das Opcoes soma 311 px; sem ele (B) segue 260 px. Nenhum retangulo
+# do bloco passa da safe area: 180x320 sem recuo (311 px exige a tela inteira) e 180x400 com safe area no topo.
+func test_c474_bloco_das_opcoes_cabe_na_safe_area_com_e_sem_sensibilidade() -> void:
+	var casos: Array = [
+		[Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA)],
+		[Vector2(LARGURA_TELA, 400.0), Rect2(0.0, 20.0, LARGURA_TELA, 374.0)],
+	]
+	for caso in casos:
+		for modo in [TouchMode.Modo.B, TouchMode.Modo.A]:
+			Global.set_touch_mode(modo, false)
+			var o: OptionsScreen = add_child_autofree(OptionsScreen.new())
+			var tamanho: Vector2 = caso[0]
+			var safe: Rect2 = caso[1]
+			o.aplicar_layout(tamanho, safe)
+			var altura := 311.0 if modo == TouchMode.Modo.A else 260.0
+			assert_almost_eq(o.rect_bloco().size.y, altura, 0.0001, "%s modo %d: bloco de %s px" % [str(tamanho), modo, str(altura)])
+			assert_true(safe.encloses(o.rect_bloco()), "%s modo %d: bloco inteiro dentro da safe area" % [str(tamanho), modo])
+			var rets: Array[Rect2] = [
+				o.rect_music(), o.rect_sfx(), o.rect_sensibilidade(), o.rect_toque(), o.rect_ver_tutorial(), o.rect_voltar()
+			]
+			for r in rets:
+				if r.size == Vector2.ZERO:
+					continue
+				assert_true(safe.encloses(r), "%s modo %d: %s dentro da safe area" % [str(tamanho), modo, str(r)])
+			assert_eq(o.item_visivel(OptionsScreen.Item.SENSIBILIDADE), modo == TouchMode.Modo.A, "%s: Sensibilidade so no A" % str(tamanho))
+	Global.set_touch_mode(TouchMode.Modo.B, false)

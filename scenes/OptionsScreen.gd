@@ -7,15 +7,16 @@ extends CanvasLayer
 # O toque pertence ao slider desde o pressionar na area e se mantem fora dela, com x limitado (eixo vertical ignorado).
 # Voltar aciona ao soltar com o dedo dentro do retangulo. Esc/P (acao `pause`) = Voltar, nunca retoma a partida.
 # Layout por lista de itens (TIPOS/ESPACO_ANTES): acrescentar um item e inserir nas listas TIPOS/ESPACO_ANTES/NOMES,
-# no enum Item e em _valores; as contas de y seguem a lista. Botoes: Toque (alterna o modo A/B pelo Global),
-# Ver tutorial (sinal `ver_tutorial`) e Voltar.
+# no enum Item e em _valores; as contas de y seguem a lista visivel. Sliders: Music, SFX e Sensibilidade (este so no
+# modo A, decisao 2a do G1: em B o bloco volta a 260 px e a ordem de foco pula o item). Botoes: Toque (alterna o modo
+# A/B pelo Global), Ver tutorial (sinal `ver_tutorial`) e Voltar.
 
 # Emitido por Voltar e pela acao `pause` com a tela aberta.
 signal voltar
 # Emitido por Ver tutorial (toque solto dentro ou `ui_accept` com o foco nele).
 signal ver_tutorial
 
-enum Item { MUSIC, SFX, TOQUE, VER_TUTORIAL, VOLTAR }
+enum Item { MUSIC, SFX, SENSIBILIDADE, TOQUE, VER_TUTORIAL, VOLTAR }
 enum Tipo { SLIDER, BOTAO }
 
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
@@ -29,9 +30,9 @@ const COR_CURSOR: Color = Color(1.0, 1.0, 1.0, 1.0)
 const CAMADA: int = 11
 
 # Itens na ordem de foco e de cima para baixo; espaco acima de cada item (handoff 10.2)
-const TIPOS: Array[int] = [Tipo.SLIDER, Tipo.SLIDER, Tipo.BOTAO, Tipo.BOTAO, Tipo.BOTAO]
-const ESPACO_ANTES: Array[float] = [12.0, 8.0, 12.0, 8.0, 8.0]
-const NOMES: Array[String] = ["Music", "SFX", "Toque", "Ver tutorial", "Voltar"]
+const TIPOS: Array[int] = [Tipo.SLIDER, Tipo.SLIDER, Tipo.SLIDER, Tipo.BOTAO, Tipo.BOTAO, Tipo.BOTAO]
+const ESPACO_ANTES: Array[float] = [12.0, 8.0, 8.0, 12.0, 8.0, 8.0]
+const NOMES: Array[String] = ["Music", "SFX", "Sensibilidade", "Toque", "Ver tutorial", "Voltar"]
 
 # Medidas em px logicos (handoff 10.2)
 const LARGURA: float = 180.0
@@ -69,15 +70,21 @@ var _botao_paineis: Array[Panel] = []
 var _botao_rotulos: Array[Label] = []
 # Area de toque do slider ou retangulo do botao, por item
 var _rects: Array[Rect2] = []
-# Valor 0-100 por item (so os sliders usam)
-var _valores: Array[int] = [100, 100, 0, 0, 0]
+# Valor 0-100 por item (so os sliders usam; Sensibilidade = posicao na faixa de TouchTuning)
+var _valores: Array[int] = [100, 100, 50, 0, 0, 0]
 var _foco: int = Item.MUSIC
 var _aberta: bool = false
+# Ultimo layout aplicado: a troca de modo recalcula as alturas (o item de Sensibilidade aparece/some).
+var _tamanho: Vector2 = Vector2.ZERO
+var _safe: Rect2 = Rect2()
+var _layout_aplicado: bool = false
+# Retangulo do bloco inteiro (titulo + itens) do ultimo layout; base do teste de safe area.
+var _bloco: Rect2 = Rect2()
 # index do dedo -> item em que o toque comecou (-1 = fundo)
 var _toques: Dictionary = {}
 var _pressionado: int = -1
 # Valor aplicado no bus durante o arrasto e ainda nao gravado no cfg (grava ao soltar, ao fechar ou na saida do app).
-# Flag unica, sem estado por dedo: no multitoque, gravar os dois volumes de uma vez e intencional.
+# Flag unica, sem estado por dedo: no multitoque, gravar os dois volumes (e a sensibilidade) de uma vez e intencional.
 var _pendente: bool = false
 
 
@@ -90,6 +97,8 @@ func _init() -> void:
 func _ready() -> void:
 	layer = CAMADA
 	visible = false
+	# Troca de modo por qualquer caminho (seletor da tela ou `?toque=`): mostra/oculta a Sensibilidade na hora.
+	Global.touch_mode_changed.connect(_modo_mudou)
 	_fundo = ColorRect.new()
 	_fundo.color = COR_FUNDO
 	_fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -175,13 +184,22 @@ func tratar_evento(event: InputEvent) -> bool:
 
 # Posiciona fundo, titulo, sliders e botao a partir do tamanho visivel e da safe area (coordenadas logicas).
 func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
+	_tamanho = visible_size
+	_safe = safe
+	_layout_aplicado = true
 	var s_top := safe.position.y
 	var s_bottom := visible_size.y - safe.end.y
 	var util := visible_size.y - s_top - s_bottom
-	var y0 := s_top + (util - _altura_bloco()) / 2.0
+	var altura := _altura_bloco()
+	var y0 := s_top + (util - altura) / 2.0
+	_bloco = Rect2(0.0, y0, LARGURA, altura)
 	var y := y0 + TITULO_ALTURA
 	var topo_rotulos: Array[float] = []
 	for i in TIPOS.size():
+		# Item escondido nao ocupa linha nem espaco: o bloco dos 5 itens do B termina nos mesmos 260 px de antes.
+		if not _visivel(i):
+			_rects[i] = Rect2()
+			continue
 		y += ESPACO_ANTES[i]
 		if TIPOS[i] == Tipo.SLIDER:
 			topo_rotulos.append(y)
@@ -202,16 +220,18 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 		_molduras[i].position = r.position - Vector2(1.0, 1.0)
 		_molduras[i].size = r.size + Vector2(2.0, 2.0)
 		if TIPOS[i] == Tipo.SLIDER:
-			var linha := Rect2(SliderMath.X_MIN, topo_rotulos[s], SliderMath.LARGURA_TRILHA, ROTULO_ALTURA)
-			_nomes[s].position = linha.position
-			_nomes[s].size = linha.size
-			_valores_lbl[s].position = linha.position
-			_valores_lbl[s].size = linha.size
-			var cy := r.position.y + r.size.y / 2.0
-			_trilhas_moldura[s].position = Vector2(SliderMath.X_MIN - 1.0, cy - TRILHA_ALTURA / 2.0 - 1.0)
-			_trilhas_moldura[s].size = Vector2(SliderMath.LARGURA_TRILHA + 2.0, TRILHA_ALTURA + 2.0)
-			_trilhas[s].position = Vector2(SliderMath.X_MIN, cy - TRILHA_ALTURA / 2.0)
-			_trilhas[s].size = Vector2(SliderMath.LARGURA_TRILHA, TRILHA_ALTURA)
+			# O indice s acompanha os sliders (inclusive o escondido); so o visivel tem topo para posicionar.
+			if _visivel(i):
+				var linha := Rect2(SliderMath.X_MIN, topo_rotulos[s], SliderMath.LARGURA_TRILHA, ROTULO_ALTURA)
+				_nomes[s].position = linha.position
+				_nomes[s].size = linha.size
+				_valores_lbl[s].position = linha.position
+				_valores_lbl[s].size = linha.size
+				var cy := r.position.y + r.size.y / 2.0
+				_trilhas_moldura[s].position = Vector2(SliderMath.X_MIN - 1.0, cy - TRILHA_ALTURA / 2.0 - 1.0)
+				_trilhas_moldura[s].size = Vector2(SliderMath.LARGURA_TRILHA + 2.0, TRILHA_ALTURA + 2.0)
+				_trilhas[s].position = Vector2(SliderMath.X_MIN, cy - TRILHA_ALTURA / 2.0)
+				_trilhas[s].size = Vector2(SliderMath.LARGURA_TRILHA, TRILHA_ALTURA)
 			s += 1
 		else:
 			_botao_paineis[i].position = r.position
@@ -220,7 +240,7 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 	_atualizar_visual()
 
 
-# Retangulo da area de toque do slider (0 = Music, 1 = SFX).
+# Retangulo da area de toque do slider (0 = Music, 1 = SFX, 2 = Sensibilidade).
 func rect_slider(canal: int) -> Rect2:
 	return _rects[canal]
 
@@ -231,6 +251,16 @@ func rect_music() -> Rect2:
 
 func rect_sfx() -> Rect2:
 	return _rects[Item.SFX]
+
+
+# Area de toque do slider de Sensibilidade (vazia com o modo B ativo: o item nao aparece).
+func rect_sensibilidade() -> Rect2:
+	return _rects[Item.SENSIBILIDADE]
+
+
+# Retangulo do bloco inteiro (titulo + itens visiveis) do ultimo layout.
+func rect_bloco() -> Rect2:
+	return _bloco
 
 
 func rect_toque() -> Rect2:
@@ -255,7 +285,16 @@ func foco_atual() -> int:
 	return _foco
 
 
-# Valor 0-100 exibido no slider (0 = Music, 1 = SFX).
+# Item desenhado agora (o slider de Sensibilidade so no modo A).
+func item_visivel(item: int) -> bool:
+	if _nomes.is_empty():
+		return _visivel(item)
+	if TIPOS[item] == Tipo.SLIDER:
+		return _nomes[_indice_slider(item)].visible
+	return _botao_paineis[item].visible
+
+
+# Valor 0-100 exibido no slider (0 = Music, 1 = SFX, 2 = Sensibilidade).
 func valor_slider(canal: int) -> int:
 	return _valores[canal]
 
@@ -266,12 +305,13 @@ func esta_aberta() -> bool:
 
 func abrir(foco: int = Item.MUSIC) -> void:
 	_aberta = true
-	_foco = foco
+	_foco = foco if _visivel(foco) else _proximo_foco(foco, 1)
 	_toques.clear()
 	_pressionado = -1
 	_pendente = false
 	_valores[Item.MUSIC] = roundi(Global.get_volume_music() * SliderMath.VALOR_MAX)
 	_valores[Item.SFX] = roundi(Global.get_volume_sfx() * SliderMath.VALOR_MAX)
+	_valores[Item.SENSIBILIDADE] = valor_da_sensibilidade(Global.get_touch_sensibilidade())
 	visible = true
 	_atualizar_visual()
 
@@ -287,9 +327,69 @@ func fechar() -> void:
 func _altura_bloco() -> float:
 	var h := TITULO_ALTURA
 	for i in TIPOS.size():
+		if not _visivel(i):
+			continue
 		h += ESPACO_ANTES[i]
 		h += SLIDER_ALTURA if TIPOS[i] == Tipo.SLIDER else BOTAO_ALTURA
 	return h
+
+
+# Item aparece na tela: o slider de Sensibilidade so com o modo A ativo (decisao 2a do G1). Em B o bloco volta a
+# 260 px e a ordem de foco passa de SFX direto a Toque.
+func _visivel(item: int) -> bool:
+	return item != Item.SENSIBILIDADE or Global.get_touch_mode() == TouchMode.Modo.A
+
+
+# Indice do slider do item nas listas de nos (ordem dos sliders em TIPOS, escondido inclusive).
+func _indice_slider(item: int) -> int:
+	var s := 0
+	for i in item:
+		if TIPOS[i] == Tipo.SLIDER:
+			s += 1
+	return s
+
+
+# Proximo item visivel a partir do atual, no passo +1 (ui_down) ou -1 (ui_up).
+func _proximo_foco(atual: int, passo: int) -> int:
+	var i := atual
+	for _n in TIPOS.size():
+		i = (i + passo + TIPOS.size()) % TIPOS.size()
+		if _visivel(i):
+			return i
+	return atual
+
+
+# Foco preso num item escondido (trocar para B com foco em Sensibilidade): volta ao vizinho visivel de cima.
+func _normalizar_foco() -> void:
+	if _visivel(_foco):
+		return
+	_foco = _proximo_foco(_foco, -1)
+
+
+# Troca de modo de toque (seletor da tela ou de fora): reaproveita o ultimo layout com a lista visivel nova.
+func _modo_mudou(_modo: int) -> void:
+	_normalizar_foco()
+	if _layout_aplicado:
+		aplicar_layout(_tamanho, _safe)
+	else:
+		_atualizar_visual()
+
+
+# Valor 0-100 do slider de Sensibilidade -> multiplicador de TouchTuning. Geometrico: o padrao 1,0x fica no meio da
+# trilha (0,5x * 2x = 1,0x * 1,0x) e cada passo anda a mesma razao de px nos dois sentidos.
+static func sensibilidade_do_valor(valor: int) -> float:
+	var t := float(clampi(valor, 0, SliderMath.VALOR_MAX)) / float(SliderMath.VALOR_MAX)
+	return TouchTuning.sensibilidade_de_valor(
+		TouchTuning.SENSIBILIDADE_MIN * pow(TouchTuning.SENSIBILIDADE_MAX / TouchTuning.SENSIBILIDADE_MIN, t)
+	)
+
+
+# Inverso do mapeamento: sensibilidade salva -> posicao 0-100 do slider (valor invalido cai no padrao).
+static func valor_da_sensibilidade(sensibilidade: float) -> int:
+	var s := TouchTuning.sensibilidade_de_valor(sensibilidade)
+	var razao := TouchTuning.SENSIBILIDADE_MAX / TouchTuning.SENSIBILIDADE_MIN
+	var t := log(s / TouchTuning.SENSIBILIDADE_MIN) / log(razao)
+	return clampi(roundi(t * float(SliderMath.VALOR_MAX)), 0, SliderMath.VALOR_MAX)
 
 
 func _tratar_acao(event: InputEvent) -> bool:
@@ -308,11 +408,11 @@ func _tratar_acao(event: InputEvent) -> bool:
 		voltar.emit()
 		return true
 	if event.is_action_pressed("ui_down"):
-		_foco = (_foco + 1) % TIPOS.size()
+		_foco = _proximo_foco(_foco, 1)
 		_atualizar_visual()
 		return true
 	if event.is_action_pressed("ui_up"):
-		_foco = (_foco + TIPOS.size() - 1) % TIPOS.size()
+		_foco = _proximo_foco(_foco, -1)
 		_atualizar_visual()
 		return true
 	if event.is_action_pressed("ui_accept"):
@@ -368,11 +468,11 @@ func _acionar(item: int) -> void:
 		voltar.emit()
 
 
-# Alterna A <-> B: o Global grava no store e avisa (TouchControls cancela o gesto, TouchHint rearma a dica).
+# Alterna A <-> B: o Global grava no store e avisa (TouchControls cancela o gesto, TouchHint rearma a dica e o sinal
+# `touch_mode_changed` refaz o layout daqui, mostrando/ocultando a Sensibilidade).
 func _alternar_modo_toque() -> void:
 	var proximo := (int(Global.get_touch_mode()) + 1) % TouchMode.NOMES.size()
 	Global.set_touch_mode(proximo)
-	_atualizar_visual()
 
 
 func _texto_item(item: int) -> String:
@@ -395,28 +495,30 @@ func _item_em(pos: Vector2) -> int:
 	return -1
 
 
-# Muda o valor do slider e aplica no bus pelo Global; grava no cfg so com `persistir` (teclado). No arrasto fica
-# pendente e grava ao soltar ou ao fechar. Sem mudanca nao faz nada.
+# Muda o valor do slider e aplica no Global (bus nos volumes, valor do A na sensibilidade); grava no cfg so com
+# `persistir` (teclado). No arrasto fica pendente e grava ao soltar ou ao fechar. Sem mudanca nao faz nada.
 func _definir_valor(item: int, valor: int, persistir: bool) -> void:
 	if valor == _valores[item]:
 		return
 	_valores[item] = valor
-	var linear := float(valor) / SliderMath.VALOR_MAX
-	if item == Item.MUSIC:
-		Global.set_volume_music(linear, persistir)
+	if item == Item.SENSIBILIDADE:
+		Global.set_touch_sensibilidade(sensibilidade_do_valor(valor), persistir)
+	elif item == Item.MUSIC:
+		Global.set_volume_music(float(valor) / SliderMath.VALOR_MAX, persistir)
 	else:
-		Global.set_volume_sfx(linear, persistir)
+		Global.set_volume_sfx(float(valor) / SliderMath.VALOR_MAX, persistir)
 	if not persistir:
 		_pendente = true
 	_atualizar_visual()
 
 
-# Grava os volumes se algum valor foi aplicado sem gravar.
+# Grava os volumes e a sensibilidade se algum valor foi aplicado sem gravar.
 func _persistir_pendente() -> void:
 	if not _pendente:
 		return
 	_pendente = false
 	Global.salvar_volumes()
+	Global.salvar_sensibilidade()
 
 
 func _atualizar_visual() -> void:
@@ -424,10 +526,17 @@ func _atualizar_visual() -> void:
 		return
 	var s := 0
 	for i in TIPOS.size():
-		_molduras[i].visible = _foco == i
+		var vis := _visivel(i)
+		_molduras[i].visible = vis and _foco == i
 		var r: Rect2 = _rects[i]
 		if TIPOS[i] == Tipo.SLIDER:
 			var arrastando := _toques.values().has(i)
+			_nomes[s].visible = vis
+			_valores_lbl[s].visible = vis
+			_trilhas_moldura[s].visible = vis
+			_trilhas[s].visible = vis
+			_preenchimentos[s].visible = vis
+			_cursores[s].visible = vis
 			_nomes[s].text = ("> " if _foco == i else "") + NOMES[i]
 			_valores_lbl[s].text = SliderMath.rotulo(_valores[i])
 			var cx := SliderMath.x_do_valor(_valores[i])
@@ -441,6 +550,7 @@ func _atualizar_visual() -> void:
 			s += 1
 		else:
 			var pressed: bool = _pressionado == i
+			_botao_paineis[i].visible = vis
 			_botao_paineis[i].add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO, COR_BOTAO))
 			_botao_rotulos[i].text = ("> " if _foco == i else "") + _texto_item(i)
 			_botao_rotulos[i].position = Vector2(0.0, 1.0 if pressed else 0.0)

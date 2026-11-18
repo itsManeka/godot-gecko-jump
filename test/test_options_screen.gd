@@ -380,3 +380,97 @@ func test_c206_toque_no_fundo_consumido_e_mouse_emulado_nao_duplica() -> void:
 	assert_eq(o.valor_slider(0), 50, "clique real de mouse move o slider")
 	o.tratar_evento(_clique(Vector2(90, cy), false))
 	assert_eq(_voltou, 0, "clique no slider nao emite voltar")
+
+
+# Sensibilidade salva no store temporario (-1 = chave ausente, como o Global le no boot).
+func _sensibilidade_salva() -> float:
+	return float(
+		OptionsStore
+		.new(TEMP_PATH)
+		.load_value(
+			TouchTuning.SENSIBILIDADE_SECTION,
+			TouchTuning.SENSIBILIDADE_KEY,
+			TouchTuning.SENSIBILIDADE_SEM_VALOR
+		)
+	)
+
+
+# C472: o slider de Sensibilidade existe so no modo A; em B ele some do desenho e a ordem de foco pula o item.
+func test_c472_slider_de_sensibilidade_so_no_modo_a_e_fora_da_ordem_de_foco_no_b() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var b := _nova()
+	assert_false(b.item_visivel(OptionsScreen.Item.SENSIBILIDADE), "B: o slider de Sensibilidade nao aparece")
+	assert_eq(b.rect_sensibilidade(), Rect2(), "B: item escondido nao tem area de toque")
+	b.abrir(OptionsScreen.Item.SFX)
+	b.tratar_evento(_acao("ui_down"))
+	assert_eq(b.foco_atual(), OptionsScreen.Item.TOQUE, "B: ui_down de SFX pula Sensibilidade e vai a Toque")
+	b.tratar_evento(_acao("ui_up"))
+	assert_eq(b.foco_atual(), OptionsScreen.Item.SFX, "B: ui_up de Toque volta a SFX")
+	b.tratar_evento(_acao("ui_up"))
+	assert_eq(b.foco_atual(), OptionsScreen.Item.MUSIC, "B: ui_up de SFX vai a Music")
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var a := _nova()
+	assert_true(a.item_visivel(OptionsScreen.Item.SENSIBILIDADE), "A: o slider de Sensibilidade aparece")
+	assert_ne(a.rect_sensibilidade(), Rect2(), "A: item visivel tem area de toque")
+	a.abrir(OptionsScreen.Item.SFX)
+	a.tratar_evento(_acao("ui_down"))
+	assert_eq(a.foco_atual(), OptionsScreen.Item.SENSIBILIDADE, "A: ui_down de SFX vai a Sensibilidade")
+	a.tratar_evento(_acao("ui_down"))
+	assert_eq(a.foco_atual(), OptionsScreen.Item.TOQUE, "A: ui_down de Sensibilidade vai a Toque")
+	a.tratar_evento(_acao("ui_up"))
+	assert_eq(a.foco_atual(), OptionsScreen.Item.SENSIBILIDADE, "A: ui_up de Toque volta a Sensibilidade")
+
+
+# C473: toque/arrasto e ui_left/ui_right movem a Sensibilidade, aplicam na hora e gravam ao soltar/fechar/teclado.
+func test_c473_slider_de_sensibilidade_responde_a_toque_arrasto_e_teclado_e_persiste() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	Global.set_touch_sensibilidade(TouchTuning.SENSIBILIDADE_PADRAO, false)
+	var o := _nova()
+	assert_eq(o.valor_slider(OptionsScreen.Item.SENSIBILIDADE), 50, "abre com o padrao 1,0x no meio da trilha")
+	var cy := o.rect_sensibilidade().get_center().y
+	o.tratar_evento(_toque(Vector2(10, cy), true))
+	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_MIN, 0.0001, "toque no minimo aplica na hora")
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_SEM_VALOR, 0.0001, "durante o arrasto o cfg ainda nao grava")
+	o.tratar_evento(_arrasto(Vector2(500, cy)))
+	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_MAX, 0.0001, "arrasto ao maximo aplica na hora")
+	o.tratar_evento(_arrasto(Vector2(90, cy)))
+	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "arrasto ao meio volta ao padrao")
+	o.tratar_evento(_toque(Vector2(90, cy), false))
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "soltar grava o valor arrastado")
+	o.abrir(OptionsScreen.Item.SENSIBILIDADE)
+	o.tratar_evento(_acao("ui_right"))
+	assert_gt(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_PADRAO, "ui_right sobe a sensibilidade")
+	assert_almost_eq(_sensibilidade_salva(), Global.get_touch_sensibilidade(), 0.0001, "teclado grava na hora")
+	o.tratar_evento(_acao("ui_left"))
+	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "ui_left desce de volta ao padrao")
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "ui_left tambem grava na hora")
+	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_arrasto(Vector2(500, cy)))
+	o.fechar()
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_MAX, 0.0001, "fechar no meio do gesto grava o valor arrastado")
+
+
+# C475: a troca B <-> A mostra/oculta o item na hora e o valor volta como foi salvo ao reabrir.
+func test_c475_troca_de_modo_mostra_e_oculta_o_slider_na_hora_e_valor_volta_ao_reabrir() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var o := _nova()
+	assert_false(o.item_visivel(OptionsScreen.Item.SENSIBILIDADE), "abre em B sem o slider")
+	_tocar_seletor(o)
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.A, "o seletor levou ao modo A")
+	assert_true(o.item_visivel(OptionsScreen.Item.SENSIBILIDADE), "trocar para A mostra o slider na hora")
+	assert_ne(o.rect_sensibilidade(), Rect2(), "A: item ganhou area de toque sem reabrir a tela")
+	var cy := o.rect_sensibilidade().get_center().y
+	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_toque(Vector2(10, cy), false))
+	_tocar_seletor(o)
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "o seletor voltou ao modo B")
+	assert_false(o.item_visivel(OptionsScreen.Item.SENSIBILIDADE), "trocar para B oculta o slider na hora")
+	assert_eq(o.rect_sensibilidade(), Rect2(), "B: sem area de toque depois da troca")
+	_tocar_seletor(o)
+	assert_eq(Global.get_touch_mode(), TouchMode.Modo.A, "o seletor volta ao A e grava o modo")
+	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
+	o.fechar()
+	o.abrir()
+	assert_true(o.item_visivel(OptionsScreen.Item.SENSIBILIDADE), "reabrir no modo salvo (A) mostra o slider")
+	assert_eq(o.valor_slider(OptionsScreen.Item.SENSIBILIDADE), 0, "o slider volta na posicao salva (minimo)")
+	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_MIN, 0.0001, "o valor salvo volta ao Global")
