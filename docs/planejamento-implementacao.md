@@ -50,7 +50,7 @@ Divisao em epics (as fases 1 a 3 acima formam o E1):
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------- |
 | E1. Migracao e base solida                          | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3)                              | #8, #14, #7, #3, #4, #5, #6, #9                      | concluido (2026-11-09)              |
 | E2. CI, tela mobile e jogabilidade da base          | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel                                             | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
-| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes, tutorial e camera que acompanha o gecko no alto | #36, #37, #39, #40, #42, #11, #10, #12, #47, #46     | toque fixado; QA final pendente     |
+| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes, tutorial e camera que acompanha o gecko no alto | #36, #37, #39, #40, #42, #11, #10, #12, #47, #46     | toque fixado; aguardando playtest   |
 | E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                                                   | #16, #17                                             | planejado                           |
 | E5. Ranking online por modo                         | Ranking por modo de jogo; depende do E4 e do ChumGames E1                                                                    | #29                                                  | planejado                           |
 | E6. Arte final e audio                              | Arte final em pixel art, sons e musica                                                                                       | #18, #13                                             | planejado                           |
@@ -111,15 +111,13 @@ lateral com toque no aparelho (o jogo ainda nao le toque, #11).
 
 Escopo: as issues herdadas do E2 (#36, #37, #39, #40, #42), toque (#11) e modos de toque alternaveis (#47), dificuldade (#10) e pausa, opcoes e tutorial (#12).
 
-**Estado: modos de toque fixados no playtest de 2026-11-17 (B padrao); QA final do dono pendente** (branch
-`epic/gecko-e3-controles-e-progressao`). O QA da maquina esta verde no
-HEAD: o oraculo do repo (import, compile, GUT, run) passa; os 25 roteiros de smoke (18 anteriores + 5 do epic, com o
-tap/hold de toque substituido pelos roteiros de toque por modo (A e B); volume persistido apos recarregar, estagios 1 e 2 e
-cruzamento 2->3) passam no export web de debug; nos pares
-amostrados do game-bot nativo do HEAD contra a `main` nao ha regressao (as divergencias sao a UI nova do epic: pausa,
-opcoes, tutorial, dica de toque, estagios); o toque por modo foi provado por GUT (deterministico) e pelos roteiros de
-smoke no export web de debug; a sensacao no aparelho e a legibilidade seguem para o QA final do dono, e a escolha do
-padrao de toque foi fixada no playtest (B). As
+**Estado: aguardando playtest do dono (QA final); padrao de toque B fixado no playtest de 2026-11-17** (branch
+`epic/gecko-e3-controles-e-progressao`). A camada automatica esta verde no HEAD: o oraculo do repo (`.verify.mjs final`:
+import, compile, GUT com 919 testes, run) passa; os 30 roteiros de smoke passam no export web de debug, incluindo os de
+toque por modo (A e B); no game-bot nativo do HEAD contra a `main`, os 8 roteiros comparados passam, e as divergencias
+sao a UI nova do epic (pausa, opcoes, tutorial, dica de toque, estagios). O toque por modo foi provado por GUT
+(deterministico) e pelos roteiros de smoke no export web de debug. Ficam para o playtest do dono a sensacao no aparelho,
+a legibilidade e o toque no aparelho. As
 issues #36, #37, #39, #40, #42 e #46 estao resolvidas no epic; o que falta da #11, #10 e #12 (toque no aparelho, calibracao
 da curva, pausa por foco) e a sensacao do limite da camera (#46) a maquina nao julga e fica para o playtest do dono.
 
@@ -147,8 +145,7 @@ da curva, pausa por foco) e a sensacao do limite da camera (#46) a maquina nao j
 6. Aviso de subida de estagio (#10): vinheta branca nas 4 bordas da safe area (alpha de pico na borda, decaindo para o
    miolo transparente) que pulsa N vezes (N = estagio novo) nas 3 subidas, sem texto. Sinal `estagio_mudou` do
    `DifficultyState`; a ponte publica `dificuldade.aviso` para os smokes. O som do aviso fica para a #43. O visual da
-   moldura original foi redesenhado para vinheta pela f490 (fecha #45), que junto com a f489 destrava `Closes #10` no PR
-   do epic. Sensacao e legibilidade sobre fundo claro: verificacao manual no playtest do dono.
+   moldura original foi redesenhado para vinheta (fecha #45). Sensacao e legibilidade sobre fundo claro: verificacao manual no playtest do dono.
 7. Modos de toque alternaveis (#47, [ADR 0013](adr/0013-modos-de-toque-alternaveis.md)): dois esquemas selecionaveis
    nas Opcoes — A (arrastar + flick, um polegar) e B (dois polegares, zonas invisiveis, padrao do playtest) — com pulo
    reto, correcao de direcao no ar e comeco a andar no press. O esquema C prototipado foi descartado no playtest e
