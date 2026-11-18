@@ -21,6 +21,11 @@ var speed = 0
 # Sorteio das moveis: null = randi() global; teste injeta um rng de seed fixa
 var rng: RandomNumberGenerator = null
 
+# RNG separado para a cor das moveis (canal cor_movel da RowSeed): o consumo e condicionado a janela do
+# gecko (ReachableColors), entao nao pode compartilhar o rng do layout (deslocaria tipo/x/mecanicas conforme
+# a jogada). null = cai no rng (testes que injetam so rng) ou, sem rng, no sorteio global como hoje.
+var rng_cor_movel: RandomNumberGenerator = null
+
 # Estado de dificuldade da partida (injetado antes do add_child); null = snapshot do estagio 0
 var dificuldade: DifficultyState = null
 
@@ -64,7 +69,7 @@ func _ready():
 	speed = snapshot.get_speed_moveis()
 
 	# Resolve tipos de plataforma aleatórios (sorteio em PlatformTypePicker)
-	platform_type = PlatformTypePicker.resolve(platform_type, null, snapshot.get_proporcao_estaticas())
+	platform_type = PlatformTypePicker.resolve(platform_type, rng, snapshot.get_proporcao_estaticas())
 
 	# Configura comportamento baseado no tipo (Platform.gd: velocity = -speed, entao speed > 0 anda a esquerda)
 	match platform_type:
@@ -112,14 +117,14 @@ func create_static_platforms():
 	var planas: int = 0
 	var ultima_pisca: PlatformBlink = null
 	if garantir_cor_inicial:
-		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL)
+		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL, rng)
 	for i in 3:
 		var platform = pre_platform.instantiate()
 		if Global.sem_derrota:
 			# Modo sem derrota (smoke debug): cor unica, a plataforma de origem nunca desliga
 			platform.set_color(Enums.COR_INICIAL)
 		else:
-			platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color())
+			platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color(rng))
 		platform.position.x = position_x
 		_aplicar_mecanicas(platform)
 		platform.set_speed(0)  # Plataformas estáticas não se movem
@@ -161,7 +166,9 @@ func _cor_movel() -> int:
 		primeira_cor_gecko_lida = cor_gecko
 	# K relido a cada plataforma criada (pode mudar no meio da linha)
 	var k: int = _snapshot().get_k()
-	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, _cores_criadas, rng, k)
+	var cor: int = ReachableColors.cor_plataforma_movel(
+		cor_gecko, _cores_criadas, rng_cor_movel if rng_cor_movel != null else rng, k
+	)
 	_cores_criadas.append(cor)
 	var maximo: int = maxi(k - 1, 0)
 	while _cores_criadas.size() > maximo:
