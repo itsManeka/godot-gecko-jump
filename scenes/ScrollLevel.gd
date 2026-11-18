@@ -15,6 +15,11 @@ var position_scrolled: float = 0.0
 # Dificuldade da partida (atribuida pela Stage em _ready); null = estagio 0 (cena isolada)
 var dificuldade: DifficultyState = null
 
+# Seed da partida (int ou null): setada pela Stage ANTES de entrar na arvore (D1); null = partida sem
+# seed, sorteio global como hoje. Nao toca Global: quem consome sao os rngs por linha, injetados via
+# RowSeed pelo indice do y local de cada linha.
+var semente: Variant = null
+
 # Foto vigente da dificuldade; sem estado injetado = estagio 0
 func _snapshot() -> DifficultySnapshot:
 	return DifficultySnapshot.de(dificuldade)
@@ -28,6 +33,28 @@ var _rows_spawned: int = 0
 const ULTIMA_LINHA_TSCN := 190.0
 const EPSILON := 0.0001
 
+# D1 (02-impact): as 5 linhas do .tscn entram na seed. _enter_tree roda antes do _ready de qualquer
+# filho — o @onready running_platforms ainda nao existe, mas os nos do .tscn ja estao instanciados —,
+# entao a semente setada antes do add_child chega a tempo: injeta os rngs nas linhas do .tscn antes
+# do _ready delas.
+func _enter_tree() -> void:
+	var container: Node = get_node_or_null("RunningPlatforms")
+	if container == null:
+		return
+	for linha in container.get_children():
+		_injetar_rng_na_linha(linha)
+
+
+# Injeta na linha os rngs do seu indice (canais layout e cor_movel da RowSeed) pelo y local, ANTES do
+# add_child/_ready dela: a linha le tipo, mecanicas, cores e speed no _ready. Sem semente nao injeta
+# nada (partida sem seed: sorteio global como hoje). ScrollLevel nao chama seed() nem randomize().
+func _injetar_rng_na_linha(linha) -> void:
+	if semente == null:
+		return
+	var indice: int = RowSeed.indice_do_y(linha.position.y)
+	linha.rng = RowSeed.rng_layout(int(semente), indice)
+	linha.rng_cor_movel = RowSeed.rng_cor_movel(int(semente), indice)
+
 # Preenche a altura visível com linhas iniciais abaixo das 5 do .tscn.
 # Limitação: redimensionar a janela durante a partida não preenche faixa nova (sem religar size_changed).
 func _ready():
@@ -39,6 +66,8 @@ func _ready():
 		linha.name = "Linha_%d" % int(y)
 		linha.set_platform_type(Enums.PLATFORM_TYPE.RANDOM_ALL)
 		linha.position = Vector2(0, y)
+		# Rngs da seed ANTES do add_child: a linha sorteia tipo/mecanicas/cores no _ready
+		_injetar_rng_na_linha(linha)
 		running_platforms.add_child(linha)
 
 # Processa o scroll contínuo do nível
@@ -88,6 +117,9 @@ func create_new_running_platform(y_local: float = NAN):
 	running_platform.position = Vector2(0, y_local)
 	# Estado injetado ANTES do add_child (adiado): a linha le speed/proporcao/K no _ready
 	running_platform.dificuldade = dificuldade
+	# Rngs da seed pelo indice do y local ANTES do add_child adiado (o ramo NAN entra aqui com o y ja
+	# resolvido); sem semente a injecao e no-op
+	_injetar_rng_na_linha(running_platform)
 
 	running_platforms.call_deferred("add_child", running_platform)
 
