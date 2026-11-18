@@ -316,6 +316,55 @@ func test_c456_soltar_e_cancelar_rearmam_flick_unico_e_lateral_seguem() -> void:
 	assert_true(d["pulo"] and d["direita"], "flick diagonal: pulo com lateral a direita")
 
 
+func test_c458_flick_curto_com_eventos_a_200_ms_gera_um_pulso() -> void:
+	var e := _novo_esquema()
+	assert_true(_mover_y(e, Y0 - 30.0, 200), "FPS 5: dy 30 >= 24 entre dois eventos de 200 ms: 1 pulso")
+	var parado: bool = _mover_y(e, Y0 - 30.0, 400)
+	assert_false(parado, "sem novo pulso com o dedo parado")
+
+
+func test_c459_flick_curto_com_eventos_a_400_ms_gera_um_pulso() -> void:
+	var e := _novo_esquema()
+	assert_true(_mover_y(e, Y0 - 30.0, 400), "FPS 2,5: dy 30 >= 24 entre dois eventos de 400 ms: 1 pulso")
+
+
+func test_c460_dy_menor_que_24_com_eventos_espacados_nao_pula() -> void:
+	var a := _novo_esquema()
+	assert_false(_mover_y(a, Y0 - 20.0, 200), "200 ms, dy 20 < 24: sem pulso")
+	var b := _novo_esquema()
+	assert_false(_mover_y(b, Y0 - 20.0, 400), "400 ms, dy 20 < 24: sem pulso")
+
+
+func test_c461_regressao_60_fps_eventos_de_16_ms() -> void:
+	var e := _novo_esquema()
+	var pulsos: int = 0
+	for i in range(1, 7):  # 6 passos de 16 ms = 96 ms, 5 px cada: dy 30 dentro de 150 ms
+		if _mover_y(e, Y0 - 5.0 * float(i), i * 16):
+			pulsos += 1
+	assert_eq(pulsos, 1, "60 FPS: flick de 30 px em 96 ms gera 1 pulso")
+	var curto := _novo_esquema()
+	var curtos: int = 0
+	for i in range(1, 5):  # dy 20 em 64 ms
+		if _mover_y(curto, Y0 - 5.0 * float(i), i * 16):
+			curtos += 1
+	assert_eq(curtos, 0, "60 FPS: dy 20 < 24 nao pula")
+
+
+func test_c462_gesto_lento_nao_e_flick_e_tap_seco_nao_pula() -> void:
+	var lento := _novo_esquema()
+	var pulsos: int = 0
+	for i in range(1, 21):  # 24 px em 2 s, evento a cada 100 ms
+		if _mover_y(lento, Y0 - 1.2 * float(i), i * 100):
+			pulsos += 1
+	assert_eq(pulsos, 0, "24 px em 2 s nao conta como flick")
+	var tap := _novo_esquema()
+	var tap_pulsos: int = 0
+	for t in [200, 400, 600]:
+		if _mover_y(tap, Y0, t):
+			tap_pulsos += 1
+	assert_eq(tap_pulsos, 0, "tap seco sem deslocamento nao pula")
+
+
 func test_c392_correcao_de_direcao_no_ar_muda_velocity_x() -> void:
 	await _entrar_no_quadro_fisico()
 	_spawn()

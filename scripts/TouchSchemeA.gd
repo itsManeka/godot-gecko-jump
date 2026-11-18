@@ -85,7 +85,9 @@ func _detectar_flick(y: float, t_ms: int) -> void:
 	if not _armado:
 		_tentar_rearmar(y, t_ms)
 	var corte: float = float(t_ms - TouchTuning.FLICK_JANELA_MS)
-	while _amostras.size() > 1 and _amostras[0].x < corte:
+	# Mantem a ultima amostra fora da janela como referencia: com eventos espacados (FPS baixo, issue #48) o dedo que
+	# andou >= FLICK_DY_MIN_PX entre dois eventos seguidos ainda conta; gesto lento (muitos eventos) segue nao contando.
+	while _amostras.size() > 1 and _amostras[1].x < corte:
 		_amostras.pop_front()
 	if not _armado:
 		return
