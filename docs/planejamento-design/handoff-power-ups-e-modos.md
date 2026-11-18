@@ -53,13 +53,13 @@ Icone 16x16 sobre uma plataforma sorteada (coleta ao pousar nela, sem toque extr
 [ADR 0014](../adr/0014-power-ups-e-modos-de-jogo.md)). Branco com contorno preto de 1 px; a pista e a forma, nao a
 cor. Nao e alvo de toque (a coleta e o pouso), entao o minimo de 24x24 da secao 1.2 nao se aplica a ele.
 
-| Item             | Medida                             | Detalhe                                          | Origem                                                                                                    |
-| ---------------- | ---------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Icone (desenho)  | 16x16, centrado no x da plataforma | base 2 px acima do topo da plataforma            | `token ausente: tamanho de icone 16x16` (16 e o nativo, `scripts/UiHelpers.gd:17`); `token ausente: base do icone 2 px acima da plataforma`   |
-| Fundo do icone   | branco com contorno preto de 1 px  | legivel sobre qualquer plataforma                | branco `scripts/Enums.gd:33`; contorno `scripts/UiHelpers.gd:11`                                           |
-| Camaleao         | quadrado partido nas 4 cores       | 4 quadrantes: amarelo, verde, azul, vermelho     | `scripts/Enums.gd:26,28,30,32`                                                                            |
-| Desacelera       | ampulheta                          | forma de ampulheta (duas piramides)              | `token ausente: forma provisoria do icone` (E6 refaz)                                                                      |
-| Segunda chance   | "+"                                | sinal de mais                                    | `token ausente: forma provisoria do icone` (E6 refaz)                                                                      |
+| Item            | Medida                             | Detalhe                                      | Origem                                                                                                                                      |
+| --------------- | ---------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Icone (desenho) | 16x16, centrado no x da plataforma | base 2 px acima do topo da plataforma        | `token ausente: tamanho de icone 16x16` (16 e o nativo, `scripts/UiHelpers.gd:17`); `token ausente: base do icone 2 px acima da plataforma` |
+| Fundo do icone  | branco com contorno preto de 1 px  | legivel sobre qualquer plataforma            | branco `scripts/Enums.gd:33`; contorno `scripts/UiHelpers.gd:11`                                                                            |
+| Camaleao        | quadrado partido nas 4 cores       | 4 quadrantes: amarelo, verde, azul, vermelho | `scripts/Enums.gd:26,28,30,32`                                                                                                              |
+| Desacelera      | ampulheta                          | forma de ampulheta (duas piramides)          | `token ausente: forma provisoria do icone` (E6 refaz)                                                                                       |
+| Segunda chance  | "+"                                | sinal de mais                                | `token ausente: forma provisoria do icone` (E6 refaz)                                                                                       |
 
 Ancoragem: o icone acompanha a plataforma (gerador de plataformas do jogo), nao a safe area. A posicao e relativa ao
 topo da plataforma, entao e a mesma em 180x320 e 180x400 (a altura so muda quantas plataformas ficam visiveis).
@@ -82,25 +82,25 @@ Linha sob a pausa, y 30-46, com o icone do temporizado ativo, a barra de duracao
 chance e o relogio do Contra o tempo. Classe **topo** (cola no topo, como Pontos e pausa): mesma medida em 180x320 e
 180x400.
 
-| Elemento                    | Retangulo          | Detalhe                                                              | Origem                                                               |
-| --------------------------- | ------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Linha (faixa)               | x 0-180, y 30-46   | sob a pausa e o placar, 16 px de altura                                   | `token ausente: faixa de HUD y 30-46`                                                   |
-| Icone do temporizado ativo  | x 2-18, y 30-46    | mesmo desenho do mockup 1 (16x16)                                     | `token ausente: tamanho de icone 16x16`                               |
-| Barra de duracao            | x 22-62, y 36-40   | 40x4; branca, moldura preta 1 px; esvazia da direita para a esquerda | branco `scripts/Enums.gd:33`; moldura `scripts/UiHelpers.gd:11`      |
-| Segundos restantes          | x 66-82, y 30-46   | fonte 16, contorno 1, inteiro arredondado para cima                   | fonte `scripts/UiHelpers.gd:23`; contorno `scripts/UiHelpers.gd:11`  |
-| Carga de Segunda chance     | x 90-106, y 30-46  | icone "+" 16x16; ausente sem carga                                    | `token ausente: carga em x 90-106`         |
-| Relogio (so Contra o tempo) | x 138-178, y 30-46 | `m:ss`, fonte 16, contorno 1, alinhado a direita                      | `token ausente: relogio em x 138-178`; fonte `scripts/UiHelpers.gd:23` |
+| Elemento                    | Retangulo          | Detalhe                                                              | Origem                                                                 |
+| --------------------------- | ------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Linha (faixa)               | x 0-180, y 30-46   | sob a pausa e o placar, 16 px de altura                              | `token ausente: faixa de HUD y 30-46`                                  |
+| Icone do temporizado ativo  | x 2-18, y 30-46    | mesmo desenho do mockup 1 (16x16)                                    | `token ausente: tamanho de icone 16x16`                                |
+| Barra de duracao            | x 22-62, y 36-40   | 40x4; branca, moldura preta 1 px; esvazia da direita para a esquerda | branco `scripts/Enums.gd:33`; moldura `scripts/UiHelpers.gd:11`        |
+| Segundos restantes          | x 66-82, y 30-46   | fonte 16, contorno 1, inteiro arredondado para cima                  | fonte `scripts/UiHelpers.gd:23`; contorno `scripts/UiHelpers.gd:11`    |
+| Carga de Segunda chance     | x 90-106, y 30-46  | icone "+" 16x16; ausente sem carga                                   | `token ausente: carga em x 90-106`                                     |
+| Relogio (so Contra o tempo) | x 138-178, y 30-46 | `m:ss`, fonte 16, contorno 1, alinhado a direita                     | `token ausente: relogio em x 138-178`; fonte `scripts/UiHelpers.gd:23` |
 
 Ancoragem: topo, offset `o` = 30. Formula `y0 = s_top + 30`; com `s_top` = 0 fica y 30-46 em 180x320 e em 180x400
 (mesma medida nas duas alturas, como o placar e a pausa).
 
 Visibilidade (quando cada elemento some):
 
-| Elemento                | Some quando                              |
-| ----------------------- | ---------------------------------------- |
-| Icone, barra e segundos | sem power-up temporizado ativo           |
-| Carga                   | sem carga de Segunda chance guardada     |
-| Relogio                 | fora do Contra o tempo (so nesse modo)   |
+| Elemento                | Some quando                            |
+| ----------------------- | -------------------------------------- |
+| Icone, barra e segundos | sem power-up temporizado ativo         |
+| Carga                   | sem carga de Segunda chance guardada   |
+| Relogio                 | fora do Contra o tempo (so nesse modo) |
 
 Cor nunca e a unica pista: forma do icone + barra (extensao) + numero dos segundos; a barra esvazia da direita para
 a esquerda, entao a leitura nao depende so de cor.
@@ -128,9 +128,9 @@ Botao `Modo: <nome>` no menu abre a tela Modos (carrossel, um modo por vez). Cin
 Classe **topo** (cola no topo), offset `o` = 113. Mesma medida em 180x320 e 180x400. Estilo do `OpcoesBotao`
 (`scenes/OpcoesBotao.gd`), fundo `#5b8a4a` (`ressources/Button.tres:8`).
 
-| Item                 | Medida                       | Detalhe                                                  | Origem                                          |
-| -------------------- | ---------------------------- | -------------------------------------------------------- | ----------------------------------------------- |
-| Botao `Modo: <nome>` | x 34-146, y 113-137 (112x24) | fonte 16, contorno 1; 10 px acima do Play (y 147-173)    | Play: `scenes/Stage.gd:15-17`; `token ausente: botao Modo em y 113-137` |
+| Item                 | Medida                       | Detalhe                                               | Origem                                                                  |
+| -------------------- | ---------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------- |
+| Botao `Modo: <nome>` | x 34-146, y 113-137 (112x24) | fonte 16, contorno 1; 10 px acima do Play (y 147-173) | Play: `scenes/Stage.gd:15-17`; `token ausente: botao Modo em y 113-137` |
 
 Rotulos curtos (para caber em 112 px; `token ausente: rotulos curtos "Tempo" e "Diario"`): "Tempo" para Contra o tempo e "Diario"
 para Desafio diario. O botao nao sobrepoe Play nem Opcoes (folga de 10 px entre o fim do botao e o Play) e a pausa
@@ -154,15 +154,15 @@ Bloco de **229 px** centrado na altura util (classe centro, como Pausa e Opcoes)
 Formula `y0 = s_top + (U - 229) / 2`: em 180x320 o bloco comeca em y0 = 45,5 e em 180x400 em y0 = 85,5 (o
 implementador arredonda para o pixel inteiro da grade).
 
-| Elemento                | Retangulo                            | Detalhe                                                          | Origem                                                                 |
-| ----------------------- | ------------------------------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Titulo `Modos`          | x 0-180, y 0-30                      | fonte 32, contorno 2 (padrao Pausa/Opcoes)                        | fonte `scripts/UiHelpers.gd:21`; contorno 2                              |
-| Imagem do modo          | x 58-122, y 42-106 (64x64)           | placeholder: moldura branca 1 px sobre `#5b8a4a`; arte final no E6 (issue #18) | `token ausente: imagem de modo 64x64`                         |
-| Setas anterior/proximo  | x 4-28 e x 152-176, y 62-86 (24x24)  | estilo do botao de pausa (`scenes/PauseBotao.gd`); ciclo (do ultimo volta ao primeiro) | 24x24: alvo minimo (handoff telas novas secao 3)      |
-| Nome do modo            | x 0-180, y 114-131                   | fonte 16, contorno 1, centralizado                                | fonte `scripts/UiHelpers.gd:23`                                         |
-| Descricao               | x 8-172, y 135-169                   | 2 linhas de fonte 16, centralizada                                | fonte `scripts/UiHelpers.gd:23`                                         |
-| Indicador de posicao    | centrado, y 177-185                  | 5 marcas de 4x4 com folga 4; a atual tem 8x4 (forma, nao so cor)  | `token ausente: marca do indicador 4x4/8x4`                             |
-| Botao `OK`              | x 34-146, y 197-229 (112x32)         | volta ao menu com o modo exibido selecionado                      | fundo `#5b8a4a` (`ressources/Button.tres:8`)                            |
+| Elemento               | Retangulo                           | Detalhe                                                                                | Origem                                           |
+| ---------------------- | ----------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Titulo `Modos`         | x 0-180, y 0-30                     | fonte 32, contorno 2 (padrao Pausa/Opcoes)                                             | fonte `scripts/UiHelpers.gd:21`; contorno 2      |
+| Imagem do modo         | x 58-122, y 42-106 (64x64)          | placeholder: moldura branca 1 px sobre `#5b8a4a`; arte final no E6 (issue #18)         | `token ausente: imagem de modo 64x64`            |
+| Setas anterior/proximo | x 4-28 e x 152-176, y 62-86 (24x24) | estilo do botao de pausa (`scenes/PauseBotao.gd`); ciclo (do ultimo volta ao primeiro) | 24x24: alvo minimo (handoff telas novas secao 3) |
+| Nome do modo           | x 0-180, y 114-131                  | fonte 16, contorno 1, centralizado                                                     | fonte `scripts/UiHelpers.gd:23`                  |
+| Descricao              | x 8-172, y 135-169                  | 2 linhas de fonte 16, centralizada                                                     | fonte `scripts/UiHelpers.gd:23`                  |
+| Indicador de posicao   | centrado, y 177-185                 | 5 marcas de 4x4 com folga 4; a atual tem 8x4 (forma, nao so cor)                       | `token ausente: marca do indicador 4x4/8x4`      |
+| Botao `OK`             | x 34-146, y 197-229 (112x32)        | volta ao menu com o modo exibido selecionado                                           | fundo `#5b8a4a` (`ressources/Button.tres:8`)     |
 
 Com a tela Modos aberta, Play, Last, Best, o botao Modo e o botao Opcoes do menu ficam **ocultos** (nao so cobertos):
 nao recebem toque, e a tecla `jump` que inicia o jogo no menu fica suspensa, como na tela de Opcoes
