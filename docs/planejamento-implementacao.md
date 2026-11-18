@@ -50,7 +50,7 @@ Divisao em epics (as fases 1 a 3 acima formam o E1):
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------- |
 | E1. Migracao e base solida                          | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3)                              | #8, #14, #7, #3, #4, #5, #6, #9                      | concluido (2026-11-09)              |
 | E2. CI, tela mobile e jogabilidade da base          | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel                                             | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
-| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes, tutorial e camera que acompanha o gecko no alto | #36, #37, #39, #40, #42, #11, #10, #12, #47, #46     | toque fixado; aguardando playtest   |
+| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes, tutorial e camera que acompanha o gecko no alto | #36, #37, #39, #40, #42, #11, #10, #12, #44-#48       | entregue em 2026-11-18 (PR do epic) |
 | E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                                                   | #16, #17                                             | planejado                           |
 | E5. Ranking online por modo                         | Ranking por modo de jogo; depende do E4 e do ChumGames E1                                                                    | #29                                                  | planejado                           |
 | E6. Arte final e audio                              | Arte final em pixel art, sons e musica                                                                                       | #18, #13                                             | planejado                           |
@@ -111,15 +111,11 @@ lateral com toque no aparelho (o jogo ainda nao le toque, #11).
 
 Escopo: as issues herdadas do E2 (#36, #37, #39, #40, #42), toque (#11) e modos de toque alternaveis (#47), dificuldade (#10) e pausa, opcoes e tutorial (#12).
 
-**Estado: aguardando playtest do dono (QA final); padrao de toque B fixado no playtest de 2026-11-17** (branch
-`epic/gecko-e3-controles-e-progressao`). A camada automatica esta verde no HEAD: o oraculo do repo (`.verify.mjs final`:
-import, compile, GUT com 919 testes, run) passa; os 30 roteiros de smoke passam no export web de debug, incluindo os de
-toque por modo (A e B); no game-bot nativo do HEAD contra a `main`, os 8 roteiros comparados passam, e as divergencias
-sao a UI nova do epic (pausa, opcoes, tutorial, dica de toque, estagios). O toque por modo foi provado por GUT
-(deterministico) e pelos roteiros de smoke no export web de debug. Ficam para o playtest do dono a sensacao no aparelho,
-a legibilidade e o toque no aparelho. As
-issues #36, #37, #39, #40, #42 e #46 estao resolvidas no epic; o que falta da #11, #10 e #12 (toque no aparelho, calibracao
-da curva, pausa por foco) e a sensacao do limite da camera (#46) a maquina nao julga e fica para o playtest do dono.
+**Estado: entregue em 2026-11-18** (branch `epic/gecko-e3-controles-e-progressao`, PR do epic). Padrao de toque B
+fixado no playtest de 2026-11-17; a segunda rodada de playtest do dono (2026-11-18) passou sem problema. A camada
+automatica esta verde no HEAD: o oraculo do repo (`.verify.mjs final`: import, compile, GUT, run), os roteiros de smoke no
+export web de debug e o game-bot nativo contra a `main`. O PR fecha #10, #11, #12, #36, #37, #39, #40, #42, #44, #45, #46,
+#47 e #48; #49 e #50 (melhorias pedidas no playtest) vao para o E4.
 
 1. Dificuldade progressiva (#10, [ADR 0007](adr/0007-curva-de-dificuldade-em-resource.md)): a curva em
    `ressources/curva_dificuldade.tres` troca os literais de scroll, velocidade das moveis, K da garantia de cor e
