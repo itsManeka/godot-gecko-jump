@@ -19,34 +19,48 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ## Comandos
 
-| Acao | Comando |
-|---|---|
-| Importar | `<godot> --headless --path . --import` |
-| Rodar sem janela | `<godot> --headless --path . --quit-after <frames>` |
-| Jogar (janela) | `<godot> --path .` |
-| Oraculo completo (import, compile, GUT, run de 10 s) | `node .verify.mjs <wave>` |
-| So os testes GUT | `<godot> --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit` (le o `.gutconfig.json`, cujo `pre_run_script` isola o recorde real; outro `-gconfig` sem ele grava no `user://best_score.cfg` de quem joga) |
-| Export web | `<godot> --headless --path . --export-release "Web" export/web/index.html` (sem threads; servir `export/web/` por servidor estatico, nao `file://`) |
+| Acao                                                 | Comando                                                                                                                                                                                                                       |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Importar                                             | `<godot> --headless --path . --import`                                                                                                                                                                                        |
+| Rodar sem janela                                     | `<godot> --headless --path . --quit-after <frames>`                                                                                                                                                                           |
+| Jogar (janela)                                       | `<godot> --path .`                                                                                                                                                                                                            |
+| Oraculo completo (import, compile, GUT, run de 10 s) | `node .verify.mjs <wave>`                                                                                                                                                                                                     |
+| So os testes GUT                                     | `<godot> --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://test -gexit` (le o `.gutconfig.json`, cujo `pre_run_script` isola o recorde real; outro `-gconfig` sem ele grava no `user://best_score.cfg` de quem joga) |
+| Export web                                           | `<godot> --headless --path . --export-release "Web" export/web/index.html` (sem threads; servir `export/web/` por servidor estatico, nao `file://`)                                                                           |
 
 ## Estrutura
 
 ```
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
-           ScrollLevel (scroll 20 px/s)
+           ScrollLevel (scroll vindo da curva de dificuldade + avanco quando o gecko sobe acima do limite de topo), TouchControls (toque -> acoes de input, esquemas A/B selecionaveis, B padrao; ADR 0013), TouchHint (dica das zonas),
+           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes, modo de toque, sensibilidade do modo A com A ativo, Ver tutorial),
+           TutorialCard (card da 1a partida e reabertura modal), LevelUpFrame (vinheta branca nas 4 bordas da safe area que pulsa N vezes na subida de estagio)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
-           ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd (recorde salvo em user://),
+           ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd / OptionsStore.gd (recorde e opcoes em user://; buses Music/SFX),
            PlatformTypePicker.gd (tipo do gerador, sem cena),
            StaticPlatformColors.gd (cores das estaticas iniciais, sem cena),
            InitialRows.gd (ys das linhas iniciais pela altura visivel, sem cena),
            MovingRowFill.gd (x pre-colocados das linhas moveis a partir do ponto de nascimento, sem cena),
            ReachableColors.gd (cor do gecko alcancavel no pouso e nas plataformas moveis, sem cena),
-           PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador)
+           PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador),
+           TouchClassifier.gd (lado do toque para o esquema B, sem cena),
+           TouchMode.gd (modos de toque A/B: enum, padrao B e validacao do valor salvo, sem cena),
+           TouchTuning.gd (valores de sensacao do toque — zona morta, flick, janela, rearme e sensibilidade do A — um simbolo cada),
+           TouchScheme.gd / TouchSchemes.gd / TouchSchemeA/B.gd (contrato e esquemas de toque, sem cena; ADR 0013),
+           DifficultyCurve.gd / DifficultyStage.gd (curva de dificuldade, sem cena; ADR 0007), PlatformModifier(s).gd + PlatformNarrower/PlatformCrumble/PlatformColorCycle.gd (mecanicas de plataforma, sem cena; ADR 0009/0010),
+           DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sinal `estagio_mudou`, sem cena),
+           CameraFollow.gd (limite de topo do gecko = 0,40 da altura visivel e excesso de subida que o mundo avanca, sem cena),
+           PauseState.gd (pausa = `get_tree().paused`, nunca `Global.iniciado`; sem cena; ADR 0008),
+           TutorialFlag.gd (flag "tutorial ja visto" no OptionsStore), DebugArgs.gd (args de usuario do nativo debug, `--nome=valor` depois de `--`), ModoTutorialVisto.gd (`?tutorial=` dos smokes, so debug), ModoProgressoInicial.gd (`?progresso=` dos smokes, so debug), ModoToqueInicial.gd (`?toque=` dos smokes, so debug), ModoMolduraFixa.gd (`?moldura=fixa`, so debug), ModoMolduraLenta.gd (`?moldura=lenta`, pulso em camera lenta dos smokes, so debug),
+           UiHelpers.gd (estilo de caixa, label e chave do mouse das telas de UI, sem cena)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 test/smoke/ roteiros do game-smoke (export web): `gecko.smoke.json` (fluxo), `retrato-*` (telas de celular) e
-           `janela-larga-1280x720` (coluna de 180 com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os
+           `janela-larga-1280x720` (coluna de 180 com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os.
+           Todos usam `?tutorial=visto`, menos `tutorial.smoke.json` (1a partida com `user://` limpo); `estagio.smoke.json` (`?progresso=`) prova a subida de `dificuldade.estagio`; `toque-modo-{a,b}.smoke.json` (`?toque=a|b`) prova a direcao/diagonal/flick do modo de toque por `player.x/y`; `?semderrota=1` em pontua, estagio e nos roteiros longos (queda pela borda segue); roteiros longos esperam `playing` antes de cada rajada
 addons/    GUT v9.7.1 (vendorizado; nao editar)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)
 export/    saida de build (ignorada; so o .gdignore e versionado, para o Godot nao importar o build)
+ressources/ curva_dificuldade.tres (curva de dificuldade, editada no inspector; ADR 0007)
 ```
 
 ## Convencoes

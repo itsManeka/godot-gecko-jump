@@ -8,6 +8,7 @@ const STAGE_CENA := preload("res://scenes/Stage.tscn")
 
 
 func before_each() -> void:
+	Global.tutorial_visto_espelho = true
 	Global.platforms.clear()
 	Global.set_iniciado(false)
 

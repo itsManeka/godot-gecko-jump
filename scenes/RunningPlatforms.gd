@@ -21,29 +21,76 @@ var speed = 0
 # Sorteio das moveis: null = randi() global; teste injeta um rng de seed fixa
 var rng: RandomNumberGenerator = null
 
+# Estado de dificuldade da partida (injetado antes do add_child); null = snapshot do estagio 0
+var dificuldade: DifficultyState = null
+
 # Ultimas K-1 cores criadas por este gerador (historico da janela, ordem de criacao)
 var _cores_criadas: Array = []
 
 # Cor do gecko lida no 1o preenchimento (-1 = ainda nao leu); so leitura, para teste
 var primeira_cor_gecko_lida: int = -1
 
+# Snapshot e modificadores de plataforma lidos no nascimento da linha (null = ainda nao lidos)
+var _snapshot_nascimento: DifficultySnapshot = null
+var _modificadores: Array = []
+# A mecanica de ciclo de cor esta ligada neste gerador (nunca na linha garantir_cor_inicial)
+var _ciclo_ligado: bool = false
+# rng das sequencias das cicladoras: o do gerador (teste) ou um proprio quando rng e null
+var _rng_ciclo: RandomNumberGenerator = null
+# A mecanica de speed por linha esta ligada neste gerador (nunca na linha garantir_cor_inicial)
+var _speed_variada: bool = false
+# Mecanicas de movimento oscilante ligadas (nomes separados); cada oscilante ganha instancia propria
+var _seno_ligado: bool = false
+var _vai_e_vem_ligado: bool = false
+# A mecanica que pisca esta ligada neste gerador (nunca na linha garantir_cor_inicial)
+var _pisca_ligado: bool = false
+# rng dedicado do piscar (derivado da semente do gerador, sem consumir o rng dele); criado so no 1o sorteio
+var _rng_pisca: RandomNumberGenerator = null
+# Mistura a semente do gerador para o rng do piscar nao repetir a sequencia do rng do gerador
+const SEMENTE_PISCA: int = 0x5B11C
+# Ancora: a plataforma criada imediatamente antes (movel) piscou / quantas piscaram na linha estatica em curso
+var _pisca_anterior: bool = false
+var _piscantes_na_linha: int = 0
+# Ancora com cicladora: a cicladora nao e apoio garantido (a cor pode mudar na janela de chegada). Entre duas plataformas
+# moveis consecutivas nunca ha piscante ao lado de cicladora: a anterior era cicladora / a piscante anterior e neutralizada.
+var _ciclo_anterior: bool = false
+var _ultima_pisca: PlatformBlink = null
+
 # Inicializa o gerador de plataformas
 func _ready():
-	speed = 60  # Velocidade fixa (antes era aleatória)
-	
-	# Resolve tipos de plataforma aleatórios (sorteio em PlatformTypePicker)
-	platform_type = PlatformTypePicker.resolve(platform_type)
+	# Speed e proporcao lidas do snapshot vigente no nascimento: a linha mantem a speed ate sair
+	var snapshot: DifficultySnapshot = _snapshot()
+	_ler_mecanicas(snapshot)
+	speed = snapshot.get_speed_moveis()
 
-	# Configura comportamento baseado no tipo
+	# Resolve tipos de plataforma aleatórios (sorteio em PlatformTypePicker)
+	platform_type = PlatformTypePicker.resolve(platform_type, null, snapshot.get_proporcao_estaticas())
+
+	# Configura comportamento baseado no tipo (Platform.gd: velocity = -speed, entao speed > 0 anda a esquerda)
 	match platform_type:
 		Enums.PLATFORM_TYPE.STATIC:
 			create_static_platforms()
 		Enums.PLATFORM_TYPE.MOVE_TO_LEFT:
-			check_generate.position.x = -30
-			speed *= -1  # Movimento para esquerda
+			# Nasce a direita (x da cena, 210) e anda para a esquerda
+			_variar_speed(snapshot)
 			preencher_linha()
 		Enums.PLATFORM_TYPE.MOVE_TO_RIGHT:
+			# Nasce a esquerda (x = -30) e anda para a direita
+			check_generate.position.x = -30
+			_variar_speed(snapshot)
+			speed *= -1
 			preencher_linha()
+
+# Speed da linha = speed do estagio x fator sorteado uma vez (rng do gerador; sem rng, um proprio).
+# Sem a mecanica e em sem_derrota a speed fica como esta (linha inicial: _ler_mecanicas nem liga a mecanica).
+func _variar_speed(snapshot: DifficultySnapshot) -> void:
+	if not _speed_variada or Global.sem_derrota:
+		return
+	var fonte: RandomNumberGenerator = rng
+	if fonte == null:
+		fonte = RandomNumberGenerator.new()
+		fonte.randomize()
+	speed *= RowSpeedVariation.fator(fonte, snapshot.get_variacao_speed_linha())
 
 # Define o tipo de plataforma que será gerada
 func set_platform_type(type):
@@ -58,22 +105,41 @@ func _on_Timer_timeout():
 func create_static_platforms():
 	var position_x = 5
 	var cores: Array = []
+	_piscantes_na_linha = 0
+	# Plataformas criadas (add_child ao fim): se a linha ficar sem nenhuma plana (sem piscar e sem ciclar) a ultima
+	# piscante vira inerte, entao a linha sempre tem apoio garantido na janela de chegada
+	var criadas: Array = []
+	var planas: int = 0
+	var ultima_pisca: PlatformBlink = null
 	if garantir_cor_inicial:
 		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL)
 	for i in 3:
 		var platform = pre_platform.instantiate()
-		platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color())
+		if Global.sem_derrota:
+			# Modo sem derrota (smoke debug): cor unica, a plataforma de origem nunca desliga
+			platform.set_color(Enums.COR_INICIAL)
+		else:
+			platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color())
 		platform.position.x = position_x
+		_aplicar_mecanicas(platform)
 		platform.set_speed(0)  # Plataformas estáticas não se movem
-		add_child(platform)
+		if platform.obter_pisca() != null:
+			ultima_pisca = platform.obter_pisca()
+		elif platform.obter_ciclo() == null:
+			planas += 1
+		criadas.append(platform)
 		position_x += 85
+	if planas == 0 and ultima_pisca != null:
+		_neutralizar_pisca(ultima_pisca)
+	for platform in criadas:
+		add_child(platform)
 
 # Linha movel nasce preenchida: plataformas pre-colocadas (posicoes em MovingRowFill) e a do ponto de nascimento
 # criada na hora, sem esperar o timer; o ciclo area_exited -> timer segue a partir dela
 func preencher_linha():
 	var spawn_x: float = check_generate.position.x
 	# Plataforma anda em direcao oposta ao sinal de speed (Platform.gd: velocity = -speed)
-	for x in MovingRowFill.initial_xs(spawn_x, speed > 0):
+	for x in MovingRowFill.initial_xs(spawn_x, speed > 0, MovingRowFill.LARGURA_PADRAO, absf(speed)):
 		_criar_plataforma(x)
 	new_platform()
 
@@ -81,15 +147,23 @@ func preencher_linha():
 func new_platform():
 	_criar_plataforma(check_generate.position.x)
 
-# Cor da proxima plataforma movel: garante a cor do gecko (Global) em toda janela de ReachableColors.K criadas por este
+# Foto vigente da dificuldade; sem estado injetado = estagio 0
+func _snapshot() -> DifficultySnapshot:
+	return DifficultySnapshot.de(dificuldade)
+
+# Cor da proxima plataforma movel: garante a cor do gecko (Global) em toda janela de K (K vigente) criadas por este
 # gerador; preencher_linha e new_platform passam por aqui, entao compartilham o historico
 func _cor_movel() -> int:
+	if Global.sem_derrota:
+		return Enums.COR_INICIAL
 	var cor_gecko: int = Global.cor_gecko
 	if primeira_cor_gecko_lida < 0:
 		primeira_cor_gecko_lida = cor_gecko
-	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, _cores_criadas, rng)
+	# K relido a cada plataforma criada (pode mudar no meio da linha)
+	var k: int = _snapshot().get_k()
+	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, _cores_criadas, rng, k)
 	_cores_criadas.append(cor)
-	var maximo: int = maxi(ReachableColors.K - 1, 0)
+	var maximo: int = maxi(k - 1, 0)
 	while _cores_criadas.size() > maximo:
 		_cores_criadas.pop_front()
 	return cor
@@ -100,8 +174,183 @@ func _criar_plataforma(x: float):
 	var platform = pre_platform.instantiate()
 	platform.set_color(_cor_movel())
 	platform.position.x = x
-	platform.set_speed(speed)
+	platform.set_speed(0 if Global.sem_derrota else speed)
+	_aplicar_mecanicas(platform)
 	add_child(platform)
+
+# Resolve os modificadores do snapshot do nascimento; linha com garantir_cor_inicial (Q5) nunca desmorona
+func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
+	_snapshot_nascimento = snapshot
+	_modificadores = []
+	_ciclo_ligado = false
+	_speed_variada = false
+	_seno_ligado = false
+	_vai_e_vem_ligado = false
+	_pisca_ligado = false
+	for modificador in PlatformModifiers.resolver(snapshot):
+		if garantir_cor_inicial and not modificador.vale_em_linha_inicial():
+			continue
+		if modificador is PlatformSineMotion or modificador is PlatformPingPongMotion:
+			# Estado por plataforma (fase): nunca na lista compartilhada; o sorteio cria a instancia propria
+			if modificador is PlatformSineMotion:
+				_seno_ligado = true
+			else:
+				_vai_e_vem_ligado = true
+			continue
+		if modificador is RowSpeedVariation:
+			# Mecanica de linha: aplicada na speed no _ready, nunca na lista de plataforma
+			_speed_variada = true
+			continue
+		if modificador is PlatformColorCycle:
+			# Estado por plataforma: nunca entra na lista compartilhada da linha; cada cicladora ganha instancia propria
+			_ciclo_ligado = true
+			continue
+		if modificador is PlatformBlink:
+			# Estado por plataforma (fase): instancia propria no sorteio, nunca na lista compartilhada
+			_pisca_ligado = true
+			continue
+		_modificadores.append(modificador)
+
+# Entrega a lista de modificadores a plataforma antes do add_child (gerador fora da arvore le na 1a criacao)
+func _aplicar_mecanicas(platform: Platform) -> void:
+	if _snapshot_nascimento == null:
+		_ler_mecanicas(_snapshot())
+	var lista: Array = _modificadores
+	var cicladora: bool = false
+	if _ciclo_ligado and _sorteia_cicladora():
+		cicladora = true
+		lista = _modificadores.duplicate()
+		lista.append(_novo_ciclo(platform.color))
+	var oscilante: PlatformModifier = _sorteia_oscilante()
+	if oscilante != null:
+		if is_same(lista, _modificadores):
+			lista = _modificadores.duplicate()
+		lista.append(oscilante)
+	var piscante: PlatformBlink = _sorteia_piscante(cicladora)
+	if piscante != null:
+		if is_same(lista, _modificadores):
+			lista = _modificadores.duplicate()
+		lista.append(piscante)
+	platform.definir_modificadores(lista, _snapshot_nascimento)
+
+# Sorteio do piscar (rng dedicado, so consumido quando a plataforma e elegivel):
+# - nunca com a mecanica desligada, em sem_derrota (D5) ou numa cicladora (D6);
+# - ancora: estatica so pisca se ainda nao piscaram 2 da linha de 3 (>= 1 fica estavel); movel nunca pisca logo depois
+#   de outra piscante na sequencia de criacao.
+func _sorteia_piscante(cicladora: bool) -> PlatformBlink:
+	var estatica: bool = platform_type == Enums.PLATFORM_TYPE.STATIC
+	var ciclo_antes: bool = _ciclo_anterior
+	_ciclo_anterior = cicladora
+	if not _pisca_ligado or Global.sem_derrota or cicladora:
+		# Movel cicladora logo depois de uma piscante: a piscante vira inerte (o par ficaria sem apoio garantido)
+		if cicladora and _pisca_anterior and not estatica and _ultima_pisca != null:
+			_neutralizar_pisca(_ultima_pisca)
+		_sem_piscante_anterior()
+		return null
+	var proporcao: float = _snapshot_nascimento.get_proporcao_piscantes()
+	if proporcao <= 0.0 or not _ancora_livre(estatica, ciclo_antes):
+		_sem_piscante_anterior()
+		return null
+	var fonte: RandomNumberGenerator = _fonte_pisca()
+	if fonte.randf() >= proporcao:
+		_sem_piscante_anterior()
+		return null
+	var pisca := PlatformBlink.new()
+	pisca.iniciar(
+		fonte,
+		_snapshot_nascimento.get_duracao_visivel(),
+		_snapshot_nascimento.get_duracao_invisivel(),
+		_snapshot_nascimento.get_aviso_pisca(),
+		proporcao
+	)
+	_pisca_anterior = true
+	_piscantes_na_linha += 1
+	_ultima_pisca = pisca
+	return pisca
+
+# Ancora do piscar: estatica so pisca se ainda nao piscaram 2 da linha de 3; movel nao pisca logo depois de piscante
+# nem de cicladora
+func _ancora_livre(estatica: bool, ciclo_antes: bool) -> bool:
+	if estatica:
+		return _piscantes_na_linha < 2
+	return not (_pisca_anterior or ciclo_antes)
+
+# A sequencia deixou de ter piscante anterior: solta tambem a referencia a ultima piscante
+func _sem_piscante_anterior() -> void:
+	_pisca_anterior = false
+	_ultima_pisca = null
+
+# Piscante que vira inerte (sempre visivel e solida): so o PlatformBlink e desligado, a plataforma segue como esta
+func _neutralizar_pisca(pisca: PlatformBlink) -> void:
+	pisca.iniciar(_fonte_pisca(), 0.0, 0.0, 0.0, 0.0)
+
+# rng dedicado do piscar: semente derivada da do gerador (reprodutivel em teste); sem rng, aleatorio proprio
+func _fonte_pisca() -> RandomNumberGenerator:
+	if _rng_pisca == null:
+		_rng_pisca = RandomNumberGenerator.new()
+		if rng == null:
+			_rng_pisca.randomize()
+		else:
+			_rng_pisca.seed = rng.seed ^ SEMENTE_PISCA
+	return _rng_pisca
+
+# Sorteio do movimento: so plataforma movel (nunca estatica nem linha inicial), com a mecanica ligada no nascimento.
+# proporcao_oscilantes decide quem oscila; entre as oscilantes, proporcao_vai_e_vem decide o tipo (so quando as duas
+# mecanicas estao ligadas; com uma so, todas as oscilantes sao dela). Devolve instancia propria com a fase sorteada.
+func _sorteia_oscilante() -> PlatformModifier:
+	if platform_type == Enums.PLATFORM_TYPE.STATIC or garantir_cor_inicial:
+		return null
+	if not (_seno_ligado or _vai_e_vem_ligado):
+		return null
+	var proporcao: float = _snapshot_nascimento.get_proporcao_oscilantes()
+	if proporcao <= 0.0 or _sorteio() >= proporcao:
+		return null
+	var vai_e_vem: bool = _vai_e_vem_ligado
+	if _seno_ligado and _vai_e_vem_ligado:
+		vai_e_vem = _sorteio() < _snapshot_nascimento.get_proporcao_vai_e_vem()
+	var movimento: PlatformModifier = PlatformPingPongMotion.new() if vai_e_vem else PlatformSineMotion.new()
+	movimento.iniciar(_fonte_rng())
+	return movimento
+
+# Sorteio em [0, 1): rng do gerador ou randf global sem rng
+func _sorteio() -> float:
+	return randf() if rng == null else rng.randf()
+
+# rng das sequencias/fases: o do gerador (teste) ou um proprio quando rng e null.
+# Compartilhado com o ciclo de cor: mudar o numero de sorteios de uma mecanica desloca a outra para a mesma semente
+# (so afeta a reprodutibilidade de teste).
+func _fonte_rng() -> RandomNumberGenerator:
+	if _rng_ciclo == null:
+		_rng_ciclo = rng
+		if _rng_ciclo == null:
+			_rng_ciclo = RandomNumberGenerator.new()
+			_rng_ciclo.randomize()
+	return _rng_ciclo
+
+# Sorteio da cicladora: proporcao_cicladoras do snapshot do nascimento, pelo rng do gerador (randf global sem rng)
+func _sorteia_cicladora() -> bool:
+	var proporcao: float = _snapshot_nascimento.get_proporcao_cicladoras()
+	if proporcao <= 0.0:
+		return false
+	var sorteio: float = randf() if rng == null else rng.randf()
+	return sorteio < proporcao
+
+# Instancia propria de PlatformColorCycle: sequencia sorteada a partir da cor da plataforma e forcada a ter a cor do gecko
+func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:
+	var periodo: float = _snapshot_nascimento.get_periodo_ciclo()
+	var ciclo := PlatformColorCycle.new()
+	ciclo.iniciar(cor_inicial, periodo, _fonte_rng())
+	var alcance_s: float = _alcance_s(periodo)
+	ciclo.definir_sequencia(
+		ReachableColors.forcar_cor_cicladora(ciclo.get_sequencia(), int(Global.cor_gecko), periodo, alcance_s)
+	)
+	return ciclo
+
+# Tempo em que a plataforma recem-nascida segue alcancavel: o tempo de pulo ate a linha dela (pelo scroll do snapshot do
+# nascimento) mais 1 periodo de espera em cima, com piso de 2 periodos (a cor do indice 0 e a ja pintada na plataforma).
+func _alcance_s(periodo: float) -> float:
+	var pulo: float = ReachableColors.tempo_de_pulo(_snapshot_nascimento.get_scroll())
+	return maxf(pulo, periodo) + periodo
 
 # Inicia o timer para gerar próxima plataforma
 func start_generate_timer():

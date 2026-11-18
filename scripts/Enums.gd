@@ -13,7 +13,7 @@ const COR_INICIAL := COLOR.AMARELO
 # Enumeração dos tipos de comportamento das plataformas
 enum PLATFORM_TYPE {
 	STATIC,             # Plataformas estáticas (não se movem)
-	MOVE_TO_LEFT,       # Plataformas que se movem para a esquerda
+	MOVE_TO_LEFT,       # Plataformas que se movem para a esquerda (nascem a direita)
 	MOVE_TO_RIGHT,      # Plataformas que se movem para a direita
 	RANDOM_ALL,         # Escolhe aleatoriamente entre todos os tipos
 	RANDOM_DIRECTION    # Escolhe aleatoriamente apenas entre direções (esquerda/direita)

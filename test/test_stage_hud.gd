@@ -5,6 +5,7 @@ const STAGE := "res://scenes/Stage.tscn"
 var _stage: Node
 
 func before_each() -> void:
+	Global.tutorial_visto_espelho = true
 	Global.platforms = []
 	Global.iniciado = false
 
@@ -30,7 +31,7 @@ func _free_stage() -> void:
 func test_menu_mantem_y_de_180x320_sem_safe_area() -> void:
 	_spawn_stage(Vector2(180.0, 320.0), Rect2(0.0, 0.0, 180.0, 320.0))
 	assert_almost_eq(_rect("Play").position.y, 147.0, 0.001, "Play top")
-	assert_almost_eq(_rect("Play").end.y, 173.0, 0.001, "Play bottom")
+	assert_almost_eq(_rect("Play").end.y, 177.0, 0.001, "Play bottom (fonte 32 px: altura minima 30)")
 	assert_almost_eq(_rect("Last").position.y, 230.0, 0.001, "Last top")
 	assert_almost_eq(_rect("Last").end.y, 247.0, 0.001, "Last bottom")
 	assert_almost_eq(_rect("Best").position.y, 248.0, 0.001, "Best top")

@@ -50,16 +50,46 @@ func test_escolher_lista_vazia_cai_no_fallback_valido_e_deterministico() -> void
 	assert_eq(segunda, primeira, "mesma seed, mesma cor no fallback")
 
 
-func test_cor_movel_toda_janela_de_k_tem_a_cor_do_gecko() -> void:
-	var k: int = ReachableColors.K
+# K do ultimo estagio (teto) da curva de producao, lido do .tres
+func _k_do_teto() -> int:
+	var curva: DifficultyCurve = load("res://ressources/curva_dificuldade.tres")
+	return curva.estagios.back().k
+
+
+# Gera a sequencia como o gerador: historico descarta o excedente de K-1; a janela de verificacao usa o mesmo k
+func _verifica_janelas(k: int) -> void:
 	for semente in range(1, SEMENTES + 1):
 		var rng := _rng(semente)
 		var sequencia: Array = []
+		var historico: Array = []
 		for i in 40:
-			sequencia.append(ReachableColors.cor_plataforma_movel(COR_GECKO, sequencia, rng))
+			var cor: int = ReachableColors.cor_plataforma_movel(COR_GECKO, historico, rng, k)
+			sequencia.append(cor)
+			historico.append(cor)
+			while historico.size() > maxi(k - 1, 0):
+				historico.pop_front()
 		for inicio in range(0, sequencia.size() - k + 1):
 			var janela: Array = sequencia.slice(inicio, inicio + k)
-			assert_true(janela.has(COR_GECKO), "toda janela de K tem a cor do gecko")
+			assert_true(janela.has(COR_GECKO), "toda janela de K=%s tem a cor do gecko (seed %s)" % [k, semente])
+
+
+func test_cor_movel_toda_janela_de_k_3_tem_a_cor_do_gecko() -> void:
+	_verifica_janelas(3)
+
+
+func test_cor_movel_toda_janela_de_k_do_teto_tem_a_cor_do_gecko() -> void:
+	var k: int = _k_do_teto()
+	assert_gt(k, 3, "teto da curva tem K maior que o padrao")
+	_verifica_janelas(k)
+
+
+func test_cor_movel_sem_k_usa_k_padrao() -> void:
+	for semente in range(1, 51):
+		var padrao: int = ReachableColors.cor_plataforma_movel(COR_GECKO, [OUTRA, OUTRA], _rng(semente))
+		var explicito: int = ReachableColors.cor_plataforma_movel(
+			COR_GECKO, [OUTRA, OUTRA], _rng(semente), DifficultyStage.K_PADRAO
+		)
+		assert_eq(padrao, explicito, "default de k = K_PADRAO (seed %s)" % semente)
 
 
 func test_cor_movel_k_menor_ou_igual_a_1_sempre_forca() -> void:

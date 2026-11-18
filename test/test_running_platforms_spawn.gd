@@ -1,6 +1,6 @@
 extends GutTest
 
-# Regressao do issue #22: gerador de plataformas moveis (MOVE_TO_RIGHT) parava na 1a plataforma apos a conversao
+# Regressao do issue #22: gerador de plataformas moveis (MOVE_TO_LEFT) parava na 1a plataforma apos a conversao
 # 3to4. Causa: AreaCheck de Platform.tscn com collision_layer = 0, entao o CheckGenerate do gerador nunca dispara
 # area_exited e _on_CheckGenerate_area_exited nao reinicia o timer.
 
@@ -30,7 +30,7 @@ func _plataformas_filhas(gerador: Node) -> Array:
 
 func test_gerador_movel_gera_varias_plataformas_em_3_segundos() -> void:
 	var gerador: Node2D = load(GERADOR_SCENE).instantiate()
-	gerador.platform_type = Enums.PLATFORM_TYPE.MOVE_TO_RIGHT
+	gerador.platform_type = Enums.PLATFORM_TYPE.MOVE_TO_LEFT
 	gerador.position = Vector2(0, 100)
 	Global.set_iniciado(true)
 	add_child_autofree(gerador)

@@ -1,3 +1,4 @@
+class_name ScrollLevel
 extends Node2D
 
 # Sistema que gerencia o scroll infinito do level e geração de plataformas
@@ -9,7 +10,14 @@ const pre_running_platform = preload("res://scenes/RunningPlatforms.tscn")
 @onready var running_platforms = $RunningPlatforms
 
 # Distância total que o nível scrollou (para posicionar novas plataformas)
-var position_scrolled = 0
+var position_scrolled: float = 0.0
+
+# Dificuldade da partida (atribuida pela Stage em _ready); null = estagio 0 (cena isolada)
+var dificuldade: DifficultyState = null
+
+# Foto vigente da dificuldade; sem estado injetado = estagio 0
+func _snapshot() -> DifficultySnapshot:
+	return DifficultySnapshot.de(dificuldade)
 
 # Quantas linhas do fluxo já nasceram (uma a cada InitialRows.ESPACAMENTO px de scroll)
 var _rows_spawned: int = 0
@@ -39,11 +47,31 @@ func _physics_process(delta):
 		return
 	
 	# Calcula movimento de scroll baseado no delta time
-	var new_position = 20 * delta
+	var new_position: float = _snapshot().get_scroll() * delta
 	running_platforms.position.y += new_position
 	position_scrolled += new_position
 	# Gatilho aritmético: uma linha a cada ESPACAMENTO px, sem depender de altura nem de colisão
-	# EPSILON absorve o erro de ponto flutuante da soma de delta (49.99999 contaria como 1 frame a menos)
+	_criar_linhas_pendentes()
+
+# Avanco da camera do topo (issue #46): o mundo sobe o quanto o gecko passou do limite, e o gecko continua no limite.
+# Quem chama e a Stage, com prioridade de physics depois do Player (o y do gecko ja e o do frame, entao ele nao fica
+# 1 frame acima do limite). Sem Player (cena isolada) ninguem chama: o scroll da curva segue identico ao de antes.
+# O excesso soma em running_platforms.position.y, position_scrolled e no y global do gecko: a posicao relativa entre
+# gecko e plataformas se mantem, e as linhas novas saem pelo mesmo gatilho aritmetico do scroll da curva.
+func avancar_camera(player: Node2D, limite: float) -> void:
+	if player == null or !Global.is_iniciado():
+		return
+	var excesso: float = CameraFollow.excesso(player.global_position.y, limite)
+	if excesso <= 0.0:
+		return
+	running_platforms.position.y += excesso
+	position_scrolled += excesso
+	player.global_position.y += excesso
+	_criar_linhas_pendentes()
+
+# Cria as linhas que o scroll ja alcancou: uma a cada ESPACAMENTO px de position_scrolled, sem depender de altura nem de
+# colisao. EPSILON absorve o erro de ponto flutuante da soma de delta (49.99999 contaria como 1 frame a menos)
+func _criar_linhas_pendentes() -> void:
 	while position_scrolled + EPSILON >= InitialRows.ESPACAMENTO * (_rows_spawned + 1):
 		# Linha k em y local Y_TOPO - ESPACAMENTO*(k+1): com o scroll já em ESPACAMENTO*(k+1), nasce em y global Y_TOPO
 		create_new_running_platform(InitialRows.Y_TOPO - InitialRows.ESPACAMENTO * (_rows_spawned + 1))
@@ -58,6 +86,8 @@ func create_new_running_platform(y_local: float = NAN):
 	if is_nan(y_local):
 		y_local = InitialRows.Y_TOPO - position_scrolled
 	running_platform.position = Vector2(0, y_local)
+	# Estado injetado ANTES do add_child (adiado): a linha le speed/proporcao/K no _ready
+	running_platform.dificuldade = dificuldade
 
 	running_platforms.call_deferred("add_child", running_platform)
 

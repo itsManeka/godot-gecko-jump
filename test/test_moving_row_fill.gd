@@ -5,8 +5,42 @@ extends GutTest
 # O sentido e pelo ponto de nascimento e pelo lado do passo, nao pelo nome do enum (D1).
 
 
+const SPEED_INTERMEDIARIA := 86.0
+const SPEED_TETO := 100.0
+
+
+func test_espacamento_na_speed_60_e_79() -> void:
+	assert_eq(MovingRowFill.espacamento(60.0), 79.0, "espacamento(60) = 79 px (valor medido)")
+
+
+func test_espacamento_cresce_com_a_speed_pela_formula() -> void:
+	for speed in [60.0, SPEED_INTERMEDIARIA, SPEED_TETO]:
+		var por_tick: float = speed / 60.0
+		var esperado: float = (ceilf(60.2995 / por_tick) + 18.0) * por_tick
+		assert_almost_eq(MovingRowFill.espacamento(speed), esperado, 0.0001, "espacamento(%s) = (ticks de saida + 18) * speed/60" % speed)
+		assert_between(MovingRowFill.espacamento(speed), 60.2995 + 0.3 * speed, 60.2995 + 0.3 * speed + por_tick + 0.0001, "dentro de 1 tick da formula linear")
+	assert_gt(MovingRowFill.espacamento(SPEED_TETO), MovingRowFill.espacamento(60.0), "speed maior, espacamento maior")
+
+
+func test_initial_xs_sem_speed_e_igual_ao_estagio_0() -> void:
+	for lado in [true, false]:
+		var spawn := 210.0 if lado else -30.0
+		assert_eq(MovingRowFill.initial_xs(spawn, lado), MovingRowFill.initial_xs(spawn, lado, 180.0, 60.0), "sem speed = speed 60")
+		assert_eq(MovingRowFill.initial_xs(spawn, lado, 256.0), MovingRowFill.initial_xs(spawn, lado, 256.0, 60.0), "largura sem speed = speed 60")
+	assert_eq(MovingRowFill.initial_xs(210.0, true), [210.0 - 79.0, 210.0 - 2.0 * 79.0, 210.0 - 3.0 * 79.0], "estagio 0 = passos de 79")
+
+
+func test_initial_xs_usa_o_espacamento_da_speed() -> void:
+	for speed in [SPEED_INTERMEDIARIA, SPEED_TETO]:
+		var s := MovingRowFill.espacamento(speed)
+		var xs := MovingRowFill.initial_xs(210.0, true, 180.0, speed)
+		assert_gt(xs.size(), 0, "ha ao menos 1 x pre-colocado")
+		for i in range(xs.size()):
+			assert_almost_eq(xs[i], 210.0 - s * float(i + 1), 0.0001, "x[%d] a (i+1) * espacamento(%s) do nascimento" % [i, speed])
+
+
 func test_nasce_em_210_anda_a_esquerda_largura_180() -> void:
-	var s := MovingRowFill.ESPACAMENTO
+	var s := MovingRowFill.espacamento(60.0)
 	var xs := MovingRowFill.initial_xs(210.0, true, 180.0)
 	assert_eq(xs.size(), 3, "largura 180, nascendo em 210 indo a esquerda: N = 3")
 	assert_eq(xs[0], 210.0 - s, "1o x = 210 - S, o mais proximo do nascimento")
@@ -16,7 +50,7 @@ func test_nasce_em_210_anda_a_esquerda_largura_180() -> void:
 
 
 func test_nasce_em_menos30_anda_a_direita_largura_180() -> void:
-	var s := MovingRowFill.ESPACAMENTO
+	var s := MovingRowFill.espacamento(60.0)
 	var xs := MovingRowFill.initial_xs(-30.0, false, 180.0)
 	assert_eq(xs.size(), 3, "largura 180, nascendo em -30 indo a direita: N = 3")
 	assert_eq(xs[0], -30.0 + s, "1o x = -30 + S, o mais proximo do nascimento")
@@ -39,16 +73,16 @@ func test_nenhum_x_fora_da_janela_e_sem_ponto_de_nascimento() -> void:
 
 
 func test_espacamento_consecutivo_igual_a_espacamento() -> void:
-	var s := MovingRowFill.ESPACAMENTO
-	assert_eq(s, 79.0, "fonte unica: ESPACAMENTO e 79 px")
-	for largura in [180.0, 256.0, 400.0]:
-		for lado in [true, false]:
-			var spawn := 210.0 if lado else -30.0
-			var xs := MovingRowFill.initial_xs(spawn, lado, largura)
-			for i in range(1, xs.size()):
-				assert_almost_eq(absf(xs[i] - xs[i - 1]), s, 0.0001, "passo consecutivo diferente de ESPACAMENTO")
-			if xs.size() > 0:
-				assert_almost_eq(absf(xs[0] - spawn), s, 0.0001, "1a plataforma a ESPACAMENTO do nascimento")
+	for speed in [60.0, SPEED_INTERMEDIARIA, SPEED_TETO]:
+		var s := MovingRowFill.espacamento(speed)
+		for largura in [180.0, 256.0, 400.0]:
+			for lado in [true, false]:
+				var spawn := 210.0 if lado else -30.0
+				var xs := MovingRowFill.initial_xs(spawn, lado, largura, speed)
+				for i in range(1, xs.size()):
+					assert_almost_eq(absf(xs[i] - xs[i - 1]), s, 0.0001, "passo consecutivo diferente de espacamento(%s)" % speed)
+				if xs.size() > 0:
+					assert_almost_eq(absf(xs[0] - spawn), s, 0.0001, "1a plataforma a espacamento(%s) do nascimento" % speed)
 
 
 func test_largura_zero_ou_pequena_devolve_so_o_que_cabe() -> void:
@@ -56,7 +90,7 @@ func test_largura_zero_ou_pequena_devolve_so_o_que_cabe() -> void:
 	assert_eq(MovingRowFill.initial_xs(-30.0, false, 0.0), [], "nada cabe: lista vazia, sem erro")
 	# Nascendo em 210 indo a esquerda, so -27 cai na janela (-30, 30); 131 e 52 ficam de fora.
 	var xs_zero := MovingRowFill.initial_xs(210.0, true, 0.0)
-	assert_eq(xs_zero, [210.0 - 3.0 * MovingRowFill.ESPACAMENTO], "largura 0: so o x que cabe na janela")
+	assert_eq(xs_zero, [210.0 - 3.0 * MovingRowFill.espacamento(60.0)], "largura 0: so o x que cabe na janela")
 	# Largura crescente nunca diminui N (monotona) e nunca produz x fora da janela.
 	var anterior := -1
 	for largura_int in range(0, 401):

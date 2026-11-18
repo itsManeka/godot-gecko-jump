@@ -17,12 +17,170 @@ var _best_store: BestScoreStore
 # o Player a reseta ao sair da arvore (Player._exit_tree), antes de a Stage seguinte gerar as plataformas.
 var cor_gecko: Enums.COLOR = Enums.COR_INICIAL
 
+# Aplica a seed do RNG: null = sorteio livre (producao), inteiro = sequencia fixa (smoke debug).
+func aplicar_seed(valor: Variant) -> void:
+	if valor == null:
+		randomize()
+	else:
+		seed(int(valor))
+
+# Dica de toque (TouchHint): so em memoria (volta a cada recarga da pagina). A Stage e recriada a cada partida,
+# entao o estado "ja detectei toque" e "ja mostrei a dica" vive aqui.
+var toque_detectado: bool = false
+var dica_toque_mostrada: bool = false
+
+# Dica de toque forcada (so smoke debug via `?dica=1`): liga toque_detectado sem dispositivo de toque. Nunca liga em release.
+func aplicar_modo_dica(raw: Variant, is_debug: bool) -> void:
+	toque_detectado = ModoDicaToque.decide(raw, is_debug)
+
+# Modo sem derrota (so smoke debug via `?semderrota=1`): o gecko nao perde. Nunca liga em release.
+var sem_derrota: bool = false
+
+# Aplica o modo sem derrota a partir do valor bruto do parametro e da flag de build.
+func aplicar_modo_sem_derrota(raw: Variant, is_debug: bool) -> void:
+	sem_derrota = ModoSemDerrota.decide(raw, is_debug)
+
+# Progresso inicial da dificuldade (so smoke debug via `?progresso=`): 0.0 em release e sem o parametro.
+var progresso_inicial: float = 0.0
+
+# Aplica o progresso inicial a partir do valor bruto do parametro e da flag de build.
+func aplicar_progresso_inicial(raw: Variant, is_debug: bool) -> void:
+	progresso_inicial = ModoProgressoInicial.decide(raw, is_debug)
+
+# Moldura de subida de estagio fixa (so smoke debug via `?moldura=fixa`): fica acesa ate interromper. Nunca em release.
+var moldura_fixa: bool = false
+
+# Aplica a moldura fixa a partir do valor bruto do parametro e da flag de build.
+func aplicar_moldura_fixa(raw: Variant, is_debug: bool) -> void:
+	moldura_fixa = ModoMolduraFixa.decide(raw, is_debug)
+
+# Moldura de subida de estagio em pulso lento (so smoke debug via `?moldura=lenta`): duracoes do pulso multiplicadas
+# para o print do runner pegar o Tween real no meio. Nunca liga em release.
+var moldura_lenta: bool = false
+
+# Aplica o pulso lento a partir do valor bruto do parametro e da flag de build.
+func aplicar_moldura_lenta(raw: Variant, is_debug: bool) -> void:
+	moldura_lenta = ModoMolduraLenta.decide(raw, is_debug)
+
+# Espelho em memoria do "tutorial visto" (TutorialFlag.marcar): impede o card de reaparecer na mesma sessao se a
+# gravacao em disco falhar. Publico de proposito (seam de teste: before_each reseta).
+var tutorial_visto_espelho: bool = false
+
+# Tutorial forcado como visto (so smoke debug via `?tutorial=visto`): liga so o espelho em memoria, nunca grava o
+# `.cfg`. Nunca liga em release.
+func aplicar_modo_tutorial(raw: Variant, is_debug: bool) -> void:
+	if ModoTutorialVisto.decide(raw, is_debug):
+		tutorial_visto_espelho = true
+
 # Inicializa o gerador de números aleatórios e liga o recorde salvo ao ScoreKeeper
 func _ready():
-	randomize()
+	aplicar_seed(SeedSource.decide(SeedSource.read_raw(), OS.is_debug_build()))
+	aplicar_modo_sem_derrota(ModoSemDerrota.read_raw(), OS.is_debug_build())
+	aplicar_modo_dica(ModoDicaToque.read_raw(), OS.is_debug_build())
+	aplicar_modo_tutorial(ModoTutorialVisto.read_raw(), OS.is_debug_build())
+	aplicar_progresso_inicial(ModoProgressoInicial.read_raw(), OS.is_debug_build())
+	aplicar_moldura_fixa(ModoMolduraFixa.read_raw(), OS.is_debug_build())
+	aplicar_moldura_lenta(ModoMolduraLenta.read_raw(), OS.is_debug_build())
 	_best_store = BestScoreStore.new()
 	pontuacao.load_best(_best_store.load_best())
 	pontuacao.best_changed.connect(_best_store.save_best)
+	usar_options_store(OptionsStore.new())
+	# Depois do store: o modo forcado por `?toque=` (so smoke debug) vence o salvo, sem gravar.
+	aplicar_modo_toque_inicial(ModoToqueInicial.read_raw(), OS.is_debug_build())
+
+# Opcoes de audio: store publico de proposito (seam de teste; test/gut_pre_run.gd o troca por um de caminho temporario).
+var opcoes: OptionsStore
+var _volume_music: float = OptionsStore.DEFAULT_VOLUME
+var _volume_sfx: float = OptionsStore.DEFAULT_VOLUME
+
+# Define o store das opcoes, le os volumes salvos e aplica nos buses.
+func usar_options_store(store: OptionsStore) -> void:
+	opcoes = store
+	_volume_music = store.load_music()
+	_volume_sfx = store.load_sfx()
+	_aplicar_bus("Music", _volume_music)
+	_aplicar_bus("SFX", _volume_sfx)
+	_touch_mode = TouchMode.de_valor(store.load_value(TouchMode.SECTION, TouchMode.KEY, TouchMode.SEM_VALOR))
+	touch_mode_changed.emit(_touch_mode)
+	_touch_sensibilidade = TouchTuning.sensibilidade_de_valor(
+		store.load_value(
+			TouchTuning.SENSIBILIDADE_SECTION,
+			TouchTuning.SENSIBILIDADE_KEY,
+			TouchTuning.SENSIBILIDADE_SEM_VALOR
+		)
+	)
+	touch_sensibilidade_changed.emit(_touch_sensibilidade)
+
+# Modo de toque (TouchMode): consultado por TouchControls/TouchHint; o sinal avisa a troca.
+signal touch_mode_changed(modo: int)
+var _touch_mode: TouchMode.Modo = TouchMode.padrao()
+
+# Aplica o modo na hora; grava no store so com `persistir`.
+func set_touch_mode(m: int, persistir: bool = true) -> void:
+	_touch_mode = TouchMode.de_valor(m)
+	if persistir:
+		opcoes.save_value(TouchMode.SECTION, TouchMode.KEY, int(_touch_mode))
+	touch_mode_changed.emit(_touch_mode)
+
+func get_touch_mode() -> TouchMode.Modo:
+	return _touch_mode
+
+# Sensibilidade do modo A (TouchTuning): 1,0 = comportamento padrao; valor invalido cai no padrao. O sinal avisa a
+# troca (a TouchControls reinjeta no esquema A).
+signal touch_sensibilidade_changed(valor: float)
+var _touch_sensibilidade: float = TouchTuning.SENSIBILIDADE_PADRAO
+
+# Aplica a sensibilidade na hora; grava no store so com `persistir` (o slider das Opcoes aplica no arrasto sem gravar).
+func set_touch_sensibilidade(v: float, persistir: bool = true) -> void:
+	_touch_sensibilidade = TouchTuning.sensibilidade_de_valor(v)
+	if persistir:
+		opcoes.save_value(TouchTuning.SENSIBILIDADE_SECTION, TouchTuning.SENSIBILIDADE_KEY, _touch_sensibilidade)
+	touch_sensibilidade_changed.emit(_touch_sensibilidade)
+
+func get_touch_sensibilidade() -> float:
+	return _touch_sensibilidade
+
+# Grava no store a sensibilidade atual (ao soltar o slider, fechar as Opcoes ou sair do app), como `salvar_volumes`.
+func salvar_sensibilidade() -> void:
+	opcoes.save_value(TouchTuning.SENSIBILIDADE_SECTION, TouchTuning.SENSIBILIDADE_KEY, TouchTuning.sensibilidade_de_valor(_touch_sensibilidade))
+
+# Aplica o modo forcado por `?toque=` (so smoke debug; release devolve SEM_FORCA). Nunca grava no store.
+func aplicar_modo_toque_inicial(raw: Variant, is_debug: bool) -> void:
+	var forcado := ModoToqueInicial.decide(raw, is_debug)
+	if forcado != ModoToqueInicial.SEM_FORCA:
+		set_touch_mode(forcado, false)
+
+# Aplica no bus sempre; grava no store so com `persistir` (arrasto de slider aplica sem gravar e grava ao soltar).
+func set_volume_music(v: float, persistir: bool = true) -> void:
+	_volume_music = clampf(v, 0.0, 1.0)
+	_aplicar_bus("Music", _volume_music)
+	if persistir:
+		opcoes.save_music(_volume_music)
+
+func set_volume_sfx(v: float, persistir: bool = true) -> void:
+	_volume_sfx = clampf(v, 0.0, 1.0)
+	_aplicar_bus("SFX", _volume_sfx)
+	if persistir:
+		opcoes.save_sfx(_volume_sfx)
+
+# Grava no store os dois volumes atuais.
+func salvar_volumes() -> void:
+	opcoes.save_music(_volume_music)
+	opcoes.save_sfx(_volume_sfx)
+
+func get_volume_music() -> float:
+	return _volume_music
+
+func get_volume_sfx() -> float:
+	return _volume_sfx
+
+# Aplica o volume linear no bus: dB pela conversao do store e mudo em 0.
+func _aplicar_bus(bus: String, linear: float) -> void:
+	var idx := AudioServer.get_bus_index(bus)
+	if idx < 0:
+		return
+	AudioServer.set_bus_volume_db(idx, OptionsStore.volume_linear_to_db(linear))
+	AudioServer.set_bus_mute(idx, linear <= 0.0)
 
 # Adiciona uma nova plataforma à lista de plataformas ativas
 func add_platform(platform: Platform):
@@ -33,10 +191,15 @@ func add_platform(platform: Platform):
 func player_color_changed(player_color, actual_platform: Platform):
 	cor_gecko = player_color
 	for platform in platforms:
-		if is_instance_valid(platform) and platform != actual_platform:
-			var p := platform as Platform
-			if p:
-				p.player_color_changed(player_color)
+		if not is_instance_valid(platform):
+			continue
+		var p := platform as Platform
+		if not p:
+			continue
+		# A plataforma do gecko fica travada (o ciclo de cor congela); as demais destravam e reavaliam a colisao
+		p.definir_travada(platform == actual_platform)
+		if platform != actual_platform:
+			p.player_color_changed(player_color)
 
 # Atualiza a plataforma atual quando o jogador muda de cor
 func att_actual_platform(player_color, actual_platform):

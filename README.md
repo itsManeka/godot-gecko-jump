@@ -5,7 +5,7 @@
 ![Godot Engine](https://img.shields.io/badge/Godot-4.7-blue?logo=godot-engine&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-PC-orange.svg)
 
-*Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!*
+_Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 
 [🎮 Como Jogar](#-como-jogar) • [📱 Download](#-download) • [🛠️ Tecnologias](#️-tecnologias-utilizadas) • [🌍 English](#-english-version)
 
@@ -13,41 +13,70 @@
 
 ## 📖 Descrição
 
-**Gecko Jump** é um jogo de plataforma onde você controla um camaleão confuso que muda de cor! 
+**Gecko Jump** é um jogo de plataforma onde você controla um camaleão confuso que muda de cor!
 
 ### 🎯 Objetivo
+
 - **Pular apenas nas plataformas da mesma cor** que o Gecko
 - **Ganhar pontos** a cada plataforma nova que tocar
 - **Mudar de cor automaticamente** após cada pulo bem-sucedido — a cor nova sempre existe numa plataforma da linha de cima
 - **Sobreviver** o máximo de tempo possível descendo pelas plataformas
+- **Aguentar a dificuldade**: com o tempo as plataformas ficam mais estreitas e, mais adiante, desmoronam pouco depois
+  do pouso (tremem antes de cair); no estagio mais alto algumas trocam de cor sozinhas, piscando na proxima cor logo
+  antes da troca (enquanto o gecko esta em cima, a cor fica parada); mais adiante, as linhas passam a andar em velocidades diferentes e algumas plataformas oscilam para os lados
 - **Bater o recorde**: a maior pontuação fica salva e continua lá quando você abre o jogo de novo
 
 ## 🎮 Controles
 
-| Ação | Teclas |
-|------|--------|
-| **Pular** | `Espaço`, `W` ou `↑` |
-| **Mover para Esquerda** | `A` ou `←` |
-| **Mover para Direita** | `D` ou `→` |
+| Ação                    | Teclas                           | Toque                                     |
+| ----------------------- | -------------------------------- | ----------------------------------------- |
+| **Pular**               | `Espaço`, `W` ou `↑`             | Depende do modo de toque (abaixo)         |
+| **Mover para Esquerda** | `A` ou `←`                       | Depende do modo de toque (abaixo)         |
+| **Mover para Direita**  | `D` ou `→`                       | Depende do modo de toque (abaixo)         |
+| **Pausar / Continuar**  | `Esc` ou `P` (start no controle) | Botão de pausa no canto superior esquerdo |
+
+O toque tem dois modos, escolhidos em **Opções → Toque** (o padrão é o B):
+
+- **A — arrastar + flick (um polegar):** arraste para um lado para andar; um movimento rápido para cima pula, reto
+  com o dedo parado ou na diagonal com o dedo deslocado. Arrastar o dedo para cima sem parar dá um pulo só; para pular
+  de novo, pare o dedo ou desça um pouco antes do próximo flick.
+- **B — dois polegares:** a metade esquerda dirige pelo arraste; a metade direita pula ao tocar.
+
+No celular, uma dica discreta mostra como jogar no modo escolhido na primeira partida e some sozinha.
+
+A partida também pausa sozinha quando a janela ou a aba perde o foco, ou quando o app vai para segundo plano. Para
+voltar, use **Continuar**, `Esc` ou `P`. No desktop, o botão de pausa e o menu de pausa também aceitam clique do mouse.
+
+**Opções** (botão no menu inicial, entre Play e Last, ou no menu de pausa): volume da música e dos efeitos sonoros, de
+0 (mudo) a 100%, por arrasto ou com `←`/`→`, e o modo de toque (A ou B). Com o modo A ativo aparece também a
+**Sensibilidade** do arraste e do flick (de 0,5x a 2x; maior = gesto menor basta). Volumes, modo e sensibilidade
+ficam salvos e continuam valendo quando você abre o jogo de novo.
+No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
+
+Na primeira partida, um cartão mostra os controles e some no primeiro pouso (ou em **Pular**). Para vê-lo de novo,
+use **Opções > Ver tutorial**.
 
 ## 🚀 Como Jogar
 
-1. Pressione qualquer tecla de pulo para começar
+1. Pressione qualquer tecla de pulo (ou toque na tela) para começar
 2. Use as setas ou WASD para mover o Gecko; ao sair por uma lateral da tela, ele reaparece pela outra
 3. Pule apenas em plataformas da mesma cor que o Gecko
 4. Evite cair ou tocar plataformas de cores diferentes
-5. Tente alcançar a maior pontuação possível!
+5. Quanto mais você pontua e mais tempo sobrevive, mais rápido a tela sobe e as plataformas andam; cada partida recomeça no ritmo inicial
+6. Tente alcançar a maior pontuação possível!
 
 ## 📱 Download
 
 > 🚧 **Em desenvolvimento** - O jogo ainda não possui release oficial.
 
 Para jogar agora:
+
 1. Clone este repositório
 2. Abra o projeto no Godot Engine 4.7.2
 3. Execute a cena principal `scenes/Stage.tscn`
 
 Para gerar a versão web (sem threads):
+
 1. Instale os export templates do Godot 4.7.2 (`Web`, sem threads)
 2. Na raiz do projeto, rode o export substituindo `<godot>` pelo executável do Godot 4.7.2:
    ```
@@ -78,9 +107,10 @@ godot-gecko-jump/
 
 ## 📱 Compatibilidade
 
-⚠️ **Aviso:** A tela já é pensada para celular (retrato, 180 px de largura), mas o jogo ainda não lê toque: os controles de toque chegam num próximo epic. Por ora, jogue com teclado.
+A tela é pensada para celular (retrato, 180 px de largura) e o jogo aceita toque (dois modos), além de teclado.
 
 **Requisitos:**
+
 - Godot Engine 4.7.2
 - Sistema operacional: Windows, Linux, macOS
 
@@ -95,7 +125,7 @@ Pull requests para `main` e pushes em `main` que mudem arquivos fora de Markdown
 
 ### Baixar o build web de um PR
 
-Na pagina do PR, abra o run do `CI` e baixe o artefato `export-web` na secao *Artifacts* (guardado por 7 dias).
+Na pagina do PR, abra o run do `CI` e baixe o artefato `export-web` na secao _Artifacts_ (guardado por 7 dias).
 Descompacte e sirva a pasta por um servidor estatico, como na secao Download.
 
 ### Rodar o oraculo localmente
@@ -113,6 +143,42 @@ No Windows, defina `GODOT_PATH` com o caminho do executavel antes de rodar o mes
 O roteiro `test/smoke/gecko.smoke.json` joga o export web num navegador headless (iniciar, pular, morrer, reiniciar,
 pular) e acusa erro de pagina, recurso faltando e tela congelada. Rode-o sobre a pasta do export (`export/web/`) com o
 `game-smoke.mjs` do dev-workspace: `node <dev-workspace>/.claude/scripts/game-smoke.mjs export/web --spec=test/smoke/gecko.smoke.json --out=<pasta dos prints>`.
+
+Os roteiros conferem o estado da partida, nao so a tela. Isso so funciona no export web de **debug**; o build de
+release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot nativo de **debug**, os mesmos parametros valem como argumentos de usuario depois de `--` (ex.: `godot --path . -- --seed=42 --semderrota=1`); `--nome` sem valor equivale a `?nome` (nao liga o modo: so o valor exato de cada parametro liga), e o build de release ignora:
+
+- `?seed=<numero>` no `path` do roteiro fixa o sorteio de cores e plataformas. Todo roteiro leva uma seed.
+- `?semderrota=1` liga o modo sem derrota (plataformas na cor inicial e paradas, sem desmoronar; a largura do estagio
+  vale; a queda pela borda ainda encerra a partida), usado pelos roteiros `retrato-pontua-1080x2772.smoke.json` (conferir que o gecko pontua),
+  `estagio.smoke.json` (conferir que a dificuldade sobe) e pelos roteiros longos (`gecko` e os `retrato-*` de cada
+  tamanho), para o gecko nao morrer por cor errada entre os pulos (#39).
+- `?progresso=<0 a 1>` comeca a partida no ponto da curva de dificuldade indicado (valor invalido vale 0), usado pelos
+  roteiros `estagio.smoke.json` e `estagio-alto.smoke.json` (estagio 3, plataformas estreitas e que trocam de cor; o
+  roteiro tira um print antes e outro depois de uma troca e aceita o fim da partida por queda, que o modo sem derrota
+  nao impede quando a plataforma troca para outra cor).
+- `?moldura=fixa` deixa acesa a moldura de aviso de subida de estagio (sem o pulso, que acaba antes do print), usado
+  pelo roteiro `estagio-aviso-fixa.smoke.json`; `estagio-aviso.smoke.json` joga sem ele e confere que o aviso acende e apaga.
+- `?dica=1` força a dica de toque sem aparelho de toque, usado pelos roteiros `dica-toque.smoke.json` (modo padrão) e
+  `dica-toque-a.smoke.json` (com `&toque=a`).
+- `?toque=a|b` força o modo de toque da sessão (sem gravar a escolha; ignorado em release), usado pelos roteiros
+  `toque-modo-{a,b}.smoke.json`, que jogam toque de verdade com os passos `tap`, `hold`, `drag` (arraste) e
+  `touches` (vários dedos) e conferem a direção pelo `player.x`/`player.y`.
+- `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
+  tela. Todo roteiro leva o parâmetro, menos `tutorial.smoke.json`, que joga a primeira partida com o armazenamento limpo.
+- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`), `player.alive`,
+  `player.x`/`player.y` (posição do gecko em px lógicos, inteiros, só durante a partida) e
+  `dificuldade.estagio` (inteiro, 0 no inicio da partida; republicado quando o estagio muda).
+  O passo `expect` do roteiro le esses campos, por exemplo `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
+  O roteiro `estagio.smoke.json` prova que o estagio sobe de 0 para 1 ou mais durante a partida.
+
+Os roteiros longos nao exigem pontuacao: conferem `playing` depois do Play e que a partida deixou de estar em
+`playing` depois da queda pela borda. Antes de cada rajada de pulo, o roteiro tambem espera `playing`, para que uma
+derrota anterior apareca como falha de estado e nao como tela congelada. Pontuacao so e conferida no roteiro
+`retrato-pontua-1080x2772`.
+Pela mesma razao, uma rajada `"moving": true` que o runner reprova por tela congelada (com `freeze_shots` prints ou
+mais, 4 por padrao) tem de terminar ate 1500 ms depois do Play (`wait` + `(shots-1)*every`): a recarga depois de uma
+derrota so vem ~2,3 s depois do Play, e menu parado dentro da rajada vira `canvas congelado`. O teste
+`test/test_smoke_roteiros.gd` confere esse orcamento.
 
 ### Versao do Godot no CI
 
@@ -151,6 +217,7 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 ### 👨‍💻 Autor
 
 **Emanuel Ozorio**
+
 - GitHub: [@itsManeka](https://github.com/itsManeka)
 - Email: [emanuel.ozoriodias@gmail.com](mailto:emanuel.ozoriodias@gmail.com)
 
@@ -165,38 +232,67 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 **Gecko Jump** is a platform game where you control a confused chameleon that changes colors!
 
 #### 🎯 Objective
+
 - **Jump only on platforms of the same color** as the Gecko
 - **Earn points** for each new platform you touch
 - **Change color automatically** after each successful jump — the new color is always on a platform in the row above
 - **Survive** as long as possible while descending through the platforms
+- **Handle the difficulty**: over time platforms get narrower and, later on, crumble shortly after you land (they shake
+  before falling); at the highest stage some of them change color on their own, flashing the next color right before
+  the change (while the gecko stands on one, its color holds); further on, the lines start moving at different speeds and some platforms sway sideways
 - **Beat your best score**: it is saved and still there the next time you open the game
 
 ### 🎮 Controls
 
-| Action | Keys |
-|--------|------|
-| **Jump** | `Space`, `W` or `↑` |
-| **Move Left** | `A` or `←` |
-| **Move Right** | `D` or `→` |
+| Action             | Keys                              | Touch                               |
+| ------------------ | --------------------------------- | ----------------------------------- |
+| **Jump**           | `Space`, `W` or `↑`               | Depends on the touch mode (below)   |
+| **Move Left**      | `A` or `←`                        | Depends on the touch mode (below)   |
+| **Move Right**     | `D` or `→`                        | Depends on the touch mode (below)   |
+| **Pause / Resume** | `Esc` or `P` (start on a gamepad) | Pause button in the top-left corner |
+
+Touch has two modes, chosen in **Opcoes → Toque** (the default is B):
+
+- **A — drag + flick (one thumb):** drag to one side to walk; a quick upward swipe jumps, straight with the finger
+  still or diagonally with the finger shifted. Dragging the finger up without stopping gives a single jump; to jump
+  again, stop the finger or move it down a little before the next flick.
+- **B — two thumbs:** the left half steers by dragging; the right half jumps on touch.
+
+On phones, a subtle hint shows how to play the chosen mode in the first match and fades out on its own.
+
+The match also pauses on its own when the window or tab loses focus, or when the app goes to the background. To resume,
+use **Continuar**, `Esc` or `P`. On desktop, the pause button and the pause menu also accept mouse clicks.
+
+**Options** (button on the start menu, between Play and Last, or in the pause menu): music and sound effects volume,
+from 0 (muted) to 100%, by dragging or with `←`/`→`, and the touch mode (A or B). With mode A active, a drag and flick
+**Sensibilidade** (sensitivity) setting also shows up (0.5x to 2x; higher = a smaller gesture is enough). Volumes,
+mode and sensitivity are saved and still apply the next time you open the game.
+On the menu, `↓` moves the focus to **Opcoes** and `Enter` opens the screen.
+
+In the first match, a card shows the controls and fades out on the first landing (or on **Pular**). To see it again,
+use **Opcoes > Ver tutorial**.
 
 ### 🚀 How to Play
 
-1. Press any jump key to start
+1. Press any jump key (or tap the screen) to start
 2. Use arrows or WASD to move the Gecko; leaving through one side of the screen brings it back on the other
 3. Jump only on platforms of the same color as the Gecko
 4. Avoid falling or touching platforms of different colors
-5. Try to achieve the highest score possible!
+5. The more you score and the longer you survive, the faster the screen climbs and the platforms move; every run starts over at the initial pace
+6. Try to achieve the highest score possible!
 
 ### 📱 Download
 
 > 🚧 **In development** - The game doesn't have an official release yet.
 
 To play now:
+
 1. Clone this repository
 2. Open the project in Godot Engine 4.7.2
 3. Run the main scene `scenes/Stage.tscn`
 
 To build the web version (no threads):
+
 1. Install the Godot 4.7.2 export templates (`Web`, no threads)
 2. From the project root, run the export replacing `<godot>` with the Godot 4.7.2 executable:
    ```
@@ -210,10 +306,46 @@ The `test/smoke/gecko.smoke.json` script plays the web export in a headless brow
 jump) and reports page errors, missing resources and a frozen screen. Run it against the export folder (`export/web/`)
 with the dev-workspace `game-smoke.mjs`: `node <dev-workspace>/.claude/scripts/game-smoke.mjs export/web --spec=test/smoke/gecko.smoke.json --out=<screenshots folder>`.
 
+The scripts check the match state, not only the screen. This only works on the **debug** web export; the release
+build (the published one) ignores the parameters below and publishes nothing. On the native Godot **debug** build, the same parameters work as user arguments after `--` (e.g. `godot --path . -- --seed=42 --semderrota=1`); `--name` without a value is the same as `?name` (it does not turn the mode on: only each parameter's exact value does), and the release build ignores them:
+
+- `?seed=<number>` in the script `path` fixes the color and platform draw. Every script carries a seed.
+- `?semderrota=1` turns on the no-defeat mode (platforms in the initial color and standing still; falling off the
+  edge still ends the match), used by the `retrato-pontua-1080x2772.smoke.json` script (to check that the gecko
+  scores), the `estagio.smoke.json` script (to check that the difficulty rises) and the long scripts (`gecko` and the
+  `retrato-*` of each size), so the gecko does not die by a wrong color between jumps (#39).
+- `?progresso=<0 to 1>` starts the match at that point of the difficulty curve (an invalid value means 0), used by the
+  `estagio.smoke.json` and `estagio-alto.smoke.json` scripts (stage 3, narrow platforms that change color; the script
+  takes one shot before and one after a change and accepts the match ending by a fall, which the no-defeat mode does
+  not prevent when a platform switches to another color).
+- `?moldura=fixa` keeps the stage-up warning frame lit (no pulse, which ends before the shot), used by the
+  `estagio-aviso-fixa.smoke.json` script; `estagio-aviso.smoke.json` plays without it and checks that the warning turns on and off.
+- `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` (default mode) and
+  `dica-toque-a.smoke.json` (with `&toque=a`) scripts.
+- `?toque=a|b` forces the session's touch mode (without saving the choice; ignored in release), used by the
+  `toque-modo-{a,b}.smoke.json` scripts, which play real touch with the `tap`, `hold`, `drag` and `touches`
+  (several fingers) steps and check the direction through `player.x`/`player.y`.
+- `?tutorial=visto` marks the first-match tutorial as already seen (without saving anything), so the card does not
+  cover the screen. Every script carries it, except `tutorial.smoke.json`, which plays the first match with clean storage.
+- The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`),
+  `player.alive`, `player.x`/`player.y` (the gecko's position in logical px, integers, only during the match) and
+  `dificuldade.estagio` (an integer, 0 at the start of the match; republished when the stage changes).
+  The script `expect` step reads those fields, for example `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
+  The `estagio.smoke.json` script checks that the stage rises from 0 to 1 or more during the match.
+
+The long scripts do not require a score: they check `playing` after Play and that the match left `playing` after
+the fall off the edge. Before each jump burst, the long scripts also wait for `playing`, so an earlier defeat shows up
+as a state failure and not as a frozen screen. Scoring is only checked in the `retrato-pontua-1080x2772` script.
+For the same reason, a `"moving": true` burst that the runner fails as a frozen screen (`freeze_shots` screenshots or
+more, 4 by default) must end within 1500 ms of Play (`wait` + `(shots-1)*every`): the reload after a defeat only comes
+~2.3 s after Play, and a still menu inside the burst becomes `canvas congelado`. The
+`test/test_smoke_roteiros.gd` test checks this budget.
+
 ### 📱 Compatibility
 
-⚠️ **Warning:** The screen is already designed for phones (portrait, 180 px wide), but the game does not read touch yet: touch controls arrive in an upcoming epic. For now, play with a keyboard.
+The screen is designed for phones (portrait, 180 px wide) and the game accepts touch (two modes) as well as a keyboard.
 
 **Requirements:**
+
 - Godot Engine 4.7.2
 - Operating System: Windows, Linux, macOS
