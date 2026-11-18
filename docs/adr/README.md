@@ -17,4 +17,4 @@ antigo como "superado por".
 | [0010](0010-plataformas-cicladoras.md)                 | Plataformas cicladoras: cor prevista no tempo, com trava e aviso visivel          | aceito                                                     |
 | [0011](0011-movimento-de-plataformas.md)               | Movimento de plataformas: oscilacao como desvio de velocidade, sem inversao, so x | aceito                                                     |
 | [0012](0012-plataformas-que-piscam.md)                 | Plataformas que piscam: somem e voltam em ritmo fixo, com aviso e trava           | aceito                                                     |
-| [0013](0013-modos-de-toque-alternaveis.md)             | Modos de toque alternaveis: tres esquemas selecionaveis, padrao provisorio (C)    | proposto (ate o playtest do dono)                          |
+| [0013](0013-modos-de-toque-alternaveis.md)             | Modos de toque alternaveis: A e B selecionaveis, B padrao                         | aceito                                                     |
