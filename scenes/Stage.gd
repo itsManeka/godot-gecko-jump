@@ -53,6 +53,8 @@ var safe_area: Rect2 = Rect2()
 var ultimo_estado: Dictionary = {}
 # Dificuldade da partida (DifficultyState): nasce em _ready, zera a cada Stage nova (reload da cena). Consumidores leem o snapshot
 var dificuldade: DifficultyState = null
+# Seed da partida (int ou null) repassada ao ScrollLevel em _enter_tree (f517 T4): setada pelo chamador antes do add_child
+var semente_partida: Variant = null
 # Estagio da dificuldade na ultima publicacao da ponte; mudanca por tempo republica 1x (ver _physics_process)
 var _estagio_publicado: int = 0
 # Moldura de aviso de subida de estagio (filha da Stage, criada em _ready) e o `aviso` da ultima publicacao da ponte
@@ -74,6 +76,14 @@ var _limite_camera: float = 0.0
 @onready var bestscore = $CanvasLayer/Best
 @onready var faixaplacar: ColorRect = $CanvasLayer/FaixaPlacar
 @onready var loseaudio = $LoseAudio
+
+# Repassa a seed da partida ao ScrollLevel em _enter_tree (f517 T4, D1): roda antes do _ready de qualquer filho,
+# entao as linhas do .tscn ja recebem os rngs no _enter_tree do ScrollLevel. Quem seta semente_partida e o chamador,
+# ANTES do add_child; nenhum chamador de producao seta nesta feature. Sem seed a atribuicao leva null (no-op).
+func _enter_tree() -> void:
+	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
+	if scroll_level != null:
+		scroll_level.semente = semente_partida
 
 # Inicializa a tela do jogo
 func _ready():
