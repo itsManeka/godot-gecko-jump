@@ -178,3 +178,7 @@ feature das imagens dos modos.
  |        [     OK     ]            |  y 197-229 (112x32)
  +------------------------------------+
 ```
+
+## 5. Agrupamento em blocos (para o epic)
+
+Agrupamento do epic: 3 power-ups e 4 modos novos (5 no seletor com o Classico); a f522 entrega os power-ups em 2 blocos (A: Camaleao + Desacelera; B: Segunda chance) e a f524 entrega os modos em 3 blocos (A: Puro + Contra o tempo; B: Zen; C: Desafio diario, depende da f517).

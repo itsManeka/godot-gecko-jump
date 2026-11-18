@@ -99,6 +99,10 @@ Restricoes que moldam a decisao:
   (proposta: plataforma mais proxima, o gecko assume a cor dela); o Desafio diario aparece so conectado depois do E5
   (item na issue #29).
 
+### Consequencias para o epic
+
+Agrupamento do epic: 3 power-ups e 4 modos novos (5 no seletor com o Classico); a f522 entrega os power-ups em 2 blocos (A: Camaleao + Desacelera; B: Segunda chance) e a f524 entrega os modos em 3 blocos (A: Puro + Contra o tempo; B: Zen; C: Desafio diario, depende da f517).
+
 ## O que ficou aberto
 
 - **Tentativa unica do Desafio diario:** local e burlavel; a issue #29 (ranking online do E5) ganha o item que fecha a
