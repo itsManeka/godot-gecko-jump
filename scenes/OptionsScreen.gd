@@ -83,9 +83,11 @@ var _bloco: Rect2 = Rect2()
 # index do dedo -> item em que o toque comecou (-1 = fundo)
 var _toques: Dictionary = {}
 var _pressionado: int = -1
-# Valor aplicado no bus durante o arrasto e ainda nao gravado no cfg (grava ao soltar, ao fechar ou na saida do app).
-# Flag unica, sem estado por dedo: no multitoque, gravar os dois volumes (e a sensibilidade) de uma vez e intencional.
-var _pendente: bool = false
+# Valores aplicados no bus/Global durante o arrasto e ainda nao gravados no cfg (gravam ao soltar, ao fechar ou na saida
+# do app). Uma flag por grupo: arrastar um volume so grava os volumes; arrastar a Sensibilidade so grava a sensibilidade.
+# Sem estado por dedo: no multitoque, os volumes pendentes gravam juntos (`salvar_volumes` grava os dois).
+var _pendente_volumes: bool = false
+var _pendente_sensibilidade: bool = false
 
 
 func _init() -> void:
@@ -97,8 +99,6 @@ func _init() -> void:
 func _ready() -> void:
 	layer = CAMADA
 	visible = false
-	# Troca de modo por qualquer caminho (seletor da tela ou `?toque=`): mostra/oculta a Sensibilidade na hora.
-	Global.touch_mode_changed.connect(_modo_mudou)
 	_fundo = ColorRect.new()
 	_fundo.color = COR_FUNDO
 	_fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -154,6 +154,18 @@ func _notification(what: int) -> void:
 		or what == NOTIFICATION_EXIT_TREE
 	):
 		_persistir_pendente()
+
+
+# Troca de modo por qualquer caminho (seletor da tela ou `?toque=`): mostra/oculta a Sensibilidade na hora.
+# Mesmo padrao de `TouchControls.gd`: conecta ao entrar na arvore e solta o sinal do autoload ao sair.
+func _enter_tree() -> void:
+	if not Global.touch_mode_changed.is_connected(_modo_mudou):
+		Global.touch_mode_changed.connect(_modo_mudou)
+
+
+func _exit_tree() -> void:
+	if Global.touch_mode_changed.is_connected(_modo_mudou):
+		Global.touch_mode_changed.disconnect(_modo_mudou)
 
 
 func _input(event: InputEvent) -> void:
@@ -308,7 +320,8 @@ func abrir(foco: int = Item.MUSIC) -> void:
 	_foco = foco if _visivel(foco) else _proximo_foco(foco, 1)
 	_toques.clear()
 	_pressionado = -1
-	_pendente = false
+	_pendente_volumes = false
+	_pendente_sensibilidade = false
 	_valores[Item.MUSIC] = roundi(Global.get_volume_music() * SliderMath.VALOR_MAX)
 	_valores[Item.SFX] = roundi(Global.get_volume_sfx() * SliderMath.VALOR_MAX)
 	_valores[Item.SENSIBILIDADE] = valor_da_sensibilidade(Global.get_touch_sensibilidade())
@@ -508,17 +521,21 @@ func _definir_valor(item: int, valor: int, persistir: bool) -> void:
 	else:
 		Global.set_volume_sfx(float(valor) / SliderMath.VALOR_MAX, persistir)
 	if not persistir:
-		_pendente = true
+		if item == Item.SENSIBILIDADE:
+			_pendente_sensibilidade = true
+		else:
+			_pendente_volumes = true
 	_atualizar_visual()
 
 
-# Grava os volumes e a sensibilidade se algum valor foi aplicado sem gravar.
+# Grava so o que ficou pendente no arrasto: os volumes (se algum mudou) e/ou a sensibilidade (se ela mudou).
 func _persistir_pendente() -> void:
-	if not _pendente:
-		return
-	_pendente = false
-	Global.salvar_volumes()
-	Global.salvar_sensibilidade()
+	if _pendente_volumes:
+		_pendente_volumes = false
+		Global.salvar_volumes()
+	if _pendente_sensibilidade:
+		_pendente_sensibilidade = false
+		Global.salvar_sensibilidade()
 
 
 func _atualizar_visual() -> void:

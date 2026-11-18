@@ -95,6 +95,7 @@ func _detectar_flick(y: float, t_ms: int) -> void:
 	var corte: float = float(t_ms - TouchTuning.FLICK_JANELA_MS)
 	# Mantem a ultima amostra fora da janela como referencia: com eventos espacados (FPS baixo, issue #48) o dedo que
 	# andou >= FLICK_DY_MIN_PX entre dois eventos seguidos ainda conta; gesto lento (muitos eventos) segue nao contando.
+	# Por isso a janela efetiva e maior que FLICK_JANELA_MS: com eventos de 16 ms chega a ~166 ms (150 + 1 evento).
 	while _amostras.size() > 1 and _amostras[1].x < corte:
 		_amostras.pop_front()
 	if not _armado:

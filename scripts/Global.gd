@@ -142,7 +142,7 @@ func get_touch_sensibilidade() -> float:
 
 # Grava no store a sensibilidade atual (ao soltar o slider, fechar as Opcoes ou sair do app), como `salvar_volumes`.
 func salvar_sensibilidade() -> void:
-	opcoes.save_value(TouchTuning.SENSIBILIDADE_SECTION, TouchTuning.SENSIBILIDADE_KEY, _touch_sensibilidade)
+	opcoes.save_value(TouchTuning.SENSIBILIDADE_SECTION, TouchTuning.SENSIBILIDADE_KEY, TouchTuning.sensibilidade_de_valor(_touch_sensibilidade))
 
 # Aplica o modo forcado por `?toque=` (so smoke debug; release devolve SEM_FORCA). Nunca grava no store.
 func aplicar_modo_toque_inicial(raw: Variant, is_debug: bool) -> void:

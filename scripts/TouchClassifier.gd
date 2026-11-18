@@ -2,7 +2,7 @@ class_name TouchClassifier
 extends RefCounted
 
 # Lado do toque (sem cena, sem Input): metade da largura visivel; x == metade pertence a DIREITA (handoff 8.1).
-# Usado pelos esquemas B e C. O esquema antigo tap x segurar (limiar, multitoque) foi removido na f493.
+# Usado pelo esquema B. O esquema antigo tap x segurar (limiar, multitoque) foi removido.
 
 enum Lado { NENHUM, ESQUERDA, DIREITA }
 

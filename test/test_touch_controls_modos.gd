@@ -1,7 +1,7 @@
 extends GutTest
 
-# T3 (f493): TouchControls delega ao esquema do modo (contrato TouchScheme) e traduz a intencao em acoes de input.
-# Os esquemas reais A/B/C chegam nas T4-T6; aqui um esquema falso do contrato (injetado por `fabrica_esquema`) prova a
+# TouchControls delega ao esquema do modo (contrato TouchScheme) e traduz a intencao em acoes de input.
+# Os esquemas reais A/B tem testes proprios; aqui um esquema falso do contrato (injetado por `fabrica_esquema`) prova a
 # camada: troca de modo, zona morta, posse de acao, inercia fora de partida, pulso de jump e arrasto desconhecido.
 # Valores esperados vem da regra do 01 (pulso de 2 ticks), nunca da saida da implementacao.
 

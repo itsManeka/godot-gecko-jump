@@ -474,3 +474,86 @@ func test_c475_troca_de_modo_mostra_e_oculta_o_slider_na_hora_e_valor_volta_ao_r
 	assert_true(o.item_visivel(OptionsScreen.Item.SENSIBILIDADE), "reabrir no modo salvo (A) mostra o slider")
 	assert_eq(o.valor_slider(OptionsScreen.Item.SENSIBILIDADE), 0, "o slider volta na posicao salva (minimo)")
 	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_MIN, 0.0001, "o valor salvo volta ao Global")
+
+
+# T5.corr1: a pendencia de volume e a de sensibilidade sao separadas. Cada teste abaixo e uma linha da tabela do 06.
+func test_corr1_arrasto_so_de_volume_nao_grava_a_sensibilidade() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	var cy := o.rect_sfx().get_center().y
+	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_arrasto(Vector2(10, cy)))
+	o.tratar_evento(_toque(Vector2(10, cy), false))
+	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.0, "o volume arrastado foi gravado")
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_SEM_VALOR, 0.0001, "sensibilidade nao gravada: chave ausente")
+
+
+func test_corr1_arrasto_so_da_sensibilidade_grava_ao_soltar() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	var cy := o.rect_sensibilidade().get_center().y
+	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_toque(Vector2(10, cy), false))
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_MIN, 0.0001, "soltar grava o valor do slider")
+
+
+func test_corr1_arrasto_da_sensibilidade_grava_ao_fechar_sem_soltar() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	var cy := o.rect_sensibilidade().get_center().y
+	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_arrasto(Vector2(500, cy)))
+	o.fechar()
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_MAX, 0.0001, "fechar sem soltar grava o valor arrastado")
+
+
+func test_corr1_arrasto_da_sensibilidade_grava_ao_pausar_o_app() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	var cy := o.rect_sensibilidade().get_center().y
+	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_arrasto(Vector2(500, cy)))
+	o.notification(Node.NOTIFICATION_APPLICATION_PAUSED)
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_MAX, 0.0001, "app pausado no meio do gesto grava o valor arrastado")
+
+
+func test_corr1_abrir_e_fechar_sem_mexer_nao_grava_nada() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	o.fechar()
+	assert_false(FileAccess.file_exists(TEMP_PATH), "sem arrasto o cfg nao e criado")
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_SEM_VALOR, 0.0001, "sensibilidade continua ausente")
+
+
+func test_corr1_teclado_na_sensibilidade_grava_na_hora_e_fechar_nao_regrava() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	o.abrir(OptionsScreen.Item.SENSIBILIDADE)
+	o.tratar_evento(_acao("ui_right"))
+	assert_gt(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_PADRAO, "ui_right grava a sensibilidade na hora")
+	DirAccess.remove_absolute(TEMP_PATH)
+	o.fechar()
+	assert_false(FileAccess.file_exists(TEMP_PATH), "a flag nao liga com teclado: fechar nao regrava o cfg")
+
+
+func test_corr1_arrasto_da_sensibilidade_sobrevive_a_troca_para_b_antes_de_fechar() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	var cy := o.rect_sensibilidade().get_center().y
+	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_arrasto(Vector2(500, cy)))
+	Global.set_touch_mode(TouchMode.Modo.B)
+	o.fechar()
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_MAX, 0.0001, "a troca para B nao descarta o valor arrastado")
+
+
+# Fio de producao: soltar o slider chega a Global.salvar_sensibilidade, que grava o valor saneado (nunca o invalido).
+func test_corr1_soltar_sensibilidade_grava_o_valor_saneado_quando_o_valor_em_memoria_e_invalido() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	var cy := o.rect_sensibilidade().get_center().y
+	o.tratar_evento(_toque(Vector2(10, cy), true))
+	Global._touch_sensibilidade = NAN
+	o.tratar_evento(_toque(Vector2(10, cy), false))
+	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "NaN em memoria grava o padrao 1,0x")
+	Global.set_touch_sensibilidade(TouchTuning.SENSIBILIDADE_PADRAO, false)

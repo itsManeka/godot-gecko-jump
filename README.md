@@ -35,13 +35,12 @@ _Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 | **Mover para Direita**  | `D` ou `→`                       | Depende do modo de toque (abaixo)         |
 | **Pausar / Continuar**  | `Esc` ou `P` (start no controle) | Botão de pausa no canto superior esquerdo |
 
-O toque tem três modos, escolhidos em **Opções → Toque** (o padrão provisório é o C, até o playtest fixar um):
+O toque tem dois modos, escolhidos em **Opções → Toque** (o padrão é o B):
 
 - **A — arrastar + flick (um polegar):** arraste para um lado para andar; um movimento rápido para cima pula, reto
-  com o dedo parado ou na diagonal com o dedo deslocado.
+  com o dedo parado ou na diagonal com o dedo deslocado. Arrastar o dedo para cima sem parar dá um pulo só; para pular
+  de novo, pare o dedo ou desça um pouco antes do próximo flick.
 - **B — dois polegares:** a metade esquerda dirige pelo arraste; a metade direita pula ao tocar.
-- **C — metades + 2º toque:** segure uma metade para andar para ela; um 2º toque em qualquer ponto pula naquela
-  direção; tocar as duas metades juntas pula reto.
 
 No celular, uma dica discreta mostra como jogar no modo escolhido na primeira partida e some sozinha.
 
@@ -49,8 +48,9 @@ A partida também pausa sozinha quando a janela ou a aba perde o foco, ou quando
 voltar, use **Continuar**, `Esc` ou `P`. No desktop, o botão de pausa e o menu de pausa também aceitam clique do mouse.
 
 **Opções** (botão no menu inicial, entre Play e Last, ou no menu de pausa): volume da música e dos efeitos sonoros, de
-0 (mudo) a 100%, por arrasto ou com `←`/`→`, e o modo de toque (A, B ou C). Volumes e modo ficam salvos e continuam
-valendo quando você abre o jogo de novo.
+0 (mudo) a 100%, por arrasto ou com `←`/`→`, e o modo de toque (A ou B). Com o modo A ativo aparece também a
+**Sensibilidade** do arraste e do flick (de 0,5x a 2x; maior = gesto menor basta). Volumes, modo e sensibilidade
+ficam salvos e continuam valendo quando você abre o jogo de novo.
 No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
 
 Na primeira partida, um cartão mostra os controles e some no primeiro pouso (ou em **Pular**). Para vê-lo de novo,
@@ -107,7 +107,7 @@ godot-gecko-jump/
 
 ## 📱 Compatibilidade
 
-A tela é pensada para celular (retrato, 180 px de largura) e o jogo aceita toque (três modos), além de teclado.
+A tela é pensada para celular (retrato, 180 px de largura) e o jogo aceita toque (dois modos), além de teclado.
 
 **Requisitos:**
 
@@ -158,9 +158,10 @@ release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot n
   nao impede quando a plataforma troca para outra cor).
 - `?moldura=fixa` deixa acesa a moldura de aviso de subida de estagio (sem o pulso, que acaba antes do print), usado
   pelo roteiro `estagio-aviso-fixa.smoke.json`; `estagio-aviso.smoke.json` joga sem ele e confere que o aviso acende e apaga.
-- `?dica=1` força a dica de toque sem aparelho de toque, usado pelo roteiro `dica-toque.smoke.json`.
-- `?toque=a|b|c` força o modo de toque da sessão (sem gravar a escolha; ignorado em release), usado pelos roteiros
-  `toque-modo-{a,b,c}.smoke.json`, que jogam toque de verdade com os passos `tap`, `hold`, `drag` (arraste) e
+- `?dica=1` força a dica de toque sem aparelho de toque, usado pelos roteiros `dica-toque.smoke.json` (modo padrão) e
+  `dica-toque-a.smoke.json` (com `&toque=a`).
+- `?toque=a|b` força o modo de toque da sessão (sem gravar a escolha; ignorado em release), usado pelos roteiros
+  `toque-modo-{a,b}.smoke.json`, que jogam toque de verdade com os passos `tap`, `hold`, `drag` (arraste) e
   `touches` (vários dedos) e conferem a direção pelo `player.x`/`player.y`.
 - `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
   tela. Todo roteiro leva o parâmetro, menos `tutorial.smoke.json`, que joga a primeira partida com o armazenamento limpo.
@@ -250,13 +251,12 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 | **Move Right**     | `D` or `→`                        | Depends on the touch mode (below)   |
 | **Pause / Resume** | `Esc` or `P` (start on a gamepad) | Pause button in the top-left corner |
 
-Touch has three modes, chosen in **Opcoes → Toque** (the provisional default is C, until playtesting settles one):
+Touch has two modes, chosen in **Opcoes → Toque** (the default is B):
 
 - **A — drag + flick (one thumb):** drag to one side to walk; a quick upward swipe jumps, straight with the finger
-  still or diagonally with the finger shifted.
+  still or diagonally with the finger shifted. Dragging the finger up without stopping gives a single jump; to jump
+  again, stop the finger or move it down a little before the next flick.
 - **B — two thumbs:** the left half steers by dragging; the right half jumps on touch.
-- **C — halves + 2nd touch:** hold one half to walk toward it; a 2nd touch anywhere jumps in that direction; touching
-  both halves together jumps straight up.
 
 On phones, a subtle hint shows how to play the chosen mode in the first match and fades out on its own.
 
@@ -264,8 +264,9 @@ The match also pauses on its own when the window or tab loses focus, or when the
 use **Continuar**, `Esc` or `P`. On desktop, the pause button and the pause menu also accept mouse clicks.
 
 **Options** (button on the start menu, between Play and Last, or in the pause menu): music and sound effects volume,
-from 0 (muted) to 100%, by dragging or with `←`/`→`, and the touch mode (A, B or C). Volumes and mode are saved and
-still apply the next time you open the game.
+from 0 (muted) to 100%, by dragging or with `←`/`→`, and the touch mode (A or B). With mode A active, a drag and flick
+**Sensibilidade** (sensitivity) setting also shows up (0.5x to 2x; higher = a smaller gesture is enough). Volumes,
+mode and sensitivity are saved and still apply the next time you open the game.
 On the menu, `↓` moves the focus to **Opcoes** and `Enter` opens the screen.
 
 In the first match, a card shows the controls and fades out on the first landing (or on **Pular**). To see it again,
@@ -319,9 +320,10 @@ build (the published one) ignores the parameters below and publishes nothing. On
   not prevent when a platform switches to another color).
 - `?moldura=fixa` keeps the stage-up warning frame lit (no pulse, which ends before the shot), used by the
   `estagio-aviso-fixa.smoke.json` script; `estagio-aviso.smoke.json` plays without it and checks that the warning turns on and off.
-- `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` script.
-- `?toque=a|b|c` forces the session's touch mode (without saving the choice; ignored in release), used by the
-  `toque-modo-{a,b,c}.smoke.json` scripts, which play real touch with the `tap`, `hold`, `drag` and `touches`
+- `?dica=1` forces the touch hint without a touch device, used by the `dica-toque.smoke.json` (default mode) and
+  `dica-toque-a.smoke.json` (with `&toque=a`) scripts.
+- `?toque=a|b` forces the session's touch mode (without saving the choice; ignored in release), used by the
+  `toque-modo-{a,b}.smoke.json` scripts, which play real touch with the `tap`, `hold`, `drag` and `touches`
   (several fingers) steps and check the direction through `player.x`/`player.y`.
 - `?tutorial=visto` marks the first-match tutorial as already seen (without saving anything), so the card does not
   cover the screen. Every script carries it, except `tutorial.smoke.json`, which plays the first match with clean storage.
@@ -341,7 +343,7 @@ more, 4 by default) must end within 1500 ms of Play (`wait` + `(shots-1)*every`)
 
 ### 📱 Compatibility
 
-The screen is designed for phones (portrait, 180 px wide) and the game accepts touch (three modes) as well as a keyboard.
+The screen is designed for phones (portrait, 180 px wide) and the game accepts touch (two modes) as well as a keyboard.
 
 **Requirements:**
 

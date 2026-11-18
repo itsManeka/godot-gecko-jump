@@ -127,6 +127,33 @@ func test_c470_set_touch_sensibilidade_emite_sinal_e_persiste_no_store_temporari
 	)
 
 
+# T5.corr1 (b): salvar_sensibilidade revalida o valor em memoria antes de gravar (NaN e fora da faixa viram o padrao).
+func test_corr1_salvar_sensibilidade_grava_o_padrao_quando_o_valor_em_memoria_e_nan() -> void:
+	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
+	Global._touch_sensibilidade = NAN
+	Global.salvar_sensibilidade()
+	assert_almost_eq(
+		float(OptionsStore.new(TEMP_PATH).load_value(TouchTuning.SENSIBILIDADE_SECTION, TouchTuning.SENSIBILIDADE_KEY, TouchTuning.SENSIBILIDADE_SEM_VALOR)),
+		PADRAO,
+		0.0001,
+		"NaN em memoria nao chega ao store: grava 1,0x"
+	)
+	Global.set_touch_sensibilidade(PADRAO, false)
+
+
+func test_corr1_salvar_sensibilidade_grava_o_padrao_quando_o_valor_em_memoria_esta_fora_da_faixa() -> void:
+	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
+	Global._touch_sensibilidade = 9.0
+	Global.salvar_sensibilidade()
+	assert_almost_eq(
+		float(OptionsStore.new(TEMP_PATH).load_value(TouchTuning.SENSIBILIDADE_SECTION, TouchTuning.SENSIBILIDADE_KEY, TouchTuning.SENSIBILIDADE_SEM_VALOR)),
+		PADRAO,
+		0.0001,
+		"9,0 (fora da faixa) em memoria nao chega ao store: grava 1,0x"
+	)
+	Global.set_touch_sensibilidade(PADRAO, false)
+
+
 func test_c471_sensibilidade_nunca_grava_no_options_cfg_real() -> void:
 	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
 	assert_ne(Global.opcoes.path, OptionsStore.DEFAULT_PATH, "store da suite aponta para caminho temporario")

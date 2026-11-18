@@ -1,7 +1,7 @@
 extends GutTest
 
 # Camada de entrada de toque (TouchControls): intencao do esquema -> ui_left/ui_right/jump, lido pelo Player por
-# polling. A regra de cada modo (A, B, C) e provada em test_touch_scheme_{a,b,c}.gd e test_touch_controls_modos.gd; aqui
+# polling. A regra de cada modo (A, B) e provada em test_touch_scheme_{a,b}.gd e test_touch_controls_modos.gd; aqui
 # a camada e provada com um esquema falso (metade esquerda = esquerda, direita = direita, pulo a cada press), para a
 # posse das acoes, o pulso de TICKS_MINIMOS, a inercia fora de partida e as zonas mortas nao dependerem de um modo.
 # Ticks fisicos dirigidos aqui: em cada tick a camada roda ANTES do Player (pior ordem).
