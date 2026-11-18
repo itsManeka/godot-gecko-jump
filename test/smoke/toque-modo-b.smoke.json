@@ -26,7 +26,7 @@
     },
     { "expect": { "player.y": { "lt": 190 } }, "timeout_ms": 3000 },
     { "expect": { "player.x": { "lt": 70 } }, "timeout_ms": 3000 },
-    { "shots": 3, "every": 100, "name": "modo-b-fim", "moving": true },
-    { "expect": { "state": "playing", "player.alive": true }, "timeout_ms": 3000 }
+    { "expect": { "state": "playing", "player.alive": true }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "modo-b-fim", "moving": true }
   ]
 }

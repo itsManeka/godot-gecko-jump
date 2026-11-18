@@ -34,6 +34,15 @@
     { "press": "Escape" },
     { "wait": 300 },
     { "expect": { "state": "playing", "score": { "gte": 1 } }, "timeout_ms": 2000 },
-    { "shots": 2, "every": 150, "name": "retomada-esc" }
+    { "shots": 2, "every": 150, "name": "retomada-esc" },
+    { "press": "KeyP" },
+    { "wait": 300 },
+    { "shots": 2, "every": 300, "name": "pausa-antes-espaco", "still": true },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "wait": 150 },
+    { "expect": { "state": "playing", "score": { "gte": 1 } }, "timeout_ms": 2000 },
+    { "shots": 3, "every": 100, "name": "retomada-espaco", "moving": true }
   ]
 }
