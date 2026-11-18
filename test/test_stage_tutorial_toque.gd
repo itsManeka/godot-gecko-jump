@@ -165,7 +165,7 @@ func test_c419_card_da_stage_com_toque_mostra_o_texto_do_modo_e_a_dica_o_mesmo_m
 	Global.set_touch_mode(TouchMode.Modo.B, false)
 	var stage := await _stage_em_curso()
 	var controle := stage.tutorial_card.find_child("Controle", true, false) as Label
-	assert_eq(controle.text, TutorialCard.texto_controle_toque(TouchMode.Modo.B), "card com o texto do modo B")
+	assert_eq(controle.text, TutorialCard.linhas_controle_toque(TouchMode.Modo.B)[0], "card com o texto do modo B")
 	assert_eq(stage.touch_hint.modo_exibido(), TouchMode.Modo.B, "dica no mesmo modo")
 	Global.set_touch_mode(TouchMode.padrao(), false)
 

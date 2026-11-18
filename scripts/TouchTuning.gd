@@ -9,3 +9,9 @@ const ZONA_MORTA_PX: float = 6.0
 # Flick para cima: deslocamento vertical minimo (px logicos) dentro da janela abaixo.
 const FLICK_DY_MIN_PX: float = 24.0
 const FLICK_JANELA_MS: int = 150
+# Rearme do flick no modo A: depois de um flick o proximo so vale quando o dedo parou (velocidade vertical media abaixo
+# de REARME_VELOCIDADE_PX_MS, medida em pelo menos REARME_PARADO_MS) ou recuou REARME_RECUO_PX para baixo do ponto mais
+# alto atingido. Arrasto vertical continuo gera UM pulso.
+const REARME_VELOCIDADE_PX_MS: float = 0.05
+const REARME_PARADO_MS: int = 48
+const REARME_RECUO_PX: float = 12.0

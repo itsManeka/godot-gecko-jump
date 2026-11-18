@@ -289,6 +289,55 @@ func test_c418_textos_renderizados_diferem_entre_os_modos_e_sem_o_esquema_velho(
 	assert_eq(vistos.size(), 2, "2 modos, 2 conjuntos de textos")
 
 
+func test_c481_b_mostra_dois_blocos_laterais_e_linha_sem_central() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var h := _nova_dica(true)
+	assert_true(h.bloco_visivel(TouchHint.Lado.ESQUERDA), "bloco esquerdo visivel no B")
+	assert_true(h.bloco_visivel(TouchHint.Lado.DIREITA), "bloco direito visivel no B")
+	assert_false(h.bloco_visivel(TouchHint.Lado.CENTRO), "sem bloco central no B")
+	assert_true(h._linha.visible, "linha divisoria visivel no B")
+	assert_eq(h.rect_linha().position.x, 90.0, "linha divisoria em x = 90 no B")
+
+
+func test_c482_a_mostra_so_o_central_e_rect_linha_vazio() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var h := _nova_dica(true)
+	assert_true(h.bloco_visivel(TouchHint.Lado.CENTRO), "bloco central visivel no A")
+	assert_false(h.bloco_visivel(TouchHint.Lado.ESQUERDA), "sem bloco esquerdo no A")
+	assert_false(h.bloco_visivel(TouchHint.Lado.DIREITA), "sem bloco direito no A")
+	assert_eq(h.rect_linha(), Rect2(), "modo A: rect_linha() vazio")
+
+
+func test_c483_cada_texto_cabe_na_largura_do_seu_bloco() -> void:
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var h := _nova_dica(false)
+	assert_eq(h.rect_bloco(TouchHint.Lado.ESQUERDA).size.x, 76.0, "bloco lateral esquerdo tem 76 px")
+	assert_eq(h.rect_bloco(TouchHint.Lado.DIREITA).size.x, 76.0, "bloco lateral direito tem 76 px")
+	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
+		for t in h.textos_atuais(lado):
+			assert_lte(TouchHint.largura_texto(t), 76.0, "'%s' cabe no bloco lateral" % t)
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	h = _nova_dica(false)
+	assert_eq(h.rect_bloco(TouchHint.Lado.CENTRO).size.x, 166.0, "bloco central tem 166 px")
+	for t in h.textos_atuais(TouchHint.Lado.CENTRO):
+		assert_lte(TouchHint.largura_texto(t), 166.0, "'%s' cabe no bloco central" % t)
+
+
+func test_c484_padrao_mostra_layout_do_b_e_troca_de_modo_rearma_a_dica() -> void:
+	assert_eq(TouchMode.padrao(), TouchMode.Modo.B, "padrao do store vazio e o modo B")
+	var h := _nova_dica(true)
+	assert_eq(h.modo_exibido(), TouchMode.Modo.B, "padrao exibe o modo B")
+	assert_false(h.bloco_visivel(TouchHint.Lado.CENTRO), "padrao: sem bloco central")
+	Global.iniciado = true
+	await wait_process_frames(2)
+	h._input(_toque())
+	await wait_seconds(0.6)
+	assert_true(Global.dica_toque_mostrada, "pre-condicao: flag marcada apos a dica")
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	assert_false(Global.dica_toque_mostrada, "troca de modo rearma a dica")
+	assert_eq(h.modo_exibido(), TouchMode.Modo.A, "dica passa a exibir o modo A")
+
+
 func test_c420_fade_preservado_nos_2_modos() -> void:
 	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		Global.set_touch_mode(modo, false)

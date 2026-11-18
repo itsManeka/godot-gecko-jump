@@ -259,6 +259,53 @@ func test_c383_arrasto_de_index_desconhecido_ou_sem_press_previo_e_ignorado() ->
 		_esquemas = []
 
 
+func test_c457_arrasto_vertical_longo_nao_repula_no_pouso() -> void:
+	var ticks_fisica: int = Engine.physics_ticks_per_second
+	var escala: float = Engine.time_scale
+	Engine.physics_ticks_per_second = 60
+	Engine.time_scale = 1.0
+	await wait_physics_frames(1)
+	Global.platforms = []
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	_c = CONTROLS.new()
+	_c.relogio = func() -> int: return _t
+	_c.largura_visivel_fixa = 180.0
+	_c.fabrica_esquema = func(_m: int) -> TouchScheme: return TouchSchemeA.new()
+	var jogador: Node = load("res://scenes/Player.tscn").instantiate()
+	_c.player = jogador
+	_c.set_physics_process(false)
+	jogador.set_physics_process(false)
+	add_child_autofree(_c)
+	add_child_autofree(jogador)
+	jogador.position = Vector2(90.0, 100.0)
+	jogador.on_ground = true
+	_c._sincronizar_modo()
+	_toque(90.0, true, 0, 200.0)
+	var pulos: int = 0
+	var no_impulso: bool = false
+	var em_voo_ate: int = 0
+	for i in range(1, 58):  # 37 passos de arrasto (200 px em 600 ms) + ticks de sobra
+		if i >= em_voo_ate:  # no chao (sem plataformas no teste): o pouso 20 ticks apos o pulo religa o chao
+			jogador.position = Vector2(90.0, 100.0)
+			jogador.velocity = Vector2.ZERO
+			jogador.on_ground = true
+		if i < 38:
+			_t = i * 16
+			_arrasto(90.0, 200.0 - minf(200.0, 200.0 * float(_t) / 600.0), 0)
+		_c._physics_process(TICK)
+		jogador._physics_process(TICK)
+		var impulso: bool = jogador.velocity.y <= jogador.JUMP_POWER + jogador.GRAVITY
+		if impulso and not no_impulso:
+			pulos += 1
+			em_voo_ate = i + 20
+		no_impulso = impulso
+	_toque(90.0, false, 0, 200.0)
+	Engine.physics_ticks_per_second = ticks_fisica
+	Engine.time_scale = escala
+	Global.platforms = []
+	assert_eq(pulos, 1, "arrasto longo: 1 pulo, sem repulo no pouso (pulos contados por ticks de fisica)")
+
+
 func test_fabrica_de_esquemas_so_entrega_o_que_esta_implementado() -> void:
 	for modo in MODOS:
 		var esquema: TouchScheme = TouchSchemes.criar(modo)

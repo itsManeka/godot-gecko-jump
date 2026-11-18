@@ -49,8 +49,12 @@ const TEXTO_TITULO: String = "Como jogar"
 const TEXTO_PULAR: String = "Pular"
 const TEXTO_VOLTAR: String = "Voltar"
 const TEXTO_REGRA: Array[String] = ["Pise na cor dele.", "Pouso troca a cor."]
-# Linha de controle do toque por modo (indice = TouchMode.Modo); cada texto cabe em 148 px
-const TEXTO_CONTROLE_TOQUE_POR_MODO: Array[String] = ["Arraste e flick", "Dois polegares"]
+# Linhas de controle do toque por modo (coerentes com a dica da TouchHint); cada linha cabe em 148 px
+const TEXTO_CONTROLE_TOQUE_A: Array[String] = ["Arraste: anda", "Flick pra cima: pula", "Sensibilidade: Opcoes"]
+const TEXTO_CONTROLE_TOQUE_B: Array[String] = ["Esquerda segura: anda", "Direita toca: pula", "Zonas invisiveis"]
+# Indice = TouchMode.Modo
+const TEXTO_CONTROLE_TOQUE_POR_MODO: Array[Array] = [TEXTO_CONTROLE_TOQUE_A, TEXTO_CONTROLE_TOQUE_B]
+const LINHAS_CONTROLE_MAX: int = 3
 const TEXTO_CONTROLE_TECLADO: String = "Setas e espaco"
 const NOMES_LEGENDA: Array[String] = ["amarelo", "verde", "azul", "vermelho"]
 const CORES_LEGENDA: Array[int] = [Enums.COLOR.AMARELO, Enums.COLOR.VERDE, Enums.COLOR.AZUL, Enums.COLOR.VERMELHO]
@@ -63,6 +67,8 @@ var _botao_painel: Panel
 var _botao_rotulo: Label
 var _moldura: Panel
 var _controle: Label
+var _controles_extra: Array[Label] = []
+var _n_linhas: int = 1
 var _variante: int = Variante.TOQUE
 var _modo: int = Modo.PARTIDA
 var _s_top: float = 0.0
@@ -117,6 +123,15 @@ func _ready() -> void:
 	_controle = _texto(
 		"Controle", "", Rect2(CONTEUDO_X, CONTROLE_Y, LARGURA_CONTEUDO, LINHA_ALTURA), HORIZONTAL_ALIGNMENT_LEFT
 	)
+	for i in range(1, LINHAS_CONTROLE_MAX):
+		_controles_extra.append(
+			_texto(
+				"Controle%d" % i,
+				"",
+				Rect2(CONTEUDO_X, CONTROLE_Y + LINHA_ALTURA * i, LARGURA_CONTEUDO, LINHA_ALTURA),
+				HORIZONTAL_ALIGNMENT_LEFT
+			)
+		)
 	_atualizar_textos()
 	_atualizar_botao()
 
@@ -212,7 +227,12 @@ func rect_pular() -> Rect2:
 
 # Retangulo do fundo do card (coordenadas logicas, com `s_top`).
 func rect_fundo() -> Rect2:
-	return Rect2(FUNDO.position + Vector2(0.0, _s_top), FUNDO.size)
+	return Rect2(FUNDO.position + Vector2(0.0, _s_top), _tamanho_fundo())
+
+
+# O fundo cresce uma linha de altura por linha de controle alem da 1a.
+func _tamanho_fundo() -> Vector2:
+	return FUNDO.size + Vector2(0.0, LINHA_ALTURA * (_n_linhas - 1))
 
 
 func esta_aberto() -> bool:
@@ -296,12 +316,29 @@ func _acionar() -> void:
 func _atualizar_textos() -> void:
 	if _controle == null:
 		return
-	_controle.text = TEXTO_CONTROLE_TECLADO if _variante == Variante.TECLADO else texto_controle_toque(Global.get_touch_mode())
+	var linhas: Array[String] = (
+		[TEXTO_CONTROLE_TECLADO] as Array[String] if _variante == Variante.TECLADO else linhas_controle_toque(Global.get_touch_mode())
+	)
+	_n_linhas = linhas.size()
+	_controle.text = linhas[0]
+	for i in _controles_extra.size():
+		var l := _controles_extra[i]
+		l.text = linhas[i + 1] if i + 1 < linhas.size() else ""
+		l.visible = i + 1 < linhas.size()
+	if _fundo != null:
+		_fundo.size = _tamanho_fundo()
 
 
-# Texto da linha de controle no toque para o modo dado (fora da faixa, vale o padrao).
+# Linhas de controle no toque para o modo dado (fora da faixa, vale o padrao).
+static func linhas_controle_toque(modo: int) -> Array[String]:
+	var out: Array[String] = []
+	out.assign(TEXTO_CONTROLE_TOQUE_POR_MODO[TouchMode.de_valor(modo)])
+	return out
+
+
+# Texto de controle no toque para o modo dado, linhas separadas por quebra.
 static func texto_controle_toque(modo: int) -> String:
-	return TEXTO_CONTROLE_TOQUE_POR_MODO[TouchMode.de_valor(modo)]
+	return "\n".join(linhas_controle_toque(modo))
 
 
 func _atualizar_botao() -> void:

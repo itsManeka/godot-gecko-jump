@@ -6,7 +6,8 @@ extends TouchScheme
 #   anda para ele e a ancora vai junto com o dedo (extremo do arrasto); o lado so inverte quando o dedo volta mais que
 #   ZONA_MORTA_PX contra a direcao, sem recuar ate o ponto de contato. Dedo que nunca saiu da zona morta = parado.
 # - Pulo: flick para cima (dy >= FLICK_DY_MIN_PX dentro de FLICK_JANELA_MS) pede 1 pulo (evento). O lateral do instante
-#   decide reto (zona morta) ou diagonal. Cada flick consome o historico: o proximo exige novo deslocamento.
+#   decide reto (zona morta) ou diagonal. Cada flick consome o historico e desarma o esquema: o proximo so vale depois
+#   de o dedo parar ou recuar para baixo (TouchTuning.REARME_*), entao arrasto vertical continuo gera UM pulso.
 # Enquanto IMPLEMENTADO for false a TouchControls usa o esquema legado neste modo.
 const IMPLEMENTADO: bool = true
 
@@ -20,6 +21,9 @@ var _lado: int = NENHUM
 # Amostras (x = t_ms, y = posicao y) dentro da janela do flick.
 var _amostras: Array[Vector2] = []
 var _pulo_pendente: bool = false
+# Rearme: depois de um flick so aceita outro com o dedo parado ou recuado (TouchTuning.REARME_*).
+var _armado: bool = true
+var _y_topo: float = 0.0
 
 
 func _ao_pressionar(dedo: int, t_ms: int, pos: Vector2) -> void:
@@ -30,6 +34,8 @@ func _ao_pressionar(dedo: int, t_ms: int, pos: Vector2) -> void:
 	_ancora_x = pos.x
 	_lado = NENHUM
 	_pulo_pendente = false
+	_armado = true
+	_y_topo = pos.y
 	_amostras = [Vector2(float(t_ms), pos.y)]
 
 
@@ -63,16 +69,33 @@ func _atualizar_lado(x: float) -> void:
 		_ancora_x = x
 
 
+func _tentar_rearmar(y: float, t_ms: int) -> void:
+	_y_topo = minf(_y_topo, y)
+	if y - _y_topo >= TouchTuning.REARME_RECUO_PX:
+		_armado = true
+		_amostras = [Vector2(float(t_ms), y)]
+		return
+	var span: float = float(t_ms) - _amostras[0].x
+	if span >= float(TouchTuning.REARME_PARADO_MS) and absf(_amostras[0].y - y) / span < TouchTuning.REARME_VELOCIDADE_PX_MS:
+		_armado = true
+
+
 func _detectar_flick(y: float, t_ms: int) -> void:
 	_amostras.append(Vector2(float(t_ms), y))
+	if not _armado:
+		_tentar_rearmar(y, t_ms)
 	var corte: float = float(t_ms - TouchTuning.FLICK_JANELA_MS)
 	while _amostras.size() > 1 and _amostras[0].x < corte:
 		_amostras.pop_front()
+	if not _armado:
+		return
 	var y_max: float = y
 	for a in _amostras:
 		y_max = maxf(y_max, a.y)
 	if y_max - y >= TouchTuning.FLICK_DY_MIN_PX:
 		_pulo_pendente = true
+		_armado = false
+		_y_topo = y
 		_amostras = [Vector2(float(t_ms), y)]
 
 
@@ -96,6 +119,8 @@ func _zerar() -> void:
 	_ancora_x = 0.0
 	_amostras = []
 	_pulo_pendente = false
+	_armado = true
+	_y_topo = 0.0
 
 
 func _intencao(_t_ms: int) -> Dictionary:

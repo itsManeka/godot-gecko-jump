@@ -91,7 +91,8 @@ func test_c347_tutorial_e_dica_cabem_na_viewport_180x320() -> void:
 	var card: TutorialCard = add_child_autofree(TutorialCard.new())
 	card.aplicar_layout(Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA))
 	var textos: Array[String] = ["Pise na cor dele.", "Pouso troca a cor.", "Setas e espaco", "diferente"]
-	textos.append_array(TutorialCard.TEXTO_CONTROLE_TOQUE_POR_MODO)
+	for linhas in TutorialCard.TEXTO_CONTROLE_TOQUE_POR_MODO:
+		textos.append_array(linhas)
 	for t in textos:
 		assert_lte(TutorialCard.largura_texto(t), TutorialCard.LARGURA_CONTEUDO, "'%s' cabe em 148 px" % t)
 	var tela := Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA)

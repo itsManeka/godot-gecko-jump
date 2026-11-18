@@ -92,15 +92,24 @@ func _fundo_cor(c: TutorialCard, nome: String) -> Color:
 
 
 func test_c195_fundo_do_card_164x172_termina_em_y_210_nas_duas_alturas() -> void:
+	# Teclado: 1 linha de controle (medida original do handoff)
 	for tamanho in [PEQUENA, GRANDE]:
-		var c := _novo(TutorialCard.Variante.TOQUE, TutorialCard.Modo.PARTIDA, tamanho)
+		var c := _novo(TutorialCard.Variante.TECLADO, TutorialCard.Modo.PARTIDA, tamanho)
 		var r := c.rect_fundo()
 		assert_eq(r, Rect2(8, 38, 164, 172), "fundo x[8,172] y[38,210] em %s" % [tamanho])
 		assert_eq(r.end.y, 210.0, "termina em y = 210")
 
 
+func test_c195_toque_cresce_17_px_por_linha_de_controle_extra() -> void:
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		Global.set_touch_mode(modo, false)
+		var c := _novo(TutorialCard.Variante.TOQUE)
+		assert_eq(c.rect_fundo(), Rect2(8, 38, 164, 206), "3 linhas de controle: termina em y = 244")
+	Global.set_touch_mode(TouchMode.padrao(), false)
+
+
 func test_c195_s_top_soma_ao_y_do_card_e_do_botao() -> void:
-	var c := _novo(TutorialCard.Variante.TOQUE, TutorialCard.Modo.PARTIDA, PEQUENA, 20.0)
+	var c := _novo(TutorialCard.Variante.TECLADO, TutorialCard.Modo.PARTIDA, PEQUENA, 20.0)
 	assert_eq(c.rect_fundo(), Rect2(8, 58, 164, 172), "fundo desce s_top")
 	assert_eq(c.rect_pular(), Rect2(108, 64, 56, 24), "Pular desce s_top")
 	var fundo := c.find_child("Fundo", true, false) as Control
@@ -132,21 +141,78 @@ func test_c198_variante_teclado_mostra_setas_e_espaco() -> void:
 	var c := _novo(TutorialCard.Variante.TECLADO)
 	assert_eq(c.variante(), TutorialCard.Variante.TECLADO, "variante guardada")
 	assert_true(_textos(c).has("Setas e espaco"), "teclado mostra 'Setas e espaco'")
-	for texto in TutorialCard.TEXTO_CONTROLE_TOQUE_POR_MODO:
-		assert_false(_textos(c).has(texto), "teclado nao mostra o texto de toque '%s'" % texto)
+	for linhas in TutorialCard.TEXTO_CONTROLE_TOQUE_POR_MODO:
+		for texto in linhas:
+			assert_false(_textos(c).has(texto), "teclado nao mostra o texto de toque '%s'" % texto)
+
+
+func _texto_controle(c: TutorialCard) -> Array[String]:
+	var out: Array[String] = []
+	for nome in ["Controle", "Controle1", "Controle2"]:
+		var l := c.find_child(nome, true, false) as Label
+		if l.visible:
+			out.append(l.text)
+	return out
 
 
 func test_c419_variante_toque_mostra_o_texto_do_modo_e_so_ele() -> void:
-	var esperado: Array[String] = ["Arraste e flick", "Dois polegares"]
 	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		Global.set_touch_mode(modo, false)
 		var c := _novo(TutorialCard.Variante.TOQUE)
 		assert_eq(c.variante(), TutorialCard.Variante.TOQUE, "variante guardada")
-		assert_true(_textos(c).has(esperado[modo]), "modo %s mostra '%s'" % [TouchMode.nome(modo), esperado[modo]])
-		for outro in [TouchMode.Modo.A, TouchMode.Modo.B]:
-			if outro != modo:
-				assert_false(_textos(c).has(esperado[outro]), "modo %s nao mostra o texto do modo %s" % [TouchMode.nome(modo), TouchMode.nome(outro)])
+		assert_eq(_texto_controle(c), TutorialCard.linhas_controle_toque(modo), "modo %s mostra as linhas dele" % TouchMode.nome(modo))
+		var outro: int = TouchMode.Modo.B if modo == TouchMode.Modo.A else TouchMode.Modo.A
+		for texto in TutorialCard.linhas_controle_toque(outro):
+			assert_false(_textos(c).has(texto), "modo %s nao mostra '%s' do outro" % [TouchMode.nome(modo), texto])
 		assert_false(_textos(c).has("Setas e espaco"), "toque nao mostra o texto de teclado")
+	Global.set_touch_mode(TouchMode.padrao(), false)
+
+
+func test_c476_texto_de_controle_de_a_difere_do_de_b_e_nenhum_e_vazio() -> void:
+	var a := TutorialCard.linhas_controle_toque(TouchMode.Modo.A)
+	var b := TutorialCard.linhas_controle_toque(TouchMode.Modo.B)
+	assert_gt(a.size(), 0, "A tem texto")
+	assert_gt(b.size(), 0, "B tem texto")
+	assert_ne(a, b, "A difere de B")
+	for linha in a + b:
+		assert_ne(linha.strip_edges(), "", "linha de controle nao vazia")
+
+
+func test_c477_cada_linha_de_controle_cabe_em_148_px_nos_dois_modos() -> void:
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		for linha in TutorialCard.linhas_controle_toque(modo):
+			assert_lte(TutorialCard.largura_texto(linha), TutorialCard.LARGURA_CONTEUDO, "'%s' cabe em 148 px" % linha)
+
+
+func test_c478_fundo_dentro_de_180_x_altura_util_com_safe_area_topo() -> void:
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		Global.set_touch_mode(modo, false)
+		for tamanho in [PEQUENA, GRANDE]:
+			var c := _novo(TutorialCard.Variante.TOQUE, TutorialCard.Modo.PARTIDA, tamanho, 24.0)
+			var util := Rect2(0.0, 0.0, tamanho.x, tamanho.y)
+			assert_true(util.encloses(c.rect_fundo()), "fundo %s dentro de %s no modo %s" % [c.rect_fundo(), util, TouchMode.nome(modo)])
+	Global.set_touch_mode(TouchMode.padrao(), false)
+
+
+func test_c479_modo_forcado_altera_o_texto_e_valor_fora_da_faixa_cai_em_b() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	assert_eq(_texto_controle(_novo()), TutorialCard.linhas_controle_toque(TouchMode.Modo.A), "A forcado")
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	assert_eq(_texto_controle(_novo()), TutorialCard.linhas_controle_toque(TouchMode.Modo.B), "B forcado")
+	Global.set_touch_mode(99, false)
+	assert_eq(_texto_controle(_novo()), TutorialCard.linhas_controle_toque(TouchMode.Modo.B), "fora da faixa cai em B")
+	assert_eq(TutorialCard.linhas_controle_toque(2), TutorialCard.linhas_controle_toque(TouchMode.Modo.B), "valor 2 cai em B")
+	Global.set_touch_mode(TouchMode.padrao(), false)
+
+
+func test_c480_pular_nao_intersecta_as_linhas_de_controle() -> void:
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		Global.set_touch_mode(modo, false)
+		var c := _novo()
+		for nome in ["Controle", "Controle1", "Controle2"]:
+			var l := c.find_child(nome, true, false) as Label
+			var r := Rect2(l.position + Vector2(0.0, c.rect_fundo().position.y - 38.0), l.size)
+			assert_false(c.rect_pular().intersects(r), "Pular fora da linha %s no modo %s" % [nome, TouchMode.nome(modo)])
 	Global.set_touch_mode(TouchMode.padrao(), false)
 
 

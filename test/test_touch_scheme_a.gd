@@ -238,10 +238,82 @@ func test_c391_segundo_flick_repula_so_apos_novo_pulso() -> void:
 	_ticks(2)
 	_ticks(1)
 	assert_false(Input.is_action_pressed("jump"), "jump solto entre os dois flicks (nao fica preso)")
+	_arrasto(X0, Y0 - 30.0, 160)  # dedo parado 60 ms (>= REARME_PARADO_MS): rearma o flick
 	_arrasto(X0, Y0 - 60.0, 200)  # novo dy = 30 em 100 ms
 	assert_true(Input.is_action_pressed("jump"), "2o flick no mesmo toque: novo pulso")
 	_ticks(3)
 	assert_false(Input.is_action_pressed("jump"), "e o 2o pulso tambem solta")
+
+
+# Esquema A direto (sem Player): move o dedo principal e devolve se o quadro pediu pulo (o pedido e evento).
+func _novo_esquema(t_ms: int = 0) -> TouchSchemeA:
+	var e := TouchSchemeA.new()
+	e.press(0, t_ms, Vector2(X0, Y0))
+	return e
+
+
+func _mover_y(e: TouchSchemeA, y: float, t_ms: int, x: float = X0) -> bool:
+	e.mover(0, Vector2(x, y), t_ms)
+	return e.intencao(t_ms)["pulo"]
+
+
+func test_c453_arrasto_vertical_continuo_de_200_px_gera_um_pulso() -> void:
+	var e := _novo_esquema()
+	var pulsos: int = 0
+	for i in range(1, 38):  # 37 passos de 16 ms = 592 ms, 200 px em 600 ms
+		var t: int = i * 16
+		if _mover_y(e, Y0 - minf(200.0, 200.0 * float(t) / 600.0), t):
+			pulsos += 1
+	assert_eq(pulsos, 1, "arrasto continuo de 200 px: 1 pulso, nao 1 a cada 24 px")
+
+
+func test_c454_apos_dedo_parado_o_segundo_flick_gera_o_segundo_pulso() -> void:
+	var e := _novo_esquema()
+	assert_true(_mover_y(e, Y0 - 30.0, 100), "1o flick: pulso")
+	for t in [116, 132, 148, 164]:  # dedo parado 64 ms: velocidade 0, abaixo do limiar
+		assert_false(_mover_y(e, Y0 - 30.0, t), "dedo parado em t=%d: sem pulso" % t)
+	assert_true(_mover_y(e, Y0 - 60.0, 200), "2o flick apos o rearme por dedo parado: pulso")
+
+
+func test_c455_apos_recuo_de_n_px_o_segundo_flick_gera_o_segundo_pulso_e_n_menos_1_nao_rearma() -> void:
+	var n: float = TouchTuning.REARME_RECUO_PX
+	var topo: float = Y0 - 30.0
+	var e := _novo_esquema()
+	assert_true(_mover_y(e, topo, 100), "1o flick: pulso")
+	_mover_y(e, topo + n / 2.0, 116)
+	_mover_y(e, topo + n, 132)  # recuo de N px para baixo
+	assert_true(_mover_y(e, topo + n - 30.0, 180), "recuo de N px rearma: 2o flick pula")
+	var curto := _novo_esquema()
+	assert_true(_mover_y(curto, topo, 100), "1o flick (recuo curto): pulso")
+	_mover_y(curto, topo + (n - 1.0) / 2.0, 116)
+	_mover_y(curto, topo + n - 1.0, 132)  # recuo de N-1 px
+	assert_false(_mover_y(curto, topo + n - 1.0 - 30.0, 180), "recuo de N-1 px nao rearma: sem 2o pulso")
+
+
+func test_c456_soltar_e_cancelar_rearmam_flick_unico_e_lateral_seguem() -> void:
+	var soltar := _novo_esquema()
+	assert_true(_mover_y(soltar, Y0 - 30.0, 100), "1o flick antes de soltar")
+	soltar.release(0, 110)
+	soltar.press(0, 1000, Vector2(X0, Y0))
+	assert_true(_mover_y(soltar, Y0 - 30.0, 1100), "apos soltar, novo toque com flick = pulso")
+	var cancelar := _novo_esquema()
+	assert_true(_mover_y(cancelar, Y0 - 30.0, 100), "1o flick antes de cancelar")
+	cancelar.cancelar(0)
+	cancelar.press(0, 1000, Vector2(X0, Y0))
+	assert_true(_mover_y(cancelar, Y0 - 30.0, 1100), "apos cancelar, novo toque com flick = pulso")
+	var unico := _novo_esquema()
+	assert_true(_mover_y(unico, Y0 - 24.0, 150), "flick unico de 24 px em 150 ms: 1 pulso")
+	var reto := _novo_esquema()
+	reto.mover(0, Vector2(X0, Y0 - 30.0), 100)
+	var r: Dictionary = reto.intencao(100)
+	assert_true(r["pulo"], "flick reto: pulo")
+	assert_false(r["esquerda"] or r["direita"], "flick reto: sem lateral")
+	var diag := _novo_esquema()
+	diag.mover(0, Vector2(X0 + 20.0, Y0), 10)
+	diag.intencao(10)
+	diag.mover(0, Vector2(X0 + 20.0, Y0 - 30.0), 100)
+	var d: Dictionary = diag.intencao(100)
+	assert_true(d["pulo"] and d["direita"], "flick diagonal: pulo com lateral a direita")
 
 
 func test_c392_correcao_de_direcao_no_ar_muda_velocity_x() -> void:
