@@ -49,6 +49,13 @@ var _seno_ligado: bool = false
 var _vai_e_vem_ligado: bool = false
 # A mecanica que pisca esta ligada neste gerador (nunca na linha garantir_cor_inicial)
 var _pisca_ligado: bool = false
+# A mecanica plataformas_que_caem esta ligada neste gerador (nunca na linha garantir_cor_inicial); quem cai e sorteado
+# por plataforma (proporcao_que_caem), nunca na lista compartilhada
+var _queda_ligada: bool = false
+# rng dedicado do sorteio de quem cai (derivado da semente do gerador, sem consumir o rng do layout); criado so no 1o sorteio
+var _rng_queda: RandomNumberGenerator = null
+# Mistura a semente do gerador para o rng da queda nao repetir a sequencia do rng do gerador nem a do piscar
+const SEMENTE_CAI: int = 0xCA1DA
 # rng dedicado do piscar (derivado da semente do gerador, sem consumir o rng dele); criado so no 1o sorteio
 var _rng_pisca: RandomNumberGenerator = null
 # Mistura a semente do gerador para o rng do piscar nao repetir a sequencia do rng do gerador
@@ -194,8 +201,13 @@ func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
 	_seno_ligado = false
 	_vai_e_vem_ligado = false
 	_pisca_ligado = false
+	_queda_ligada = false
 	for modificador in PlatformModifiers.resolver(snapshot):
 		if garantir_cor_inicial and not modificador.vale_em_linha_inicial():
+			continue
+		if modificador is PlatformCrumble:
+			# Quem cai e sorteado por plataforma (instancia propria no sorteio), nunca na lista compartilhada
+			_queda_ligada = true
 			continue
 		if modificador is PlatformSineMotion or modificador is PlatformPingPongMotion:
 			# Estado por plataforma (fase): nunca na lista compartilhada; o sorteio cria a instancia propria
@@ -238,7 +250,34 @@ func _aplicar_mecanicas(platform: Platform) -> void:
 		if is_same(lista, _modificadores):
 			lista = _modificadores.duplicate()
 		lista.append(piscante)
+	# Independente das demais mecanicas: piscante/cicladora/oscilante tambem podem cair
+	if _sorteia_que_cai():
+		if is_same(lista, _modificadores):
+			lista = _modificadores.duplicate()
+		lista.append(PlatformCrumble.new())
 	platform.definir_modificadores(lista, _snapshot_nascimento)
+
+# Sorteio de quem cai (rng dedicado, aplicado depois dos demais sorteios): nunca com a mecanica desligada (inclui a linha
+# inicial) nem em sem_derrota; fracao >= 1.0 cai e <= 0.0 nao cai, ambos sem consumir rng; so o intervalo aberto sorteia.
+func _sorteia_que_cai() -> bool:
+	if not _queda_ligada or Global.sem_derrota:
+		return false
+	var proporcao: float = _snapshot_nascimento.get_proporcao_que_caem()
+	if proporcao >= 1.0:
+		return true
+	if proporcao <= 0.0:
+		return false
+	return _fonte_queda().randf() < proporcao
+
+# rng dedicado da queda: semente derivada da do gerador (reprodutivel em teste); sem rng, aleatorio proprio
+func _fonte_queda() -> RandomNumberGenerator:
+	if _rng_queda == null:
+		_rng_queda = RandomNumberGenerator.new()
+		if rng == null:
+			_rng_queda.randomize()
+		else:
+			_rng_queda.seed = rng.seed ^ SEMENTE_CAI
+	return _rng_queda
 
 # Sorteio do piscar (rng dedicado, so consumido quando a plataforma e elegivel):
 # - nunca com a mecanica desligada, em sem_derrota (D5) ou numa cicladora (D6);
