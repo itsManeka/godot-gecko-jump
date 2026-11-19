@@ -651,3 +651,20 @@ func test_teto_devolve_proporcao_que_caem_do_ultimo_estagio() -> void:
 	# C521: no teto o snapshot copia o campo do ultimo estagio (0.8), nao o padrao 1.0.
 	var s := _curva_duas_quedas().avaliar(1e9, 0.0)
 	assert_almost_eq(s.get_proporcao_que_caem(), 0.8, EPS, "teto = proporcao do ultimo estagio")
+
+
+func test_proporcao_que_caem_de_producao_e_0_5_em_e2_e_e3_e_1_em_e0_e_e1() -> void:
+	# C537: valor decidido no G1 (dono, 2026-11-19) = 0.5 em E2 e E3; E0/E1 sem o campo = padrao 1.0.
+	# O literal 0.5 e o valor decidido, nao o numero lido do .tres.
+	assert_not_null(_curva, "load() do .tres devolve DifficultyCurve")
+	assert_eq(_curva.estagios.size(), 4, "4 estagios")
+	var e0: DifficultyStage = _curva.estagios[0]
+	var e1: DifficultyStage = _curva.estagios[1]
+	var e2: DifficultyStage = _curva.estagios[2]
+	var e3: DifficultyStage = _curva.estagios[3]
+	assert_almost_eq(e0.proporcao_que_caem, 1.0, EPS, "E0 sem o campo = padrao 1.0")
+	assert_almost_eq(e1.proporcao_que_caem, 1.0, EPS, "E1 sem o campo = padrao 1.0")
+	assert_almost_eq(e2.proporcao_que_caem, 0.5, EPS, "E2 = 0.5 (G1)")
+	assert_almost_eq(e3.proporcao_que_caem, 0.5, EPS, "E3 = 0.5 (G1)")
+	assert_true(e2.mecanicas.has(&"plataformas_que_caem"), "E2 mantem plataformas_que_caem")
+	assert_true(e3.mecanicas.has(&"plataformas_que_caem"), "E3 mantem plataformas_que_caem")

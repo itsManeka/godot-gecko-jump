@@ -31,6 +31,7 @@ func _estagio(inicio: float, largura: float, mecanicas: Array[StringName]) -> Di
 	estagio.progresso_inicio = inicio
 	estagio.largura_plataforma = largura
 	estagio.mecanicas = mecanicas
+	estagio.proporcao_que_caem = 1.0  # todas caem: o teste conta PlatformCrumble, nao depende do .tres
 	return estagio
 
 

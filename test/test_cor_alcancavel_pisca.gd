@@ -99,7 +99,8 @@ func _casos_com_pisca() -> Array:
 	return com_pisca
 
 
-# Curva de producao com proporcao_piscantes = 1.0 em todo estagio (pior caso de alcance). `so_pisca` troca as mecanicas
+# Curva de producao com proporcao_piscantes = 1.0 e proporcao_que_caem = 1.0 em todo estagio (pior caso de alcance; a
+# fracao de queda fica fixa para o teste nao depender do valor do .tres). `so_pisca` troca as mecanicas
 # dos estagios que piscam so por ela (isola a mecanica); sem ele valem as combinacoes de producao.
 func _estado_forcado(progresso: float, so_pisca: bool) -> DifficultyState:
 	var curva := _curva()
@@ -110,6 +111,7 @@ func _estado_forcado(progresso: float, so_pisca: bool) -> DifficultyState:
 	for original in curva.estagios:
 		var copia := original.duplicate() as DifficultyStage
 		copia.proporcao_piscantes = 1.0
+		copia.proporcao_que_caem = 1.0
 		if so_pisca and original.mecanicas.has(PlatformModifiers.PLATAFORMAS_QUE_PISCAM):
 			copia.mecanicas = _so_pisca()
 		estagios.append(copia)

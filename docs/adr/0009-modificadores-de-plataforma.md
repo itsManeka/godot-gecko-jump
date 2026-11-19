@@ -37,6 +37,12 @@ Restricoes que moldam a decisao:
 - **Linhas com `garantir_cor_inicial` nao recebem o modificador de desmoronar.** A linha inicial garante uma cor
   alcancavel no comeco da partida, entao nunca pode desaparecer. O gerador pergunta ao proprio modificador
   (`vale_em_linha_inicial()`, padrao `true`; o de desmoronar devolve `false`), sem conhecer a classe concreta.
+- **Nem toda plataforma do estagio desmorona.** Com `plataformas_que_caem` ligada, cada plataforma nova sorteia se cai,
+  com a fracao `proporcao_que_caem` do estagio (`0.0` a `1.0`, interpolada entre estagios, padrao
+  `DifficultyStage.PROPORCAO_QUE_CAEM_PADRAO` = `1.0`: todas caem). O sorteio usa um rng dedicado derivado da semente
+  do gerador, entao o layout de uma partida com seed nao muda; `0.0` e `1.0` nao consomem sorteio. O desmoronamento
+  independe das demais mecanicas da plataforma. Teste que conta `PlatformCrumble` fixa a fracao em `1.0` na curva do
+  proprio teste, sem ler o valor do `.tres`.
 - **Largura por shape duplicado.** `Platform.set_largura(w)` duplica o `RectangleShape2D` da instancia e ajusta so
   `size.x`; o sub-recurso da cena nao muda. O visual recorta o `Sprite2D` com `region_rect` centrado na largura
   (sem escala). **Nao** se usa `scale` no corpo fisico. `AreaCheck` e `VisibleOnScreenNotifier2D` ficam com o tamanho
