@@ -22,6 +22,8 @@ var _duracao_visivel: float
 var _duracao_invisivel: float
 var _aviso_pisca: float
 var _proporcao_que_caem: float
+var _raridade_power_up: float
+var _pesos_power_ups: Dictionary
 
 
 # Parametros novos entram sempre no fim: chamadas posicionais antigas (ate o 18o) continuam validas.
@@ -44,7 +46,9 @@ func _init(
 	duracao_visivel: float = DifficultyStage.DURACAO_VISIVEL_PADRAO,
 	duracao_invisivel: float = DifficultyStage.DURACAO_INVISIVEL_PADRAO,
 	aviso_pisca: float = DifficultyStage.AVISO_PISCA_PADRAO,
-	proporcao_que_caem: float = DifficultyStage.PROPORCAO_QUE_CAEM_PADRAO
+	proporcao_que_caem: float = DifficultyStage.PROPORCAO_QUE_CAEM_PADRAO,
+	raridade_power_up: float = DifficultyStage.RARIDADE_POWER_UP_PADRAO,
+	pesos_power_ups: Dictionary = {}
 ) -> void:
 	_scroll = scroll
 	_speed_moveis = speed_moveis
@@ -65,6 +69,8 @@ func _init(
 	_duracao_invisivel = duracao_invisivel
 	_aviso_pisca = aviso_pisca
 	_proporcao_que_caem = clampf(proporcao_que_caem, 0.0, 1.0)
+	_raridade_power_up = clampf(raridade_power_up, 0.0, 1.0)
+	_pesos_power_ups = pesos_power_ups.duplicate()
 
 
 func get_scroll() -> float:
@@ -141,6 +147,14 @@ func get_aviso_pisca() -> float:
 
 func get_proporcao_que_caem() -> float:
 	return _proporcao_que_caem
+
+
+func get_raridade_power_up() -> float:
+	return _raridade_power_up
+
+
+func get_pesos_power_ups() -> Dictionary:
+	return _pesos_power_ups.duplicate()
 
 
 # Foto vigente de um estado de dificuldade; sem estado (cena isolada, antes da injecao) = estagio 0

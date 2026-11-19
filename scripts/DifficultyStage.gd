@@ -21,6 +21,7 @@ const DURACAO_VISIVEL_PADRAO: float = 3.0
 const DURACAO_INVISIVEL_PADRAO: float = 1.2
 const AVISO_PISCA_PADRAO: float = 0.6
 const PROPORCAO_QUE_CAEM_PADRAO: float = 1.0
+const RARIDADE_POWER_UP_PADRAO: float = 0.0
 
 ## Progresso (0..1) a partir do qual este estagio vale; interpola ate o proximo estagio.
 @export_range(0.0, 1.0) var progresso_inicio: float = 0.0
@@ -63,3 +64,7 @@ const PROPORCAO_QUE_CAEM_PADRAO: float = 1.0
 @export var duracao_invisivel: float = DURACAO_INVISIVEL_PADRAO
 ## Segundos finais da janela visivel em que a plataforma avisa que vai sumir (so vale com a mecanica que pisca).
 @export var aviso_pisca: float = AVISO_PISCA_PADRAO
+## Chance (0..1) de uma plataforma criada neste estagio ganhar um power-up (interpola ate o proximo estagio).
+@export_range(0.0, 1.0) var raridade_power_up: float = RARIDADE_POWER_UP_PADRAO
+## Peso relativo de cada tipo de power-up (nome -> peso). Nao interpola: vem do estagio atual. Vazio = nenhum candidato.
+@export var pesos_power_ups: Dictionary = {}

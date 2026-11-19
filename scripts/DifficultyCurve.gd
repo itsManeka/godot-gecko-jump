@@ -70,7 +70,9 @@ func avaliar(pontos: float, segundos: float) -> DifficultySnapshot:
 		lerpf(atual.duracao_visivel, proximo.duracao_visivel, t),
 		lerpf(atual.duracao_invisivel, proximo.duracao_invisivel, t),
 		lerpf(atual.aviso_pisca, proximo.aviso_pisca, t),
-		lerpf(atual.proporcao_que_caem, proximo.proporcao_que_caem, t)
+		lerpf(atual.proporcao_que_caem, proximo.proporcao_que_caem, t),
+		lerpf(atual.raridade_power_up, proximo.raridade_power_up, t),
+		atual.pesos_power_ups
 	)
 
 
@@ -94,5 +96,7 @@ func _snapshot_de(estagio: DifficultyStage) -> DifficultySnapshot:
 		estagio.duracao_visivel,
 		estagio.duracao_invisivel,
 		estagio.aviso_pisca,
-		estagio.proporcao_que_caem
+		estagio.proporcao_que_caem,
+		estagio.raridade_power_up,
+		estagio.pesos_power_ups
 	)
