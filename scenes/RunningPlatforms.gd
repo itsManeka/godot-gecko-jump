@@ -67,6 +67,12 @@ var _piscantes_na_linha: int = 0
 # moveis consecutivas nunca ha piscante ao lado de cicladora: a anterior era cicladora / a piscante anterior e neutralizada.
 var _ciclo_anterior: bool = false
 var _ultima_pisca: PlatformBlink = null
+# Linha elegivel ao sorteio de power-up: so ScrollLevel.create_new_running_platform liga (linhas de fluxo)
+var power_ups_elegivel: bool = false
+# rng dedicado do sorteio de power-up (derivado da semente do gerador, sem consumir o rng do layout nem o da cor)
+var _rng_power_up: RandomNumberGenerator = null
+# Mistura a semente do gerador para o rng do power-up nao repetir a sequencia dos demais
+const SEMENTE_POWER_UP: int = 0x90E5B1
 
 # Inicializa o gerador de plataformas
 func _ready():
@@ -134,6 +140,7 @@ func create_static_platforms():
 			platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color(rng))
 		platform.position.x = position_x
 		_aplicar_mecanicas(platform)
+		_aplicar_power_up(platform)
 		platform.set_speed(0)  # Plataformas estáticas não se movem
 		if platform.obter_pisca() != null:
 			ultima_pisca = platform.obter_pisca()
@@ -190,7 +197,25 @@ func _criar_plataforma(x: float):
 	platform.position.x = x
 	platform.set_speed(0 if Global.sem_derrota else speed)
 	_aplicar_mecanicas(platform)
+	_aplicar_power_up(platform)
 	add_child(platform)
+
+# Sorteio do power-up da plataforma (rng dedicado, depois dos demais sorteios): so linha elegivel e nunca em sem_derrota
+# (D5). Sem tipo registrado com peso ou com raridade 0 o sorteio devolve vazio sem consumir rng.
+func _aplicar_power_up(platform: Platform) -> void:
+	if not power_ups_elegivel or Global.sem_derrota:
+		return
+	platform.definir_power_up(PowerUpDraw.sortear(_fonte_power_up(), _snapshot_nascimento))
+
+# rng dedicado do power-up: semente derivada da do gerador (reprodutivel em teste); sem rng, aleatorio proprio
+func _fonte_power_up() -> RandomNumberGenerator:
+	if _rng_power_up == null:
+		_rng_power_up = RandomNumberGenerator.new()
+		if rng == null:
+			_rng_power_up.randomize()
+		else:
+			_rng_power_up.seed = rng.seed ^ SEMENTE_POWER_UP
+	return _rng_power_up
 
 # Resolve os modificadores do snapshot do nascimento; linha com garantir_cor_inicial (Q5) nunca desmorona
 func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:

@@ -121,6 +121,8 @@ func create_new_running_platform(y_local: float = NAN):
 	running_platform.position = Vector2(0, y_local)
 	# Estado injetado ANTES do add_child (adiado): a linha le speed/proporcao/K no _ready
 	running_platform.dificuldade = dificuldade
+	# So as linhas de fluxo (indice >= 1) sorteiam power-up; as do .tscn e as extras iniciais nunca ligam a flag
+	running_platform.power_ups_elegivel = true
 	# Rngs da seed pelo indice do y local ANTES do add_child adiado (o ramo NAN entra aqui com o y ja
 	# resolvido); sem semente a injecao e no-op
 	_injetar_rng_na_linha(running_platform)

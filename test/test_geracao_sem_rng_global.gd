@@ -14,8 +14,8 @@ const PADRAO_SORTEIO_GLOBAL: String = "(?<![\\w.])(randi|randf|randf_range|rando
 # como esta (debug/smoke); Player.rng/pouso fica fora da seed por (d) do ADR 0014 e passa pelo ReachableColors.
 const EXCECOES: Dictionary = {
 	"res://scenes/RunningPlatforms.gd": {
-		"ocorrencias": 5,
-		"motivo": "ramos rng == null (partida sem seed): randomize() e randf() globais das fontes sem rng injetado, incluindo o rng dedicado da queda (_fonte_queda)",
+		"ocorrencias": 6,
+		"motivo": "ramos rng == null (partida sem seed): randomize() e randf() globais das fontes sem rng injetado, incluindo os rngs dedicados da queda (_fonte_queda) e do power-up (_fonte_power_up)",
 	},
 	"res://scripts/Enums.gd": {
 		"ocorrencias": 1,

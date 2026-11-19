@@ -39,6 +39,11 @@ var _snapshot: DifficultySnapshot = null
 var _pisca_oculta := false
 var _pisca_pendente := false
 var _tempo_aviso_pisca := 0.0
+# Tipo de power-up desta plataforma (&"" = nenhum) e o icone filho; o icone nunca entra em Global.platforms
+var tipo_power_up: StringName = &""
+var icone_power_up: Node2D = null
+# Distancia (px) entre a base do icone e o topo da plataforma
+const ICONE_FOLGA := 2.0
 # Desvio horizontal (px/s, negativo = esquerda) somado a `speed` pelo modificador de movimento; 0 = sem efeito
 var desvio_vx: float = 0.0
 
@@ -56,6 +61,7 @@ func _ready():
 	for modificador in _modificadores:
 		modificador.ao_criar(self, _snapshot)
 	_atualizar_pisca(0.0, true)
+	_posicionar_icone()
 
 # Sai de Global.platforms sempre que sai da arvore (queue_free do gerador, troca de cena, saida de tela)
 func _exit_tree():
@@ -65,6 +71,24 @@ func _exit_tree():
 func definir_modificadores(lista: Array, snapshot: DifficultySnapshot) -> void:
 	_modificadores = lista
 	_snapshot = snapshot
+
+# Power-up sorteado pelo gerador (vazio = nenhum). Com tipo, a plataforma ganha um icone filho (Node2D sem colisao);
+# o gerador chama antes do add_child e o icone se posiciona no _ready (o sprite so existe ali).
+func definir_power_up(tipo: StringName) -> void:
+	tipo_power_up = tipo
+	if tipo == &"":
+		return
+	var icone := PowerUpIcone.new()
+	icone.tipo = tipo
+	icone_power_up = icone
+	add_child(icone)
+
+# Icone centrado no x da plataforma, com a base ICONE_FOLGA px acima do topo do sprite
+func _posicionar_icone() -> void:
+	if icone_power_up == null:
+		return
+	var topo: float = sprite.position.y + sprite.offset.y - sprite.texture.get_height() / 2.0
+	icone_power_up.position = Vector2(0.0, topo - ICONE_FOLGA - PowerUpIcone.TAMANHO_PX / 2.0)
 
 # Pouso confirmado do jogador: despacha o hook aos modificadores
 func notificar_pouso() -> void:
