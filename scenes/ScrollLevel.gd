@@ -91,11 +91,14 @@ func avancar_camera(player: Node2D, limite: float) -> void:
 	if player == null or !Global.is_iniciado():
 		return
 	var excesso: float = CameraFollow.excesso(player.global_position.y, limite)
-	if excesso <= 0.0:
+	# Easing (issue #49): so a parcela do excesso restante neste frame; o restante e o excesso recalculado do y do gecko
+	# (cada parcela desce o gecko junto), entao nao ha estado novo e o acumulado fecha no mesmo excesso de antes
+	var parcela: float = CameraFollow.parcela(excesso)
+	if parcela <= 0.0:
 		return
-	running_platforms.position.y += excesso
-	position_scrolled += excesso
-	player.global_position.y += excesso
+	running_platforms.position.y += parcela
+	position_scrolled += parcela
+	player.global_position.y += parcela
 	_criar_linhas_pendentes()
 
 # Cria as linhas que o scroll ja alcancou: uma a cada ESPACAMENTO px de position_scrolled, sem depender de altura nem de
