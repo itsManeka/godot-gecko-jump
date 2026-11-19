@@ -18,7 +18,7 @@ Restricoes que moldam a decisao:
   (`scripts/BestScoreStore.gd:9-11`). Os modos novos convivem com esse gerador.
 - A pausa e `get_tree().paused` ([ADR 0008](0008-pausa-por-tree-paused.md)): nenhum no pausavel anda nem conta tempo,
   entao os contadores dos power-ups congelam junto, sem codigo novo de pausa.
-- "Modo de toque" ja nomeia o esquema A/B das Opcoes ([ADR 0013](0013-modos-de-toque-alternaveis.md)): o vocabulario do
+- "Modo de toque" ja nomeia o esquema das Opcoes ("Flick" ou "Joy invisivel", antes A/B) ([ADR 0013](0013-modos-de-toque-alternaveis.md)): o vocabulario do
   seletor novo tem de distinguir "modo de jogo" de "modo de toque".
 - A dificuldade e regida por estagio (`DifficultyState`, injetada em `scenes/RunningPlatforms.gd:24-25`): nenhum modo
   rebalanceia a curva.
@@ -56,7 +56,7 @@ Restricoes que moldam a decisao:
   nao entra na seed: a cor das moveis segue o gecko (`scenes/RunningPlatforms.gd:156-169`). **Uma tentativa por dia**,
   gasta ao iniciar a partida. A tentativa e local ate o E5 e burlavel (trocar a data ou apagar o save libera de novo);
   aceito pelo dono. Depois do ranking online (E5, issue #29), o Desafio diario aparece so com o jogador conectado.
-- **Vocabulario.** "Modo de jogo" e o seletor deste ADR; "modo de toque" e o esquema A/B das Opcoes
+- **Vocabulario.** "Modo de jogo" e o seletor deste ADR; "modo de toque" e o esquema das Opcoes ("Flick" ou "Joy invisivel", antes A/B)
   ([ADR 0013](0013-modos-de-toque-alternaveis.md), renomeado na f520). O botao do menu e o titulo da tela usam
   "Modo"/"Modos" so para modo de jogo.
 - **Dificuldade por estagio.** A curva de dificuldade por estagio vale igual em todos os modos: nenhum modo acelera nem
