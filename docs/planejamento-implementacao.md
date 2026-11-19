@@ -157,8 +157,8 @@ export web de debug e o game-bot nativo contra a `main`. O PR fecha #10, #11, #1
    translucida, na mesma cor do fundo da pausa (contraste acima de 4,5:1 sobre a plataforma amarela). Legibilidade no
    aparelho: verificacao manual no playtest do dono.
 9. Camera que acompanha o gecko no alto (#46): quando o gecko sobe acima do limite de topo (0,40 da altura visivel,
-   `scripts/CameraFollow.gd`), o mundo avanca o excesso no mesmo frame (plataformas, gatilho de linhas novas e gecko
-   deslocados juntos), entao ele nunca sai pelo topo; o scroll da curva de dificuldade segue como piso (nunca diminui) e,
+   `scripts/CameraFollow.gd`), o mundo avanca o excesso suavizado em parcelas por frame, convergindo ao limite
+   (plataformas, gatilho de linhas novas e gecko deslocados juntos), entao ele nunca sai pelo topo; o scroll da curva de dificuldade segue como piso (nunca diminui) e,
    sem partida iniciada (menu), nada se move. Sem roteiro de smoke: nenhum roteiro com seed fixa leva o gecko ao limite
    de forma deterministica (#48); cobertura por GUT e a sensacao do limite pelo playtest do dono.
 

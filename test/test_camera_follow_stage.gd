@@ -333,7 +333,7 @@ func test_c504_linhas_novas_iguais_a_referencia_do_excesso_inteiro() -> void:
 	for excesso in [EXCESSO_01, 70.0, 160.0, EXCESSO_PULO]:
 		_p.global_position.y = _limite() - excesso
 		ref_p.global_position.y = _limite() - excesso
-		# comportamento de hoje: o excesso inteiro no mesmo frame
+		# referencia: o comportamento anterior ao easing, com o excesso inteiro num frame so
 		ref_scroll.running_platforms.position.y += excesso
 		ref_scroll.position_scrolled += excesso
 		ref_p.global_position.y += excesso

@@ -2,8 +2,9 @@ class_name CameraFollow
 extends RefCounted
 
 # Regra pura da camera que acompanha o gecko quando ele sobe (issue #46): o limite de topo e uma fracao
-# da altura visivel e, por frame, o mundo avanca o quanto o gecko ultrapassou esse limite. Sem arvore de
-# cena (padrao de InitialRows.gd): testavel direto; aplicado na cena por ScrollLevel/Stage (T2).
+# da altura visivel. O mundo avanca o quanto o gecko ultrapassou esse limite, suavizado: por frame aplica-se
+# uma parcela do que resta (easing, issue #49), ate o gecko convergir ao limite. Sem arvore de
+# cena (padrao de InitialRows.gd): testavel direto; aplicado na cena por ScrollLevel/Stage.
 
 # Fracao da altura visivel que define o limite de topo (0,40 -> y = 128 com altura 320).
 # Valor de sensacao: o dono confere no playtest e ajusta a constante.

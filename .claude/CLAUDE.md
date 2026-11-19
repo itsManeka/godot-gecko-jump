@@ -32,7 +32,7 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ```
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
-           ScrollLevel (scroll vindo da curva de dificuldade + avanco quando o gecko sobe acima do limite de topo), TouchControls (toque -> acoes de input, esquemas A/B selecionaveis, B padrao; ADR 0013), TouchHint (dica das zonas),
+           ScrollLevel (scroll vindo da curva de dificuldade + avanco suavizado quando o gecko sobe acima do limite de topo), TouchControls (toque -> acoes de input, esquemas A/B selecionaveis, B padrao; ADR 0013), TouchHint (dica das zonas),
            PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes, modo de toque, sensibilidade do modo A com A ativo, Ver tutorial),
            TutorialCard (card da 1a partida e reabertura modal), LevelUpFrame (vinheta branca nas 4 bordas da safe area que pulsa N vezes na subida de estagio)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
@@ -50,7 +50,7 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            TouchScheme.gd / TouchSchemes.gd / TouchSchemeA/B.gd (contrato e esquemas de toque, sem cena; ADR 0013),
            DifficultyCurve.gd / DifficultyStage.gd (curva de dificuldade, sem cena; ADR 0007), PlatformModifier(s).gd + PlatformNarrower/PlatformCrumble/PlatformColorCycle.gd (mecanicas de plataforma, sem cena; ADR 0009/0010),
            DifficultyState.gd (progresso da partida: pontos e tempo, snapshot, sinal `estagio_mudou`, sem cena),
-           CameraFollow.gd (limite de topo do gecko = 0,40 da altura visivel e excesso de subida que o mundo avanca, sem cena),
+           CameraFollow.gd (limite de topo do gecko = 0,40 da altura visivel e avanco suavizado do excesso de subida, sem cena),
            PauseState.gd (pausa = `get_tree().paused`, nunca `Global.iniciado`; sem cena; ADR 0008),
            TutorialFlag.gd (flag "tutorial ja visto" no OptionsStore), DebugArgs.gd (args de usuario do nativo debug, `--nome=valor` depois de `--`), ModoTutorialVisto.gd (`?tutorial=` dos smokes, so debug), ModoProgressoInicial.gd (`?progresso=` dos smokes, so debug), ModoToqueInicial.gd (`?toque=` dos smokes, so debug), ModoMolduraFixa.gd (`?moldura=fixa`, so debug), ModoMolduraLenta.gd (`?moldura=lenta`, pulso em camera lenta dos smokes, so debug),
            UiHelpers.gd (estilo de caixa, label e chave do mouse das telas de UI, sem cena)

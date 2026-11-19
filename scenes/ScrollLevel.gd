@@ -82,9 +82,9 @@ func _physics_process(delta):
 	# Gatilho aritmético: uma linha a cada ESPACAMENTO px, sem depender de altura nem de colisão
 	_criar_linhas_pendentes()
 
-# Avanco da camera do topo (issue #46): o mundo sobe o quanto o gecko passou do limite, e o gecko continua no limite.
-# Quem chama e a Stage, com prioridade de physics depois do Player (o y do gecko ja e o do frame, entao ele nao fica
-# 1 frame acima do limite). Sem Player (cena isolada) ninguem chama: o scroll da curva segue identico ao de antes.
+# Avanco da camera do topo (issue #46): o mundo sobe o quanto o gecko passou do limite, suavizado em parcelas por
+# frame que convergem ao limite (o gecko desce junto a cada parcela; por isso ele fica acima do limite por alguns frames
+# e depois converge). Quem chama e a Stage, com prioridade de physics depois do Player. Sem Player (cena isolada) ninguem chama: o scroll da curva segue identico ao de antes.
 # O excesso soma em running_platforms.position.y, position_scrolled e no y global do gecko: a posicao relativa entre
 # gecko e plataformas se mantem, e as linhas novas saem pelo mesmo gatilho aritmetico do scroll da curva.
 func avancar_camera(player: Node2D, limite: float) -> void:
