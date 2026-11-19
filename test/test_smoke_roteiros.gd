@@ -11,6 +11,7 @@ const ROTEIROS: Array[String] = [
 	"estagio-alto",
 	"gecko",
 	"janela-larga-1280x720",
+	"power-up",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
 	"retrato-1170x2532",
@@ -26,12 +27,13 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-1170x2532",
 	"retrato-720x1280",
 ]
-const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio"]
+const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga"]
 const ROTEIROS_SEMDERROTA: Array[String] = [
 	"retrato-pontua-1080x2772",
 	"estagio",
 	"estagio-alto",
 	"gecko",
+	"power-up",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
 	"retrato-1170x2532",
@@ -372,6 +374,25 @@ func test_estagio_alto_prova_estagio_3_com_progresso_1_e_semderrota() -> void:
 		if passos[i].has("wait"):
 			espera_ms += int(passos[i]["wait"])
 	assert_gt(espera_ms, TROCA_COR_MS, "entre antes-troca e depois-troca ha mais de 3 s (um periodo de cor da cicladora)")
+
+
+func test_power_up_parseia_usa_powerup_teste_e_so_chaves_publicadas() -> void:
+	var nome: String = "power-up"
+	_checar_roteiro_com_seed(nome)
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_true("powerup=teste" in caminho, "o roteiro power-up passa powerup=teste")
+	assert_true("semderrota=1" in caminho, "o roteiro power-up liga semderrota")
+	assert_true("tutorial=visto" in caminho, "o roteiro power-up pula o tutorial")
+	assert_true(CHAVES_PUBLICADAS.has("powerup.ativo"), "powerup.ativo e chave publicada")
+	assert_true(CHAVES_PUBLICADAS.has("powerup.restante"), "powerup.restante e chave publicada")
+	assert_true(CHAVES_PUBLICADAS.has("powerup.carga"), "powerup.carga e chave publicada")
+	var chaves_powerup: int = 0
+	for passo in _expects(nome):
+		for chave in passo["expect"].keys():
+			assert_true(CHAVES_PUBLICADAS.has(str(chave)), "chave do expect publicada pela ponte: %s" % str(chave))
+			if str(chave).begins_with("powerup."):
+				chaves_powerup += 1
+	assert_gt(chaves_powerup, 0, "o roteiro power-up confere a ponte do powerup")
 
 
 func _indice_shots(nome: String, rotulo: String) -> int:

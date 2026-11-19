@@ -72,6 +72,8 @@ var _aviso_publicado: bool = false
 var _alpha_publicado: float = 0.0
 # Par arredondado de player.x/y na ultima publicacao da ponte
 var _posicao_publicada: Vector2i = Vector2i.ZERO
+# Campo `powerup` (ativo, restante em segundos inteiros, carga) da ultima publicacao: a mudanca de segundo republica 1x
+var _powerup_publicado: Dictionary = {}
 # y do limite de topo da camera (fracao da altura visivel em CameraFollow); recalculado a cada apply_layout
 var _limite_camera: float = 0.0
 
@@ -121,6 +123,7 @@ func _ready():
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
 	player.power_up_coletado.connect(_coletar_power_up)
+	partida_iniciada.connect(_ativar_power_up_inicial)
 	_publicar_estado(GameState.STATE_MENU, true)
 
 	# Camada de toque de um polegar (criada por codigo; inerte fora de partida em curso)
@@ -274,6 +277,7 @@ func _physics_process(delta: float) -> void:
 		dificuldade.estagio() != _estagio_publicado
 		or _aviso_atual() != _aviso_publicado
 		or _alpha_atual() != _alpha_publicado
+		or _powerup_atual() != _powerup_publicado
 	):
 		_republicar_estado()
 		return
@@ -486,6 +490,30 @@ func _coletar_power_up(tipo: StringName) -> void:
 		return
 	power_up_estado.coletar(power_up)
 
+# Power-up inicial de debug (`?powerup=`, Global.power_up_inicial) ao iniciar a partida. "" = nenhum; o PowerUpDeTeste
+# nao esta no registro de producao, entao e resolvido aqui; os demais nomes passam pelo registro (desconhecido = nada).
+func _ativar_power_up_inicial() -> void:
+	var nome: String = Global.power_up_inicial
+	if nome == "":
+		return
+	var power_up: PowerUp = null
+	if StringName(nome) == PowerUpDeTeste.NOME_PADRAO:
+		power_up = PowerUpDeTeste.new()
+	else:
+		power_up = PowerUps.resolver(StringName(nome))
+	if power_up == null:
+		return
+	power_up_estado.coletar(power_up)
+
+# Campo `powerup` da ponte lido do estado da partida: restante arredondado para cima (como GameState.build)
+func _powerup_atual() -> Dictionary:
+	var ativo: PowerUp = power_up_estado.ativo()
+	return {
+		"ativo": "" if ativo == null else String(ativo.nome),
+		"restante": ceili(power_up_estado.restante()),
+		"carga": power_up_estado.carga(),
+	}
+
 # Adiciona um ponto à pontuação e atualiza a interface
 func add_point():
 	# points inicia em -1: o pouso inicial na plataforma de partida leva a 0 e nao conta; o 1o ponto real leva 0 -> 1
@@ -519,6 +547,7 @@ func _publicar_estado(state: String, alive: bool) -> void:
 	_aviso_publicado = _aviso_atual() and state != GameState.STATE_LOST
 	_posicao_publicada = _posicao_atual()
 	_alpha_publicado = _alpha_atual() if state != GameState.STATE_LOST else 0.0
+	_powerup_publicado = _powerup_atual()
 	ultimo_estado = GameState.build(
 		maxi(points, 0),
 		Global.get_best_score(),
@@ -532,5 +561,8 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		float(_posicao_publicada.x),
 		float(_posicao_publicada.y),
 		_alpha_publicado,
+		str(_powerup_publicado["ativo"]),
+		float(_powerup_publicado["restante"]),
+		int(_powerup_publicado["carga"]),
 	)
 	GameState.publish(ultimo_estado)

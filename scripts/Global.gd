@@ -47,6 +47,13 @@ var progresso_inicial: float = 0.0
 func aplicar_progresso_inicial(raw: Variant, is_debug: bool) -> void:
 	progresso_inicial = ModoProgressoInicial.decide(raw, is_debug)
 
+# Power-up ativo desde o inicio da partida (so smoke debug via `?powerup=`): "" em release e sem o parametro.
+var power_up_inicial: String = ""
+
+# Aplica o power-up inicial a partir do valor bruto do parametro e da flag de build.
+func aplicar_power_up_inicial(raw: Variant, is_debug: bool) -> void:
+	power_up_inicial = ModoPowerUpInicial.decide(raw, is_debug)
+
 # Moldura de subida de estagio fixa (so smoke debug via `?moldura=fixa`): fica acesa ate interromper. Nunca em release.
 var moldura_fixa: bool = false
 
@@ -79,6 +86,7 @@ func _ready():
 	aplicar_modo_dica(ModoDicaToque.read_raw(), OS.is_debug_build())
 	aplicar_modo_tutorial(ModoTutorialVisto.read_raw(), OS.is_debug_build())
 	aplicar_progresso_inicial(ModoProgressoInicial.read_raw(), OS.is_debug_build())
+	aplicar_power_up_inicial(ModoPowerUpInicial.read_raw(), OS.is_debug_build())
 	aplicar_moldura_fixa(ModoMolduraFixa.read_raw(), OS.is_debug_build())
 	aplicar_moldura_lenta(ModoMolduraLenta.read_raw(), OS.is_debug_build())
 	_best_store = BestScoreStore.new()

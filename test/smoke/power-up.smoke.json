@@ -1,0 +1,15 @@
+{
+  "path": "index.html?seed=521&semderrota=1&tutorial=visto&powerup=teste",
+  "viewport": [1080, 2772],
+  "boot_ms": 6000,
+  "steps": [
+    { "expect": { "state": "menu", "powerup.ativo": "" }, "timeout_ms": 3000 },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "expect": { "state": "playing", "powerup.ativo": "teste", "powerup.restante": { "gt": 0 } }, "timeout_ms": 3000 },
+    { "expect": { "powerup.ativo": "" }, "timeout_ms": 5000 },
+    { "expect": { "powerup.restante": { "eq": 0 } }, "timeout_ms": 3000 },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 }
+  ]
+}

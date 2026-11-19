@@ -17,7 +17,9 @@ const STATE_TUTORIAL_FECHADO := "fechado"
 # `tutorial` ("aberto"|"fechado": card do tutorial) e `dificuldade.estagio` (int, indice do estagio na curva; 0 = inicial) e
 # `dificuldade.aviso` (bool, true enquanto a moldura de subida de estagio pulsa) e
 # `dificuldade.alpha` (float 0-1, alpha atual da moldura de aviso, 0 = apagada; prova do pulso real no smoke) e
-# `player.x`/`player.y` (int, pixels logicos arredondados de `player_x`/`player_y`)
+# `player.x`/`player.y` (int, pixels logicos arredondados de `player_x`/`player_y`) e
+# `powerup.ativo` (nome do temporizado ativo ou ""), `powerup.restante` (int, segundos restantes arredondados para
+# cima; 0 sem ativo) e `powerup.carga` (int, 0 ou 1)
 static func build(
 	score: int,
 	best: int,
@@ -30,7 +32,10 @@ static func build(
 	aviso: bool = false,
 	player_x: float = 0.0,
 	player_y: float = 0.0,
-	alpha: float = 0.0
+	alpha: float = 0.0,
+	powerup_ativo: String = "",
+	powerup_restante: float = 0.0,
+	powerup_carga: int = 0
 ) -> Dictionary:
 	return {
 		"score": score,
@@ -40,6 +45,7 @@ static func build(
 		"volume": {"music": music, "sfx": sfx},
 		"tutorial": STATE_TUTORIAL_ABERTO if tutorial_aberto else STATE_TUTORIAL_FECHADO,
 		"dificuldade": {"estagio": estagio, "aviso": aviso, "alpha": alpha},
+		"powerup": {"ativo": powerup_ativo, "restante": ceili(powerup_restante), "carga": powerup_carga},
 	}
 
 # Decisor puro da trava de publicacao: so web de debug publica (release ignora; headless/desktop nao tem web)

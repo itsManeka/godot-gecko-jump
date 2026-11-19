@@ -117,6 +117,29 @@ func test_build_publica_player_xy_inteiros_arredondados() -> void:
 	assert_eq(inv["y"], 12, "12.4 -> 12")
 
 
+func test_build_publica_powerup_padrao_e_restante_arredondado_para_cima() -> void:
+	# (a) default: sem os parametros, ativo "", restante 0, carga 0 (int)
+	var padrao: Dictionary = (GameState.build(0, 0, "menu", true)["powerup"]) as Dictionary
+	assert_eq(padrao["ativo"], "", "padrao: powerup.ativo vazio")
+	assert_eq(padrao["restante"], 0, "padrao: powerup.restante 0")
+	assert_eq(padrao["carga"], 0, "padrao: powerup.carga 0")
+	assert_eq(typeof(padrao["restante"]), TYPE_INT, "padrao: restante e int")
+	# (b) comum: restante fracionario arredonda para cima
+	var ativo: Dictionary = (
+		GameState.build(1, 2, "playing", true, 100, 100, false, 0, false, 0.0, 0.0, 0.0, "teste", 1.2, 1)["powerup"]
+		as Dictionary
+	)
+	assert_eq(ativo["ativo"], "teste", "powerup.ativo publicado")
+	assert_eq(ativo["restante"], 2, "1.2 s -> 2 (para cima)")
+	assert_eq(ativo["carga"], 1, "powerup.carga publicado")
+	assert_eq(typeof(ativo["restante"]), TYPE_INT, "restante e int")
+	# (c) degenerado: restante exato nao sobe; os demais campos seguem
+	var estado: Dictionary = GameState.build(3, 9, "playing", true, 40, 50, false, 2, false, 0.0, 0.0, 0.0, "teste", 1.0)
+	assert_eq((estado["powerup"] as Dictionary)["restante"], 1, "1.0 s -> 1")
+	assert_eq(estado["score"], 3, "score segue")
+	assert_eq((estado["dificuldade"] as Dictionary)["estagio"], 2, "dificuldade segue")
+
+
 func test_build_alive_false_preserva_posicao_e_demais_campos() -> void:
 	var estado: Dictionary = GameState.build(3, 9, "lost", false, 40, 50, false, 2, false, 30.0, 70.0)
 	var jogador: Dictionary = estado["player"] as Dictionary
