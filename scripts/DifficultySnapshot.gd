@@ -21,9 +21,10 @@ var _proporcao_piscantes: float
 var _duracao_visivel: float
 var _duracao_invisivel: float
 var _aviso_pisca: float
+var _proporcao_que_caem: float
 
 
-# Parametros novos entram sempre no fim: chamadas posicionais antigas (ate o 9o) continuam validas.
+# Parametros novos entram sempre no fim: chamadas posicionais antigas (ate o 18o) continuam validas.
 func _init(
 	scroll: float = DifficultyStage.SCROLL_PADRAO,
 	speed_moveis: float = DifficultyStage.SPEED_PADRAO,
@@ -42,7 +43,8 @@ func _init(
 	proporcao_piscantes: float = DifficultyStage.PROPORCAO_PISCANTES_PADRAO,
 	duracao_visivel: float = DifficultyStage.DURACAO_VISIVEL_PADRAO,
 	duracao_invisivel: float = DifficultyStage.DURACAO_INVISIVEL_PADRAO,
-	aviso_pisca: float = DifficultyStage.AVISO_PISCA_PADRAO
+	aviso_pisca: float = DifficultyStage.AVISO_PISCA_PADRAO,
+	proporcao_que_caem: float = DifficultyStage.PROPORCAO_QUE_CAEM_PADRAO
 ) -> void:
 	_scroll = scroll
 	_speed_moveis = speed_moveis
@@ -62,6 +64,7 @@ func _init(
 	_duracao_visivel = duracao_visivel
 	_duracao_invisivel = duracao_invisivel
 	_aviso_pisca = aviso_pisca
+	_proporcao_que_caem = clampf(proporcao_que_caem, 0.0, 1.0)
 
 
 func get_scroll() -> float:
@@ -134,6 +137,10 @@ func get_duracao_invisivel() -> float:
 
 func get_aviso_pisca() -> float:
 	return _aviso_pisca
+
+
+func get_proporcao_que_caem() -> float:
+	return _proporcao_que_caem
 
 
 # Foto vigente de um estado de dificuldade; sem estado (cena isolada, antes da injecao) = estagio 0

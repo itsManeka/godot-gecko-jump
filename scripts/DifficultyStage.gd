@@ -20,6 +20,7 @@ const PROPORCAO_PISCANTES_PADRAO: float = 0.0
 const DURACAO_VISIVEL_PADRAO: float = 3.0
 const DURACAO_INVISIVEL_PADRAO: float = 1.2
 const AVISO_PISCA_PADRAO: float = 0.6
+const PROPORCAO_QUE_CAEM_PADRAO: float = 1.0
 
 ## Progresso (0..1) a partir do qual este estagio vale; interpola ate o proximo estagio.
 @export_range(0.0, 1.0) var progresso_inicio: float = 0.0
@@ -35,6 +36,9 @@ const AVISO_PISCA_PADRAO: float = 0.6
 @export var largura_plataforma: float = LARGURA_PLATAFORMA_PADRAO
 ## Segundos entre o pouso e o desmoronamento da plataforma (so vale com a mecanica plataformas_que_caem).
 @export var atraso_desmoronar: float = ATRASO_DESMORONAR_PADRAO
+## Fracao das plataformas que caem, sorteada por plataforma (0..1; so vale com a mecanica plataformas_que_caem).
+## Padrao 1.0 = todas caem, igual ao comportamento antes deste campo.
+@export_range(0.0, 1.0) var proporcao_que_caem: float = PROPORCAO_QUE_CAEM_PADRAO
 ## Fracao das plataformas moveis que trocam de cor sozinhas (so vale com a mecanica plataformas_que_mudam_de_cor).
 @export_range(0.0, 1.0) var proporcao_cicladoras: float = PROPORCAO_CICLADORAS_PADRAO
 ## Segundos por cor de uma plataforma que muda de cor (so vale com a mecanica plataformas_que_mudam_de_cor).
