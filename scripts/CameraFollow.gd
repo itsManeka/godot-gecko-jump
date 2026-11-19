@@ -9,6 +9,13 @@ extends RefCounted
 # Valor de sensacao: o dono confere no playtest e ajusta a constante.
 const FRACAO_LIMITE := 0.40
 
+# Frames em que o excesso e distribuido (easing do avanco da camera, issue #49): cada frame aplica
+# 1/DURACAO_FRAMES do que resta. Valor de sensacao: o dono confere no playtest e ajusta a constante.
+const DURACAO_FRAMES := 4
+
+# Piso da parcela por frame, em px logicos: so garante que a sequencia termina (sem cauda infinita).
+const PASSO_MINIMO_PX := 1.0
+
 
 # y do limite de topo para a altura visivel dada; gecko com y menor que o limite (mais alto) aciona o avanco
 static func limite_y(altura_visivel: float) -> float:
@@ -19,3 +26,11 @@ static func limite_y(altura_visivel: float) -> float:
 # (inclui gecko acima do topo da tela, y negativo).
 static func excesso(gecko_y: float, limite_y: float) -> float:
 	return maxf(0.0, limite_y - gecko_y)
+
+
+# Parcela do excesso restante a aplicar neste frame: nunca maior que o restante, 0 sem excesso; a fracao
+# 1/DURACAO_FRAMES tem piso PASSO_MINIMO_PX e a ultima parcela fecha o resto exato.
+static func parcela(excesso_restante: float) -> float:
+	if excesso_restante <= 0.0:
+		return 0.0
+	return minf(excesso_restante, maxf(excesso_restante / float(DURACAO_FRAMES), PASSO_MINIMO_PX))
