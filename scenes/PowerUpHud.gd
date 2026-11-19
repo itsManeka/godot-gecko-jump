@@ -1,0 +1,225 @@
+class_name PowerUpHud
+extends CanvasLayer
+
+# Faixa de HUD da duracao do power-up (handoff de design, secao 3): classe topo, y0 = s_top + 30, mesma medida em
+# 180x320 e 180x400. Icone do temporizado ativo, barra que esvazia pela direita, segundos (teto do restante) e o
+# slot da carga guardada. Cada elemento some quando o seu estado some; com o card do tutorial aberto a faixa inteira
+# fica oculta. Desenho so em branco/preto (cor nunca e a unica pista; nunca a cor de plataforma).
+
+# Offset do topo da safe area e altura da faixa
+const OFFSET_Y: float = 30.0
+const ALTURA: float = 16.0
+# Retangulos de cada elemento (x absoluto; y relativo ao topo da faixa)
+const ICONE_X: float = 2.0
+const ICONE_TAM: float = 16.0
+const BARRA_X: float = 22.0
+const BARRA_Y: float = 6.0
+const BARRA_W: float = 40.0
+const BARRA_H: float = 4.0
+const SEGUNDOS_X: float = 66.0
+const SEGUNDOS_W: float = 16.0
+const CARGA_X: float = 90.0
+const COR_BRANCO: Color = UiHelpers.COR_TEXTO
+const COR_PRETO: Color = UiHelpers.COR_CONTORNO
+
+# Estado de power-up da Stage e o card do tutorial da 1a partida (injetados por quem cria o HUD)
+var estado: PowerUpState = null
+var tutorial_card: TutorialCard = null
+
+var _y0: float = OFFSET_Y
+var _largura: float = 180.0
+var _icone: _Desenho = null
+var _barra: _Desenho = null
+var _carga: _Desenho = null
+var _segundos: Label = null
+
+
+# Controle que so executa uma lista de comandos de desenho (retangulos e poligonos)
+class _Desenho:
+	extends Control
+
+	var comandos: Array = []
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		focus_mode = Control.FOCUS_NONE
+
+	func definir(novos: Array) -> void:
+		if novos == comandos:
+			return
+		comandos = novos
+		queue_redraw()
+
+	func _draw() -> void:
+		for c in comandos:
+			if c["forma"] == &"poly":
+				draw_colored_polygon(c["pontos"], c["cor"])
+			else:
+				draw_rect(c["rect"], c["cor"])
+
+
+func _init() -> void:
+	# Mesmo layer do HUD (Pontos/pausa): acima do jogo, abaixo do overlay de pausa
+	layer = 1
+	_icone = _Desenho.new()
+	_barra = _Desenho.new()
+	_carga = _Desenho.new()
+	_segundos = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 1)
+	for no in [_icone, _barra, _carga, _segundos]:
+		(no as Control).visible = false
+		add_child(no)
+	_carga.definir(comandos_do_tipo(&"segunda_chance"))
+	aplicar_layout(Vector2(_largura, 320.0), Rect2(0.0, 0.0, _largura, 320.0))
+
+
+func _process(_delta: float) -> void:
+	atualizar()
+
+
+# Reposiciona a faixa a partir do topo da safe area (largura visivel injetada: testavel sem janela)
+func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
+	_y0 = safe.position.y + OFFSET_Y
+	_largura = visible_size.x
+	_icone.position = rect_icone().position
+	_icone.size = rect_icone().size
+	# A moldura de 1 px fica por fora dos 40x4 da barra
+	_barra.position = rect_barra().grow(1.0).position
+	_barra.size = rect_barra().grow(1.0).size
+	_carga.position = rect_carga().position
+	_carga.size = rect_carga().size
+	_segundos.position = rect_segundos().position
+	_segundos.size = rect_segundos().size
+
+
+func rect_faixa() -> Rect2:
+	return Rect2(0.0, _y0, _largura, ALTURA)
+
+
+func rect_icone() -> Rect2:
+	return Rect2(ICONE_X, _y0, ICONE_TAM, ICONE_TAM)
+
+
+# Area 40x4 da barra (sem a moldura)
+func rect_barra() -> Rect2:
+	return Rect2(BARRA_X, _y0 + BARRA_Y, BARRA_W, BARRA_H)
+
+
+# Parte branca da barra: x esquerdo fixo, largura proporcional ao restante (esvazia pela direita)
+func rect_barra_cheia() -> Rect2:
+	return Rect2(BARRA_X, _y0 + BARRA_Y, BARRA_W * fracao(), BARRA_H)
+
+
+func rect_segundos() -> Rect2:
+	return Rect2(SEGUNDOS_X, _y0, SEGUNDOS_W, ALTURA)
+
+
+func rect_carga() -> Rect2:
+	return Rect2(CARGA_X, _y0, ICONE_TAM, ICONE_TAM)
+
+
+# Fracao do tempo que resta (0 a 1) do temporizado ativo
+func fracao() -> float:
+	if estado == null or estado.ativo() == null or estado.ativo().duracao <= 0.0:
+		return 0.0
+	return clampf(estado.restante() / estado.ativo().duracao, 0.0, 1.0)
+
+
+func texto_segundos() -> String:
+	return _segundos.text
+
+
+func icone_visivel() -> bool:
+	return _icone.visible
+
+
+func barra_visivel() -> bool:
+	return _barra.visible
+
+
+func segundos_visivel() -> bool:
+	return _segundos.visible
+
+
+func carga_visivel() -> bool:
+	return _carga.visible
+
+
+func comandos_icone() -> Array:
+	return _icone.comandos
+
+
+func comandos_carga() -> Array:
+	return _carga.comandos
+
+
+func comandos_barra() -> Array:
+	return _barra.comandos
+
+
+# Sincroniza visibilidade e desenho com o estado atual (a cada frame; a pausa congela o estado sozinha)
+func atualizar() -> void:
+	var oculta: bool = tutorial_card != null and tutorial_card.esta_aberto()
+	var ativo: PowerUp = null
+	if estado != null:
+		ativo = estado.ativo()
+	var mostra_ativo: bool = ativo != null and not oculta
+	var mostra_carga: bool = estado != null and estado.carga() > 0 and not oculta
+	_icone.visible = mostra_ativo
+	_barra.visible = mostra_ativo
+	_segundos.visible = mostra_ativo
+	_carga.visible = mostra_carga
+	if mostra_ativo:
+		_icone.definir(comandos_do_tipo(ativo.nome))
+		_barra.definir(_montar_barra())
+		_segundos.text = str(ceili(estado.restante()))
+
+
+func _montar_barra() -> Array:
+	# Coordenadas locais ao controle da barra (que ja inclui a moldura de 1 px)
+	return [
+		_rect(Rect2(0.0, 0.0, BARRA_W + 2.0, BARRA_H + 2.0), COR_PRETO),
+		_rect(Rect2(1.0, 1.0, rect_barra_cheia().size.x, BARRA_H), COR_BRANCO),
+	]
+
+
+# Desenho do icone por tipo, em coordenadas locais 16x16: fundo preto e forma branca. Tipo sem forma propria
+# (ex.: fakes de teste) ganha um glifo 4x4 derivado do nome, distinto por tipo. Formas provisorias (E6 refaz).
+static func comandos_do_tipo(nome: StringName) -> Array:
+	var fundo: Dictionary = _rect(Rect2(0.0, 0.0, ICONE_TAM, ICONE_TAM), COR_PRETO)
+	match nome:
+		&"camaleao":
+			return [
+				fundo,
+				_rect(Rect2(1.0, 1.0, 6.0, 6.0), COR_BRANCO),
+				_rect(Rect2(9.0, 1.0, 6.0, 6.0), COR_BRANCO),
+				_rect(Rect2(1.0, 9.0, 6.0, 6.0), COR_BRANCO),
+				_rect(Rect2(9.0, 9.0, 6.0, 6.0), COR_BRANCO),
+			]
+		&"desacelera":
+			return [
+				fundo,
+				_poly(PackedVector2Array([Vector2(3, 1), Vector2(13, 1), Vector2(8, 8)]), COR_BRANCO),
+				_poly(PackedVector2Array([Vector2(8, 8), Vector2(3, 15), Vector2(13, 15)]), COR_BRANCO),
+			]
+		&"segunda_chance":
+			return [
+				fundo,
+				_rect(Rect2(6.0, 2.0, 4.0, 12.0), COR_BRANCO),
+				_rect(Rect2(2.0, 6.0, 12.0, 4.0), COR_BRANCO),
+			]
+	var bits: int = nome.hash() & 0xFFFF
+	if bits == 0:
+		bits = 1
+	var comandos: Array = [fundo]
+	for i in 16:
+		if (bits >> i) & 1 == 1:
+			comandos.append(_rect(Rect2(2.0 + (i & 3) * 3.0, 2.0 + (i >> 2) * 3.0, 3.0, 3.0), COR_BRANCO))
+	return comandos
+
+
+static func _rect(r: Rect2, cor: Color) -> Dictionary:
+	return {"forma": &"rect", "rect": r, "cor": cor}
+
+
+static func _poly(pontos: PackedVector2Array, cor: Color) -> Dictionary:
+	return {"forma": &"poly", "pontos": pontos, "cor": cor}

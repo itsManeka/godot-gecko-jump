@@ -59,6 +59,8 @@ var power_up_estado: PowerUpState = null
 # Gancho para os modos (f524): falso = nenhuma plataforma nasce com icone e a coleta e ignorada.
 # Padrao true; nenhum modo muda nesta feature (so o gancho).
 var power_ups_habilitados: bool = true
+# Faixa de HUD da duracao do power-up (filha da Stage, criada em _ready)
+var power_up_hud: PowerUpHud = null
 # Seed da partida (int ou null) repassada ao ScrollLevel em _enter_tree (f517 T4): setada pelo chamador antes do add_child
 var semente_partida: Variant = null
 # Estagio da dificuldade na ultima publicacao da ponte; mudanca por tempo republica 1x (ver _physics_process)
@@ -144,6 +146,11 @@ func _ready():
 	touch_hint.tutorial_card = tutorial_card
 	tutorial_card.pular.connect(_concluir_tutorial)
 	add_child(tutorial_card)
+	# Faixa de HUD da duracao do power-up (layer do HUD): so le o estado da partida e o card do tutorial
+	power_up_hud = PowerUpHud.new()
+	power_up_hud.estado = power_up_estado
+	power_up_hud.tutorial_card = tutorial_card
+	add_child(power_up_hud)
 	# Botao e overlay de pausa: filhos depois de touch_controls/touch_hint (o _input chega a eles antes). So o overlay
 	# e ALWAYS (retoma com a arvore pausada); a Stage segue pausavel.
 	pause_botao = PauseBotao.new()
@@ -196,6 +203,8 @@ func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 		level_up_frame.aplicar_layout(visible_size, safe)
 	if tutorial_card != null:
 		tutorial_card.aplicar_layout(visible_size, safe)
+	if power_up_hud != null:
+		power_up_hud.aplicar_layout(visible_size, safe)
 	if pause_botao != null:
 		pause_botao.aplicar_layout(visible_size, safe)
 	_atualizar_zonas_mortas()
