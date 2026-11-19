@@ -308,14 +308,14 @@ func test_c409_tocar_o_seletor_vai_de_b_para_a() -> void:
 func test_c515_texto_toque_e_o_nome_do_modo_corrente_nos_dois_modos_e_apos_alternancia() -> void:
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var o := _nova()
-	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.A), "C515: modo A abre com o nome do A")
+	assert_eq(o.texto_toque(), "Toque: Flick", "C515: modo A abre com o nome do A")
 	_tocar_seletor(o)
-	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.B), "C515: A -> B mostra o nome do B")
+	assert_eq(o.texto_toque(), "Toque: Joy invisivel", "C515: A -> B mostra o nome do B")
 	_tocar_seletor(o)
-	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.A), "C515: B -> A volta ao nome do A")
+	assert_eq(o.texto_toque(), "Toque: Flick", "C515: B -> A volta ao nome do A")
 	Global.set_touch_mode(TouchMode.Modo.B, false)
 	var b := _nova()
-	assert_eq(b.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.B), "C515: modo B abre com o nome do B")
+	assert_eq(b.texto_toque(), "Toque: Joy invisivel", "C515: modo B abre com o nome do B")
 
 
 func test_c452_duas_pulsacoes_voltam_de_b_para_b_e_gravam_no_store() -> void:

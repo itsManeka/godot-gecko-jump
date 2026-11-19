@@ -210,6 +210,7 @@ func _fontes_texto_toque() -> Array[String]:
 	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		Global.set_touch_mode(modo, false)
 		fontes.append(tela.texto_toque())
+	Global.set_touch_mode(TouchMode.padrao(), false)
 	return fontes
 
 
