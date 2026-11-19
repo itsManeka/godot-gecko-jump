@@ -149,6 +149,18 @@ func test_c348_play_e_botoes_de_menu_comportam_o_rotulo() -> void:
 	assert_true(Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA).encloses(opcoes.rect_voltar()), "Voltar dentro de 180x320 com 5 itens")
 
 
+# C516: o rotulo "> Toque: <nome>" de cada nome de NOMES cabe no botao Toque (rect_toque, 112 px) e nos 180 px da tela.
+func test_c516_rotulo_do_toque_de_cada_nome_cabe_no_botao_e_na_tela() -> void:
+	var opcoes: OptionsScreen = add_child_autofree(OptionsScreen.new())
+	opcoes.aplicar_layout(Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA))
+	assert_eq(opcoes.rect_toque().size.x, 112.0, "botao Toque tem 112 px de largura")
+	assert_gt(TouchMode.NOMES.size(), 0, "ha pelo menos um nome de modo de toque")
+	for nome in TouchMode.NOMES:
+		var largura := UiHelpers.FONTE.get_string_size("> Toque: %s" % nome, HORIZONTAL_ALIGNMENT_LEFT, -1, OptionsScreen.TAMANHO_TEXTO).x
+		assert_lte(largura, opcoes.rect_toque().size.x, "'> Toque: %s' cabe nos 112 px do botao" % nome)
+		assert_lte(largura, LARGURA_TELA, "'> Toque: %s' cabe nos 180 px da tela" % nome)
+
+
 # T2 corr1: o Play da Stage usa o papel TAMANHO_BOTAO da escala.
 func test_c348_play_da_stage_usa_tamanho_botao() -> void:
 	var stage: Node = add_child_autofree(load(STAGE).instantiate())

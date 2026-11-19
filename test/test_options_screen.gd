@@ -289,10 +289,10 @@ func _tocar_seletor(o: OptionsScreen) -> void:
 func test_c408_tocar_o_seletor_vai_de_a_para_b() -> void:
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var o := _nova()
-	assert_eq(o.texto_toque(), "Toque: A", "abre mostrando o modo corrente")
+	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.A), "abre mostrando o modo corrente")
 	_tocar_seletor(o)
 	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "A -> B no Global")
-	assert_eq(o.texto_toque(), "Toque: B", "rotulo mostra Toque: B")
+	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.B), "rotulo mostra o nome do modo B")
 
 
 func test_c409_tocar_o_seletor_vai_de_b_para_a() -> void:
@@ -300,8 +300,22 @@ func test_c409_tocar_o_seletor_vai_de_b_para_a() -> void:
 	var o := _nova()
 	_tocar_seletor(o)
 	assert_eq(Global.get_touch_mode(), TouchMode.Modo.A, "B -> A no Global")
-	assert_eq(o.texto_toque(), "Toque: A", "rotulo mostra Toque: A")
+	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.A), "rotulo mostra o nome do modo A")
 	assert_eq(_voltou, 0, "o seletor nao emite voltar")
+
+
+# C515: o texto do seletor e "Toque: " + nome do modo corrente, nos dois modos e apos cada alternancia.
+func test_c515_texto_toque_e_o_nome_do_modo_corrente_nos_dois_modos_e_apos_alternancia() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var o := _nova()
+	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.A), "C515: modo A abre com o nome do A")
+	_tocar_seletor(o)
+	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.B), "C515: A -> B mostra o nome do B")
+	_tocar_seletor(o)
+	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.A), "C515: B -> A volta ao nome do A")
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var b := _nova()
+	assert_eq(b.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.B), "C515: modo B abre com o nome do B")
 
 
 func test_c452_duas_pulsacoes_voltam_de_b_para_b_e_gravam_no_store() -> void:
@@ -312,7 +326,7 @@ func test_c452_duas_pulsacoes_voltam_de_b_para_b_e_gravam_no_store() -> void:
 	assert_eq(int(salvo), int(TouchMode.Modo.A), "C452: B -> A gravado no store temporario")
 	_tocar_seletor(o)
 	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "C452: A -> B volta ao inicio")
-	assert_eq(o.texto_toque(), "Toque: B", "C452: rotulo volta a Toque: B")
+	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.B), "C452: rotulo volta ao nome do B")
 	salvo = OptionsStore.new(TEMP_PATH).load_value(TouchMode.SECTION, TouchMode.KEY, TouchMode.SEM_VALOR)
 	assert_eq(int(salvo), int(TouchMode.Modo.B), "C452: B gravado no store temporario")
 
@@ -322,13 +336,13 @@ func test_c411_ui_accept_cicla_e_reabrir_mostra_o_modo_salvo() -> void:
 	var o := _nova()
 	o.abrir(OptionsScreen.Item.TOQUE)
 	o.tratar_evento(_acao("ui_accept"))
-	assert_eq(o.texto_toque(), "Toque: B", "ui_accept com foco no item vai de A para B")
+	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.B), "ui_accept com foco no item vai de A para B")
 	var salvo: Variant = OptionsStore.new(TEMP_PATH).load_value(TouchMode.SECTION, TouchMode.KEY, TouchMode.SEM_VALOR)
 	assert_eq(int(salvo), int(TouchMode.Modo.B), "o modo ficou gravado no store temporario")
 	Global.usar_options_store(OptionsStore.new(TEMP_PATH))
 	o.fechar()
 	o.abrir()
-	assert_eq(o.texto_toque(), "Toque: B", "reabrir a tela mostra o modo salvo")
+	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.B), "reabrir a tela mostra o modo salvo")
 
 
 func test_c412_bloco_de_5_itens_cabe_em_180x320_sem_sobrepor_voltar() -> void:
@@ -345,8 +359,8 @@ func test_c412_bloco_de_5_itens_cabe_em_180x320_sem_sobrepor_voltar() -> void:
 	assert_true(safe.encloses(com_safe.rect_toque()), "Toque dentro da safe area")
 	assert_true(safe.encloses(com_safe.rect_voltar()), "Voltar dentro da safe area")
 	assert_false(com_safe.rect_toque().intersects(com_safe.rect_voltar()), "com safe area: Toque nao sobrepoe Voltar")
-	var largura := UiHelpers.FONTE.get_string_size("> Toque: B", HORIZONTAL_ALIGNMENT_LEFT, -1, OptionsScreen.TAMANHO_TEXTO).x
-	assert_lte(largura, o.rect_toque().size.x, "'> Toque: B' cabe no botao")
+	var largura := UiHelpers.FONTE.get_string_size("> " + o.texto_toque(), HORIZONTAL_ALIGNMENT_LEFT, -1, OptionsScreen.TAMANHO_TEXTO).x
+	assert_lte(largura, o.rect_toque().size.x, "'> ' + texto_toque() cabe no botao")
 
 
 func test_c414_foco_percorre_os_5_itens_na_ordem_e_esc_continua_voltando() -> void:
