@@ -44,6 +44,18 @@ func _teto(excesso: float) -> int:
 	return CameraFollow.DURACAO_FRAMES + int(ceil(excesso / CameraFollow.PASSO_MINIMO_PX)) + 1
 
 
+# Cota analitica justa do contrato de CameraFollow.parcela (sem laco, sem reproduzir a parcela): fase geometrica ate o
+# restante cair a DURACAO_FRAMES * PASSO_MINIMO_PX, depois DURACAO_FRAMES frames de piso e 1 de folga. Protege contra
+# regressao de velocidade em excesso grande: um easing so no piso (excesso / PASSO frames) estoura esta cota.
+func _teto_justo(excesso: float) -> int:
+	var restante_piso: float = CameraFollow.DURACAO_FRAMES * CameraFollow.PASSO_MINIMO_PX
+	var geometricos: int = 0
+	if excesso > restante_piso:
+		var fator: float = 1.0 - 1.0 / float(CameraFollow.DURACAO_FRAMES)
+		geometricos = int(ceil(log(excesso / restante_piso) / (-log(fator))))
+	return geometricos + CameraFollow.DURACAO_FRAMES + 1
+
+
 # Stage real em SubViewport 180x320. Com `com_curva` false o scroll da curva fica desligado (valor exato do excesso);
 # com `com_curva` true vale o scroll do estagio 0 (20 px/s). Player e Stage seguem com physics ligado: a ordem de
 # processamento (Player antes da Stage) e parte do que se verifica.
@@ -189,19 +201,19 @@ func _converge_ao_limite(altura: int, excesso: float, max_frames: int, rotulo: S
 
 # C438: altura 320, limite 128
 func test_c438_altura_320_gecko_acima_do_limite_converge_a_128() -> void:
-	await _converge_ao_limite(320, EXCESSO_01, _teto(EXCESSO_01), "C438")
+	await _converge_ao_limite(320, EXCESSO_01, _teto_justo(EXCESSO_01), "C438")
 	assert_almost_eq(_p.global_position.y, 128.0, EPS, "C438: limite da altura 320 e 128")
 
 
 # C439: altura 400, limite 160
 func test_c439_altura_400_gecko_acima_do_limite_converge_a_160() -> void:
-	await _converge_ao_limite(400, EXCESSO_01, _teto(EXCESSO_01), "C439")
+	await _converge_ao_limite(400, EXCESSO_01, _teto_justo(EXCESSO_01), "C439")
 	assert_almost_eq(_p.global_position.y, 160.0, EPS, "C439: limite da altura 400 e 160")
 
 
 # C440: altura 462, limite 184.8
 func test_c440_altura_462_gecko_acima_do_limite_converge_a_184_8() -> void:
-	await _converge_ao_limite(462, EXCESSO_01, _teto(EXCESSO_01), "C440")
+	await _converge_ao_limite(462, EXCESSO_01, _teto_justo(EXCESSO_01), "C440")
 	assert_almost_eq(_p.global_position.y, 184.8, EPS, "C440: limite da altura 462 e 184.8")
 
 

@@ -83,10 +83,11 @@ func _physics_process(delta):
 	_criar_linhas_pendentes()
 
 # Avanco da camera do topo (issue #46): o mundo sobe o quanto o gecko passou do limite, suavizado em parcelas por
-# frame que convergem ao limite (o gecko desce junto a cada parcela; por isso ele fica acima do limite por alguns frames
-# e depois converge). Quem chama e a Stage, com prioridade de physics depois do Player. Sem Player (cena isolada) ninguem chama: o scroll da curva segue identico ao de antes.
-# O excesso soma em running_platforms.position.y, position_scrolled e no y global do gecko: a posicao relativa entre
-# gecko e plataformas se mantem, e as linhas novas saem pelo mesmo gatilho aritmetico do scroll da curva.
+# frame que convergem ao limite (o gecko desce junto a cada parcela; por isso ele fica acima do limite por alguns
+# frames e depois converge). Quem chama e a Stage, com prioridade de physics depois do Player. Sem Player (cena
+# isolada) ninguem chama: o scroll da curva segue identico ao de antes. O excesso soma em
+# running_platforms.position.y, position_scrolled e no y global do gecko: a posicao relativa entre gecko e plataformas
+# se mantem, e as linhas novas saem pelo mesmo gatilho aritmetico do scroll da curva.
 func avancar_camera(player: Node2D, limite: float) -> void:
 	if player == null or !Global.is_iniciado():
 		return
