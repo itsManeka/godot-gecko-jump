@@ -12,7 +12,7 @@ extends RefCounted
 ## - ausente (`null`), nao-String, vazio, maiusculas, espaco, simbolos: "".
 ## Que o nome exista no registro e decisao da Stage (nome desconhecido nao ativa nada).
 
-const PADRAO_VALIDO: String = "^[a-z][a-z0-9_]*$"
+const PADRAO_VALIDO: String = "^[a-z][a-z0-9_]{0,31}\\z"
 
 static var _regex: RegEx = null
 

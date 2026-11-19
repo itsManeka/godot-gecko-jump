@@ -116,7 +116,8 @@ func _ready():
 	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
 	if scroll_level != null:
 		scroll_level.dificuldade = dificuldade
-		# Gancho dos modos: a geracao de icones le o valor vigente (f524 setara por partida)
+		# Gancho dos modos: copiado UMA vez aqui (_ready); o modo (f524) deve setar `power_ups_habilitados`
+		# na Stage antes do add_child, mudar depois do _ready nao chega as linhas
 		scroll_level.power_ups_habilitados = power_ups_habilitados
 	# O Player le o scroll vigente da mesma dificuldade para prever a cor da janela de chegada
 	player.dificuldade = dificuldade
