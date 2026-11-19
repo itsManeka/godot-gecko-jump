@@ -194,3 +194,52 @@ func test_c514_de_valor_segue_int_e_nao_aceita_o_nome() -> void:
 	assert_eq(TouchMode.de_valor(1), TouchMode.Modo.B, "C514: 1 (save antigo) = B")
 	assert_eq(TouchMode.de_valor("Flick"), TouchMode.padrao(), "C514: nome novo do A como string cai no padrao")
 	assert_eq(TouchMode.de_valor("Joy invisivel"), TouchMode.padrao(), "C514: nome novo do B como string cai no padrao")
+
+
+# Fontes de texto visivel do toque: nomes, blocos da dica (A e B, todos os lados), linhas do card (A e B) e o seletor
+# de Opcoes (A e B). 2 + 6 + 6 + 2 = 16 fontes.
+func _fontes_texto_toque() -> Array[String]:
+	var fontes: Array[String] = []
+	fontes.append_array(TouchMode.NOMES)
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA, TouchHint.Lado.CENTRO]:
+			fontes.append_array(TouchHint.textos_bloco(modo, lado))
+		fontes.append_array(TutorialCard.linhas_controle_toque(modo))
+	var tela := OptionsScreen.new()
+	add_child_autofree(tela)
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		Global.set_touch_mode(modo, false)
+		fontes.append(tela.texto_toque())
+	return fontes
+
+
+# Token A ou B isolado (nao substring): "Arraste" e "Flick" nao casam.
+func _re_ab() -> RegEx:
+	return RegEx.create_from_string("(?<![A-Za-z0-9])[AB](?![A-Za-z0-9])")
+
+
+func _checar_sem_ab(fontes: Array[String]) -> void:
+	var re := _re_ab()
+	for texto in fontes:
+		assert_null(re.search(texto), "fonte de texto visivel diz A/B isolado: '%s'" % texto)
+
+
+func test_c517_nenhuma_fonte_do_toque_e_a_ou_b_isolado() -> void:
+	_checar_sem_ab(_fontes_texto_toque())
+
+
+func test_c518_guarda_nao_e_vacua_tem_fontes_nao_vazias_e_pega_a_ou_b() -> void:
+	var fontes := _fontes_texto_toque()
+	assert_eq(fontes.size(), 16, "C518: 16 fontes coletadas (nomes, dica, card, seletor nos 2 modos)")
+	for texto in fontes:
+		assert_ne(texto, "", "C518: nenhuma fonte vazia")
+	assert_not_null(_re_ab().search("Toque: A"), "C518: a regex pega A isolado")
+	assert_null(_re_ab().search("Arraste anda, Flick pula"), "C518: a regex nao pega Arraste nem Flick")
+	_checar_sem_ab(fontes)
+
+
+func test_c519_nomes_tem_dois_itens_nao_vazios_e_distintos() -> void:
+	assert_eq(TouchMode.NOMES.size(), 2, "C519: NOMES tem 2 itens")
+	assert_ne(TouchMode.NOMES[0], "", "C519: nome do A nao vazio")
+	assert_ne(TouchMode.NOMES[1], "", "C519: nome do B nao vazio")
+	assert_ne(TouchMode.NOMES[0], TouchMode.NOMES[1], "C519: nomes distintos entre si")
