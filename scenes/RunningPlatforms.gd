@@ -339,8 +339,7 @@ func _sorteia_cicladora() -> bool:
 	var proporcao: float = _snapshot_nascimento.get_proporcao_cicladoras()
 	if proporcao <= 0.0:
 		return false
-	var sorteio: float = randf() if rng == null else rng.randf()
-	return sorteio < proporcao
+	return _sorteio() < proporcao
 
 # Instancia propria de PlatformColorCycle: sequencia sorteada a partir da cor da plataforma e forcada a ter a cor do gecko
 func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:

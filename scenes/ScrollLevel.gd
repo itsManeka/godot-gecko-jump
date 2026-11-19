@@ -48,7 +48,7 @@ func _enter_tree() -> void:
 # Injeta na linha os rngs do seu indice (canais layout e cor_movel da RowSeed) pelo y local, ANTES do
 # add_child/_ready dela: a linha le tipo, mecanicas, cores e speed no _ready. Sem semente nao injeta
 # nada (partida sem seed: sorteio global como hoje). ScrollLevel nao chama seed() nem randomize().
-func _injetar_rng_na_linha(linha) -> void:
+func _injetar_rng_na_linha(linha: Node2D) -> void:
 	if semente == null:
 		return
 	var indice: int = RowSeed.indice_do_y(linha.position.y)

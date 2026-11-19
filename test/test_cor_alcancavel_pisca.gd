@@ -20,6 +20,9 @@ const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
 const PLATAFORMA_CENA := "res://scenes/Platform.tscn"
 const STAGE_SCENE := "res://scenes/Stage.tscn"
 const EPS_PROGRESSO := 0.001
+# f517: 20261120 e 20261121 sairam daqui quando o rng do gerador passou a decidir tambem o tipo da linha e a cor das
+# estaticas (o fluxo deslocou). Com elas, e com a 13, uma linha movel so de cicladoras visiveis cai no sorteio livre:
+# lacuna da alcancabilidade registrada na issue #52 do repo, que as traz de volta ao corrigir.
 const SEEDS := [20261122, 20261123, 20261124]
 const LINHAS := 120
 const LARGURA := 180.0
