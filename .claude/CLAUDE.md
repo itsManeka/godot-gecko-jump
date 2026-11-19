@@ -32,8 +32,8 @@ Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ```
 scenes/    Stage (fluxo, pontuacao), Player, Platform, RunningPlatforms (gerador),
-           ScrollLevel (scroll vindo da curva de dificuldade + avanco suavizado quando o gecko sobe acima do limite de topo), TouchControls (toque -> acoes de input, esquemas A/B selecionaveis, B padrao; ADR 0013), TouchHint (dica das zonas),
-           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes, modo de toque, sensibilidade do modo A com A ativo, Ver tutorial),
+           ScrollLevel (scroll vindo da curva de dificuldade + avanco suavizado quando o gecko sobe acima do limite de topo), TouchControls (toque -> acoes de input, esquemas A/B selecionaveis (nomes de apresentacao Flick e Joy invisivel), B padrao; ADR 0013), TouchHint (dica das zonas),
+           PauseBotao / PauseOverlay (pausa por toque, clique e acao `pause`; ADR 0008), OpcoesBotao / OptionsScreen (volumes, modo de toque, sensibilidade do modo Flick (A) com ele ativo, Ver tutorial),
            TutorialCard (card da 1a partida e reabertura modal), LevelUpFrame (vinheta branca nas 4 bordas da safe area que pulsa N vezes na subida de estagio)
 scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de plataforma, COR_INICIAL),
            ScoreKeeper.gd (pontuacao e recorde, sem I/O), BestScoreStore.gd / OptionsStore.gd (recorde e opcoes em user://; buses Music/SFX),
@@ -45,7 +45,7 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            ReachableColors.gd (cor do gecko alcancavel no pouso e nas plataformas moveis, sem cena),
            PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador),
            TouchClassifier.gd (lado do toque para o esquema B, sem cena),
-           TouchMode.gd (modos de toque A/B: enum, padrao B e validacao do valor salvo, sem cena),
+           TouchMode.gd (modos de toque A/B, nomes Flick e Joy invisivel: enum, padrao B e validacao do valor salvo, sem cena),
            TouchTuning.gd (valores de sensacao do toque — zona morta, flick, janela, rearme e sensibilidade do A — um simbolo cada),
            TouchScheme.gd / TouchSchemes.gd / TouchSchemeA/B.gd (contrato e esquemas de toque, sem cena; ADR 0013),
            DifficultyCurve.gd / DifficultyStage.gd (curva de dificuldade, sem cena; ADR 0007), PlatformModifier(s).gd + PlatformNarrower/PlatformCrumble/PlatformColorCycle.gd (mecanicas de plataforma, sem cena; ADR 0009/0010),

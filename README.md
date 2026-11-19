@@ -35,12 +35,12 @@ _Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 | **Mover para Direita**  | `D` ou `→`                       | Depende do modo de toque (abaixo)         |
 | **Pausar / Continuar**  | `Esc` ou `P` (start no controle) | Botão de pausa no canto superior esquerdo |
 
-O toque tem dois modos, escolhidos em **Opções → Toque** (o padrão é o B):
+O toque tem dois modos, escolhidos em **Opções → Toque** (o padrão é Joy invisivel):
 
-- **A — arrastar + flick (um polegar):** arraste para um lado para andar; um movimento rápido para cima pula, reto
+- **Flick — arrastar + flick (um polegar):** arraste para um lado para andar; um movimento rápido para cima pula, reto
   com o dedo parado ou na diagonal com o dedo deslocado. Arrastar o dedo para cima sem parar dá um pulo só; para pular
   de novo, pare o dedo ou desça um pouco antes do próximo flick.
-- **B — dois polegares:** a metade esquerda dirige pelo arraste; a metade direita pula ao tocar.
+- **Joy invisivel — dois polegares:** a metade esquerda dirige pelo arraste; a metade direita pula ao tocar.
 
 No celular, uma dica discreta mostra como jogar no modo escolhido na primeira partida e some sozinha.
 
@@ -48,7 +48,7 @@ A partida também pausa sozinha quando a janela ou a aba perde o foco, ou quando
 voltar, use **Continuar**, `Esc` ou `P`. No desktop, o botão de pausa e o menu de pausa também aceitam clique do mouse.
 
 **Opções** (botão no menu inicial, entre Play e Last, ou no menu de pausa): volume da música e dos efeitos sonoros, de
-0 (mudo) a 100%, por arrasto ou com `←`/`→`, e o modo de toque (A ou B). Com o modo A ativo aparece também a
+0 (mudo) a 100%, por arrasto ou com `←`/`→`, e o modo de toque (Flick ou Joy invisivel). Com o modo Flick ativo aparece também a
 **Sensibilidade** do arraste e do flick (de 0,5x a 2x; maior = gesto menor basta). Volumes, modo e sensibilidade
 ficam salvos e continuam valendo quando você abre o jogo de novo.
 No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
@@ -251,12 +251,12 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 | **Move Right**     | `D` or `→`                        | Depends on the touch mode (below)   |
 | **Pause / Resume** | `Esc` or `P` (start on a gamepad) | Pause button in the top-left corner |
 
-Touch has two modes, chosen in **Opcoes → Toque** (the default is B):
+Touch has two modes, chosen in **Opcoes → Toque** (the default is Joy invisivel):
 
-- **A — drag + flick (one thumb):** drag to one side to walk; a quick upward swipe jumps, straight with the finger
+- **Flick — drag + flick (one thumb):** drag to one side to walk; a quick upward swipe jumps, straight with the finger
   still or diagonally with the finger shifted. Dragging the finger up without stopping gives a single jump; to jump
   again, stop the finger or move it down a little before the next flick.
-- **B — two thumbs:** the left half steers by dragging; the right half jumps on touch.
+- **Joy invisivel — two thumbs:** the left half steers by dragging; the right half jumps on touch.
 
 On phones, a subtle hint shows how to play the chosen mode in the first match and fades out on its own.
 
@@ -264,7 +264,7 @@ The match also pauses on its own when the window or tab loses focus, or when the
 use **Continuar**, `Esc` or `P`. On desktop, the pause button and the pause menu also accept mouse clicks.
 
 **Options** (button on the start menu, between Play and Last, or in the pause menu): music and sound effects volume,
-from 0 (muted) to 100%, by dragging or with `←`/`→`, and the touch mode (A or B). With mode A active, a drag and flick
+from 0 (muted) to 100%, by dragging or with `←`/`→`, and the touch mode (Flick or Joy invisivel). With mode Flick active, a drag and flick
 **Sensibilidade** (sensitivity) setting also shows up (0.5x to 2x; higher = a smaller gesture is enough). Volumes,
 mode and sensitivity are saved and still apply the next time you open the game.
 On the menu, `↓` moves the focus to **Opcoes** and `Enter` opens the screen.

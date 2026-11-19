@@ -19,8 +19,9 @@ const COR_FAIXA: Color = UiHelpers.COR_FUNDO_OVERLAY
 const OUTLINE_SIZE: int = 1
 
 # Textos por modo de toque (issue #47). Cada bloco tem 2 linhas e precisa caber em 76 px (lateral) / 166 px (centro).
-# A: sem zonas, um bloco central; B: linha em x = 90 e um bloco por lado.
-const TEXTOS_A: Array[String] = ["arraste: anda", "flick: pula"]
+# A (Flick): sem zonas, um bloco central: 1a linha = `TouchMode.rotulo(A)`, 2a = TEXTO_A_LINHA2.
+# B (Joy invisivel): linha em x = 90 e um bloco por lado, sem o nome (nao cabe em 76 px).
+const TEXTO_A_LINHA2: String = "arraste anda, flick pula"
 const TEXTOS_B_ESQ: Array[String] = ["anda", "segura aqui"]
 const TEXTOS_B_DIR: Array[String] = ["pula", "toque aqui"]
 
@@ -143,7 +144,9 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 static func textos_bloco(modo: int, lado: int) -> Array[String]:
 	match modo:
 		TouchMode.Modo.A:
-			return TEXTOS_A if lado == Lado.CENTRO else ([] as Array[String])
+			if lado == Lado.CENTRO:
+				return [TouchMode.rotulo(TouchMode.Modo.A), TEXTO_A_LINHA2] as Array[String]
+			return [] as Array[String]
 		TouchMode.Modo.B:
 			if lado == Lado.ESQUERDA:
 				return TEXTOS_B_ESQ

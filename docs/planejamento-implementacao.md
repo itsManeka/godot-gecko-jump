@@ -143,9 +143,9 @@ export web de debug e o game-bot nativo contra a `main`. O PR fecha #10, #11, #1
    `DifficultyState`; a ponte publica `dificuldade.aviso` para os smokes. O som do aviso fica para a #43. O visual da
    moldura original foi redesenhado para vinheta (fecha #45). Sensacao e legibilidade sobre fundo claro: verificacao manual no playtest do dono.
 7. Modos de toque alternaveis (#47, [ADR 0013](adr/0013-modos-de-toque-alternaveis.md)): dois esquemas selecionaveis
-   nas Opcoes — A (arrastar + flick, um polegar) e B (dois polegares, zonas invisiveis, padrao do playtest) — com pulo
+   nas Opcoes — Flick (A, arrastar + flick, um polegar) e Joy invisivel (B, dois polegares, zonas invisiveis, padrao do playtest) — com pulo
    reto, correcao de direcao no ar e comeco a andar no press. O esquema C prototipado foi descartado no playtest e
-   podado do codigo, dos testes e dos textos; save antigo com ele cai no B. O modo A tem sensibilidade ajustavel nas Opcoes
+   podado do codigo, dos testes e dos textos; save antigo com ele cai no B. O modo Flick (A) tem sensibilidade ajustavel nas Opcoes
    (um controle que escala a zona morta e o dy do flick; o padrao reproduz 6 px / 24 px; faixa 0,5x a 2x provisoria) e o
    flick nao repula no arrasto vertical longo nem falha com FPS baixo (#48). Valores de sensacao em um simbolo cada
    (`scripts/TouchTuning.gd`). Os roteiros de smoke por modo (`toque-modo-{a,b}.smoke.json`) provam direcao, diagonal e

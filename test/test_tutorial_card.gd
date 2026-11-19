@@ -141,9 +141,12 @@ func test_c198_variante_teclado_mostra_setas_e_espaco() -> void:
 	var c := _novo(TutorialCard.Variante.TECLADO)
 	assert_eq(c.variante(), TutorialCard.Variante.TECLADO, "variante guardada")
 	assert_true(_textos(c).has("Setas e espaco"), "teclado mostra 'Setas e espaco'")
-	for linhas in TutorialCard.TEXTO_CONTROLE_TOQUE_POR_MODO:
-		for texto in linhas:
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		for texto in TutorialCard.linhas_controle_toque(modo):
 			assert_false(_textos(c).has(texto), "teclado nao mostra o texto de toque '%s'" % texto)
+	for texto in _textos(c):
+		assert_false(texto.begins_with("Toque:"), "teclado nao mostra o nome do modo: '%s'" % texto)
+		assert_false(texto.contains("Flick") or texto.contains("Joy"), "teclado nao cita nome de modo: '%s'" % texto)
 
 
 func _texto_controle(c: TutorialCard) -> Array[String]:
@@ -182,6 +185,53 @@ func test_c477_cada_linha_de_controle_cabe_em_148_px_nos_dois_modos() -> void:
 	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		for linha in TutorialCard.linhas_controle_toque(modo):
 			assert_lte(TutorialCard.largura_texto(linha), TutorialCard.LARGURA_CONTEUDO, "'%s' cabe em 148 px" % linha)
+
+
+func test_c520_primeira_linha_do_card_e_o_rotulo_do_modo() -> void:
+	assert_eq(TutorialCard.linhas_controle_toque(TouchMode.Modo.A)[0], "Toque: Flick", "A: 1a linha = rotulo")
+	assert_eq(TutorialCard.linhas_controle_toque(TouchMode.Modo.B)[0], "Toque: Joy invisivel", "B: 1a linha = rotulo")
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		assert_eq(TutorialCard.linhas_controle_toque(modo)[0], TouchMode.rotulo(modo), "fonte unica TouchMode.rotulo")
+		Global.set_touch_mode(modo, false)
+		var c := _novo(TutorialCard.Variante.TOQUE)
+		assert_eq((c.find_child("Controle", true, false) as Label).text, TouchMode.rotulo(modo), "Controle renderiza o rotulo")
+	Global.set_touch_mode(TouchMode.padrao(), false)
+
+
+func test_c521_card_tem_no_maximo_3_linhas_e_renderiza_exatamente_elas() -> void:
+	assert_eq(TutorialCard.LINHAS_CONTROLE_MAX, 3, "teto de 3 linhas")
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		var linhas := TutorialCard.linhas_controle_toque(modo)
+		assert_lte(linhas.size(), TutorialCard.LINHAS_CONTROLE_MAX, "modo %s cabe no teto" % TouchMode.nome(modo))
+		Global.set_touch_mode(modo, false)
+		var c := _novo(TutorialCard.Variante.TOQUE)
+		assert_eq(_texto_controle(c), linhas, "card renderiza exatamente as linhas do modo %s" % TouchMode.nome(modo))
+		assert_eq(_texto_controle(c).size(), linhas.size(), "Controle, Controle1, Controle2 visiveis")
+	Global.set_touch_mode(TouchMode.padrao(), false)
+
+
+func test_c522_toda_linha_com_o_nome_cabe_em_148_px_e_o_fundo_segue_em_180x320() -> void:
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		for linha in TutorialCard.linhas_controle_toque(modo):
+			assert_lte(TutorialCard.largura_texto(linha), 148.0, "'%s' cabe em 148 px" % linha)
+		Global.set_touch_mode(modo, false)
+		var c := _novo(TutorialCard.Variante.TOQUE)
+		assert_true(Rect2(0.0, 0.0, 180.0, 320.0).encloses(c.rect_fundo()), "fundo %s dentro de 180x320 com 3 linhas" % c.rect_fundo())
+	Global.set_touch_mode(TouchMode.padrao(), false)
+
+
+func test_c523_b_nao_mostra_zonas_invisiveis_e_a_mantem_sensibilidade() -> void:
+	var a := TutorialCard.linhas_controle_toque(TouchMode.Modo.A)
+	var b := TutorialCard.linhas_controle_toque(TouchMode.Modo.B)
+	assert_eq(a, ["Toque: Flick", "Arraste anda, flick pula", "Sensibilidade: Opcoes"] as Array[String], "linhas do A")
+	assert_eq(b, ["Toque: Joy invisivel", "Esquerda segura: anda", "Direita toca: pula"] as Array[String], "linhas do B")
+	assert_false(b.has("Zonas invisiveis"), "B sem 'Zonas invisiveis'")
+	assert_true(a.has("Sensibilidade: Opcoes"), "A mantem a Sensibilidade")
+
+
+func test_c528_modo_fora_da_faixa_cai_no_rotulo_do_padrao_no_card() -> void:
+	assert_eq(TutorialCard.linhas_controle_toque(2)[0], "Toque: Joy invisivel", "valor 2 cai em B")
+	assert_eq(TutorialCard.linhas_controle_toque(99)[0], TouchMode.rotulo(TouchMode.padrao()), "valor 99 cai no padrao")
 
 
 func test_c478_fundo_dentro_de_180_x_altura_util_com_safe_area_topo() -> void:

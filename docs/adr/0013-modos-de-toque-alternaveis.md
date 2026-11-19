@@ -3,6 +3,7 @@
 - **Status:** aceito
 - **Data:** 2026-11-17
 - **Decisores:** itsManeka + Claude
+- **Nome de apresentacao:** Flick (modo A, arrastar + flick) e Joy invisivel (modo B, dois polegares). O enum e o valor salvo continuam A/B; a decisao abaixo nao muda.
 
 ## Contexto
 
