@@ -53,6 +53,12 @@ var safe_area: Rect2 = Rect2()
 var ultimo_estado: Dictionary = {}
 # Dificuldade da partida (DifficultyState): nasce em _ready, zera a cada Stage nova (reload da cena). Consumidores leem o snapshot
 var dificuldade: DifficultyState = null
+# Estado de power-up da partida (PowerUpState): membro da Stage, nunca de Global; nasce zerado em cada
+# Stage nova (o reload da cena em _on_animation_end recria tudo) e recebe tick junto da dificuldade
+var power_up_estado: PowerUpState = null
+# Gancho para os modos (f524): falso = nenhuma plataforma nasce com icone e a coleta e ignorada.
+# Padrao true; nenhum modo muda nesta feature (so o gancho).
+var power_ups_habilitados: bool = true
 # Seed da partida (int ou null) repassada ao ScrollLevel em _enter_tree (f517 T4): setada pelo chamador antes do add_child
 var semente_partida: Variant = null
 # Estagio da dificuldade na ultima publicacao da ponte; mudanca por tempo republica 1x (ver _physics_process)
@@ -98,16 +104,21 @@ func _ready():
 	# Configura estado inicial
 	Global.set_iniciado(false)
 	dificuldade = DifficultyState.new(CURVA_DIFICULDADE)
+	# Estado de power-up zerado a cada Stage nova (ativo e carga vazios; nunca em Global)
+	power_up_estado = PowerUpState.new()
 	# Progresso inicial de debug (?progresso=, 0.0 fora do web debug): a partida ja nasce nesse ponto da curva
 	dificuldade.progresso_inicial = Global.progresso_inicial
 	# Linhas do .tscn e as de ScrollLevel._ready ja nasceram (estagio 0); as novas recebem o estado
 	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
 	if scroll_level != null:
 		scroll_level.dificuldade = dificuldade
+		# Gancho dos modos: a geracao de icones le o valor vigente (f524 setara por partida)
+		scroll_level.power_ups_habilitados = power_ups_habilitados
 	# O Player le o scroll vigente da mesma dificuldade para prever a cor da janela de chegada
 	player.dificuldade = dificuldade
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
+	player.power_up_coletado.connect(_coletar_power_up)
 	_publicar_estado(GameState.STATE_MENU, true)
 
 	# Camada de toque de um polegar (criada por codigo; inerte fora de partida em curso)
@@ -242,6 +253,10 @@ func _physics_process(delta: float) -> void:
 	# Camera do topo antes de tudo: depois do Player (process_physics_priority = 1) e antes de publicar player.y na ponte
 	_avancar_camera()
 	dificuldade.tick(delta)
+	# Estado de power-up no mesmo relogio da dificuldade: fora de partida iniciada nao corre e a pausa
+	# congela a arvore inteira (sem codigo de pausa proprio, ADR 0008)
+	if Global.is_iniciado():
+		power_up_estado.tick(delta)
 	# O estagio sobe por tempo sem evento de ponto/Play: republica 1x por mudanca, nunca apos a derrota
 	# O mesmo vale para o `aviso` (pulso da moldura comecou ou terminou)
 	if ultimo_estado.get("state", "") == GameState.STATE_LOST:
@@ -450,6 +465,17 @@ func _on_animation_end():
 # Callback para quando o jogador ganha um ponto
 func _on_player_add_point():
 	add_point()
+
+
+# Coleta do pouso do jogador: resolve o tipo no registro e guarda no estado da partida. Com o gancho de
+# modos desligado a coleta e ignorada (o estado segue vazio); tipo desconhecido nao ativa nada.
+func _coletar_power_up(tipo: StringName) -> void:
+	if not power_ups_habilitados or tipo == &"":
+		return
+	var power_up: PowerUp = PowerUps.resolver(tipo)
+	if power_up == null:
+		return
+	power_up_estado.coletar(power_up)
 
 # Adiciona um ponto à pontuação e atualiza a interface
 func add_point():

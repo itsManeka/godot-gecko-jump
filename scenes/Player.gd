@@ -2,6 +2,8 @@ extends CharacterBody2D
 
 # Sinal emitido quando o jogador ganha um ponto
 signal add_point
+# Sinal emitido quando o pouso coleta o power-up da plataforma (tipo vazio nunca viaja)
+signal power_up_coletado(tipo)
 
 # Constantes de movimento e física
 const SPEED = 80                    # Velocidade horizontal do jogador
@@ -74,7 +76,10 @@ func _physics_process(_delta):
 		# Avisa a plataforma do pouso (com a cor do pouso) antes de sortear a nova cor; liberada = sem aviso
 		_descartar_plataforma_liberada()
 		if actual_platform != null:
-			actual_platform.notificar_pouso()
+			# O pouso devolve o power-up da plataforma (coletado 1x, icone some); vazio = nao havia
+			var tipo: StringName = actual_platform.notificar_pouso()
+			if tipo != &"":
+				power_up_coletado.emit(tipo)
 		change_color_random()
 		emit_signal("add_point")
 	

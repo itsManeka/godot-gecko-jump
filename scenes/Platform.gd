@@ -90,10 +90,23 @@ func _posicionar_icone() -> void:
 	var topo: float = sprite.position.y + sprite.offset.y - sprite.texture.get_height() / 2.0
 	icone_power_up.position = Vector2(0.0, topo - ICONE_FOLGA - PowerUpIcone.TAMANHO_PX / 2.0)
 
-# Pouso confirmado do jogador: despacha o hook aos modificadores
-func notificar_pouso() -> void:
+# Pouso confirmado do jogador: despacha o hook aos modificadores e devolve o power-up da plataforma
+# (consumido aqui: o tipo zera e o icone sai da arvore; &"" = nao tinha ou ja foi coletado)
+func notificar_pouso() -> StringName:
+	var tipo: StringName = _consumir_power_up()
 	for modificador in _modificadores:
 		modificador.ao_pousar(self, _snapshot)
+	return tipo
+
+
+# Coleta unica: devolve o tipo desta plataforma e limpa o seu power-up (o icone sai junto)
+func _consumir_power_up() -> StringName:
+	var tipo: StringName = tipo_power_up
+	tipo_power_up = &""
+	if icone_power_up != null:
+		icone_power_up.queue_free()
+		icone_power_up = null
+	return tipo
 
 # Largura da colisao e do visual; o shape e duplicado por instancia (o sub_resource da cena e compartilhado).
 # Sem scale no corpo; AreaCheck e o notifier ficam como estao.

@@ -15,6 +15,10 @@ var position_scrolled: float = 0.0
 # Dificuldade da partida (atribuida pela Stage em _ready); null = estagio 0 (cena isolada)
 var dificuldade: DifficultyState = null
 
+# Gancho de modos da Stage (f524, atribuido em _ready): falso = as linhas de fluxo nao sorteiam
+# power-up (nenhum icone nasce); padrao true
+var power_ups_habilitados: bool = true
+
 # Seed da partida (int ou null): setada pela Stage ANTES de entrar na arvore (D1); null = partida sem
 # seed, sorteio global como hoje. Nao toca Global: quem consome sao os rngs por linha, injetados via
 # RowSeed pelo indice do y local de cada linha.
@@ -123,6 +127,8 @@ func create_new_running_platform(y_local: float = NAN):
 	running_platform.dificuldade = dificuldade
 	# So as linhas de fluxo (indice >= 1) sorteiam power-up; as do .tscn e as extras iniciais nunca ligam a flag
 	running_platform.power_ups_elegivel = true
+	# Gancho da Stage: com power-ups desabilitados a linha nasce sem sorteio (nenhum icone)
+	running_platform.power_ups_habilitados = power_ups_habilitados
 	# Rngs da seed pelo indice do y local ANTES do add_child adiado (o ramo NAN entra aqui com o y ja
 	# resolvido); sem semente a injecao e no-op
 	_injetar_rng_na_linha(running_platform)
