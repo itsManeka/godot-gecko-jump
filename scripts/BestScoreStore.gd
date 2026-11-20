@@ -15,6 +15,18 @@ var path: String
 func _init(p := DEFAULT_PATH) -> void:
 	path = p
 
+# Store do recorde do modo. O id passa pelo registro (GameModes.de_id): desconhecido, vazio, nulo ou `teste` sem a
+# flag de debug caem no Classico, entao o caminho nunca carrega texto de entrada externa. Classico = `caminho_classico`
+# (default DEFAULT_PATH); demais modos = `user://best_score_<id>.cfg` no mesmo diretorio (caminho_classico injetavel para teste).
+static func para_modo(id: Variant, caminho_classico: String = DEFAULT_PATH) -> BestScoreStore:
+	var modo := GameModes.de_id(id)
+	if modo.id == GameModes.ID_CLASSICO:
+		return BestScoreStore.new(caminho_classico)
+	var diretorio := caminho_classico.get_base_dir()
+	if not diretorio.ends_with("/"):
+		diretorio += "/"
+	return BestScoreStore.new(diretorio + "best_score_%s.cfg" % String(modo.id))
+
 # Le o recorde salvo. Devolve 0 se o arquivo nao existe, nao carrega, nao tem a chave ou o valor nao e int >= 0.
 func load_best() -> int:
 	var cfg := ConfigFile.new()
