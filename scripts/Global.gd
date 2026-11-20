@@ -69,6 +69,11 @@ var moldura_lenta: bool = false
 func aplicar_moldura_lenta(raw: Variant, is_debug: bool) -> void:
 	moldura_lenta = ModoMolduraLenta.decide(raw, is_debug)
 
+# Modos de jogo: quando true, o registro GameModes expoe o 2o modo de teste (`teste`) alem do Classico.
+# Ligado so em debug pelo parametro `?modos=teste` (decisor do seletor de debug); default false = release
+# e qualquer build sem o parametro. Modo `teste` salvo lido com a flag desligada cai no Classico.
+var modos_teste_habilitado: bool = false
+
 # Espelho em memoria do "tutorial visto" (TutorialFlag.marcar): impede o card de reaparecer na mesma sessao se a
 # gravacao em disco falhar. Publico de proposito (seam de teste: before_each reseta).
 var tutorial_visto_espelho: bool = false
