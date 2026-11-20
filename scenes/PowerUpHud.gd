@@ -194,44 +194,10 @@ func _montar_barra(px: int) -> Array:
 	]
 
 
-# Desenho do icone por tipo, em coordenadas locais 16x16: fundo preto e forma branca. Tipo sem forma propria
-# (ex.: fakes de teste) ganha um glifo 4x4 derivado do nome, distinto por tipo. Formas provisorias (E6 refaz).
+# Desenho do icone por tipo: fachada da fonte unica PowerUpDesenho (a mesma do icone da plataforma).
 static func comandos_do_tipo(nome: StringName) -> Array:
-	var fundo: Dictionary = _rect(Rect2(0.0, 0.0, ICONE_TAM, ICONE_TAM), COR_PRETO)
-	match nome:
-		&"camaleao":
-			return [
-				fundo,
-				_rect(Rect2(1.0, 1.0, 6.0, 6.0), COR_BRANCO),
-				_rect(Rect2(9.0, 1.0, 6.0, 6.0), COR_BRANCO),
-				_rect(Rect2(1.0, 9.0, 6.0, 6.0), COR_BRANCO),
-				_rect(Rect2(9.0, 9.0, 6.0, 6.0), COR_BRANCO),
-			]
-		&"desacelera":
-			return [
-				fundo,
-				_poly(PackedVector2Array([Vector2(3, 1), Vector2(13, 1), Vector2(8, 8)]), COR_BRANCO),
-				_poly(PackedVector2Array([Vector2(8, 8), Vector2(3, 15), Vector2(13, 15)]), COR_BRANCO),
-			]
-		&"segunda_chance":
-			return [
-				fundo,
-				_rect(Rect2(6.0, 2.0, 4.0, 12.0), COR_BRANCO),
-				_rect(Rect2(2.0, 6.0, 12.0, 4.0), COR_BRANCO),
-			]
-	var bits: int = nome.hash() & 0xFFFF
-	if bits == 0:
-		bits = 1
-	var comandos: Array = [fundo]
-	for i in 16:
-		if (bits >> i) & 1 == 1:
-			comandos.append(_rect(Rect2(2.0 + (i & 3) * 3.0, 2.0 + (i >> 2) * 3.0, 3.0, 3.0), COR_BRANCO))
-	return comandos
+	return PowerUpDesenho.comandos(nome)
 
 
 static func _rect(r: Rect2, cor: Color) -> Dictionary:
 	return {"forma": &"rect", "rect": r, "cor": cor}
-
-
-static func _poly(pontos: PackedVector2Array, cor: Color) -> Dictionary:
-	return {"forma": &"poly", "pontos": pontos, "cor": cor}

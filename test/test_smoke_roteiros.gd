@@ -6,6 +6,8 @@ extends GutTest
 
 const PASTA: String = "res://test/smoke/"
 const ROTEIROS: Array[String] = [
+	"camaleao",
+	"desacelera",
 	"dica-toque",
 	"estagio",
 	"estagio-alto",
@@ -29,6 +31,8 @@ const ROTEIROS_LONGOS: Array[String] = [
 ]
 const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga"]
 const ROTEIROS_SEMDERROTA: Array[String] = [
+	"camaleao",
+	"desacelera",
 	"retrato-pontua-1080x2772",
 	"estagio",
 	"estagio-alto",
@@ -40,6 +44,10 @@ const ROTEIROS_SEMDERROTA: Array[String] = [
 	"retrato-720x1280",
 ]
 const OPERADORES: Array[String] = ["eq", "ne", "gt", "gte", "lt", "lte"]
+# Power-ups reais do registro de producao (ADR 0014); o roteiro de cada um passa `?powerup=<nome>` (so-debug).
+const POWERUPS_REAIS: Array[String] = ["camaleao", "desacelera"]
+# Duracao temporizada de Camaleao e Desacelera (ADR 0014: 5 s de tempo de jogo).
+const DURACAO_POWERUP_MS: int = 5000
 const TIMEOUT_MIN_APOS_QUEDA_MS: int = 3000
 # Orcamento do tempo nominal (wait + (shots-1)*every) do Play ate o ultimo print de uma rajada moving true: a recarga
 # pos-derrota so ocorre ~2,3 s depois do Play; 1,5 s deixa folga para a sobrecarga do screenshot (issue #40).
@@ -401,3 +409,51 @@ func _indice_shots(nome: String, rotulo: String) -> int:
 		if str(passos[i].get("name", "")) == rotulo:
 			return i
 	return -1
+
+
+# Valor de `powerup=` do path (ate o proximo `&`); vazio quando o path nao traz o parametro.
+func _nome_powerup(caminho: String) -> String:
+	var idx: int = caminho.find("powerup=")
+	if idx < 0:
+		return ""
+	var resto: String = caminho.substr(idx + "powerup=".length())
+	var fim: int = resto.find("&")
+	if fim < 0:
+		return resto
+	return resto.substr(0, fim)
+
+
+func test_camaleao_e_desacelera_parseiam_com_seed_e_powerup_real() -> void:
+	for nome in ["camaleao", "desacelera"]:
+		_checar_roteiro_com_seed(nome)
+		var caminho: String = str(_carregar(nome).get("path", ""))
+		assert_true(POWERUPS_REAIS.has(_nome_powerup(caminho)), "?powerup= deve ser um power-up real (camaleao ou desacelera)")
+		assert_eq(_nome_powerup(caminho), nome, "?powerup= deve ser o proprio nome do roteiro")
+
+
+func test_roteiro_powerup_real_ativa_com_o_nome_e_expira_dentro_da_duracao() -> void:
+	for nome in ["camaleao", "desacelera"]:
+		var passos := _passos(nome)
+		var i_ativo: int = -1
+		var i_expira: int = -1
+		for i in passos.size():
+			if not passos[i].has("expect"):
+				continue
+			var exigencia: Dictionary = passos[i]["expect"]
+			if i_ativo < 0 and exigencia.get("powerup.ativo", null) == nome:
+				i_ativo = i
+			elif i_ativo >= 0 and i_expira < 0 and exigencia.get("powerup.ativo", null) == "":
+				i_expira = i
+		assert_gte(i_ativo, 0, "%s: deve haver expect powerup.ativo igual ao nome do power-up" % nome)
+		assert_gt(i_expira, i_ativo, "%s: deve haver expect powerup.ativo vazio depois da ativacao" % nome)
+		if i_ativo >= 0:
+			var restante: Variant = passos[i_ativo]["expect"].get("powerup.restante", null)
+			assert_true(typeof(restante) == TYPE_DICTIONARY and restante.has("gt"), "%s: a ativacao confere powerup.restante gt 0" % nome)
+		if i_expira >= 0:
+			assert_gte(int(passos[i_expira].get("timeout_ms", 0)), DURACAO_POWERUP_MS, "%s: a expiracao deve ter timeout_ms >= a duracao de 5 s" % nome)
+
+
+func test_nome_de_powerup_invalido_reprova() -> void:
+	assert_false(POWERUPS_REAIS.has(_nome_powerup("index.html?seed=1&semderrota=1&powerup=fantasma")), "powerup fora da lista de power-ups reais reprova")
+	assert_eq(_nome_powerup("index.html?seed=1&semderrota=1"), "", "path sem powerup= nao traz nome")
+	assert_true(POWERUPS_REAIS.has(_nome_powerup("index.html?seed=1&powerup=camaleao&semderrota=1")), "powerup= no meio da query e lido ate o &")
