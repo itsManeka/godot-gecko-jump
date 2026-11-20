@@ -316,6 +316,8 @@ func _physics_process(delta: float) -> void:
 	# Espelho do efeito vigente para a regra de colisao (a Platform le Global.cor_livre, f522 T3):
 	# escrito pela dona do estado a cada frame, nunca pela coleta; pausa congela junto (arvore parada).
 	# A escrita vem antes da reavaliacao de borda para a Platform ja ler a flag nova.
+	# Entre o _ready e o 1o frame de fisica a flag guarda o valor anterior: a unica protecao contra uma Stage nova
+	# herdar cor livre e o zerar em _exit_tree (teste C596).
 	var cor_livre_agora: bool = power_up_estado.cor_livre()
 	Global.cor_livre = cor_livre_agora
 	# f522 T3: bordas da cor livre (ativacao/expiracao do Camaleao) reavaliam a colisao de todas as

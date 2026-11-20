@@ -177,7 +177,8 @@ func atualizar() -> void:
 
 
 # Reconstroi os comandos da barra so quando a largura inteira (ceil, 0..40 px) muda: restantes que dao a mesma
-# largura reusam o array anterior, sem alocar a cada frame
+# largura reusam o array anterior, sem alocar a cada frame. O cache `_barra_px` assume que a barra depende SO da
+# largura: desenho com cor por tipo exige invalidar tambem pelo tipo.
 func _atualizar_barra() -> void:
 	var px: int = ceili(rect_barra_cheia().size.x)
 	if px == _barra_px:

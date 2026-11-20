@@ -72,6 +72,8 @@ var power_ups_elegivel: bool = false
 # Gancho da Stage (f524, repassado pelo ScrollLevel no nascimento): falso = esta linha nunca sorteia
 # power-up, mesmo elegivel (nenhum icone nasce); padrao true
 var power_ups_habilitados: bool = true
+# Estado de power-up da partida (injetado pelo ScrollLevel antes do add_child, f522 T4); null = scroll cheio
+var power_up_estado: PowerUpState = null
 # rng dedicado do sorteio de power-up (derivado da semente do gerador, sem consumir o rng do layout nem o da cor)
 var _rng_power_up: RandomNumberGenerator = null
 # Mistura a semente do gerador para o rng do power-up nao repetir a sequencia dos demais
@@ -419,9 +421,6 @@ func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:
 		ReachableColors.forcar_cor_cicladora(ciclo.get_sequencia(), int(Global.cor_gecko), periodo, alcance_s)
 	)
 	return ciclo
-
-# Estado de power-up da partida (injetado pelo ScrollLevel antes do add_child, f522 T4); null = scroll cheio
-var power_up_estado: PowerUpState = null
 
 # Tempo em que a plataforma recem-nascida segue alcancavel: o tempo de pulo ate a linha dela (pelo scroll do snapshot do
 # nascimento) mais 1 periodo de espera em cima, com piso de 2 periodos (a cor do indice 0 e a ja pintada na plataforma).
