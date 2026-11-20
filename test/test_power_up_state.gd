@@ -135,7 +135,7 @@ func test_registro_de_producao_tem_camaleao() -> void:
 	PowerUps.registrar(NOME_A, _FakeTemporizadoA)
 	PowerUps.restaurar_padrao()
 	assert_true(PowerUps.nomes().has(&"camaleao"), "registro de producao contem camaleao")
-	assert_eq(PowerUps.nomes().size(), 2, "camaleao e desacelera sao os nomes de producao desta feature (f522 T4)")
+	assert_eq(PowerUps.nomes().size(), 3, "camaleao, desacelera e segunda_chance sao os nomes de producao (f522 T4, f526 T1)")
 	assert_true(PowerUps.nomes().has(&"desacelera"), "registro de producao contem desacelera")
 	assert_false(PowerUps.nomes().has(NOME_A), "fake nao sobrevive ao restaurar_padrao")
 	assert_null(PowerUps.resolver(NOME_A), "fake nao sobrevive ao restaurar_padrao")

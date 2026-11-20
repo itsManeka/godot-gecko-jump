@@ -57,6 +57,9 @@ static func tempo_de_pulo(scroll: float) -> float:
 
 # Converte plataformas vivas em pares {y, x, cor} (posicao global). Ignora null, instancia liberada e `excluir`.
 # Plataforma com ciclo de cor ganha tambem "ciclo" (PlatformColorCycle); com piscar, "pisca" (PlatformBlink).
+# Estado solido/visivel para o alvo da Segunda chance (f526 T3): toda entrada ganha "desmoronada", "desmoronando"
+# e "pisca_oculta" (falso em objeto sem o membro/metodo, ex. fake de teste) e a "plataforma" de origem (o chamador
+# resolve o no escolhido sem casar posicao). So chaves acrescentadas: nenhum filtro muda aqui.
 static func entradas_de_plataformas(plataformas: Array, excluir: Object = null) -> Array:
 	var entradas: Array = []
 	for p in plataformas:
@@ -72,6 +75,10 @@ static func entradas_de_plataformas(plataformas: Array, excluir: Object = null) 
 			var pisca: PlatformBlink = p.obter_pisca()
 			if pisca != null:
 				entrada["pisca"] = pisca
+		entrada["desmoronada"] = p.get("desmoronada") == true
+		entrada["desmoronando"] = p.esta_desmoronando() if p.has_method(&"esta_desmoronando") else false
+		entrada["pisca_oculta"] = p.esta_pisca_oculta() if p.has_method(&"esta_pisca_oculta") else false
+		entrada["plataforma"] = p
 		entradas.append(entrada)
 	return entradas
 

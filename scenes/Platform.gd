@@ -209,6 +209,15 @@ func esta_travada() -> bool:
 func definir_travada(valor: bool) -> void:
 	_travada = valor
 
+# Em curso de desmoronamento (o atraso conta e a plataforma ainda colide, mas esta prestes a sumir). Leitor
+# publico para ReachableColors.entradas_de_plataformas (f526 T3): o alvo da Segunda chance exclui quem esta assim.
+func esta_desmoronando() -> bool:
+	return _desmoronando
+
+# Invisivel por piscar (fantasma sem colisao). Leitor publico para ReachableColors.entradas_de_plataformas (f526 T3).
+func esta_pisca_oculta() -> bool:
+	return _pisca_oculta
+
 # Troca a cor da plataforma (ciclo). Se o gecko esta com o corpo sobreposto e a troca a tornaria solida,
 # a troca espera ele sair (evita prende-lo dentro da colisao).
 # Com a troca adiada (_cor_pendente) o ciclo ja avancou o indice: ciclo.cor_atual() difere de `color` ate a troca
