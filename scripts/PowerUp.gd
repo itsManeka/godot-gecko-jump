@@ -17,3 +17,16 @@ func ao_ativar() -> void:
 
 func ao_encerrar() -> void:
 	pass
+
+
+# Efeitos que chegam ao mundo sem acoplar este RefCounted a cenas (f522 T1): o PowerUpState agrega o valor
+# do temporizado ativo e a Stage espelha o agregado onde o efeito e lido. Padrao neutro: herdeiro que nao
+# sobrescreve nao muda nada (PowerUpDeTeste e fakes da f521 seguem neutros sem edicao).
+# Verdadeiro = o gecko pisa em plataforma de qualquer cor (Camaleao; f522 T3 le Global.cor_livre).
+func ignora_cor() -> bool:
+	return false
+
+
+# Multiplicador do deslocamento do scroll da curva (Desacelera, f522 T4); 1.0 = sem efeito.
+func fator_scroll() -> float:
+	return 1.0

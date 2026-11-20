@@ -15,6 +15,10 @@ var position_scrolled: float = 0.0
 # Dificuldade da partida (atribuida pela Stage em _ready); null = estagio 0 (cena isolada)
 var dificuldade: DifficultyState = null
 
+# Estado de power-up da partida (atribuido pela Stage em _ready, no padrao da dificuldade injetada);
+# null = neutro. O consumo do fator de scroll e do Desacelera (f522 T4); o campo chega pronto (f522 T1).
+var power_up_estado: PowerUpState = null
+
 # Gancho de modos da Stage (f524, atribuido em _ready): falso = as linhas de fluxo nao sorteiam
 # power-up (nenhum icone nasce); padrao true
 var power_ups_habilitados: bool = true

@@ -69,3 +69,14 @@ func restante() -> float:
 # Cargas guardadas (0 ou 1)
 func carga() -> int:
 	return 0 if _carga == null else 1
+
+
+# Cor livre vigente (f522 T1): verdadeiro com temporizado ativo que ignora cor; sem ativo ou com efeito
+# neutro, falso. Carga guardada nunca entra no agregado (efeito so do temporizado ativo, um por partida).
+func cor_livre() -> bool:
+	return _ativo != null and _ativo.ignora_cor()
+
+
+# Fator vigente do scroll (f522 T4 le este valor): o do temporizado ativo; sem ativo, 1.0 (neutro).
+func fator_scroll() -> float:
+	return _ativo.fator_scroll() if _ativo != null else 1.0

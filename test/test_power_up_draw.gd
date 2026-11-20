@@ -95,7 +95,7 @@ func test_pesos_2_para_1_respeitam_a_proporcao_em_3000_sorteios() -> void:
 
 
 func test_estagio_sem_campos_novos_e_curva_de_producao_tem_raridade_e_pesos_aprovados() -> void:
-	# C545: estagio sem os campos = 0.0 e pesos vazios; producao (D3) = 0.04 em todos os estagios, pesos vazios.
+	# C545: estagio sem os campos = 0.0 e pesos vazios; producao (D3) = 0.04 em todos os estagios; pesos da producao preenchidos (f522 T2).
 	var curva := DifficultyCurve.new()
 	curva.estagios = [DifficultyStage.new()]
 	var vazio := curva.avaliar(0.0, 0.0)
@@ -106,5 +106,5 @@ func test_estagio_sem_campos_novos_e_curva_de_producao_tem_raridade_e_pesos_apro
 	assert_eq(producao.estagios.size(), 4, "4 estagios na curva de producao")
 	for estagio: DifficultyStage in producao.estagios:
 		assert_almost_eq(estagio.raridade_power_up, 0.04, EPS, "raridade de producao = 0.04 (D3)")
-		assert_true(estagio.pesos_power_ups.is_empty(), "pesos de producao vazios (D3)")
+		assert_false(estagio.pesos_power_ups.is_empty(), "pesos de producao preenchidos nos 4 estagios (f522 T2)")
 	assert_almost_eq(producao.avaliar(0.0, 0.0).get_raridade_power_up(), 0.04, EPS, "snapshot da producao = 0.04")

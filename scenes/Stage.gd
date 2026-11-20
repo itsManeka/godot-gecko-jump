@@ -105,6 +105,11 @@ func _enter_tree() -> void:
 	if scroll_level != null:
 		scroll_level.semente = semente_partida
 
+# Ao sair da arvore (troca de cena): a flag de cor livre e espelho deste no, nao estado global — a Stage
+# seguinte nao herda o efeito de uma partida que ja acabou (mesmo padrao do Player com Global.cor_gecko)
+func _exit_tree() -> void:
+	Global.cor_livre = false
+
 # Inicializa a tela do jogo
 func _ready():
 	# Avanco da camera do topo (issue #46) roda depois do Player: mesma prioridade 0 da arvore (Stage vem antes dos
@@ -131,6 +136,9 @@ func _ready():
 	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
 	if scroll_level != null:
 		scroll_level.dificuldade = dificuldade
+		# Estado de power-up injetado no mesmo padrao da dificuldade (f522 T1: ponto de efeito; o consumo
+		# do fator de scroll e da feature do Desacelera, T4)
+		scroll_level.power_up_estado = power_up_estado
 		# Gancho dos modos: copiado UMA vez aqui (_ready); o modo (f524) deve setar `power_ups_habilitados`
 		# na Stage antes do add_child, mudar depois do _ready nao chega as linhas
 		scroll_level.power_ups_habilitados = power_ups_habilitados
@@ -301,6 +309,9 @@ func _physics_process(delta: float) -> void:
 	# congela a arvore inteira (sem codigo de pausa proprio, ADR 0008)
 	if Global.is_iniciado():
 		power_up_estado.tick(delta)
+	# Espelho do efeito vigente para a regra de colisao (a Platform le Global.cor_livre, f522 T3):
+	# escrito pela dona do estado a cada frame, nunca pela coleta; pausa congela junto (arvore parada)
+	Global.cor_livre = power_up_estado.cor_livre()
 	# O estagio sobe por tempo sem evento de ponto/Play: republica 1x por mudanca, nunca apos a derrota
 	# O mesmo vale para o `aviso` (pulso da moldura comecou ou terminou)
 	if ultimo_estado.get("state", "") == GameState.STATE_LOST:

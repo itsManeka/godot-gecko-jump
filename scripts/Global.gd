@@ -75,6 +75,10 @@ func _aplicar_modo(id: StringName) -> void:
 # Cor corrente do gecko (lida pelos geradores de plataforma). Volta a Enums.COR_INICIAL a cada partida nova:
 # o Player a reseta ao sair da arvore (Player._exit_tree), antes de a Stage seguinte gerar as plataformas.
 var cor_gecko: Enums.COLOR = Enums.COR_INICIAL
+# Cor livre do power-up da partida (f522): espelho de leitura do PowerUpState da Stage — a Stage escreve
+# por frame e zera ao sair da arvore (como o Player faz com cor_gecko); o estado nunca vive aqui alem da
+# flag. Lida pela regra de colisao da Platform (f522 T3).
+var cor_livre: bool = false
 
 # Aplica a seed do RNG: null = sorteio livre (producao), inteiro = sequencia fixa (smoke debug).
 func aplicar_seed(valor: Variant) -> void:
