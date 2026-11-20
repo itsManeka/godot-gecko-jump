@@ -32,6 +32,8 @@ var _icone: _Desenho = null
 var _barra: _Desenho = null
 var _carga: _Desenho = null
 var _segundos: Label = null
+# Largura inteira (px, ceil) com que a barra foi montada; -1 = ainda nao montada
+var _barra_px: int = -1
 
 
 # Controle que so executa uma lista de comandos de desenho (retangulos e poligonos)
@@ -170,15 +172,25 @@ func atualizar() -> void:
 	_carga.visible = mostra_carga
 	if mostra_ativo:
 		_icone.definir(comandos_do_tipo(ativo.nome))
-		_barra.definir(_montar_barra())
+		_atualizar_barra()
 		_segundos.text = str(ceili(estado.restante()))
 
 
-func _montar_barra() -> Array:
+# Reconstroi os comandos da barra so quando a largura inteira (ceil, 0..40 px) muda: restantes que dao a mesma
+# largura reusam o array anterior, sem alocar a cada frame
+func _atualizar_barra() -> void:
+	var px: int = ceili(rect_barra_cheia().size.x)
+	if px == _barra_px:
+		return
+	_barra_px = px
+	_barra.definir(_montar_barra(px))
+
+
+func _montar_barra(px: int) -> Array:
 	# Coordenadas locais ao controle da barra (que ja inclui a moldura de 1 px)
 	return [
 		_rect(Rect2(0.0, 0.0, BARRA_W + 2.0, BARRA_H + 2.0), COR_PRETO),
-		_rect(Rect2(1.0, 1.0, rect_barra_cheia().size.x, BARRA_H), COR_BRANCO),
+		_rect(Rect2(1.0, 1.0, float(px), BARRA_H), COR_BRANCO),
 	]
 
 

@@ -32,6 +32,10 @@ var semente: Variant = null
 func _snapshot() -> DifficultySnapshot:
 	return DifficultySnapshot.de(dificuldade)
 
+# Fator vigente do scroll (power-up de desaceleracao); sem estado injetado = 1.0 (neutro)
+func _fator_scroll() -> float:
+	return power_up_estado.fator_scroll() if power_up_estado != null else 1.0
+
 # Quantas linhas do fluxo já nasceram (uma a cada InitialRows.ESPACAMENTO px de scroll)
 var _rows_spawned: int = 0
 
@@ -84,7 +88,7 @@ func _physics_process(delta):
 		return
 	
 	# Calcula movimento de scroll baseado no delta time
-	var new_position: float = _snapshot().get_scroll() * delta
+	var new_position: float = _snapshot().get_scroll() * _fator_scroll() * delta
 	running_platforms.position.y += new_position
 	position_scrolled += new_position
 	# Gatilho aritmético: uma linha a cada ESPACAMENTO px, sem depender de altura nem de colisão
@@ -129,6 +133,8 @@ func create_new_running_platform(y_local: float = NAN):
 	running_platform.position = Vector2(0, y_local)
 	# Estado injetado ANTES do add_child (adiado): a linha le speed/proporcao/K no _ready
 	running_platform.dificuldade = dificuldade
+	# Estado de power-up: a previsao de cor da linha usa o scroll efetivo (f522 T4)
+	running_platform.power_up_estado = power_up_estado
 	# So as linhas de fluxo (indice >= 1) sorteiam power-up; as do .tscn e as extras iniciais nunca ligam a flag
 	running_platform.power_ups_elegivel = true
 	# Gancho da Stage: com power-ups desabilitados a linha nasce sem sorteio (nenhum icone)

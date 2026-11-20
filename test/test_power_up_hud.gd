@@ -209,3 +209,37 @@ func test_forma_do_icone_distinta_por_tipo_e_desenho_so_em_branco_e_preto() -> v
 		var cor: Color = comando["cor"]
 		assert_true(cor == Color(1, 1, 1, 1) or cor == Color(0, 0, 0, 1), "so branco ou preto: %s" % cor)
 		assert_false(cores_plataforma.has(cor), "nunca a cor de uma plataforma: %s" % cor)
+
+
+# C617 [mutacao]: comandos_barra() so muda quando a largura inteira (ceil, 0..40 px) muda; restantes com a mesma
+# largura inteira reusam o mesmo array (sem reconstruir a cada frame)
+func test_comandos_barra_so_reconstroi_quando_a_largura_inteira_muda() -> void:
+	_stage = await _novo_stage()
+	var hud := _hud()
+	_estado().coletar(FakeA.new())
+	_estado()._restante = 5.1
+	hud.atualizar()
+	var primeiro: Array = hud.comandos_barra()
+	assert_almost_eq(hud.rect_barra_cheia().size.x, 20.4, 0.001, "fixture: 5,1 s = 20,4 px (ceil 21)")
+	_estado()._restante = 5.2
+	hud.atualizar()
+	assert_true(is_same(primeiro, hud.comandos_barra()), "mesma largura inteira (21 px): nao reconstroi")
+	_estado()._restante = 5.3
+	hud.atualizar()
+	assert_false(is_same(primeiro, hud.comandos_barra()), "largura inteira mudou (22 px): reconstroi")
+	assert_eq(hud.comandos_barra()[1]["rect"].size.x, 22.0, "a parte branca usa a largura inteira nova")
+
+
+# C618: rect_barra_cheia() esvazia pela direita; extremos: restante cheio -> 40 px, restante 0 -> 0 px
+func test_rect_barra_cheia_esvazia_pela_direita_nos_extremos() -> void:
+	_stage = await _novo_stage()
+	var hud := _hud()
+	_estado().coletar(FakeA.new())
+	_estado()._restante = DURACAO
+	hud.atualizar()
+	assert_eq(hud.rect_barra_cheia().size.x, 40.0, "restante cheio: 40 px")
+	assert_eq(hud.rect_barra_cheia().position.x, 22.0, "restante cheio: x esquerdo em 22")
+	_estado()._restante = 0.0
+	hud.atualizar()
+	assert_eq(hud.rect_barra_cheia().size.x, 0.0, "restante 0: 0 px")
+	assert_eq(hud.rect_barra_cheia().position.x, 22.0, "restante 0: x esquerdo fixo em 22 (esvazia pela direita)")

@@ -30,6 +30,7 @@ var jumping = true                 # Se o jogador está pulando
 var end = false                    # Se o jogo terminou para este jogador
 var rng: RandomNumberGenerator = null  # Sorteio da cor no pouso; null usa o global (so teste fixa semente)
 var dificuldade: DifficultyState = null  # Injetada pela Stage (scroll vigente para a previsao); null = cena isolada
+var power_up_estado: PowerUpState = null  # Injetado pela Stage (fator do scroll efetivo na previsao, f522 T4); null = neutro
 
 # Inicializa o jogador definindo sua cor inicial
 func _ready():
@@ -160,11 +161,19 @@ func change_color_random():
 	var dt_chegada: float = 0.0
 	var espera: float = 0.0
 	if dificuldade != null:
-		dt_chegada = ReachableColors.tempo_de_pulo(DifficultySnapshot.de(dificuldade).get_scroll())
+		dt_chegada = ReachableColors.tempo_de_pulo(scroll_efetivo())
 		espera = ESPERA_MAXIMA_S
 	set_color(
 		ReachableColors.cor_no_pouso(Global.platforms, actual_platform, PlayArea.LARGURA, rng, dt_chegada, espera)
 	)
+
+# Scroll vigente da partida (curva do estagio vezes o fator do power-up de desaceleracao, f522 T4):
+# a previsao de cor da janela de chegada usa o scroll que de fato move o mundo. Sem dificuldade = 0.
+func scroll_efetivo() -> float:
+	if dificuldade == null:
+		return 0.0
+	var fator: float = power_up_estado.fator_scroll() if power_up_estado != null else 1.0
+	return DifficultySnapshot.de(dificuldade).get_scroll() * fator
 
 # Retorna se o jogador está atualmente pulando
 func is_jumping() -> bool:

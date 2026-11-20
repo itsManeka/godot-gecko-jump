@@ -420,10 +420,14 @@ func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:
 	)
 	return ciclo
 
+# Estado de power-up da partida (injetado pelo ScrollLevel antes do add_child, f522 T4); null = scroll cheio
+var power_up_estado: PowerUpState = null
+
 # Tempo em que a plataforma recem-nascida segue alcancavel: o tempo de pulo ate a linha dela (pelo scroll do snapshot do
 # nascimento) mais 1 periodo de espera em cima, com piso de 2 periodos (a cor do indice 0 e a ja pintada na plataforma).
 func _alcance_s(periodo: float) -> float:
-	var pulo: float = ReachableColors.tempo_de_pulo(_snapshot_nascimento.get_scroll())
+	var fator: float = power_up_estado.fator_scroll() if power_up_estado != null else 1.0
+	var pulo: float = ReachableColors.tempo_de_pulo(_snapshot_nascimento.get_scroll() * fator)
 	return maxf(pulo, periodo) + periodo
 
 # Inicia o timer para gerar próxima plataforma
