@@ -10,9 +10,59 @@ var iniciado : bool = false
 # Publico de proposito (seam de teste): test/test_score_keeper.gd sobrescreve `Global.pontuacao` por atribuicao
 # em before_each/after_each. Trocar por reset explicito exige atualizar esse teste.
 var pontuacao: ScoreKeeper = ScoreKeeper.new()
-# Persistencia do recorde em user://, ligada ao `pontuacao` so no _ready (os keepers de teste nascem sem ligacao).
-# Mantido em membro para o store nao ser liberado ao fim do _ready.
-var _best_store: BestScoreStore
+# Modo de jogo selecionado (id em GameModes) e um ScoreKeeper por modo; `pontuacao` aponta para o do modo atual.
+# Cada keeper nasce ligado ao BestScoreStore do seu modo (criacao preguicosa), exceto com os recordes isolados
+# (suite de testes): ai nenhum keeper tem store e nada grava em user:// real.
+signal modo_jogo_changed(id: StringName)
+const MODO_SECTION := "modo"
+const MODO_KEY := "jogo"
+var modo_jogo: StringName = GameModes.ID_CLASSICO
+var _keepers: Dictionary = {}
+var _stores: Dictionary = {}
+var _recordes_isolados: bool = false
+
+# Keeper do modo; cria (e liga ao store do modo, salvo isolamento) na 1a consulta. O id ja vem resolvido por GameModes.
+func keeper_do_modo(id: StringName) -> ScoreKeeper:
+	var chave := String(id)
+	if _keepers.has(chave):
+		return _keepers[chave]
+	var keeper := ScoreKeeper.new()
+	if not _recordes_isolados:
+		var store := BestScoreStore.para_modo(id)
+		keeper.load_best(store.load_best())
+		keeper.best_changed.connect(store.save_best)
+		_stores[chave] = store
+	_keepers[chave] = keeper
+	return keeper
+
+# Store de recorde do modo; null quando o keeper nao tem persistencia (recordes isolados ou modo ainda sem keeper).
+func store_do_modo(id: StringName) -> BestScoreStore:
+	return _stores.get(String(id))
+
+# Descarta keepers e stores e passa a criar keepers sem store (usado pelo pre-run do GUT). `pontuacao` volta a
+# apontar para um keeper limpo do modo atual.
+func isolar_recordes() -> void:
+	_recordes_isolados = true
+	_keepers.clear()
+	_stores.clear()
+	pontuacao = keeper_do_modo(modo_jogo)
+
+# Troca o modo na hora (so com a partida nao iniciada); grava no store de opcoes so com `persistir`.
+func set_modo_jogo(id: Variant, persistir: bool = true) -> void:
+	if iniciado:
+		return
+	var modo := GameModes.de_id(id)
+	_aplicar_modo(modo.id)
+	if persistir:
+		opcoes.save_value(MODO_SECTION, MODO_KEY, String(modo.id))
+
+func get_modo_jogo() -> StringName:
+	return modo_jogo
+
+func _aplicar_modo(id: StringName) -> void:
+	modo_jogo = id
+	pontuacao = keeper_do_modo(id)
+	modo_jogo_changed.emit(id)
 # Cor corrente do gecko (lida pelos geradores de plataforma). Volta a Enums.COR_INICIAL a cada partida nova:
 # o Player a reseta ao sair da arvore (Player._exit_tree), antes de a Stage seguinte gerar as plataformas.
 var cor_gecko: Enums.COLOR = Enums.COR_INICIAL
@@ -94,9 +144,6 @@ func _ready():
 	aplicar_power_up_inicial(ModoPowerUpInicial.read_raw(), OS.is_debug_build())
 	aplicar_moldura_fixa(ModoMolduraFixa.read_raw(), OS.is_debug_build())
 	aplicar_moldura_lenta(ModoMolduraLenta.read_raw(), OS.is_debug_build())
-	_best_store = BestScoreStore.new()
-	pontuacao.load_best(_best_store.load_best())
-	pontuacao.best_changed.connect(_best_store.save_best)
 	usar_options_store(OptionsStore.new())
 	# Depois do store: o modo forcado por `?toque=` (so smoke debug) vence o salvo, sem gravar.
 	aplicar_modo_toque_inicial(ModoToqueInicial.read_raw(), OS.is_debug_build())
@@ -109,6 +156,8 @@ var _volume_sfx: float = OptionsStore.DEFAULT_VOLUME
 # Define o store das opcoes, le os volumes salvos e aplica nos buses.
 func usar_options_store(store: OptionsStore) -> void:
 	opcoes = store
+	# Modo salvo: ausente/invalido/desconhecido (ou `teste` sem a flag) = Classico. Nao grava.
+	_aplicar_modo(GameModes.de_id(store.load_value(MODO_SECTION, MODO_KEY, "")).id)
 	_volume_music = store.load_music()
 	_volume_sfx = store.load_sfx()
 	_aplicar_bus("Music", _volume_music)

@@ -7,7 +7,8 @@ const OPTIONS_TEST_PATH := "user://options_test_suite.cfg"
 
 
 func run():
-	Global.pontuacao = ScoreKeeper.new()
+	# Antes do options store: usar_options_store escolhe o keeper do modo e nao pode religar ao store real.
+	Global.isolar_recordes()
 	# Opcoes: o Global le o user://options.cfg real no boot (so leitura); aqui o store vira um de caminho temporario
 	# (sem arquivo = volumes 1.0, reaplicados nos buses), entao nenhum teste grava o arquivo real.
 	DirAccess.remove_absolute(OPTIONS_TEST_PATH)
