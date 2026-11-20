@@ -147,6 +147,7 @@ func _ready():
 		scroll_level.power_ups_habilitados = power_ups_habilitados
 	# O Player le o scroll vigente da mesma dificuldade para prever a cor da janela de chegada
 	player.dificuldade = dificuldade
+	player.power_up_estado = power_up_estado
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
 	player.power_up_coletado.connect(_coletar_power_up)
