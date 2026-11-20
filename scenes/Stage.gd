@@ -43,6 +43,13 @@ var options_screen: OptionsScreen = null
 # Botao Opcoes do menu (filho da Stage, criado em _ready) e origem da tela aberta (menu x pausa)
 var opcoes_botao: OpcoesBotao = null
 var _opcoes_do_menu: bool = false
+# Botao Modo do menu e tela Modos (filhos da Stage, criados em _ready); exclusivos com a tela de Opcoes
+var modo_botao: ModoBotao = null
+var modos_screen: ModosScreen = null
+# `jump` segurado ao fechar a tela Modos (Espaco = ui_accept = jump): nao inicia a partida ate soltar
+var _aguardar_soltar_jump: bool = false
+# Valor de power_ups_habilitados antes da regra do modo (a troca de modo no menu reavalia a partir dele)
+var _power_ups_base: bool = true
 # Card do tutorial reaberto por Opcoes > Ver tutorial (modal, 2o card da Stage, ultimo filho: recebe a entrada primeiro).
 # `_card_partida_escondido`: o card da 1a partida estava aberto e ficou oculto durante a reabertura.
 var tutorial_revisao: TutorialCard = null
@@ -113,6 +120,7 @@ func _ready():
 	if regra == null:
 		regra = GameModes.de_id(Global.get_modo_jogo()).regra
 	# O gancho so desliga: quem setou `power_ups_habilitados = false` antes do add_child continua valendo
+	_power_ups_base = power_ups_habilitados
 	power_ups_habilitados = power_ups_habilitados and regra.power_ups_habilitados()
 	dificuldade = DifficultyState.new(CURVA_DIFICULDADE)
 	# Estado de power-up zerado a cada Stage nova (ativo e carga vazios; nunca em Global)
@@ -176,6 +184,15 @@ func _ready():
 	opcoes_botao = OpcoesBotao.new()
 	opcoes_botao.acionado.connect(_abrir_opcoes_do_menu)
 	add_child(opcoes_botao)
+	# Botao Modo e tela Modos: depois do botao Opcoes e antes da tela de Opcoes/revisao; o toque neles e consumido antes
+	# do _input da Stage (nao inicia a partida) e o toque no Play, fora dos retangulos, segue para a Stage
+	modo_botao = ModoBotao.new()
+	modo_botao.acionado.connect(_abrir_modos_do_menu)
+	add_child(modo_botao)
+	modo_botao.definir_modo(GameModes.de_id(Global.get_modo_jogo()))
+	modos_screen = ModosScreen.new()
+	modos_screen.fechado.connect(_fechar_modos)
+	add_child(modos_screen)
 	# Tela de Opcoes (ALWAYS, camada acima do overlay): Voltar devolve ao overlay (pausa) ou ao menu
 	options_screen = OptionsScreen.new()
 	options_screen.voltar.connect(_voltar_opcoes)
@@ -223,6 +240,10 @@ func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 		pause_overlay.aplicar_layout(visible_size, safe)
 	if opcoes_botao != null:
 		opcoes_botao.aplicar_layout(visible_size, safe)
+	if modo_botao != null:
+		modo_botao.aplicar_layout(visible_size, safe)
+	if modos_screen != null:
+		modos_screen.aplicar_layout(visible_size, safe)
 	if options_screen != null:
 		options_screen.aplicar_layout(visible_size, safe)
 	if tutorial_revisao != null:
@@ -263,7 +284,9 @@ func _process(delta):
 	# (a origem menu roda sem pausa: ela e fechada so pelo Voltar)
 	if options_screen != null and options_screen.esta_aberta() and not _opcoes_do_menu and not get_tree().paused:
 		options_screen.fechar()
-	if not started and not _inicio_suspenso():
+	if _aguardar_soltar_jump and not Input.is_action_pressed("jump"):
+		_aguardar_soltar_jump = false
+	if not started and not _inicio_suspenso() and not _aguardar_soltar_jump:
 		if Input.is_action_pressed("jump"):
 			_on_Play_button_down()
 	_sincronizar_tutorial()
@@ -339,7 +362,8 @@ func _input(event: InputEvent) -> void:
 # A partida nao inicia enquanto a tela de Opcoes esta aberta (tecla `jump` e toque ficam suspensos)
 func _inicio_suspenso() -> bool:
 	var revisao := tutorial_revisao != null and tutorial_revisao.esta_aberto()
-	return revisao or (options_screen != null and options_screen.esta_aberta())
+	var modos := modos_screen != null and modos_screen.esta_aberta()
+	return revisao or modos or (options_screen != null and options_screen.esta_aberta())
 
 # Acao `pause` com a arvore rodando: pausa (ignorada fora de partida ativa). Com o overlay aberto, quem escuta
 # e o proprio overlay (ALWAYS), que consome o evento antes daqui.
@@ -410,11 +434,38 @@ func _abrir_opcoes_da_pausa() -> void:
 
 # Opcoes pelo menu (so com o jogo nao iniciado): Play, Last, Best e o botao saem de cena; a arvore nao esta pausada
 func _abrir_opcoes_do_menu() -> void:
-	if started or options_screen.esta_aberta():
+	if started or options_screen.esta_aberta() or modos_screen.esta_aberta():
 		return
 	_opcoes_do_menu = true
 	_mostrar_menu(false)
 	options_screen.abrir()
+
+# Modo pelo menu (so com o jogo nao iniciado): Play, Last, Best e os botoes saem de cena; a arvore nao esta pausada
+func _abrir_modos_do_menu() -> void:
+	if started or modos_screen.esta_aberta() or options_screen.esta_aberta():
+		return
+	if not modos_screen.abrir(GameModes.de_id(Global.get_modo_jogo())):
+		return
+	_mostrar_menu(false)
+
+# OK: aplica o modo exibido, fecha a tela e devolve o menu com Best/Last do modo escolhido (foco no botao Modo)
+func _fechar_modos(modo: GameMode) -> void:
+	modos_screen.fechar()
+	Global.set_modo_jogo(modo.id)
+	var atual: GameMode = GameModes.de_id(Global.get_modo_jogo())
+	regra = atual.regra
+	power_ups_habilitados = _power_ups_base and regra.power_ups_habilitados()
+	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
+	if scroll_level != null:
+		scroll_level.power_ups_habilitados = power_ups_habilitados
+	lastscore.text = "Last Score: " + str(Global.get_last_score())
+	bestscore.text = "Best Score: " + str(Global.get_best_score())
+	modo_botao.definir_modo(atual)
+	_aguardar_soltar_jump = Input.is_action_pressed("jump")
+	if not started:
+		_mostrar_menu(true)
+		modo_botao.focar(true)
+	_republicar_estado()
 
 # Voltar: fecha a tela e devolve o menu (foco no botao Opcoes) ou o overlay de pausa (foco em Opcoes, ainda pausado)
 func _voltar_opcoes() -> void:
@@ -460,8 +511,10 @@ func _mostrar_menu(valor: bool) -> void:
 	faixaplacar.visible = valor
 	if valor:
 		opcoes_botao.mostrar()
+		modo_botao.mostrar()
 	else:
 		opcoes_botao.ocultar()
+		modo_botao.ocultar()
 
 # Perda de foco da janela ou da aba pausa a partida (idempotente; fora de partida ativa _pausar ignora). Nao retoma
 # ao recuperar o foco: a retomada e do jogador, por Continuar.
