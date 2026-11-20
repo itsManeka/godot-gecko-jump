@@ -56,6 +56,8 @@ No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
 Na primeira partida, um cartão mostra os controles e some no primeiro pouso (ou em **Pular**). Para vê-lo de novo,
 use **Opções > Ver tutorial**.
 
+No menu inicial, o botão **Modo: <nome>** (logo acima do **Play**) abre a tela de modos. Arraste para os lados ou use as setas para trocar o modo; **OK** confirma e a próxima partida usa o modo escolhido. Com o teclado, `↑` leva o foco ao botão, `Enter` abre a tela, `←`/`→` trocam o modo e `Enter`, `Esc` ou `P` confirmam. Hoje o **Clássico** é o único modo disponível para jogar; cada modo guarda o seu próprio recorde.
+
 ## 🚀 Como Jogar
 
 1. Pressione qualquer tecla de pulo (ou toque na tela) para começar
@@ -165,7 +167,8 @@ release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot n
   `touches` (vários dedos) e conferem a direção pelo `player.x`/`player.y`.
 - `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
   tela. Todo roteiro leva o parâmetro, menos `tutorial.smoke.json`, que joga a primeira partida com o armazenamento limpo.
-- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`), `player.alive`,
+- `?modos=teste` inclui o modo de teste no seletor de modo (so no build de debug; no nativo, `-- --modos=teste`), usado pelo roteiro `modos.smoke.json`.
+- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`), `modo` (id do modo: `classico`, ou `teste` so com o parametro acima; publicado em `menu` e em `playing`), `player.alive`,
   `player.x`/`player.y` (posição do gecko em px lógicos, inteiros, só durante a partida) e
   `dificuldade.estagio` (inteiro, 0 no inicio da partida; republicado quando o estagio muda).
   O passo `expect` do roteiro le esses campos, por exemplo `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
@@ -272,6 +275,8 @@ On the menu, `↓` moves the focus to **Opcoes** and `Enter` opens the screen.
 In the first match, a card shows the controls and fades out on the first landing (or on **Pular**). To see it again,
 use **Opcoes > Ver tutorial**.
 
+On the start menu, the **Modo: <name>** button (just above **Play**) opens the modes screen. Drag sideways or use the arrows to change the mode; **OK** confirms and the next match uses the chosen mode. With the keyboard, `↑` moves the focus to the button, `Enter` opens the screen, `←`/`→` change the mode and `Enter`, `Esc` or `P` confirm. Today **Classico** is the only mode available to play; each mode keeps its own best score.
+
 ### 🚀 How to Play
 
 1. Press any jump key (or tap the screen) to start
@@ -327,7 +332,8 @@ build (the published one) ignores the parameters below and publishes nothing. On
   (several fingers) steps and check the direction through `player.x`/`player.y`.
 - `?tutorial=visto` marks the first-match tutorial as already seen (without saving anything), so the card does not
   cover the screen. Every script carries it, except `tutorial.smoke.json`, which plays the first match with clean storage.
-- The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`),
+- `?modos=teste` adds the test mode to the mode selector (debug build only; on native, `-- --modos=teste`), used by the `modos.smoke.json` script.
+- The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`), `modo` (the mode id: `classico`, or `teste` only with the parameter above; published in `menu` and `playing`),
   `player.alive`, `player.x`/`player.y` (the gecko's position in logical px, integers, only during the match) and
   `dificuldade.estagio` (an integer, 0 at the start of the match; republished when the stage changes).
   The script `expect` step reads those fields, for example `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
