@@ -35,6 +35,9 @@ var _rotulo: Label
 var _dedo: int = -1
 var _pressed: bool = false
 var _foco: bool = false
+# Injetado pela Stage: true quando outro botao do menu (Opcoes) tem o foco. O Modo vem depois do Opcoes na arvore e
+# recebe o `_input` antes dele; sem isso tomaria o `ui_up` que devolve o foco do Opcoes ao Play.
+var foco_alheio: Callable = Callable()
 
 
 func _ready() -> void:
@@ -152,7 +155,8 @@ func _tratar_acao(event: InputEvent) -> bool:
 	if event is InputEventKey and (event as InputEventKey).echo:
 		return false
 	if not _foco:
-		if event.is_action_pressed("ui_up"):
+		var alheio: bool = foco_alheio.is_valid() and bool(foco_alheio.call())
+		if event.is_action_pressed("ui_up") and not alheio:
 			focar(true)
 			return true
 		return false

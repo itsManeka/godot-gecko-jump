@@ -188,6 +188,7 @@ func _ready():
 	# do _input da Stage (nao inicia a partida) e o toque no Play, fora dos retangulos, segue para a Stage
 	modo_botao = ModoBotao.new()
 	modo_botao.acionado.connect(_abrir_modos_do_menu)
+	modo_botao.foco_alheio = opcoes_botao.tem_foco
 	add_child(modo_botao)
 	modo_botao.definir_modo(GameModes.de_id(Global.get_modo_jogo()))
 	modos_screen = ModosScreen.new()
@@ -596,6 +597,7 @@ func add_point():
 	# points inicia em -1: o pouso inicial na plataforma de partida leva a 0 e nao conta; o 1o ponto real leva 0 -> 1
 	var primeiro_ponto: bool = points == 0
 	if points < 0:
+		# Ponto de partida: vira 0 sem consultar a regra do modo (a regra de pontuacao nunca ve esse ponto)
 		points = 0
 	else:
 		# Pontos efetivos de 1 ponto bruto pela regra do modo (Classico: 1)
@@ -645,6 +647,6 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		str(_powerup_publicado["ativo"]),
 		float(_powerup_publicado["restante"]),
 		int(_powerup_publicado["carga"]),
-			String(Global.get_modo_jogo()),
+		String(Global.get_modo_jogo()),
 	)
 	GameState.publish(ultimo_estado)

@@ -20,6 +20,15 @@ var modo_jogo: StringName = GameModes.ID_CLASSICO
 var _keepers: Dictionary = {}
 var _stores: Dictionary = {}
 var _recordes_isolados: bool = false
+# Caminho do recorde do Classico (os demais modos ficam no mesmo diretorio). Publico de proposito (seam de teste):
+# o teste do 1o carregamento aponta para um diretorio temporario e nunca toca o user://best_score.cfg real.
+var caminho_recorde_classico: String = BestScoreStore.DEFAULT_PATH
+
+# 1o carregamento: `pontuacao` nasce sem store (valor de campo); liga o keeper do modo atual (Classico) ao store dele,
+# carregando o recorde salvo. `usar_options_store` so reaplica o modo quando ele muda, entao sem isto o Classico nunca
+# seria ligado ao store.
+func _iniciar_keeper() -> void:
+	pontuacao = keeper_do_modo(modo_jogo)
 
 # Keeper do modo; cria (e liga ao store do modo, salvo isolamento) na 1a consulta. O id ja vem resolvido por GameModes.
 func keeper_do_modo(id: StringName) -> ScoreKeeper:
@@ -28,7 +37,7 @@ func keeper_do_modo(id: StringName) -> ScoreKeeper:
 		return _keepers[chave]
 	var keeper := ScoreKeeper.new()
 	if not _recordes_isolados:
-		var store := BestScoreStore.para_modo(id)
+		var store := BestScoreStore.para_modo(id, caminho_recorde_classico)
 		keeper.load_best(store.load_best())
 		keeper.best_changed.connect(store.save_best)
 		_stores[chave] = store
@@ -150,6 +159,7 @@ func _ready():
 	aplicar_moldura_lenta(ModoMolduraLenta.read_raw(), OS.is_debug_build())
 	# Antes do store: o `teste` salvo so e lido como modo quando a flag de debug esta ligada.
 	aplicar_modos_teste(GameModesDebug.read_raw(), OS.is_debug_build())
+	_iniciar_keeper()
 	usar_options_store(OptionsStore.new())
 	# Depois do store: o modo forcado por `?toque=` (so smoke debug) vence o salvo, sem gravar.
 	aplicar_modo_toque_inicial(ModoToqueInicial.read_raw(), OS.is_debug_build())
@@ -163,7 +173,11 @@ var _volume_sfx: float = OptionsStore.DEFAULT_VOLUME
 func usar_options_store(store: OptionsStore) -> void:
 	opcoes = store
 	# Modo salvo: ausente/invalido/desconhecido (ou `teste` sem a flag) = Classico. Nao grava.
-	_aplicar_modo(GameModes.de_id(store.load_value(MODO_SECTION, MODO_KEY, "")).id)
+	# So reaplica quando o modo lido difere do atual (reatribuir `pontuacao` e emitir o sinal a cada troca de store
+	# descartaria um keeper atribuido de fora e avisaria sem mudanca).
+	var lido: StringName = GameModes.de_id(store.load_value(MODO_SECTION, MODO_KEY, "")).id
+	if lido != modo_jogo:
+		_aplicar_modo(lido)
 	_volume_music = store.load_music()
 	_volume_sfx = store.load_sfx()
 	_aplicar_bus("Music", _volume_music)

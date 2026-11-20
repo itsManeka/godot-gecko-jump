@@ -148,6 +148,21 @@ func test_c606_telas_modos_e_opcoes_se_excluem_e_modos_nao_abre_com_started() ->
 	assert_false(stage.modos_screen.esta_aberta(), "Modos nao abre com a partida iniciada")
 
 
+func test_ui_up_com_foco_no_opcoes_volta_ao_play() -> void:
+	var stage := await _novo_stage()
+	stage.modo_botao.focar(false)
+	stage.opcoes_botao.focar(true)
+	# Acao `ui_up` (a seta para cima tambem e `jump` e iniciaria a partida): passa pelo `_input` dos filhos na ordem real
+	var ev := InputEventAction.new()
+	ev.action = "ui_up"
+	ev.pressed = true
+	Input.parse_input_event(ev)
+	Input.flush_buffered_events()
+	await wait_frames(2)
+	assert_false(stage.opcoes_botao.tem_foco(), "ui_up tira o foco do Opcoes (volta ao Play)")
+	assert_false(stage.modo_botao.tem_foco(), "Modo nao toma o foco do ui_up que era do Opcoes")
+
+
 func test_c607_ordem_dos_filhos_nao_rouba_o_play_e_layout_repassado_aos_dois() -> void:
 	var stage := await _novo_stage()
 	var opcoes_i: int = stage.opcoes_botao.get_index()

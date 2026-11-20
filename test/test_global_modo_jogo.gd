@@ -3,11 +3,14 @@ extends GutTest
 # Selecao do modo de jogo e keepers por modo em Global (persistencia no OptionsStore, recorde por modo, isolamento).
 
 const TMP_OPCOES := "user://options_modo_jogo_test.cfg"
+const TMP_RECORDE_DIR := "user://modo_jogo_test_recordes"
+const TMP_RECORDE := TMP_RECORDE_DIR + "/best_score.cfg"
 
 var _opcoes_original: OptionsStore
 var _flag_original: bool
 var _iniciado_original: bool
 var _pontuacao_original: ScoreKeeper
+var _caminho_recorde_original: String
 
 
 func before_each() -> void:
@@ -15,6 +18,7 @@ func before_each() -> void:
 	_flag_original = Global.modos_teste_habilitado
 	_iniciado_original = Global.iniciado
 	_pontuacao_original = Global.pontuacao
+	_caminho_recorde_original = Global.caminho_recorde_classico
 	Global.set_iniciado(false)
 	DirAccess.remove_absolute(TMP_OPCOES)
 
@@ -23,6 +27,9 @@ func after_each() -> void:
 	Global.set_iniciado(_iniciado_original)
 	Global.modos_teste_habilitado = _flag_original
 	Global.usar_options_store(_opcoes_original)
+	Global.caminho_recorde_classico = _caminho_recorde_original
+	DirAccess.remove_absolute(TMP_RECORDE)
+	DirAccess.remove_absolute(TMP_RECORDE_DIR)
 	Global.isolar_recordes()
 	Global.pontuacao = _pontuacao_original
 	DirAccess.remove_absolute(TMP_OPCOES)
@@ -111,6 +118,41 @@ func test_usar_options_store_nao_religa_keeper_ao_store_real() -> void:
 	for modo in GameModes.lista(true):
 		var store := Global.store_do_modo(modo.id)
 		assert_null(store, "C581: usar_options_store nao liga o modo %s a store" % modo.id)
+
+
+func test_usar_options_store_com_mesmo_modo_nao_reaplica() -> void:
+	Global.modos_teste_habilitado = true
+	Global.usar_options_store(OptionsStore.new(TMP_OPCOES))
+	var keeper := ScoreKeeper.new()
+	Global.pontuacao = keeper
+	watch_signals(Global)
+	Global.usar_options_store(OptionsStore.new(TMP_OPCOES))
+	assert_eq(Global.pontuacao, keeper, "keeper atribuido sobrevive a troca de store com o mesmo modo")
+	assert_signal_not_emitted(Global, "modo_jogo_changed", "mesmo modo nao emite modo_jogo_changed")
+
+
+# Estado do Global antes do 1o carregamento em producao: sem isolamento e sem keeper/store criado
+func _simular_boot_sem_isolamento() -> void:
+	Global._recordes_isolados = false
+	Global._keepers.clear()
+	Global._stores.clear()
+
+
+func test_primeiro_carregamento_liga_o_keeper_do_classico_ao_store() -> void:
+	DirAccess.make_dir_recursive_absolute(TMP_RECORDE_DIR)
+	var caminho := TMP_RECORDE
+	DirAccess.remove_absolute(caminho)
+	Global.caminho_recorde_classico = caminho
+	_simular_boot_sem_isolamento()
+	# Estado de boot: modo Classico por valor de campo, sem passar por _aplicar_modo
+	Global.modo_jogo = GameModes.ID_CLASSICO
+	Global._iniciar_keeper()
+	Global.set_score(6)
+	var store := BestScoreStore.new(caminho)
+	assert_eq(store.load_best(), 6, "1o carregamento: set_score acima do best grava no store do Classico")
+	_simular_boot_sem_isolamento()
+	Global._iniciar_keeper()
+	assert_eq(Global.get_best_score(), 6, "1o carregamento: recorde salvo e carregado no keeper do Classico")
 
 
 func test_pontuacao_segue_membro_atribuivel() -> void:

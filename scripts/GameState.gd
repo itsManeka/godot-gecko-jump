@@ -48,7 +48,7 @@ static func build(
 		"tutorial": STATE_TUTORIAL_ABERTO if tutorial_aberto else STATE_TUTORIAL_FECHADO,
 		"dificuldade": {"estagio": estagio, "aviso": aviso, "alpha": alpha},
 		"powerup": {"ativo": powerup_ativo, "restante": ceili(powerup_restante), "carga": powerup_carga},
-			"modo": modo,
+		"modo": modo,
 	}
 
 # Decisor puro da trava de publicacao: so web de debug publica (release ignora; headless/desktop nao tem web)
