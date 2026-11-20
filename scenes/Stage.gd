@@ -592,5 +592,6 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		str(_powerup_publicado["ativo"]),
 		float(_powerup_publicado["restante"]),
 		int(_powerup_publicado["carga"]),
+			String(Global.get_modo_jogo()),
 	)
 	GameState.publish(ultimo_estado)

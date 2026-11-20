@@ -151,6 +151,21 @@ func test_build_alive_false_preserva_posicao_e_demais_campos() -> void:
 	assert_eq((estado["dificuldade"] as Dictionary)["estagio"], 2, "dificuldade igual")
 
 
+func test_C590_build_publica_modo_classico_por_padrao_e_id_informado() -> void:
+	# (a) default: sem o parametro, o modo publicado e o Classico
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	assert_eq(padrao["modo"], "classico", "C590: modo padrao classico")
+	# (b) comum: id informado (ultimo parametro) vai ao campo
+	var teste: Dictionary = GameState.build(7, 12, "playing", true, 100, 100, false, 2, false, 0.0, 0.0, 0.0, "", 0.0, 0, "teste")
+	assert_eq(teste["modo"], "teste", "C590: id teste publicado")
+	# (c) degenerado: as chaves antigas seguem iguais com o campo novo presente
+	assert_eq(teste["score"], 7, "C590: score inalterado")
+	assert_eq(teste["best"], 12, "C590: best inalterado")
+	assert_eq(teste["state"], "playing", "C590: state inalterado")
+	assert_eq(teste["tutorial"], "fechado", "C590: tutorial inalterado")
+	assert_eq((teste["dificuldade"] as Dictionary)["estagio"], 2, "C590: dificuldade.estagio inalterado")
+
+
 func _nova_stage() -> Node:
 	var stage: Node = (load("res://scenes/Stage.tscn") as PackedScene).instantiate()
 	add_child_autofree(stage)
