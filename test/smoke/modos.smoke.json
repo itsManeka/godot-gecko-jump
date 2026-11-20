@@ -1,0 +1,26 @@
+{
+  "path": "index.html?seed=489&semderrota=1&tutorial=visto&modos=teste",
+  "viewport": [360, 640],
+  "boot_ms": 6000,
+  "notes": "Seletor de modo (f523 T10). Viewport 360x640 = logico 180x320, fator 2 (clique em coordenada fisica). Coordenadas do menu/seletor sem safe area (web): y0 da tela Modos = roundf((320 - 229) / 2) = 46. Cliques: Modo = centro (90,125) do botao 112x24 em x 34-146, y 113-137 -> [180,250]; seta direita = centro (164,120) do rect x 152-176, y 108-132 (y0+62..y0+86) -> [328,240]; OK = centro (90,259) do rect x 34-146, y 243-275 (y0+197..y0+229) -> [180,518]. Com ?modos=teste a lista tem classico e teste: a seta direita leva de classico para teste. A ponte publica `modo` em menu e em playing; o Space inicia a partida com o modo trocado.",
+  "steps": [
+    { "expect": { "state": "menu", "modo": "classico" }, "timeout_ms": 3000 },
+    { "shots": 1, "name": "menu-modo", "moving": false },
+    { "click": [180, 250] },
+    { "wait": 300 },
+    { "expect": { "state": "menu", "modo": "classico" }, "timeout_ms": 2000 },
+    { "shots": 2, "every": 200, "name": "seletor-classico", "moving": false },
+    { "click": [328, 240] },
+    { "wait": 300 },
+    { "shots": 2, "every": 200, "name": "seletor-teste", "moving": false },
+    { "click": [180, 518] },
+    { "wait": 300 },
+    { "expect": { "state": "menu", "modo": "teste" }, "timeout_ms": 2000 },
+    { "shots": 2, "every": 200, "name": "menu-teste", "moving": false },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "expect": { "state": "playing", "modo": "teste" }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "partida-teste", "moving": true }
+  ]
+}
