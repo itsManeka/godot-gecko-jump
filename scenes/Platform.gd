@@ -92,11 +92,12 @@ func _posicionar_icone() -> void:
 	icone_power_up.position = Vector2(0.0, topo - ICONE_FOLGA - PowerUpIcone.TAMANHO_PX / 2.0)
 
 
-# f522 T3: a plataforma nasce com a regra de colisao vigente — o sinal de troca de cor so chega na proxima
-# reavaliacao do Player, e o default da cena e solida; sem isto, cor diferente nasceria solida ate a 1a
-# reavaliacao do jogo (e nunca nasceria solida com cor livre no meio do efeito, C603).
+# f522 T3 (C603): so com o efeito de cor livre ativo a regra vigente e aplicada no nascimento (piscar oculto
+# segue atravessavel). Sem efeito nada muda: vale o default da cena (solida) ate a 1a reavaliacao do Player,
+# como antes do power-up.
 func _regra_de_cor_no_nascimento() -> void:
-	player_color_changed(Global.cor_gecko)
+	if Global.cor_livre:
+		player_color_changed(Global.cor_gecko)
 
 # Pouso confirmado do jogador: despacha o hook aos modificadores e devolve o power-up da plataforma
 # (consumido aqui: o tipo zera e o icone sai da arvore; &"" = nao tinha ou ja foi coletado)

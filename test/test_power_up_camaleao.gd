@@ -190,8 +190,11 @@ func test_desmoronada_e_invisivel_por_piscar_nunca_ficam_solidas() -> void:
 	invisivel.set_color(outra)
 	invisivel.set("_pisca_oculta", true)
 	add_child_autofree(invisivel)
-	assert_true(desmoronada.shape.disabled, "desmoronada nasce atravessavel (cor diferente)")
-	assert_true(invisivel.shape.disabled, "invisivel por piscar nasce atravessavel (cor diferente)")
+	# sem o efeito o nascimento nao altera nada (default da cena); a 1a reavaliacao aplica a regra
+	desmoronada.player_color_changed(Global.cor_gecko)
+	invisivel.player_color_changed(Global.cor_gecko)
+	assert_true(desmoronada.shape.disabled, "desmoronada atravessavel (cor diferente) na reavaliacao")
+	assert_true(invisivel.shape.disabled, "invisivel por piscar atravessavel (cor diferente) na reavaliacao")
 	# ativacao do Camaleao: a reavaliacao de borda passa por todas; a excecao segue valendo
 	Global.cor_livre = true
 	desmoronada.player_color_changed(Global.cor_gecko)
@@ -207,8 +210,8 @@ func test_desmoronada_e_invisivel_por_piscar_nunca_ficam_solidas() -> void:
 
 
 # C603: plataforma instanciada durante o efeito nasce solida (cor diferente) e deixa de ser ao expirar
-# (Platform._ready consulta a flag; o sinal de troca de cor so nao basta). Sem o efeito, cor diferente
-# nasce atravessavel: o default da cena e solida, e a regra do nascimento que a desliga.
+# (Platform._ready consulta a flag; o sinal de troca de cor so nao basta). Sem o efeito, o nascimento nao
+# altera nada: vale o default da cena (solida) ate a 1a reavaliacao, como antes do power-up.
 func test_plataforma_nascida_no_efeito_nasce_solida_e_deixa_de_ser_ao_expirar() -> void:
 	Global.cor_gecko = Enums.COLOR.AZUL
 	var outra: Enums.COLOR = _outra_cor(Global.cor_gecko)
@@ -224,7 +227,9 @@ func test_plataforma_nascida_no_efeito_nasce_solida_e_deixa_de_ser_ao_expirar() 
 	var sem_efeito: Platform = load(PLATFORM_SCENE).instantiate()
 	sem_efeito.set_color(outra)
 	add_child_autofree(sem_efeito)
-	assert_true(sem_efeito.shape.disabled, "sem o efeito, cor diferente nasce atravessavel")
+	assert_false(sem_efeito.shape.disabled, "sem o efeito, o nascimento nao altera: solida (default da cena) ate a 1a reavaliacao")
+	sem_efeito.player_color_changed(Global.cor_gecko)
+	assert_true(sem_efeito.shape.disabled, "a 1a reavaliacao sem efeito torna a cor diferente atravessavel")
 
 
 # C604: a actual_platform (sob o gecko) nao e reavaliada na ativacao nem na expiracao — o gecko nao cai
