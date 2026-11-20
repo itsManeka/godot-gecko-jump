@@ -59,6 +59,9 @@ var power_up_estado: PowerUpState = null
 # Gancho para os modos (f524): falso = nenhuma plataforma nasce com icone e a coleta e ignorada.
 # Padrao true; nenhum modo muda nesta feature (so o gancho).
 var power_ups_habilitados: bool = true
+# Regra do modo de jogo da partida (hook f523): lida de Global.modo_jogo em _ready quando o chamador nao a setou.
+# Seam de teste/modos: setar ANTES do add_child (o _ready le `power_ups_habilitados()` da regra antes da copia ao ScrollLevel).
+var regra: GameModeRule = null
 # Faixa de HUD da duracao do power-up (filha da Stage, criada em _ready)
 var power_up_hud: PowerUpHud = null
 # Seed da partida (int ou null) repassada ao ScrollLevel em _enter_tree (f517 T4): setada pelo chamador antes do add_child
@@ -107,6 +110,10 @@ func _ready():
 	
 	# Configura estado inicial
 	Global.set_iniciado(false)
+	if regra == null:
+		regra = GameModes.de_id(Global.get_modo_jogo()).regra
+	# O gancho so desliga: quem setou `power_ups_habilitados = false` antes do add_child continua valendo
+	power_ups_habilitados = power_ups_habilitados and regra.power_ups_habilitados()
 	dificuldade = DifficultyState.new(CURVA_DIFICULDADE)
 	# Estado de power-up zerado a cada Stage nova (ativo e carga vazios; nunca em Global)
 	power_up_estado = PowerUpState.new()
@@ -273,6 +280,10 @@ func _physics_process(delta: float) -> void:
 	# O estagio sobe por tempo sem evento de ponto/Play: republica 1x por mudanca, nunca apos a derrota
 	# O mesmo vale para o `aviso` (pulso da moldura comecou ou terminou)
 	if ultimo_estado.get("state", "") == GameState.STATE_LOST:
+		return
+	# Fim de partida pela regra do modo: so com a partida iniciada (no menu nunca dispara)
+	if Global.is_iniciado() and not player.is_end() and regra.fim_por_regra(_ctx_partida()):
+		_encerrar_partida(player)
 		return
 	if (
 		dificuldade.estagio() != _estagio_publicado
@@ -464,13 +475,25 @@ func _notification(what: int) -> void:
 # Detecta quando o jogador sai da área de jogo (perde)
 func _on_CheckPlayer_body_exited(body):
 	if !body.is_jumping() && !body.is_end():
-		body.lose_game()
-		level_up_frame.interromper()
-		_sincronizar_tutorial()
-		loseaudio.play()
+		# A regra do modo decide se cair encerra (Classico: sim, como sempre)
+		if not regra.ao_cair(_ctx_partida()):
+			return
+		_encerrar_partida(body)
+
+# Encerra a partida (derrota por queda ou fim por regra): grava o recorde so se a regra do modo permite
+func _encerrar_partida(body) -> void:
+	body.lose_game()
+	level_up_frame.interromper()
+	_sincronizar_tutorial()
+	loseaudio.play()
+	if regra.grava_recorde():
 		Global.set_score(points)
-		_publicar_estado(GameState.STATE_LOST, false)
-		animation.play("lose_animation")
+	_publicar_estado(GameState.STATE_LOST, false)
+	animation.play("lose_animation")
+
+# Snapshot da partida entregue a regra do modo
+func _ctx_partida() -> Dictionary:
+	return {"pontos": points, "iniciado": Global.is_iniciado()}
 
 # Reinicia o jogo após a animação de perda
 func _on_animation_end():
@@ -519,7 +542,11 @@ func _powerup_atual() -> Dictionary:
 func add_point():
 	# points inicia em -1: o pouso inicial na plataforma de partida leva a 0 e nao conta; o 1o ponto real leva 0 -> 1
 	var primeiro_ponto: bool = points == 0
-	points += 1
+	if points < 0:
+		points = 0
+	else:
+		# Pontos efetivos de 1 ponto bruto pela regra do modo (Classico: 1)
+		points += regra.pontuar(1)
 	if primeiro_ponto and ultimo_estado.get("state", "") != GameState.STATE_LOST:
 		_concluir_tutorial()
 	dificuldade.set_pontos(points)

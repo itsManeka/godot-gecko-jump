@@ -104,6 +104,10 @@ var power_up_inicial: String = ""
 func aplicar_power_up_inicial(raw: Variant, is_debug: bool) -> void:
 	power_up_inicial = ModoPowerUpInicial.decide(raw, is_debug)
 
+# Inclui o modo de teste no seletor (so debug, parametro `?modos=teste`). Nunca liga em release.
+func aplicar_modos_teste(raw: Variant, is_debug: bool) -> void:
+	modos_teste_habilitado = GameModesDebug.decide(raw, is_debug)
+
 # Moldura de subida de estagio fixa (so smoke debug via `?moldura=fixa`): fica acesa ate interromper. Nunca em release.
 var moldura_fixa: bool = false
 
@@ -144,6 +148,8 @@ func _ready():
 	aplicar_power_up_inicial(ModoPowerUpInicial.read_raw(), OS.is_debug_build())
 	aplicar_moldura_fixa(ModoMolduraFixa.read_raw(), OS.is_debug_build())
 	aplicar_moldura_lenta(ModoMolduraLenta.read_raw(), OS.is_debug_build())
+	# Antes do store: o `teste` salvo so e lido como modo quando a flag de debug esta ligada.
+	aplicar_modos_teste(GameModesDebug.read_raw(), OS.is_debug_build())
 	usar_options_store(OptionsStore.new())
 	# Depois do store: o modo forcado por `?toque=` (so smoke debug) vence o salvo, sem gravar.
 	aplicar_modo_toque_inicial(ModoToqueInicial.read_raw(), OS.is_debug_build())
