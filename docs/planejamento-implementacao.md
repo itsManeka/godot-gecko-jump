@@ -50,8 +50,8 @@ Divisao em epics (as fases 1 a 3 acima formam o E1):
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------- |
 | E1. Migracao e base solida                          | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3)                              | #8, #14, #7, #3, #4, #5, #6, #9                      | concluido (2026-11-09)              |
 | E2. CI, tela mobile e jogabilidade da base          | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel                                             | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
-| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes, tutorial e camera que acompanha o gecko no alto | #36, #37, #39, #40, #42, #11, #10, #12, #44-#48       | entregue em 2026-11-18 (PR do epic) |
-| E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                                                   | #16, #17                                             | planejado                           |
+| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes, tutorial e camera que acompanha o gecko no alto | #36, #37, #39, #40, #42, #11, #10, #12, #44-#48      | entregue em 2026-11-18 (PR do epic) |
+| E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                                                   | #16, #17                                             | em andamento                        |
 | E5. Ranking online por modo                         | Ranking por modo de jogo; depende do E4 e do ChumGames E1                                                                    | #29                                                  | planejado                           |
 | E6. Arte final e audio                              | Arte final em pixel art, sons e musica                                                                                       | #18, #13                                             | planejado                           |
 | E7. Publicacao                                      | Web no itch.io; build Android                                                                                                | #19, #20                                             | planejado                           |
@@ -161,6 +161,31 @@ export web de debug e o game-bot nativo contra a `main`. O PR fecha #10, #11, #1
    (plataformas, gatilho de linhas novas e gecko deslocados juntos), entao ele nunca sai pelo topo; o scroll da curva de dificuldade segue como piso (nunca diminui) e,
    sem partida iniciada (menu), nada se move. Sem roteiro de smoke: nenhum roteiro com seed fixa leva o gecko ao limite
    de forma deterministica (#48); cobertura por GUT e a sensacao do limite pelo playtest do dono.
+
+## Epic 4 — Conteudo
+
+Escopo: power-ups e modos de jogo (#16, #17). Criterios e frases de aceite de cada power-up em
+[ADR 0014](adr/0014-power-ups-e-modos-de-jogo.md).
+
+**Estado: em andamento** (branch `epic/gecko-e4-conteudo`). A f521 montou a infraestrutura e a f522 acrescentou o
+bloco A, os power-ups reais Camaleao e Desacelera; a verificacao automatica (suite 2x + smokes) e o playtest do dono
+fecham o bloco.
+
+1. Infra de power-ups (f521): contrato `PowerUp` com hooks virtuais de padrao neutro (`ignora_cor()`/`fator_scroll()`)
+   agregados no `PowerUpState` (ativo/carga), registro `PowerUps`, sorteio `PowerUpDraw` (raridade e pesos por estagio
+   da curva, com rng dedicado que nao desloca o layout), icone 16x16 na plataforma elegivel, HUD de duracao e ponte
+   `powerup.ativo|restante|carga` com `?powerup=` so-debug.
+2. Bloco A (f522): **Camaleao** — 5 s pisando em plataforma de qualquer cor, com a regra de cor reavaliada na ativacao
+   e na expiracao (mesmo com o gecko caindo; a plataforma sob o gecko fica travada); **Desacelera** — 5 s com o
+   deslocamento do scroll x 0,5, e a previsao de cor usa o scroll efetivo nos dois consumos (`avancar_camera`, moveis
+   horizontais e o tempo da dificuldade ficam fora). Duracao e fator em `ressources/power_ups.tres` (fallback do ADR
+   quando ausente/invalido); raridade 0,04 por plataforma elegivel e pesos 2:2 na curva. Icone unico e monocromatico
+   (branco/preto) na plataforma e no HUD pela fonte unica `PowerUpDesenho` (Camaleao: 4 quadrantes; Desacelera:
+   ampulheta) — a cor nunca e a unica pista.
+3. Ajuste pos-registro (f522 T10): `PowerUps._padrao()` deixou de ser vazio e a curva ganhou `pesos_power_ups`, entao o
+   jogo real passa a sortear icones em ~4% das plataformas elegiveis; os testes que nao tratam de power-up seguem
+   deterministicos (curva sintetica sem pesos, rng dedicado ao power-up ou `power_ups_habilitados = false`),
+   inventariados por grep na task.
 
 ## Regras de trabalho
 
