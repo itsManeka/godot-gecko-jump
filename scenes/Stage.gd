@@ -71,6 +71,9 @@ var power_ups_habilitados: bool = true
 var regra: GameModeRule = null
 # Faixa de HUD da duracao do power-up (filha da Stage, criada em _ready)
 var power_up_hud: PowerUpHud = null
+# Valor anterior do espelho de cor livre (f522 T3): a borda — ativacao/expiracao do Camaleao — forca a
+# reavaliacao da colisao de todas as plataformas no mesmo frame (ver _physics_process).
+var _cor_livre_anterior: bool = false
 # Seed da partida (int ou null) repassada ao ScrollLevel em _enter_tree (f517 T4): setada pelo chamador antes do add_child
 var semente_partida: Variant = null
 # Estagio da dificuldade na ultima publicacao da ponte; mudanca por tempo republica 1x (ver _physics_process)
@@ -310,8 +313,17 @@ func _physics_process(delta: float) -> void:
 	if Global.is_iniciado():
 		power_up_estado.tick(delta)
 	# Espelho do efeito vigente para a regra de colisao (a Platform le Global.cor_livre, f522 T3):
-	# escrito pela dona do estado a cada frame, nunca pela coleta; pausa congela junto (arvore parada)
-	Global.cor_livre = power_up_estado.cor_livre()
+	# escrito pela dona do estado a cada frame, nunca pela coleta; pausa congela junto (arvore parada).
+	# A escrita vem antes da reavaliacao de borda para a Platform ja ler a flag nova.
+	var cor_livre_agora: bool = power_up_estado.cor_livre()
+	Global.cor_livre = cor_livre_agora
+	# f522 T3: bordas da cor livre (ativacao/expiracao do Camaleao) reavaliam a colisao de todas as
+	# plataformas no mesmo frame — o Player so reavalia subindo (velocity.y < 0) e, ao expirar caindo, a
+	# regra de cor so voltaria no proximo pulo. A plataforma sob o gecko entra como actual_platform e a
+	# Global pula a atual na reavaliacao: o gecko nao cai ao expirar em cima de cor diferente.
+	if cor_livre_agora != _cor_livre_anterior:
+		_cor_livre_anterior = cor_livre_agora
+		Global.player_color_changed(Global.cor_gecko, player.actual_platform)
 	# O estagio sobe por tempo sem evento de ponto/Play: republica 1x por mudanca, nunca apos a derrota
 	# O mesmo vale para o `aviso` (pulso da moldura comecou ou terminou)
 	if ultimo_estado.get("state", "") == GameState.STATE_LOST:

@@ -129,9 +129,18 @@ func test_registro_registrar_resolver_e_limpar() -> void:
 	assert_null(PowerUps.resolver(NOME_A), "limpar esvazia o registro")
 
 
-func test_registro_de_producao_e_vazio() -> void:
+# C606 (f522 T3): o registro de producao contem o Camaleao; fake e PowerUpDeTeste ficam de fora.
+# Substitui a conferencia do registro vazio (`size() == 0`): com os power-ups reais, o padrao tem nomes.
+func test_registro_de_producao_tem_camaleao() -> void:
 	PowerUps.registrar(NOME_A, _FakeTemporizadoA)
 	PowerUps.restaurar_padrao()
-	assert_eq(PowerUps.nomes().size(), 0, "restaurar_padrao deixa o registro de producao vazio")
+	assert_true(PowerUps.nomes().has(&"camaleao"), "registro de producao contem camaleao")
+	assert_eq(PowerUps.nomes().size(), 1, "camaleao e o unico nome de producao desta feature")
+	assert_false(PowerUps.nomes().has(NOME_A), "fake nao sobrevive ao restaurar_padrao")
 	assert_null(PowerUps.resolver(NOME_A), "fake nao sobrevive ao restaurar_padrao")
-	assert_null(PowerUps.resolver(PowerUpDeTeste.NOME_PADRAO), "PowerUpDeTeste nao esta no registro de producao")
+	assert_false(PowerUps.nomes().has(PowerUpDeTeste.NOME_PADRAO), "PowerUpDeTeste nao esta no registro de producao")
+	assert_null(PowerUps.resolver(PowerUpDeTeste.NOME_PADRAO), "PowerUpDeTeste nao resolve no registro de producao")
+	var camaleao := PowerUps.resolver(&"camaleao")
+	assert_ne(camaleao, null, "resolver devolve instancia do Camaleao de producao")
+	assert_true(camaleao is PowerUpCamaleao, "o nome camaleao resolve o PowerUpCamaleao")
+	assert_eq(camaleao.nome, &"camaleao", "nome do power-up resolvido")

@@ -62,6 +62,7 @@ func _ready():
 		modificador.ao_criar(self, _snapshot)
 	_atualizar_pisca(0.0, true)
 	_posicionar_icone()
+	_regra_de_cor_no_nascimento()
 
 # Sai de Global.platforms sempre que sai da arvore (queue_free do gerador, troca de cena, saida de tela)
 func _exit_tree():
@@ -89,6 +90,13 @@ func _posicionar_icone() -> void:
 		return
 	var topo: float = sprite.position.y + sprite.offset.y - sprite.texture.get_height() / 2.0
 	icone_power_up.position = Vector2(0.0, topo - ICONE_FOLGA - PowerUpIcone.TAMANHO_PX / 2.0)
+
+
+# f522 T3: a plataforma nasce com a regra de colisao vigente — o sinal de troca de cor so chega na proxima
+# reavaliacao do Player, e o default da cena e solida; sem isto, cor diferente nasceria solida ate a 1a
+# reavaliacao do jogo (e nunca nasceria solida com cor livre no meio do efeito, C603).
+func _regra_de_cor_no_nascimento() -> void:
+	player_color_changed(Global.cor_gecko)
 
 # Pouso confirmado do jogador: despacha o hook aos modificadores e devolve o power-up da plataforma
 # (consumido aqui: o tipo zera e o icone sai da arvore; &"" = nao tinha ou ja foi coletado)
@@ -176,12 +184,13 @@ func set_color(new_color):
 func get_color():
 	return color
 
-# Ativa/desativa a colisão baseado na cor do jogador
+# Ativa/desativa a colisão baseado na cor do jogador. Cor livre (Camaleao, f522 T3): qualquer cor colide.
+# Desmoronada e invisivel por piscar nunca reativam — a excecao vale tambem com cor livre.
 func player_color_changed(player_color):
 	if desmoronada or _pisca_oculta or _pisca_pendente:
 		shape.disabled = true  # Desmoronada e invisivel por piscar nunca reativam
-	elif player_color == color:
-		shape.disabled = false  # Jogador pode colidir (mesma cor)
+	elif Global.cor_livre or player_color == color:
+		shape.disabled = false  # Mesma cor ou cor livre (Camaleao): jogador pode colidir
 	else:
 		shape.disabled = true   # Jogador passa através (cor diferente)
 

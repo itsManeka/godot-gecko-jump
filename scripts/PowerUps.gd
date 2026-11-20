@@ -2,7 +2,7 @@ class_name PowerUps
 extends RefCounted
 
 # Registro estatico (sem cena) de nome de power-up -> script de PowerUp.
-# O padrao de producao e vazio: os power-ups reais se registram nas features que os criam.
+# O padrao de producao registra os power-ups reais das features: camaleao (f522 T3).
 # PowerUpDeTeste nunca entra aqui (so o parametro so-debug o ativa).
 
 # Nome -> script. registrar/limpar servem a testes com fakes.
@@ -10,7 +10,7 @@ static var _registro: Dictionary = _padrao()
 
 
 static func _padrao() -> Dictionary:
-	return {}
+	return {&"camaleao": PowerUpCamaleao}
 
 
 # Restaura o mapeamento de producao (depois de um limpar()/registrar() de teste)
