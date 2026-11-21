@@ -9,6 +9,9 @@ extends RefCounted
 ## Saida: `float` em segundos (> 0), ou 0.0 = sem override (usa o `.tres`).
 ## - build release (`is_debug` falso): sempre 0.0.
 ## - ausente (`null`), nao-String, nao numerico, 0, negativo, nao finito: 0.0.
+## - valor acima de `TETO_S` (1 h) e limitado a ele.
+
+const TETO_S := 3600.0
 
 
 static func decide(raw: Variant, is_debug: bool) -> float:
@@ -20,7 +23,7 @@ static func decide(raw: Variant, is_debug: bool) -> float:
 	var valor: float = texto.to_float()
 	if is_nan(valor) or is_inf(valor) or valor <= 0.0:
 		return 0.0
-	return valor
+	return minf(valor, TETO_S)
 
 
 ## Le o parametro `tempo`. Release: null. Web debug: query string (String, ou null se ausente).

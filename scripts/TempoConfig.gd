@@ -12,7 +12,8 @@ const DURACAO_PADRAO_S := 60.0
 @export var duracao_s: Variant = DURACAO_PADRAO_S
 
 
-# Resource por caminho: o leitor cacheia o Resource (nao o numero), entao editar o valor vale na chamada seguinte
+# Resource por caminho: o leitor cacheia o Resource (nao o numero), entao editar o valor vale na chamada seguinte.
+# O cache nunca invalida: teste que troca o `.tres` do mesmo caminho precisa limpar `_cache` antes.
 static var _cache: Dictionary = {}
 
 
