@@ -19,13 +19,19 @@ const BARRA_H: float = 4.0
 const SEGUNDOS_X: float = 66.0
 const SEGUNDOS_W: float = 16.0
 const CARGA_X: float = 90.0
+const RELOGIO_X: float = 138.0
+const RELOGIO_W: float = 40.0
+const SEGUNDOS_POR_MINUTO: int = 60
 const COR_BRANCO: Color = UiHelpers.COR_TEXTO
 const COR_PRETO: Color = UiHelpers.COR_CONTORNO
 
 # Estado de power-up da Stage e o card do tutorial da 1a partida (injetados por quem cria o HUD)
 var estado: PowerUpState = null
 var tutorial_card: TutorialCard = null
+# Fonte do estado publicado da Stage (Dictionary com `state` e `relogio.restante`); sem fonte, o relogio nunca aparece
+var fonte_estado: Callable = Callable()
 
+var _relogio: Label = null
 var _y0: float = OFFSET_Y
 var _largura: float = 180.0
 var _icone: _Desenho = null
@@ -67,7 +73,9 @@ func _init() -> void:
 	_barra = _Desenho.new()
 	_carga = _Desenho.new()
 	_segundos = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 1)
-	for no in [_icone, _barra, _carga, _segundos]:
+	_relogio = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 1)
+	_relogio.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	for no in [_icone, _barra, _carga, _segundos, _relogio]:
 		(no as Control).visible = false
 		add_child(no)
 	_carga.definir(comandos_do_tipo(&"segunda_chance"))
@@ -91,6 +99,8 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 	_carga.size = rect_carga().size
 	_segundos.position = rect_segundos().position
 	_segundos.size = rect_segundos().size
+	_relogio.position = rect_relogio().position
+	_relogio.size = rect_relogio().size
 
 
 func rect_faixa() -> Rect2:
@@ -117,6 +127,26 @@ func rect_segundos() -> Rect2:
 
 func rect_carga() -> Rect2:
 	return Rect2(CARGA_X, _y0, ICONE_TAM, ICONE_TAM)
+
+
+# Relogio do Contra o tempo (handoff secao 3: x 138-178, y 30-46)
+func rect_relogio() -> Rect2:
+	return Rect2(RELOGIO_X, _y0, RELOGIO_W, ALTURA)
+
+
+# `m:ss` dos segundos restantes, arredondado para cima (0.2 s -> 0:01); negativo conta como 0
+static func formatar_relogio(restante_s: float) -> String:
+	var total: int = ceili(maxf(0.0, restante_s))
+	var minutos: int = floori(float(total) / float(SEGUNDOS_POR_MINUTO))
+	return "%d:%02d" % [minutos, total % SEGUNDOS_POR_MINUTO]
+
+
+func texto_relogio() -> String:
+	return _relogio.text
+
+
+func relogio_visivel() -> bool:
+	return _relogio.visible
 
 
 # Fracao do tempo que resta (0 a 1) do temporizado ativo
@@ -174,6 +204,22 @@ func atualizar() -> void:
 		_icone.definir(comandos_do_tipo(ativo.nome))
 		_atualizar_barra()
 		_segundos.text = str(ceili(estado.restante()))
+	_atualizar_relogio(oculta)
+
+
+# Relogio: so no Contra o tempo, com a partida iniciada e antes de `lost`; o card do tutorial so o oculta (o texto
+# fica e volta ao fechar o card)
+func _atualizar_relogio(oculta: bool) -> void:
+	var publicado: Dictionary = fonte_estado.call() if fonte_estado.is_valid() else {}
+	var ativo: bool = (
+		Global.get_modo_jogo() == GameModes.ID_TEMPO
+		and Global.is_iniciado()
+		and publicado.get("state", "") != GameState.STATE_LOST
+	)
+	if ativo:
+		var relogio: Dictionary = publicado.get("relogio", {})
+		_relogio.text = formatar_relogio(float(relogio.get("restante", 0)))
+	_relogio.visible = ativo and not oculta
 
 
 # Reconstroi os comandos da barra so quando a largura inteira (ceil, 0..40 px) muda: restantes que dao a mesma

@@ -201,6 +201,7 @@ func _ready():
 	power_up_hud = PowerUpHud.new()
 	power_up_hud.estado = power_up_estado
 	power_up_hud.tutorial_card = tutorial_card
+	power_up_hud.fonte_estado = func() -> Dictionary: return ultimo_estado
 	add_child(power_up_hud)
 	# Botao e overlay de pausa: filhos depois de touch_controls/touch_hint (o _input chega a eles antes). So o overlay
 	# e ALWAYS (retoma com a arvore pausada); a Stage segue pausavel.
