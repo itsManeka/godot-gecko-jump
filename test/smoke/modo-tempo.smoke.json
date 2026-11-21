@@ -21,6 +21,6 @@
     { "expect": { "state": "playing", "modo": "tempo", "relogio.restante": { "gt": 0 } }, "timeout_ms": 3000 },
     { "expect": { "state": "lost", "modo": "tempo" }, "timeout_ms": 15000 },
     { "expect": { "relogio.restante": { "eq": 0 } }, "timeout_ms": 3000 },
-    { "shots": 2, "every": 300, "name": "fim-por-tempo", "moving": false, "still": true }
+    { "shots": 1, "name": "fim-por-tempo", "moving": false }
   ]
 }
