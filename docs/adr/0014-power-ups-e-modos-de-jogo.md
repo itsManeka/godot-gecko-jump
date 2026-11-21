@@ -121,6 +121,14 @@ nao toca `Global`. Cada linha recebe dois rngs de `scripts/RowSeed.gd` pelo indi
 a cor das moveis segue o gecko (decisao (d) acima). Sem seed a partida sorteia como antes. O seletor de modo e o Desafio
 diario (data UTC) consomem `Stage.semente_partida`; `?seed=` e `Global.aplicar_seed` seguem so para debug/smoke.
 
+## Nota: Segunda chance no Contra o tempo
+
+A frase "cair encerra a partida" da linha do Contra o tempo vale como derrota padrao; a Segunda chance continua
+valendo nele como no Classico. Com 1 carga, a queda reaparece o gecko na plataforma visivel mais proxima da cor dele e
+o relogio nao reinicia nem recua. Sem carga, a queda encerra a partida. Fim por relogio zerado encerra a partida mesmo
+com carga guardada (a carga so e consumida pela queda). O limite de 60 s e lido de `ressources/tempo.tres`, com
+fallback 60 quando o recurso falta ou o valor e invalido.
+
 ## Alternativas consideradas
 
 - **"Escolha de cor" como quarto power-up:** fora; o dono manteve os 3 aprovados (feature f516).
