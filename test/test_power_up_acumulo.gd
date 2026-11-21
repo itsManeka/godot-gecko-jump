@@ -1,8 +1,9 @@
 extends GutTest
 
-# f522 T8: acumulo e aparecimento com os power-ups REAIS de producao (camaleao e desacelera no registro padrao
-# de PowerUps, duracao/fator de ressources/power_ups.tres, raridade/pesos da curva). Cenarios C623-C627 do
-# 05-test-plan. O registro de producao e restaurado no after_each de cada teste (fixture do plano de testes).
+# f522 T8: acumulo e aparecimento com os power-ups REAIS de producao (camaleao, desacelera e segunda_chance no
+# registro padrao de PowerUps, duracao/fator de ressources/power_ups.tres, raridade/pesos da curva). Cenarios
+# C623-C627 do 05-test-plan da f522; f526 T2 atualiza o conjunto de producao para 3 tipos com pesos 2:2:1
+# (C634/C635 do plano da f526). O registro de producao e restaurado no after_each de cada teste (fixture do plano).
 
 const NIVEL_SCENE := "res://scenes/ScrollLevel.tscn"
 const CURVA_PATH := "res://ressources/curva_dificuldade.tres"
@@ -56,11 +57,11 @@ func after_each() -> void:
 	Global.sem_derrota = false
 
 
-# Estagio de teste com a raridade dada e os pesos 2:2 de producao para os dois tipos reais
+# Estagio de teste com a raridade dada e os pesos 2:2:1 de producao (f526 T2) para os 3 tipos reais
 func _estagio(raridade: float) -> DifficultyStage:
 	var estagio := DifficultyStage.new()
 	estagio.raridade_power_up = raridade
-	estagio.pesos_power_ups = {&"camaleao": 2.0, &"desacelera": 2.0}
+	estagio.pesos_power_ups = {&"camaleao": 2.0, &"desacelera": 2.0, &"segunda_chance": 1.0}
 	return estagio
 
 
@@ -146,8 +147,9 @@ func test_c624_recoletar_camaleao_reinicia_duracao_sem_reativar() -> void:
 	assert_true(estado.cor_livre(), "efeito do camaleao segue vigente apos recoletar")
 
 
-# C625 [T8] [mutacao]: raridade 0: nenhum icone em N linhas; raridade 1: toda plataforma elegivel tem icone e o
-# tipo sorteado e so camaleao ou desacelera (seed fixa, registro de producao).
+# C625 [T8] [mutacao] + C634 [T2/f526]: raridade 0: nenhum icone em N linhas; raridade 1: toda plataforma elegivel
+# tem icone e o tipo sorteado pertence ao registro de producao (camaleao, desacelera ou segunda_chance; seed fixa,
+# pesos 2:2:1 de producao).
 func test_c625_raridade_0_nenhum_icone_raridade_1_todo_elegivel_com_tipo_real() -> void:
 	var nivel_zero: ScrollLevel = await _nivel(0.0)
 	var plataformas_zero: int = 0
@@ -176,15 +178,15 @@ func test_c625_raridade_0_nenhum_icone_raridade_1_todo_elegivel_com_tipo_real() 
 			elegiveis += 1
 			if not _tem_icone(p):
 				sem_icone += 1
-			elif p.tipo_power_up != &"camaleao" and p.tipo_power_up != &"desacelera":
+			elif p.tipo_power_up != &"camaleao" and p.tipo_power_up != &"desacelera" and p.tipo_power_up != &"segunda_chance":
 				tipos_fora.append(String(p.tipo_power_up))
 	assert_gt(elegiveis, 10, "raridade 1: ha plataformas elegiveis nas linhas de fluxo")
 	assert_eq(sem_icone, 0, "raridade 1: toda plataforma elegivel tem icone")
-	assert_eq(tipos_fora.size(), 0, "todo icone sorteado e so camaleao ou desacelera")
+	assert_eq(tipos_fora.size(), 0, "todo icone sorteado pertence ao registro de producao (camaleao, desacelera ou segunda_chance)")
 
 
-# C626 [T8] [mutacao]: linha inicial nunca tem icone, nem com raridade 1 (o estado com raridade 1 e injetado
-# nas linhas do .tscn: so a flag de elegibilidade as protege).
+# C626 [T8] [mutacao] + C634 [T2/f526]: linha inicial nunca tem icone, nem com raridade 1 (o estado com raridade 1
+# e injetado nas linhas do .tscn: so a flag de elegibilidade as protege).
 func test_c626_linha_inicial_nunca_tem_icone_nem_com_raridade_1() -> void:
 	var nivel: ScrollLevel = await _nivel(1.0, true)
 	var linhas: Array = nivel.running_platforms.get_children()
@@ -199,12 +201,19 @@ func test_c626_linha_inicial_nunca_tem_icone_nem_com_raridade_1() -> void:
 	assert_eq(icone_na_inicial, 0, "linha inicial nunca tem icone, nem com raridade 1")
 
 
-# C627 [T8]: pesos 2:2 dao distribuicao proxima de 50/50 em N sorteios com seed fixa (tolerancia explicita); com
-# o .tres de producao o tipo sorteado respeita os pesos (tipo com peso 0 nunca e sorteado).
+# C627 [T8/f522] + C635 [T2/f526]: pesos 2:2 dao distribuicao proxima de 50/50 em N sorteios com seed fixa
+# (tolerancia explicita, mecanismo sintetico); com o .tres de producao (3 pesos 2:2:1, f526 T2) todo tipo sorteado
+# pertence ao conjunto registrado de producao, a fracao segue os pesos (tipo com peso 0 nunca e sorteado) e a
+# segunda_chance fica com a metade da frequencia de cada um dos outros.
 func test_c627_pesos_2_2_50_50_e_tres_de_producao_respeita_os_pesos() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = SEMENTE
-	var snapshot_2_2: DifficultySnapshot = _curva(1.0).avaliar(0.0, 0.0)
+	var estagio_2_2 := DifficultyStage.new()
+	estagio_2_2.raridade_power_up = 1.0
+	estagio_2_2.pesos_power_ups = {&"camaleao": 2.0, &"desacelera": 2.0}
+	var curva_2_2 := DifficultyCurve.new()
+	curva_2_2.estagios = [estagio_2_2]
+	var snapshot_2_2: DifficultySnapshot = curva_2_2.avaliar(0.0, 0.0)
 	var camaleao: int = 0
 	var desacelera: int = 0
 	for i in SORTEIOS_2_2:
@@ -224,12 +233,17 @@ func test_c627_pesos_2_2_50_50_e_tres_de_producao_respeita_os_pesos() -> void:
 	var pesos: Dictionary = snapshot_producao.get_pesos_power_ups()
 	var peso_camaleao: float = float(pesos.get(&"camaleao", 0.0))
 	var peso_desacelera: float = float(pesos.get(&"desacelera", 0.0))
+	var peso_segunda_chance: float = float(pesos.get(&"segunda_chance", 0.0))
 	assert_gt(peso_camaleao, 0.0, "curva de producao da peso ao camaleao")
 	assert_gt(peso_desacelera, 0.0, "curva de producao da peso ao desacelera")
-	var fracao_camaleao: float = peso_camaleao / (peso_camaleao + peso_desacelera)
+	assert_gt(peso_segunda_chance, 0.0, "curva de producao da peso a segunda_chance (f526 T2)")
+	var total_pesos: float = peso_camaleao + peso_desacelera + peso_segunda_chance
+	var fracao_camaleao: float = peso_camaleao / total_pesos
+	var fracao_segunda_chance: float = peso_segunda_chance / total_pesos
 	var tipos_sorteados: int = 0
 	camaleao = 0
 	desacelera = 0
+	var segunda_chance: int = 0
 	var fantasma: int = 0
 	for i in SORTEIOS_PRODUCAO:
 		var nome := PowerUpDraw.sortear(rng, snapshot_producao)
@@ -240,12 +254,21 @@ func test_c627_pesos_2_2_50_50_e_tres_de_producao_respeita_os_pesos() -> void:
 			camaleao += 1
 		elif nome == &"desacelera":
 			desacelera += 1
+		elif nome == &"segunda_chance":
+			segunda_chance += 1
 		elif nome == TIPO_FANTASMA:
 			fantasma += 1
 	assert_gt(tipos_sorteados, 100, "a raridade de producao (0.04) gerou tipos suficientes para conferir os pesos")
 	assert_eq(fantasma, 0, "tipo registrado com peso 0 nunca e sorteado")
-	assert_eq(camaleao + desacelera, tipos_sorteados, "todo tipo sorteado da producao e camaleao ou desacelera")
+	assert_eq(
+		camaleao + desacelera + segunda_chance, tipos_sorteados,
+		"todo tipo sorteado da producao pertence ao conjunto registrado (camaleao, desacelera ou segunda_chance)"
+	)
 	assert_almost_eq(
 		float(camaleao) / float(tipos_sorteados), fracao_camaleao, TOLERANCIA_PRODUCAO,
 		"o tipo sorteado segue a fracao dos pesos do .tres de producao"
+	)
+	assert_almost_eq(
+		float(segunda_chance) / float(tipos_sorteados), fracao_segunda_chance, TOLERANCIA_PRODUCAO,
+		"segunda_chance segue a fracao do peso 1 (metade da frequencia de cada um dos outros)"
 	)

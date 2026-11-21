@@ -28,6 +28,7 @@ var can_change_color = false       # Se pode mudar de cor na próxima plataforma
 var actual_platform : Platform = null  # Plataforma atual em que o jogador está
 var jumping = true                 # Se o jogador está pulando
 var end = false                    # Se o jogo terminou para este jogador
+var _guarda_reaparecimento := false  # f526 T4: o reaparecimento (Segunda chance) nao e pouso (Q2); segura o bloco de pouso mesmo com can_change_color rearmando, ate o proximo pulo
 var rng: RandomNumberGenerator = null  # Sorteio da cor no pouso; null usa o global (so teste fixa semente)
 var dificuldade: DifficultyState = null  # Injetada pela Stage (scroll vigente para a previsao); null = cena isolada
 var power_up_estado: PowerUpState = null  # Injetado pela Stage (fator do scroll efetivo na previsao, f522 T4); null = neutro
@@ -71,8 +72,10 @@ func _physics_process(_delta):
 	if end || !Global.is_iniciado():
 		return
 	
-	# Verifica se deve mudar de cor ao tocar uma nova plataforma
-	if is_on_floor() && can_change_color:
+	# Verifica se deve mudar de cor ao tocar uma nova plataforma. A guarda do reaparecimento (f526 T4) vale mais
+	# que can_change_color: o teleporte dispara o body_entered do DetectorPlataforma no frame fisico seguinte e
+	# rearma a flag, mas o reaparecimento nao e pouso (Q2) - sem ponto, sem coleta e sem sorteio de cor.
+	if is_on_floor() && can_change_color && !_guarda_reaparecimento:
 		can_change_color = false
 		# Avisa a plataforma do pouso (com a cor do pouso) antes de sortear a nova cor; liberada = sem aviso
 		_descartar_plataforma_liberada()
@@ -121,6 +124,8 @@ func _physics_process(_delta):
 			jumping = true
 			actual_platform = null
 			Global.player_color_changed(color, actual_platform)
+			# f526 T4: o pulo derruba a guarda do reaparecimento - o pouso seguinte e pouso de verdade
+			_guarda_reaparecimento = false
 		else:
 			jumping = false
 			sprite.play("fall")
@@ -166,6 +171,41 @@ func change_color_random():
 	set_color(
 		ReachableColors.cor_no_pouso(Global.platforms, actual_platform, PlayArea.LARGURA, rng, dt_chegada, espera)
 	)
+
+# f526 T4: reposiciona o gecko sobre a plataforma alvo da Segunda chance - teleporte de resgate, nao pouso (Q2).
+# Base do corpo no topo do shape dela (sem interpenetrar; o x e o dela no instante do teleporte - a fisica cuida
+# do que vem depois: como em qualquer pouso, a gravidade cola o gecko no topo enquanto a plataforma desce com o
+# scroll ou anda em x). Velocity zerada, estado de chao coerente, actual_platform apontando para a alvo e colisao
+# reavaliada pela cor vigente (ou cor livre, se o Camaleao esta ativo - este metodo nunca toca Global.cor_livre).
+# `cor_a_assumir >= 0` diferente da cor atual = fallback do ADR 0014 (o gecko assume a cor da plataforma);
+# -1 ou igual mantem a cor. Sem lose_game e sem animacao de derrota: quem chama e o resgate da Stage (T5).
+func reaparecer_sobre(plataforma: Platform, cor_a_assumir: int = -1) -> void:
+	velocity = Vector2.ZERO
+	on_ground = true
+	jumping = false
+	can_change_color = false
+	_guarda_reaparecimento = true
+	actual_platform = plataforma
+	if cor_a_assumir >= 0 and int(cor_a_assumir) != int(color):
+		# Fallback: assume a cor da alvo (set_color ja reavalia as demais plataformas pelo Global)
+		set_color(cor_a_assumir)
+	else:
+		# Cor mantida: so reavalia a colisao das demais pela cor vigente
+		Global.player_color_changed(color, plataforma)
+	# O Global nao reavalia a plataforma atual (o pouso normal conta com ela solida desde o ultimo pulo); no
+	# fallback a alvo vinha atravessavel (era de outra cor) - sem isto o gecko cairia dentro dela no frame seguinte.
+	plataforma.player_color_changed(color)
+	global_position = Vector2(plataforma.global_position.x, _y_no_topo(plataforma))
+
+
+# y global que poe a base do corpo do gecko exatamente no topo do shape da plataforma (tocando, sem interpenetrar).
+# O shape do Player tem rotation PI e e um retangulo centrado: o AABB e invariante a rotacao de 180 graus.
+func _y_no_topo(plataforma: Platform) -> float:
+	var forma_alvo: RectangleShape2D = plataforma.shape.shape as RectangleShape2D
+	var topo: float = plataforma.global_position.y + plataforma.shape.position.y - forma_alvo.size.y / 2.0
+	var forma_corpo: RectangleShape2D = collision.shape as RectangleShape2D
+	var base_corpo: float = collision.position.y + forma_corpo.size.y / 2.0
+	return topo - base_corpo
 
 # Scroll vigente da partida (curva do estagio vezes o fator do power-up de desaceleracao, f522 T4):
 # a previsao de cor da janela de chegada usa o scroll que de fato move o mundo. Sem dificuldade = 0.

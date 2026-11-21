@@ -108,3 +108,72 @@ func test_estagio_sem_campos_novos_e_curva_de_producao_tem_raridade_e_pesos_apro
 		assert_almost_eq(estagio.raridade_power_up, 0.04, EPS, "raridade de producao = 0.04 (D3)")
 		assert_false(estagio.pesos_power_ups.is_empty(), "pesos de producao preenchidos nos 4 estagios (f522 T2)")
 	assert_almost_eq(producao.avaliar(0.0, 0.0).get_raridade_power_up(), 0.04, EPS, "snapshot da producao = 0.04")
+
+
+# C632 [T2] [mutacao]: curva de producao com peso 1 de segunda_chance nos 4 estagios (ADR 0014:38:
+# 1,6/1,6/0,8% por plataforma elegivel com raridade 0.04); peso 0 ou removido do estagio impede o tipo de
+# sair (registrada no padrao, sem peso nunca e sorteada, os outros dois tipos seguem saindo).
+func test_c632_peso_1_de_segunda_chance_nos_4_estagios_e_peso_0_ou_removido_impede_sair() -> void:
+	var curva: DifficultyCurve = load(CURVA_PATH)
+	assert_eq(curva.estagios.size(), 4, "curva de producao tem 4 estagios")
+	for estagio: DifficultyStage in curva.estagios:
+		var pesos: Dictionary = estagio.pesos_power_ups
+		assert_almost_eq(float(pesos.get(&"camaleao", 0.0)), 2.0, EPS, "peso do camaleao = 2 no estagio")
+		assert_almost_eq(float(pesos.get(&"desacelera", 0.0)), 2.0, EPS, "peso do desacelera = 2 no estagio")
+		assert_almost_eq(float(pesos.get(&"segunda_chance", 0.0)), 1.0, EPS, "peso 1 de segunda_chance no estagio")
+		assert_almost_eq(estagio.raridade_power_up, 0.04, EPS, "raridade de producao mantida em 0.04")
+	PowerUps.restaurar_padrao()
+	assert_true(PowerUps.nomes().has(&"segunda_chance"), "segunda_chance esta no registro de producao (3 tipos)")
+	var rng := RandomNumberGenerator.new()
+	rng.seed = SEED_FIXA
+	var removido := _snapshot(1.0, {&"camaleao": 2.0, &"desacelera": 2.0})
+	var com_peso_zero := _snapshot(1.0, {&"camaleao": 2.0, &"desacelera": 2.0, &"segunda_chance": 0.0})
+	var segunda_chance_sorteada: int = 0
+	var outros_sorteados: int = 0
+	for i in 300:
+		if PowerUpDraw.sortear(rng, removido) == &"segunda_chance":
+			segunda_chance_sorteada += 1
+		if PowerUpDraw.sortear(rng, com_peso_zero) == &"segunda_chance":
+			segunda_chance_sorteada += 1
+		if PowerUpDraw.sortear(rng, com_peso_zero) != &"":
+			outros_sorteados += 1
+	assert_eq(segunda_chance_sorteada, 0, "segunda_chance com peso 0 ou removido do estagio nunca e sorteada")
+	assert_gt(outros_sorteados, 0, "os outros tipos registrados seguem saindo (o sorteio nao ficou vazio)")
+
+
+# C633 [T2] [mutacao]: N grande com seed fixa e os pesos do .tres de producao: proporcao ~40/40/20 com
+# tolerancia explicita; segunda_chance sai com ~metade da frequencia de cada um dos outros. O esperado vem do
+# ADR 0014:38 e dos pesos 2:2:1 do .tres de producao, nao da saida observada.
+func test_c633_pesos_2_2_1_da_producao_ficam_pertos_de_40_40_20_com_seed_fixa() -> void:
+	PowerUps.restaurar_padrao()
+	var pesos_producao: Dictionary = load(CURVA_PATH).avaliar(0.0, 0.0).get_pesos_power_ups()
+	var snapshot := _snapshot(1.0, pesos_producao)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = SEED_FIXA
+	var camaleao: int = 0
+	var desacelera: int = 0
+	var segunda_chance: int = 0
+	for i in 3000:
+		var nome := PowerUpDraw.sortear(rng, snapshot)
+		if nome == &"camaleao":
+			camaleao += 1
+		elif nome == &"desacelera":
+			desacelera += 1
+		elif nome == &"segunda_chance":
+			segunda_chance += 1
+	assert_eq(camaleao + desacelera + segunda_chance, 3000, "raridade 1: todo sorteio devolve um dos 3 tipos de producao")
+	assert_gt(camaleao, 0, "camaleao saiu (a divisao abaixo nao e por zero)")
+	assert_gt(desacelera, 0, "desacelera saiu (a divisao abaixo nao e por zero)")
+	assert_almost_eq(float(camaleao) / 3000.0, 0.4, TOLERANCIA_PROPORCAO, "camaleao ~40% (peso 2 de 5)")
+	assert_almost_eq(float(desacelera) / 3000.0, 0.4, TOLERANCIA_PROPORCAO, "desacelera ~40% (peso 2 de 5)")
+	assert_almost_eq(float(segunda_chance) / 3000.0, 0.2, TOLERANCIA_PROPORCAO, "segunda_chance ~20% (peso 1 de 5)")
+	# Tolerancia da razao (~4,7 desvios-padrao em 3000 sorteios): mais larga que a das proporcoes porque a razao
+	# de duas contagens binomiais tem mais ruido; segue reprovando quem rompe os pesos (ex.: peso 5 daria 0,2).
+	assert_almost_eq(
+		float(segunda_chance) / float(camaleao), 0.5, 0.1,
+		"segunda_chance sai com ~metade da frequencia do camaleao"
+	)
+	assert_almost_eq(
+		float(segunda_chance) / float(desacelera), 0.5, 0.1,
+		"segunda_chance sai com ~metade da frequencia do desacelera"
+	)
