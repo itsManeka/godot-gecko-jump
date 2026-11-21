@@ -23,6 +23,10 @@ const BEST_BOTTOM: float = 265.0
 const COR_FAIXA_PLACAR: Color = UiHelpers.COR_FUNDO_OVERLAY
 # Curva de producao (estagios da dificuldade); o estado de cada partida e criado em _ready a partir dela
 const CURVA_DIFICULDADE: DifficultyCurve = preload("res://ressources/curva_dificuldade.tres")
+# Chaves do ctx da partida entregue as regras de modo (definidas em PartidaCtx; a Stage e as regras citam so a constante)
+const CTX_PONTOS: String = PartidaCtx.PONTOS
+const CTX_INICIADO: String = PartidaCtx.INICIADO
+const CTX_TEMPO: String = PartidaCtx.TEMPO
 # Disparado a cada inicio efetivo da partida (a guarda de started impede repeticao)
 signal partida_iniciada
 # Camada de toque (filha da Stage, criada em _ready)
@@ -616,7 +620,7 @@ func _encerrar_partida(body) -> void:
 
 # Snapshot da partida entregue a regra do modo
 func _ctx_partida() -> Dictionary:
-	return {"pontos": points, "iniciado": Global.is_iniciado()}
+	return {CTX_PONTOS: points, CTX_INICIADO: Global.is_iniciado()}
 
 # Reinicia o jogo após a animação de perda
 func _on_animation_end():

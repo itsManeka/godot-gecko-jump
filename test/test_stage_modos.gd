@@ -105,8 +105,11 @@ func test_c604_ok_com_outro_modo_aplica_e_mostra_best_e_last_do_modo() -> void:
 	var stage := await _novo_stage()
 	assert_eq(stage.bestscore.text, "Best Score: 4", "Best do Classico no menu")
 	_abrir_pelo_botao(stage)
-	stage.modos_screen.tratar_evento(_tecla(KEY_RIGHT))
-	assert_eq(stage.modos_screen.modo_exibido().id, GameModeTeste.ID, "carrossel no modo de teste")
+	var passos := 0
+	while stage.modos_screen.modo_exibido().id != GameModeTeste.ID and passos < 10:
+		stage.modos_screen.tratar_evento(_tecla(KEY_RIGHT))
+		passos += 1
+	assert_eq(stage.modos_screen.modo_exibido().id, GameModeTeste.ID, "carrossel chega ao modo de teste pelo id")
 	_apertar_ok(stage)
 	assert_eq(Global.modo_jogo, GameModeTeste.ID, "Global.modo_jogo novo")
 	assert_false(stage.modos_screen.esta_aberta(), "OK fecha a tela")

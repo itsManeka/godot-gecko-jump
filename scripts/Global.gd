@@ -117,6 +117,20 @@ var power_up_inicial: String = ""
 func aplicar_power_up_inicial(raw: Variant, is_debug: bool) -> void:
 	power_up_inicial = ModoPowerUpInicial.decide(raw, is_debug)
 
+# Duracao do Contra o tempo forcada (so smoke debug via `?tempo=<s>`): 0.0 = sem override (vale o `.tres`).
+var tempo_inicial_s: float = 0.0
+
+# Aplica o tempo forcado a partir do valor bruto do parametro e da flag de build.
+func aplicar_tempo_inicial(raw: Variant, is_debug: bool) -> void:
+	tempo_inicial_s = ModoTempoInicial.decide(raw, is_debug)
+
+# Limite de tempo vigente do Contra o tempo: o seam de debug (se aplicado) ou o leitor do `.tres`.
+# Lido a cada chamada (nao cacheia o numero): vale mesmo se o seam for aplicado depois do registro montado.
+func limite_tempo_s(caminho: String = TempoConfig.CAMINHO_PADRAO) -> float:
+	if tempo_inicial_s > 0.0:
+		return tempo_inicial_s
+	return TempoConfig.carregar(caminho).duracao_vigente()
+
 # Inclui o modo de teste no seletor (so debug, parametro `?modos=teste`). Nunca liga em release.
 func aplicar_modos_teste(raw: Variant, is_debug: bool) -> void:
 	modos_teste_habilitado = GameModesDebug.decide(raw, is_debug)
@@ -159,6 +173,7 @@ func _ready():
 	aplicar_modo_tutorial(ModoTutorialVisto.read_raw(), OS.is_debug_build())
 	aplicar_progresso_inicial(ModoProgressoInicial.read_raw(), OS.is_debug_build())
 	aplicar_power_up_inicial(ModoPowerUpInicial.read_raw(), OS.is_debug_build())
+	aplicar_tempo_inicial(ModoTempoInicial.read_raw(), OS.is_debug_build())
 	aplicar_moldura_fixa(ModoMolduraFixa.read_raw(), OS.is_debug_build())
 	aplicar_moldura_lenta(ModoMolduraLenta.read_raw(), OS.is_debug_build())
 	# Antes do store: o `teste` salvo so e lido como modo quando a flag de debug esta ligada.
