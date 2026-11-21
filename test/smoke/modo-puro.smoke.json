@@ -17,7 +17,7 @@
     { "wait": 150 },
     { "up": "Space" },
     { "expect": { "state": "playing", "modo": "puro", "powerup.ativo": "" }, "timeout_ms": 3000 },
-    { "wait": 4000 },
+    { "wait": 1500 },
     { "expect": { "modo": "puro", "powerup.ativo": "" }, "timeout_ms": 3000 },
     { "expect": { "state": "playing" }, "timeout_ms": 3000 }
   ]

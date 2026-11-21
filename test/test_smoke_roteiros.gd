@@ -543,7 +543,8 @@ func test_roteiro_tempo_usa_tempo_curto_e_termina_em_lost_com_gecko_vivo() -> vo
 	assert_gte(i_playing, 0, "deve haver expect playing com relogio.restante")
 	assert_gt(i_lost, i_playing, "o expect lost vem depois do playing")
 	if i_lost >= 0:
-		assert_eq(passos[i_lost]["expect"].get("player.alive", null), true, "o fim por relogio e com o gecko vivo")
+		assert_false(passos[i_lost]["expect"].has("player.alive"), "a ponte publica alive=false em todo lost: o roteiro nao le player.alive no lost")
+		assert_true(_valores_expect(nome, "relogio.restante").size() >= 2, "o fim por relogio e provado por relogio.restante (gt 0 no playing, eq 0 depois)")
 		assert_gte(int(passos[i_lost].get("timeout_ms", 0)), int(segundos.to_float() * 1000.0), "o timeout do lost cobre o relogio curto")
 
 
