@@ -108,3 +108,15 @@ func test_stage_com_powerup_desconhecido_ou_vazio_nao_ativa() -> void:
 	var outra: Node = await _novo_stage()
 	outra.call("_on_Play_button_down")
 	assert_eq((outra.get("power_up_estado") as PowerUpState).ativo(), null, "vazio nao ativa")
+
+
+# C673 (T7, f526): ?powerup=segunda_chance guarda 1 carga ao iniciar; carga nao e temporizado (ativo vazio)
+func test_stage_com_segunda_chance_publica_carga_1_e_nenhum_temporizado_ao_iniciar() -> void:
+	Global.power_up_inicial = "segunda_chance"
+	_stage = await _novo_stage()
+	_stage.call("_on_Play_button_down")
+	assert_eq(_estado().carga(), 1, "partida iniciada com segunda chance guarda 1 carga")
+	assert_eq(_estado().ativo(), null, "carga nao vira temporizado ativo")
+	var publicado := _powerup_publicado()
+	assert_eq(publicado["carga"], 1, "ponte publica powerup.carga = 1 ao iniciar")
+	assert_eq(publicado["ativo"], "", "ponte publica powerup.ativo vazio (carga nao e temporizado)")

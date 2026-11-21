@@ -186,6 +186,12 @@ fecham o bloco.
    jogo real passa a sortear icones em ~4% das plataformas elegiveis; os testes que nao tratam de power-up seguem
    deterministicos (curva sintetica sem pesos, rng dedicado ao power-up ou `power_ups_habilitados = false`),
    inventariados por grep na task.
+4. Bloco B (Segunda chance): carga unica, sem tempo, maximo 1 guardada, raridade 0,8% (peso 1 nos 4 estagios da curva).
+   Ao cruzar a linha de derrota com a carga, a partida segue, a carga vai a 0 e o gecko reaparece na plataforma visivel
+   mais proxima da cor dele; sem nenhuma dessa cor, na mais proxima de qualquer cor, e o gecko assume a cor dela. O
+   reaparecimento nao conta como pouso (sem ponto, sem sorteio de cor). Sem carga, ou sem plataforma visivel, vale a
+   derrota padrao. Scripts: `scripts/PowerUpSegundaChance.gd` (efeito neutro, o consumo fica na Stage) e
+   `scripts/SegundaChanceAlvo.gd` (escolha pura da plataforma de reaparicao).
 
 ## Regras de trabalho
 

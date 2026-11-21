@@ -111,7 +111,8 @@ tempo; B: Zen; C: Desafio diario, depende da f517).
   brecha (troca de data/apagamento do save) e restringe o modo a jogadores conectados depois do E5.
 - **Arte provisoria:** icone de power-up 16x16 e imagem de modo 64x64 (placeholder); o E6 (issue #18) faz a arte final.
 - **Fallback da Segunda chance:** sem plataforma da cor do gecko visivel, a f522 define a regra (proposta: plataforma
-  mais proxima, o gecko assume a cor dela).
+  mais proxima, o gecko assume a cor dela). Fechado no bloco B: sem nenhuma da cor, reaparece na plataforma visivel mais
+  proxima de qualquer cor e assume a cor dela; sem plataforma visivel, vale a derrota padrao.
 
 ## Nota: seed por partida
 
