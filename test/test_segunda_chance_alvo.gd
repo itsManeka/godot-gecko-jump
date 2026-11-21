@@ -1,13 +1,16 @@
 extends GutTest
 
 # f526 T3: escolha pura da plataforma de reaparicao da Segunda chance (SegundaChanceAlvo). Casos de escolha sem
-# arvore — builders de entrada {y, x, cor, desmoronando, desmoronada, pisca_oculta} em lista pura (C636-C647);
-# C648 confere com Platform real as chaves que ReachableColors.entradas_de_plataformas passou a acrescentar.
-# Regra (Q4 do G1): candidata visivel (y em [0, altura], x em [0, largura]), solida (nem desmoronada, nem
-# desmoronando, nem oculta por piscar) e com tempo ate sair da tela >= janela minima (tempo de pulo pelo scroll +
-# espera maxima do Player; scroll 0 = infinito); entre as da cor do gecko a de menor distancia euclidiana com dx
+# arvore — builders de entrada {y, x, cor, desmoronando, desmoronada, pisca_oculta[, movel]} em lista pura
+# (C636-C647); C648 confere com Platform real as chaves que ReachableColors.entradas_de_plataformas passou a
+# acrescentar. Regra (Q4 do G1): candidata visivel (y em [0, altura], x em [0, largura]), solida (nem desmoronada,
+# nem desmoronando, nem oculta por piscar) e com tempo ate sair da tela >= janela minima (tempo de pulo pelo scroll
+# + espera maxima do Player; scroll 0 = infinito); entre as da cor do gecko a de menor distancia euclidiana com dx
 # ciente do wrap; sem nenhuma da cor, a mais proxima de qualquer cor como fallback (cor a assumir); empate exato
 # por (distancia, y, x, cor); sem candidata = "nenhuma". Os argumentos nunca sao alterados.
+# Correcao 1 (PASSO 6.5, achado C1 do game-review): o desempate por estatica vive DENTRO da faixa — havendo ao
+# menos uma estatica ("movel" falso/ausente; chave ausente = estatica), so as estaticas sao consideradas; so faixa
+# sem nenhuma estatica considera as moveis. Movel da cor do gecko nunca perde para estatica de outra cor.
 
 const PlayerFisica := preload("res://scenes/Player.gd")
 const PLATAFORMA_CENA := "res://scenes/Platform.tscn"
@@ -54,9 +57,10 @@ func _entrada(
 	cor: int,
 	desmoronando: bool = false,
 	desmoronada: bool = false,
-	pisca_oculta: bool = false
+	pisca_oculta: bool = false,
+	movel: bool = false
 ) -> Dictionary:
-	return {
+	var entrada := {
 		"y": y,
 		"x": x,
 		"cor": cor,
@@ -64,6 +68,10 @@ func _entrada(
 		"desmoronada": desmoronada,
 		"pisca_oculta": pisca_oculta,
 	}
+	# Chave "movel" so existe quando true: entradas montadas a mao sem a chave valem estatica (correcao 1).
+	if movel:
+		entrada["movel"] = true
+	return entrada
 
 
 # Teto de cada entrada: plataforma da mesma cor na linha de cima (predicado de saida, Q6 c), marcada desmoronada
@@ -342,3 +350,98 @@ func test_c648_entradas_de_plataformas_acrescentam_desmoronando_e_pisca_oculta_c
 	assert_true(bool(entradas[2]["desmoronada"]), "o estado publico desmoronada segue na entrada")
 	assert_true(bool(entradas[3]["pisca_oculta"]), "piscante nascida na fase invisivel reflete em \"pisca_oculta\"")
 	assert_true(is_same(entradas[0]["plataforma"], normal), "a entrada guarda a propria plataforma de origem")
+
+# --- Correcao 1 (PASSO 6.5, achado C1 do game-review): dentro da faixa, estatica antes de movel -------------------
+# Plataforma movel (Platform.speed != 0) sai de baixo do gecko — ele nao e carregado — e o reaparecimento
+# derrubaria de novo, gastando a carga sem salvar. O desempate novo vive DENTRO da faixa (a da cor do gecko e,
+# so no fallback, a de qualquer cor): havendo ao menos uma estatica ("movel" falso/ausente), so as estaticas sao
+# consideradas; so faixa sem nenhuma estatica considera as moveis. Movel da cor do gecko nunca perde para
+# estatica de outra cor: a faixa da cor vem antes, o desempate nunca troca de faixa.
+
+
+func test_movel_da_cor_mais_proxima_perde_para_estatica_da_cor_mais_distante() -> void:
+	# Prova de mutacao (verify-wave --mutate revertendo o desempate de faixa em escolher para a _mais_proxima
+	# antiga): este it falha em "[0] expected to equal [1]:  havendo estatica da cor na faixa, a movel mais
+	# proxima fica fora da escolha: vence a estatica" (at line 372) — a escolhida volta a ser a movel mais
+	# proxima (y=310), que sai de baixo do gecko (ele nao e carregado), derruba de novo e gasta a carga sem
+	# salvar (o achado C1 do game-review que motivou a correcao).
+	var movel: Dictionary = _entrada(310.0, 90.0, AZUL, false, false, false, true)
+	var estatica: Dictionary = _entrada(100.0, 90.0, AZUL)
+	var res: Dictionary = _escolher([movel, estatica])
+	var escolhida: Dictionary = res["entrada"]
+	assert_eq(
+		int(res["indice"]),
+		1,
+		"havendo estatica da cor na faixa, a movel mais proxima fica fora da escolha: vence a estatica"
+	)
+	assert_eq(
+		float(escolhida["y"]), 100.0, "a escolhida e a estatica mais distante (y=100), nao a movel (y=310)"
+	)
+	assert_false(bool(escolhida.get("movel", false)), "a escolhida e estatica")
+	assert_lt(
+		_distancia_do_gecko(movel),
+		_distancia_do_gecko(escolhida),
+		"a movel era a mais proxima do ponto da queda: perder para a estatica e o desempate novo"
+	)
+	assert_false(bool(res["fallback"]), "escolha dentro da faixa da cor: sem fallback")
+
+
+func test_faixa_da_cor_so_com_moveis_escolhe_a_movel_mais_proxima_sem_devolver_nenhuma() -> void:
+	var entradas: Array = [
+		_entrada(200.0, 120.0, AZUL, false, false, false, true),
+		_entrada(100.0, 60.0, AZUL, false, false, false, true),
+		_entrada(310.0, 90.0, VERDE),
+	]
+	var res: Dictionary = _escolher(entradas)
+	var escolhida: Dictionary = res["entrada"]
+	assert_eq(
+		int(res["indice"]),
+		0,
+		"faixa da cor so com moveis: a movel mais proxima e escolhida, nao \"nenhuma\""
+	)
+	assert_ne(int(res["indice"]), -1, "so moveis na faixa nao devolve \"nenhuma\"")
+	assert_true(bool(escolhida.get("movel", false)), "a escolhida e movel: nao havia estatica na faixa")
+	assert_false(bool(res["fallback"]), "a escolhida tem a cor do gecko: sem fallback")
+	assert_lt(
+		_distancia_do_gecko(entradas[0]),
+		_distancia_do_gecko(entradas[1]),
+		"entre as moveis da faixa, vence a mais proxima do ponto da queda"
+	)
+
+
+func test_movel_da_cor_do_gecko_nao_perde_para_estatica_de_outra_cor_faixa_da_cor_vence() -> void:
+	var entradas: Array = [
+		_entrada(310.0, 90.0, AZUL, false, false, false, true),
+		_entrada(100.0, 90.0, VERDE),
+	]
+	var res: Dictionary = _escolher(entradas)
+	var escolhida: Dictionary = res["entrada"]
+	assert_eq(
+		int(res["indice"]),
+		0,
+		"movel da cor do gecko vence estatica de outra cor: a faixa da cor vem antes do desempate"
+	)
+	assert_true(bool(escolhida.get("movel", false)), "a escolhida e a movel da cor do gecko")
+	assert_eq(int(res["cor"]), AZUL, "a cor devolvida e a cor do gecko")
+	assert_false(bool(res["fallback"]), "sem fallback: havia candidata da cor, so que movel")
+
+
+func test_fallback_estatica_de_outra_cor_vence_movel_mais_proxima_de_outra_cor() -> void:
+	var entradas: Array = [
+		_entrada(310.0, 90.0, VERDE, false, false, false, true),
+		_entrada(100.0, 90.0, AMARELO),
+	]
+	var res: Dictionary = _escolher(entradas)
+	var escolhida: Dictionary = res["entrada"]
+	assert_true(bool(res["fallback"]), "sem nenhuma da cor do gecko: fallback de qualquer cor")
+	assert_eq(
+		int(res["indice"]),
+		1,
+		"no fallback havendo estatica, a movel mais proxima fica fora da escolha: vence a estatica"
+	)
+	assert_eq(int(res["cor"]), AMARELO, "cor a assumir = cor da estatica escolhida")
+	assert_lt(
+		_distancia_do_gecko(entradas[0]),
+		_distancia_do_gecko(escolhida),
+		"a movel era a mais proxima: no fallback a estatica vence o desempate"
+	)

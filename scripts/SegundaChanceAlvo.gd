@@ -11,6 +11,13 @@ extends RefCounted
 # qualquer cor, e o resultado informa a cor a assumir (fallback do ADR 0014). Empate exato de distancia: menor y
 # (mais alta), depois menor x, depois menor cor — a ordem da lista nunca decide. Sem nenhuma candidata:
 # "nenhuma" (Q3: quem chama segue para a derrota padrao, a carga nao se gasta aqui).
+#
+# Desempate de faixa (correcao 1 do PASSO 6.5, achado C1 do game-review): dentro de cada faixa (primeiro a da cor
+# do gecko, so no fallback a de qualquer cor), havendo ao menos uma candidata estatica ("movel" falso/ausente) a
+# escolha considera so as estaticas — plataforma movel sai de baixo do gecko (ele nao e carregado) e o
+# reaparecimento derrubaria de novo, gastando a carga sem salvar; so faixa sem nenhuma estatica considera as
+# moveis, pela mesma ordem de distancia. Movel da cor do gecko nunca perde para estatica de outra cor: a faixa da
+# cor vem antes, o desempate nunca troca de faixa.
 
 # Fisica do pulo lida do Player (nenhum literal novo): a janela minima soma a espera maxima apos o pouso na
 # linha de cima — o mesmo par de tempos do preditor de cor (ReachableColors.cor_no_pouso).
@@ -18,7 +25,7 @@ const PlayerFisica := preload("res://scenes/Player.gd")
 
 
 # Indice/entrada da plataforma de reaparicao entre `entradas` (modelo de ReachableColors.entradas_de_plataformas:
-# {y, x, cor, desmoronada, desmoronando, pisca_oculta, plataforma, ...}; chave de estado ausente vale falso).
+# {y, x, cor, desmoronada, desmoronando, pisca_oculta, movel, plataforma, ...}; chave de estado ausente vale falso).
 # `gecko` e o ponto da queda; `scroll` e o efetivo (Player.scroll_efetivo()). Devolve:
 #   {"indice": <indice em entradas>, "entrada": <a escolhida>, "cor": <cor da escolhida>, "fallback": <bool>}
 # "fallback" true = a escolhida nao tem a cor do gecko e "cor" e a cor a assumir. Sem candidata ("nenhuma"):
@@ -32,10 +39,10 @@ static func escolher(
 			candidatas.append(i)
 	if candidatas.is_empty():
 		return _nenhuma()
-	var escolhida: int = _mais_proxima(entradas, candidatas, gecko, largura, cor_gecko)
+	var escolhida: int = _preferindo_estatica(entradas, candidatas, gecko, largura, cor_gecko)
 	var fallback: bool = escolhida < 0
 	if fallback:
-		escolhida = _mais_proxima(entradas, candidatas, gecko, largura, -1)
+		escolhida = _preferindo_estatica(entradas, candidatas, gecko, largura, -1)
 	var entrada: Dictionary = entradas[escolhida]
 	return {"indice": escolhida, "entrada": entrada, "cor": int(entrada["cor"]), "fallback": fallback}
 
@@ -107,6 +114,29 @@ static func _mais_proxima(entradas: Array, indices: Array, gecko: Vector2, largu
 		if melhor < 0 or _vence(e, entradas[melhor], gecko, largura):
 			melhor = i
 	return melhor
+
+
+# Desempate de faixa (correcao 1 do PASSO 6.5): dentro da faixa de cor (`cor_filtro` < 0 = qualquer cor, faixa do
+# fallback), havendo ao menos uma candidata estatica ("movel" falso/ausente) a escolha considera so as estaticas —
+# movel sai de baixo do gecko (ele nao e carregado) e o reaparecimento derrubaria de novo, gastando a carga sem
+# salvar; so faixa sem nenhuma estatica considera as moveis, pela mesma ordem de _mais_proxima. Devolve -1 quando
+# nenhum passa no filtro de cor.
+static func _preferindo_estatica(
+	entradas: Array, indices: Array, gecko: Vector2, largura: float, cor_filtro: int
+) -> int:
+	var estaticas: Array = []
+	var moveis: Array = []
+	for i in indices:
+		var e: Dictionary = entradas[i]
+		if cor_filtro >= 0 and int(e["cor"]) != cor_filtro:
+			continue
+		if bool(e.get("movel", false)):
+			moveis.append(i)
+		else:
+			estaticas.append(i)
+	if not estaticas.is_empty():
+		return _mais_proxima(entradas, estaticas, gecko, largura, -1)
+	return _mais_proxima(entradas, moveis, gecko, largura, -1)
 
 
 # Ordem de preferencia entre candidatas (empate deterministico, documentado): menor distancia, depois menor y

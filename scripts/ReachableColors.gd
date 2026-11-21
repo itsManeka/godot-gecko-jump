@@ -57,9 +57,10 @@ static func tempo_de_pulo(scroll: float) -> float:
 
 # Converte plataformas vivas em pares {y, x, cor} (posicao global). Ignora null, instancia liberada e `excluir`.
 # Plataforma com ciclo de cor ganha tambem "ciclo" (PlatformColorCycle); com piscar, "pisca" (PlatformBlink).
-# Estado solido/visivel para o alvo da Segunda chance (f526 T3): toda entrada ganha "desmoronada", "desmoronando"
-# e "pisca_oculta" (falso em objeto sem o membro/metodo, ex. fake de teste) e a "plataforma" de origem (o chamador
-# resolve o no escolhido sem casar posicao). So chaves acrescentadas: nenhum filtro muda aqui.
+# Estado solido/visivel/movel para o alvo da Segunda chance (f526 T3 e correcao 1 do PASSO 6.5): toda entrada
+# ganha "desmoronada", "desmoronando", "pisca_oculta" e "movel" (falso em objeto sem o membro/metodo, ex. fake de
+# teste; movel = Platform.speed != 0 — sai de baixo do gecko, que nao e carregado) e a "plataforma" de origem (o
+# chamador resolve o no escolhido sem casar posicao). So chaves acrescentadas: nenhum filtro muda aqui.
 static func entradas_de_plataformas(plataformas: Array, excluir: Object = null) -> Array:
 	var entradas: Array = []
 	for p in plataformas:
@@ -78,6 +79,7 @@ static func entradas_de_plataformas(plataformas: Array, excluir: Object = null) 
 		entrada["desmoronada"] = p.get("desmoronada") == true
 		entrada["desmoronando"] = p.esta_desmoronando() if p.has_method(&"esta_desmoronando") else false
 		entrada["pisca_oculta"] = p.esta_pisca_oculta() if p.has_method(&"esta_pisca_oculta") else false
+		entrada["movel"] = p.get("speed") != null and float(p.get("speed")) != 0.0
 		entrada["plataforma"] = p
 		entradas.append(entrada)
 	return entradas

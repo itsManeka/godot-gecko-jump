@@ -198,3 +198,20 @@ func _plataforma(y: float, x: float, cor: int) -> Platform:
 	p.global_position = Vector2(x, y)
 	p.set_color(cor)
 	return p
+
+
+# --- (f526 T3 correcao 1, PASSO 6.5) chave "movel" das entradas: Platform.speed != 0 --------------------------------
+
+
+func test_entradas_de_plataformas_publicam_movel_conforme_o_speed_da_plataforma_real() -> void:
+	var parada: Platform = _plataforma(Y_CIMA, 40.0, Enums.COLOR.AZUL)
+	parada.set_speed(0)
+	var movel: Platform = _plataforma(Y_CIMA, 60.0, Enums.COLOR.VERDE)
+	movel.set_speed(30)
+	var pra_direita: Platform = _plataforma(Y_CIMA, 80.0, Enums.COLOR.VERMELHO)
+	pra_direita.set_speed(-30)
+	var entradas: Array = ReachableColors.entradas_de_plataformas([parada, movel, pra_direita])
+	assert_eq(entradas.size(), 3, "as tres plataformas vivas viram entrada")
+	assert_false(bool(entradas[0]["movel"]), "speed 0 publica movel false (estatica)")
+	assert_true(bool(entradas[1]["movel"]), "speed 30 publica movel true")
+	assert_true(bool(entradas[2]["movel"]), "speed negativo tambem e movel (anda para a direita)")

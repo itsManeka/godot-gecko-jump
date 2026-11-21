@@ -11,7 +11,8 @@
     { "down": "ArrowLeft" },
     { "expect": { "state": "playing", "powerup.carga": { "eq": 0 } }, "timeout_ms": 6000 },
     { "up": "ArrowLeft" },
-    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "wait": 300 },
+    { "expect": { "state": "playing", "powerup.carga": { "eq": 0 } }, "timeout_ms": 1000 },
     { "down": "ArrowLeft" },
     { "expect": { "state": "lost" }, "timeout_ms": 6000 },
     { "up": "ArrowLeft" }
