@@ -56,6 +56,8 @@ var tutorial_revisao: TutorialCard = null
 var _card_partida_escondido: bool = false
 # Safe area (coordenadas logicas) da ultima apply_layout; usada pelo HUD (T4)
 var safe_area: Rect2 = Rect2()
+# Tamanho visivel da ultima apply_layout (f526 T5): area de candidatura do reaparecimento da Segunda chance
+var _tamanho_visivel: Vector2 = Vector2(180.0, 320.0)
 # Ultimo estado montado para a ponte do smoke (ver GameState); lido pelos testes sem JavaScriptBridge
 var ultimo_estado: Dictionary = {}
 # Dificuldade da partida (DifficultyState): nasce em _ready, zera a cada Stage nova (reload da cena). Consumidores leem o snapshot
@@ -153,6 +155,15 @@ func _ready():
 	player.power_up_coletado.connect(_coletar_power_up)
 	partida_iniciada.connect(_ativar_power_up_inicial)
 	_publicar_estado(GameState.STATE_MENU, true)
+	# f526 T5: o sinal da linha de derrota dispara durante o flush de queries da fisica; o resgate da
+	# Segunda chance reavalia colisao de plataformas (T4) e isso so e licito fora do flush. Conectado
+	# diferido o handler roda no fim do mesmo frame (o padrao do call_deferred do lose_game); derrota e
+	# resgate seguem atomicos no handler e nada muda para quem chama o metodo direto.
+	var check: Area2D = $CheckPlayer as Area2D
+	var ao_sair_da_faixa := Callable(self, "_on_CheckPlayer_body_exited")
+	if check.body_exited.is_connected(ao_sair_da_faixa):
+		check.body_exited.disconnect(ao_sair_da_faixa)
+	check.body_exited.connect(ao_sair_da_faixa, CONNECT_DEFERRED)
 
 	# Camada de toque de um polegar (criada por codigo; inerte fora de partida em curso)
 	touch_controls = TouchControls.new()
@@ -231,6 +242,7 @@ func _on_viewport_size_changed() -> void:
 # Sobrescreve a shape e a posicao literais da CollisionShape2D do Stage.tscn (a cena guarda so o valor de 180x320).
 func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 	safe_area = safe
+	_tamanho_visivel = visible_size
 	_limite_camera = CameraFollow.limite_y(visible_size.y)
 	var shape := RectangleShape2D.new()
 	shape.size = Vector2(visible_size.x, CHECK_THICKNESS)
@@ -554,11 +566,42 @@ func _notification(what: int) -> void:
 
 # Detecta quando o jogador sai da área de jogo (perde)
 func _on_CheckPlayer_body_exited(body):
+	# Corpo ja fora da arvore (a liberacao da Stage dispara o sinal no teardown): nada a decidir
+	if not body.is_inside_tree():
+		return
 	if !body.is_jumping() && !body.is_end():
-		# A regra do modo decide se cair encerra (Classico: sim, como sempre)
+		# A regra do modo decide se cair encerra (Classico: sim, como sempre); falso = carga intacta (Q5)
 		if not regra.ao_cair(_ctx_partida()):
 			return
+		# f526 T5: com carga guardada o reaparecimento substitui a derrota; sem carga ou sem
+		# candidata visivel (Q3) vale a derrota padrao
+		if _tentar_reaparecimento(body):
+			return
 		_encerrar_partida(body)
+
+# f526 T5: gasta a carga da Segunda chance na linha de derrota. O alvo vem do predicado puro de T3 (a
+# Stage nunca recalcula a escolha) e o reposicionamento e o teleporte de resgate de T4; a carga so sai
+# no caminho que de fato reaparece. Sem carga, sem candidata visivel (Q3: derrota padrao com a carga
+# guardada) ou regra do modo que nao encerra: false. Sem som, sem animacao e sem encerrar: a partida
+# segue em curso e a ponte ve carga 0 no mesmo frame do consumo.
+func _tentar_reaparecimento(body) -> bool:
+	if power_up_estado.carga() <= 0:
+		return false
+	var escolha: Dictionary = SegundaChanceAlvo.escolher(
+		ReachableColors.entradas_de_plataformas(Global.platforms),
+		body.global_position,
+		int(Global.cor_gecko),
+		_tamanho_visivel.x,
+		_tamanho_visivel.y,
+		player.scroll_efetivo()
+	)
+	if int(escolha["indice"]) < 0:
+		# Q3: sem candidata visivel a carga fica guardada e vale a derrota padrao
+		return false
+	body.reaparecer_sobre(escolha["entrada"]["plataforma"], int(escolha["cor"]))
+	power_up_estado.consumir_carga()
+	_publicar_estado(GameState.STATE_PLAYING, true) # f526 T5: carga 0 na ponte no mesmo frame do consumo
+	return true
 
 # Encerra a partida (derrota por queda ou fim por regra): grava o recorde so se a regra do modo permite
 func _encerrar_partida(body) -> void:
