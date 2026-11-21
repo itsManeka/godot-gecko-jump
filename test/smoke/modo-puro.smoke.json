@@ -1,0 +1,24 @@
+{
+  "path": "index.html?seed=524&semderrota=1&tutorial=visto&progresso=1.0",
+  "viewport": [360, 640],
+  "boot_ms": 6000,
+  "notes": "Modo Puro (sem power-ups). Seleciona Puro pelo seletor (Modo [180,250], seta direita [328,240], OK [180,518]; coordenadas da modos.smoke.json) e joga com ?progresso=1.0 (estagio e raridade de power-up mais altos): a ponte publica modo puro e powerup.ativo fica vazio durante a partida.",
+  "steps": [
+    { "expect": { "state": "menu", "modo": "classico" }, "timeout_ms": 3000 },
+    { "click": [180, 250] },
+    { "wait": 300 },
+    { "click": [328, 240] },
+    { "wait": 300 },
+    { "click": [180, 518] },
+    { "wait": 300 },
+    { "expect": { "state": "menu", "modo": "puro" }, "timeout_ms": 3000 },
+    { "shots": 1, "name": "menu-puro", "moving": false },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "expect": { "state": "playing", "modo": "puro", "powerup.ativo": "" }, "timeout_ms": 3000 },
+    { "wait": 4000 },
+    { "expect": { "modo": "puro", "powerup.ativo": "" }, "timeout_ms": 3000 },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 }
+  ]
+}

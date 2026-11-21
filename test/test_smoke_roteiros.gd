@@ -29,7 +29,9 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-1170x2532",
 	"retrato-720x1280",
 ]
-const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga", "relogio.restante"]
+const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga", "modo", "relogio.restante"]
+# Roteiros dos modos de jogo (seletor, Puro, Contra o tempo): fora de ROTEIROS porque o do Tempo espera `lost` pelo relogio.
+const ROTEIROS_MODOS: Array[String] = ["modos", "modo-puro", "modo-tempo"]
 const ROTEIROS_SEMDERROTA: Array[String] = [
 	"camaleao",
 	"desacelera",
@@ -451,6 +453,98 @@ func test_roteiro_powerup_real_ativa_com_o_nome_e_expira_dentro_da_duracao() -> 
 			assert_true(typeof(restante) == TYPE_DICTIONARY and restante.has("gt"), "%s: a ativacao confere powerup.restante gt 0" % nome)
 		if i_expira >= 0:
 			assert_gte(int(passos[i_expira].get("timeout_ms", 0)), DURACAO_POWERUP_MS, "%s: a expiracao deve ter timeout_ms >= a duracao de 5 s" % nome)
+
+
+func _valores_expect(nome: String, chave: String) -> Array:
+	var out: Array = []
+	for passo in _expects(nome):
+		if passo["expect"].has(chave):
+			out.append(passo["expect"][chave])
+	return out
+
+
+func test_roteiros_dos_modos_parseiam_com_seed_tutorial_e_so_chaves_publicadas() -> void:
+	for nome in ROTEIROS_MODOS:
+		_checar_roteiro_com_seed(nome)
+		var caminho: String = str(_carregar(nome).get("path", ""))
+		assert_true("tutorial=visto" in caminho, "%s: o roteiro pula o tutorial" % nome)
+		assert_gt(_expects(nome).size(), 0, "%s: deve ter ao menos um passo expect" % nome)
+		for passo in _expects(nome):
+			assert_gte(int(passo.get("timeout_ms", 0)), TIMEOUT_MIN_APOS_QUEDA_MS, "%s: todo expect deve ter timeout_ms >= 3000" % nome)
+			for chave in passo["expect"].keys():
+				assert_true(CHAVES_PUBLICADAS.has(str(chave)), "%s: chave do expect publicada pela ponte: %s" % [nome, str(chave)])
+				var valor: Variant = passo["expect"][chave]
+				if typeof(valor) == TYPE_DICTIONARY:
+					assert_eq(valor.size(), 1, "%s: o objeto de comparacao tem um operador" % nome)
+					for operador in valor.keys():
+						assert_true(OPERADORES.has(str(operador)), "%s: operador eq/ne/gt/gte/lt/lte" % nome)
+
+
+func test_modos_smoke_cicla_classico_puro_tempo_teste_e_volta() -> void:
+	var caminho: String = str(_carregar("modos").get("path", ""))
+	assert_true("modos=teste" in caminho, "o roteiro dos modos liga a lista com teste")
+	var ids: Array = []
+	for passo in _expects("modos"):
+		var exigencia: Dictionary = passo["expect"]
+		if exigencia.get("state", "") == "menu" and exigencia.has("modo") and (ids.is_empty() or ids[ids.size() - 1] != exigencia["modo"]):
+			ids.append(exigencia["modo"])
+	assert_eq(ids, ["classico", "puro", "tempo", "teste", "classico"], "o roteiro percorre classico -> puro -> tempo -> teste e volta ao primeiro")
+	# o registro cicla igual nas duas direcoes (seta direita e esquerda) com a lista de debug
+	var lista: Array[GameMode] = GameModes.lista(true)
+	var modo: GameMode = lista[0]
+	var vistos: Array = []
+	for i in lista.size() + 1:
+		vistos.append(String(modo.id))
+		modo = GameModes.proximo(modo, lista)
+	assert_eq(vistos, ["classico", "puro", "tempo", "teste", "classico"], "seta direita: classico -> puro -> tempo -> teste -> classico")
+	var voltando: Array = []
+	modo = lista[0]
+	for i in lista.size() + 1:
+		voltando.append(String(modo.id))
+		modo = GameModes.anterior(modo, lista)
+	assert_eq(voltando, ["classico", "teste", "tempo", "puro", "classico"], "seta esquerda: classico -> teste -> tempo -> puro -> classico")
+
+
+func test_roteiro_puro_joga_com_modo_puro_e_powerup_vazio() -> void:
+	var nome: String = "modo-puro"
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_true("progresso=" in caminho, "o roteiro puro adianta o progresso (raridade de power-up alta)")
+	assert_true("semderrota=1" in caminho, "o roteiro puro liga semderrota")
+	assert_true(_valores_expect(nome, "modo").has("puro"), "o roteiro confere modo puro")
+	var vazios: int = 0
+	for valor in _valores_expect(nome, "powerup.ativo"):
+		assert_eq(valor, "", "no Puro powerup.ativo so e esperado vazio")
+		vazios += 1
+	assert_gt(vazios, 0, "o roteiro puro confere powerup.ativo vazio")
+
+
+func test_roteiro_tempo_usa_tempo_curto_e_termina_em_lost_com_gecko_vivo() -> void:
+	var nome: String = "modo-tempo"
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	var idx: int = caminho.find("tempo=")
+	assert_gte(idx, 0, "o roteiro tempo passa ?tempo=<s>")
+	var resto: String = caminho.substr(idx + "tempo=".length())
+	var fim: int = resto.find("&")
+	var segundos: String = resto if fim < 0 else resto.substr(0, fim)
+	assert_true(segundos.is_valid_float() and segundos.to_float() > 0.0 and segundos.to_float() <= 10.0, "o ?tempo= e um relogio curto (1 a 10 s)")
+	assert_true("semderrota=1" in caminho, "sem derrota por queda: so o relogio encerra a partida")
+	assert_true(_valores_expect(nome, "modo").has("tempo"), "o roteiro confere modo tempo")
+	var i_playing: int = -1
+	var i_lost: int = -1
+	var passos := _passos(nome)
+	for i in passos.size():
+		if not passos[i].has("expect"):
+			continue
+		var exigencia: Dictionary = passos[i]["expect"]
+		if i_playing < 0 and exigencia.get("state", "") == "playing" and exigencia.has("relogio.restante"):
+			i_playing = i
+		elif i_playing >= 0 and i_lost < 0 and exigencia.get("state", "") == "lost":
+			i_lost = i
+	assert_gte(i_playing, 0, "deve haver expect playing com relogio.restante")
+	assert_gt(i_lost, i_playing, "o expect lost vem depois do playing")
+	if i_lost >= 0:
+		assert_eq(passos[i_lost]["expect"].get("player.alive", null), true, "o fim por relogio e com o gecko vivo")
+		assert_gte(int(passos[i_lost].get("timeout_ms", 0)), int(segundos.to_float() * 1000.0), "o timeout do lost cobre o relogio curto")
 
 
 func test_nome_de_powerup_invalido_reprova() -> void:
