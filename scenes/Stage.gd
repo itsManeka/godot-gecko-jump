@@ -95,6 +95,9 @@ var _posicao_publicada: Vector2i = Vector2i.ZERO
 var _powerup_publicado: Dictionary = {}
 # y do limite de topo da camera (fracao da altura visivel em CameraFollow); recalculado a cada apply_layout
 var _limite_camera: float = 0.0
+# Relogio da partida em segundos (f524 T3): membro da Stage (nunca da regra, que e instancia reusada); nasce em 0 a cada
+# Stage nova. So corre com a partida iniciada, no delta da fisica (pausa congela a arvore; power-up nao o escala).
+var tempo_partida: float = 0.0
 
 # Referencias aos nós da interface e jogo
 @onready var animation = $AnimationPlayer
@@ -347,6 +350,8 @@ func _physics_process(delta: float) -> void:
 	# O mesmo vale para o `aviso` (pulso da moldura comecou ou terminou)
 	if ultimo_estado.get("state", "") == GameState.STATE_LOST:
 		return
+	# Relogio da partida: antes da regra, para o tick que chega ao limite encerrar no mesmo tick (parado apos `lost`: o return acima)
+	tempo_partida += delta if Global.is_iniciado() else 0.0
 	# Fim de partida pela regra do modo: so com a partida iniciada (no menu nunca dispara)
 	if Global.is_iniciado() and not player.is_end() and regra.fim_por_regra(_ctx_partida()):
 		_encerrar_partida(player)
@@ -620,7 +625,7 @@ func _encerrar_partida(body) -> void:
 
 # Snapshot da partida entregue a regra do modo
 func _ctx_partida() -> Dictionary:
-	return {CTX_PONTOS: points, CTX_INICIADO: Global.is_iniciado()}
+	return {CTX_PONTOS: points, CTX_INICIADO: Global.is_iniciado(), CTX_TEMPO: tempo_partida}
 
 # Reinicia o jogo após a animação de perda
 func _on_animation_end():
