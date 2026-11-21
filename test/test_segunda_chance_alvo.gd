@@ -362,7 +362,7 @@ func test_c648_entradas_de_plataformas_acrescentam_desmoronando_e_pisca_oculta_c
 func test_movel_da_cor_mais_proxima_perde_para_estatica_da_cor_mais_distante() -> void:
 	# Prova de mutacao (verify-wave --mutate revertendo o desempate de faixa em escolher para a _mais_proxima
 	# antiga): este it falha em "[0] expected to equal [1]:  havendo estatica da cor na faixa, a movel mais
-	# proxima fica fora da escolha: vence a estatica" (at line 372) — a escolhida volta a ser a movel mais
+	# proxima fica fora da escolha: vence a estatica" — a escolhida volta a ser a movel mais
 	# proxima (y=310), que sai de baixo do gecko (ele nao e carregado), derruba de novo e gasta a carga sem
 	# salvar (o achado C1 do game-review que motivou a correcao).
 	var movel: Dictionary = _entrada(310.0, 90.0, AZUL, false, false, false, true)
