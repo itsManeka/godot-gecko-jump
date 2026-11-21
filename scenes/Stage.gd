@@ -93,6 +93,8 @@ var _alpha_publicado: float = 0.0
 var _posicao_publicada: Vector2i = Vector2i.ZERO
 # Campo `powerup` (ativo, restante em segundos inteiros, carga) da ultima publicacao: a mudanca de segundo republica 1x
 var _powerup_publicado: Dictionary = {}
+# Relogio restante (inteiro, segundos para cima) da ultima publicacao (f524 T5): a mudanca de segundo republica 1x
+var _relogio_publicado: int = 0
 # y do limite de topo da camera (fracao da altura visivel em CameraFollow); recalculado a cada apply_layout
 var _limite_camera: float = 0.0
 # Relogio da partida em segundos (f524 T3): membro da Stage (nunca da regra, que e instancia reusada); nasce em 0 a cada
@@ -361,6 +363,7 @@ func _physics_process(delta: float) -> void:
 		or _aviso_atual() != _aviso_publicado
 		or _alpha_atual() != _alpha_publicado
 		or _powerup_atual() != _powerup_publicado
+		or _relogio_atual() != _relogio_publicado
 	):
 		_republicar_estado()
 		return
@@ -670,6 +673,13 @@ func _powerup_atual() -> Dictionary:
 		"carga": power_up_estado.carga(),
 	}
 
+# Relogio restante do Contra o tempo (f524 T5): max(0, limite - tempo) para cima, inteiro. Fora do modo `tempo` e 0
+# (o campo nunca muda nos outros modos). Le o limite a cada chamada (Global.limite_tempo_s: seam ou .tres).
+func _relogio_atual() -> int:
+	if Global.get_modo_jogo() != GameModes.ID_TEMPO:
+		return 0
+	return ceili(maxf(0.0, Global.limite_tempo_s() - tempo_partida))
+
 # Adiciona um ponto à pontuação e atualiza a interface
 func add_point():
 	# points inicia em -1: o pouso inicial na plataforma de partida leva a 0 e nao conta; o 1o ponto real leva 0 -> 1
@@ -709,6 +719,7 @@ func _publicar_estado(state: String, alive: bool) -> void:
 	_posicao_publicada = _posicao_atual()
 	_alpha_publicado = _alpha_atual() if state != GameState.STATE_LOST else 0.0
 	_powerup_publicado = _powerup_atual()
+	_relogio_publicado = _relogio_atual()
 	ultimo_estado = GameState.build(
 		maxi(points, 0),
 		Global.get_best_score(),
@@ -726,5 +737,6 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		float(_powerup_publicado["restante"]),
 		int(_powerup_publicado["carga"]),
 		String(Global.get_modo_jogo()),
+		_relogio_publicado,
 	)
 	GameState.publish(ultimo_estado)

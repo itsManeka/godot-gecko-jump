@@ -228,3 +228,18 @@ func test_publish_no_headless_e_no_op() -> void:
 	# O ambiente do GUT (headless) nao e web: a trava deve barrar, e publish nao chama JavaScriptBridge nem lanca
 	assert_false(GameState.deve_publicar(OS.has_feature("web"), OS.is_debug_build()), "headless nao publica")
 	GameState.publish(GameState.build(1, 2, "playing", true))
+
+
+func test_C695_build_publica_relogio_restante_zero_por_padrao_e_chave_publicada() -> void:
+	# (a) default: sem o argumento, relogio.restante 0 (int); chamadas antigas seguem com o campo zerado
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	assert_eq((padrao["relogio"] as Dictionary)["restante"], 0, "C695: relogio.restante 0 por padrao")
+	assert_eq(typeof((padrao["relogio"] as Dictionary)["restante"]), TYPE_INT, "C695: relogio.restante e int")
+	# (b) comum: valor passado (ultimo parametro) aparece no campo
+	var tempo: Dictionary = GameState.build(7, 12, "playing", true, 100, 100, false, 2, false, 0.0, 0.0, 0.0, "", 0.0, 0, "tempo", 42)
+	assert_eq((tempo["relogio"] as Dictionary)["restante"], 42, "C695: relogio.restante 42 publicado")
+	# (c) degenerado: o campo novo nao altera os antigos
+	assert_eq(tempo["modo"], "tempo", "C695: modo segue")
+	assert_eq(tempo["score"], 7, "C695: score segue")
+	var chaves: Array = load("res://test/test_smoke_roteiros.gd").get_script_constant_map()["CHAVES_PUBLICADAS"]
+	assert_true(chaves.has("relogio.restante"), "C695: relogio.restante esta em CHAVES_PUBLICADAS")

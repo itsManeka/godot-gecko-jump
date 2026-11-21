@@ -274,3 +274,44 @@ func test_c694_recorde_do_tempo_so_substitui_por_partida_melhor() -> void:
 	Global.iniciado = false
 	await _partida_ate_o_fim(8)
 	assert_eq(keeper.best, 8, "partida melhor substitui o recorde")
+
+
+# Espiao: cada publicacao cria um Dictionary novo em ultimo_estado; a identidade do objeto conta as republicacoes
+func test_C696_relogio_republica_1_vez_por_segundo_no_tempo() -> void:
+	Global.tempo_inicial_s = 1000.0
+	await _novo_stage()
+	_iniciar()
+	var inicial: Dictionary = _stage.ultimo_estado
+	_tick(3)
+	assert_same(_stage.ultimo_estado, inicial, "C696: 3 frames dentro do 1o segundo nao republicam")
+	_tick(1)
+	assert_not_same(_stage.ultimo_estado, inicial, "C696: o 4o frame (1 s) republica uma vez")
+	assert_eq((_stage.ultimo_estado["relogio"] as Dictionary)["restante"], 999, "C696: limite 1000 - 1 s = 999 publicados")
+	var no_segundo_59: Dictionary = _stage.ultimo_estado
+	_tick(3)
+	assert_same(_stage.ultimo_estado, no_segundo_59, "C696: 3 frames no segundo 59 nao republicam")
+	_tick(1)
+	assert_not_same(_stage.ultimo_estado, no_segundo_59, "C696: a virada para 998 republica uma vez")
+	assert_eq((_stage.ultimo_estado["relogio"] as Dictionary)["restante"], 998, "C696: limite 1000 - 2 s = 998 publicados")
+
+
+func test_C696_classico_publica_zero_e_nunca_muda() -> void:
+	Global.tempo_inicial_s = 1000.0
+	Global.set_modo_jogo(GameModes.ID_CLASSICO, false)
+	await _novo_stage()
+	_iniciar()
+	var inicial: Dictionary = _stage.ultimo_estado
+	assert_eq((inicial["relogio"] as Dictionary)["restante"], 0, "C696: Classico publica relogio 0")
+	_tick(8)
+	assert_same(_stage.ultimo_estado, inicial, "C696: Classico nunca republica por relogio")
+
+
+func test_C696_puro_publica_zero_e_nunca_muda() -> void:
+	Global.tempo_inicial_s = 1000.0
+	Global.set_modo_jogo(GameModes.ID_PURO, false)
+	await _novo_stage()
+	_iniciar()
+	var inicial: Dictionary = _stage.ultimo_estado
+	assert_eq((inicial["relogio"] as Dictionary)["restante"], 0, "C696: Puro publica relogio 0")
+	_tick(8)
+	assert_same(_stage.ultimo_estado, inicial, "C696: Puro nunca republica por relogio")

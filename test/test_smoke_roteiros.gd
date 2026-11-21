@@ -29,7 +29,7 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-1170x2532",
 	"retrato-720x1280",
 ]
-const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga"]
+const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga", "relogio.restante"]
 const ROTEIROS_SEMDERROTA: Array[String] = [
 	"camaleao",
 	"desacelera",

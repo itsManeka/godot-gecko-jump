@@ -20,7 +20,8 @@ const STATE_TUTORIAL_FECHADO := "fechado"
 # `player.x`/`player.y` (int, pixels logicos arredondados de `player_x`/`player_y`) e
 # `powerup.ativo` (nome do temporizado ativo ou ""), `powerup.restante` (int, segundos restantes arredondados para
 # cima; 0 sem ativo) e `powerup.carga` (int, 0 ou 1) e
-# `modo` (string, id do modo de jogo atual; padrao "classico", o Classico e o ultimo parametro da lista)
+# `modo` (string, id do modo de jogo atual; padrao "classico") e `relogio.restante` (int, segundos restantes do
+# Contra o tempo arredondados para cima; 0 fora do modo `tempo`; ultimo parametro, padrao 0)
 static func build(
 	score: int,
 	best: int,
@@ -37,7 +38,8 @@ static func build(
 	powerup_ativo: String = "",
 	powerup_restante: float = 0.0,
 	powerup_carga: int = 0,
-	modo: String = "classico"
+	modo: String = "classico",
+	relogio_restante: int = 0
 ) -> Dictionary:
 	return {
 		"score": score,
@@ -49,6 +51,7 @@ static func build(
 		"dificuldade": {"estagio": estagio, "aviso": aviso, "alpha": alpha},
 		"powerup": {"ativo": powerup_ativo, "restante": ceili(powerup_restante), "carga": powerup_carga},
 		"modo": modo,
+		"relogio": {"restante": relogio_restante},
 	}
 
 # Decisor puro da trava de publicacao: so web de debug publica (release ignora; headless/desktop nao tem web)
