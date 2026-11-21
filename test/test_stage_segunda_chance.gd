@@ -103,6 +103,15 @@ func _coletar_carga() -> void:
 
 # Plataforma estatica e plana de candidatura: cor e posicao do teste, sem piscar/ciclo/desmoronar
 func _plataforma(cor: Enums.COLOR, x: float, y: float) -> Platform:
+	var plat: Platform = _plataforma_solta(cor, x, y)
+	# Teto: a candidata precisa da propria cor na linha de cima (predicado de saida, Q6 c). Marcada desmoronada
+	# para nunca ser candidata nem colidir; so cobre a linha de cima da candidata do teste.
+	var teto: Platform = _plataforma_solta(cor, x, y - InitialRows.ESPACAMENTO)
+	teto.desmoronada = true
+	return plat
+
+
+func _plataforma_solta(cor: Enums.COLOR, x: float, y: float) -> Platform:
 	var plat: Platform = load(PLATFORM_SCENE).instantiate()
 	plat.set_color(cor)
 	add_child_autofree(plat)

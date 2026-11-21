@@ -66,8 +66,21 @@ func _entrada(
 	}
 
 
-func _escolher(entradas: Array, cor_gecko: int = AZUL, scroll: float = 0.0, gecko: Vector2 = GECKO) -> Dictionary:
+# Teto de cada entrada: plataforma da mesma cor na linha de cima (predicado de saida, Q6 c), marcada desmoronada
+# para nunca ser candidata. Acrescentada ao FIM da lista: os indices das entradas do teste nao mudam.
+func _com_teto(entradas: Array) -> Array:
+	var lista: Array = entradas.duplicate()
+	for e in entradas:
+		lista.append(_entrada(float(e["y"]) - InitialRows.ESPACAMENTO, 90.0, int(e["cor"]), false, true))
+	return lista
+
+
+func _escolher_cru(entradas: Array, cor_gecko: int = AZUL, scroll: float = 0.0, gecko: Vector2 = GECKO) -> Dictionary:
 	return SegundaChanceAlvo.escolher(entradas, gecko, cor_gecko, LARGURA, ALTURA, scroll)
+
+
+func _escolher(entradas: Array, cor_gecko: int = AZUL, scroll: float = 0.0, gecko: Vector2 = GECKO) -> Dictionary:
+	return _escolher_cru(_com_teto(entradas), cor_gecko, scroll, gecko)
 
 
 # Piscante com fase fixada, no padrao de test_cor_alcancavel_pisca.gd (fase 3,5 = invisivel no ciclo do E3).
@@ -258,24 +271,55 @@ func test_c647_lista_vazia_ou_so_com_invalidas_devolve_nenhuma_sem_erro_e_sem_al
 	assert_eq(int(vazio["indice"]), -1, "lista vazia: nenhuma")
 	assert_null(vazio["entrada"], "sem entrada escolhida")
 	assert_eq(int(vazio["cor"]), -1, "sem cor a assumir")
-	var invalidas: Array = [
-		_entrada(-1.0, 90.0, AZUL),
-		_entrada(ALTURA + 1.0, 90.0, AZUL),
-		_entrada(200.0, -1.0, AZUL),
-		_entrada(200.0, LARGURA + 1.0, AZUL),
-		_entrada(310.0, 90.0, AZUL, true),
-		_entrada(310.0, 90.0, AZUL, false, true),
-		_entrada(310.0, 90.0, AZUL, false, false, true),
-	]
+	var invalidas: Array = _com_teto(
+		[
+			_entrada(-1.0, 90.0, AZUL),
+			_entrada(ALTURA + 1.0, 90.0, AZUL),
+			_entrada(200.0, -1.0, AZUL),
+			_entrada(200.0, LARGURA + 1.0, AZUL),
+			_entrada(310.0, 90.0, AZUL, true),
+			_entrada(310.0, 90.0, AZUL, false, true),
+			_entrada(310.0, 90.0, AZUL, false, false, true),
+		]
+	)
 	var antes: Array = invalidas.duplicate(true)
-	var so_invalidas: Dictionary = _escolher(invalidas, AZUL, SCROLL)
+	var so_invalidas: Dictionary = _escolher_cru(invalidas, AZUL, SCROLL)
 	assert_eq(int(so_invalidas["indice"]), -1, "so candidatas invalidas: nenhuma, sem erro")
 	assert_eq(invalidas, antes, "a lista de entradas nao foi alterada")
-	var mista: Array = [_entrada(200.0, 90.0, VERDE), _entrada(310.0, 90.0, AZUL, true)]
+	var mista: Array = _com_teto([_entrada(200.0, 90.0, VERDE), _entrada(310.0, 90.0, AZUL, true)])
 	var antes_mista: Array = mista.duplicate(true)
-	var res: Dictionary = _escolher(mista)
+	var res: Dictionary = _escolher_cru(mista)
 	assert_eq(int(res["indice"]), 0, "a candidata valida entra no lugar da invalida")
 	assert_eq(mista, antes_mista, "escolher nao altera a lista nem os dicionarios dela")
+
+
+# --- Saida do reaparecimento (Q6 c): a candidata precisa da cor dela na linha de cima ---------------------------
+
+
+func test_candidata_sem_a_cor_na_linha_de_cima_e_descartada_em_favor_de_outra_com_saida() -> void:
+	var esp: float = InitialRows.ESPACAMENTO
+	# A mais proxima (y=250) so tem VERDE acima; a mais distante (y=100) tem AZUL acima: so ela tem saida
+	var entradas: Array = [
+		_entrada(250.0, 90.0, AZUL),
+		_entrada(250.0 - esp, 90.0, VERDE),
+		_entrada(100.0, 90.0, AZUL),
+		_entrada(100.0 - esp, 90.0, AZUL),
+	]
+	var res: Dictionary = _escolher_cru(entradas)
+	assert_eq(int(res["indice"]), 2, "sem a cor na linha de cima a mais proxima fica de fora: a de y=100 tem saida")
+	# Fallback: a candidata de outra cor tambem precisa da propria cor acima
+	var fallback: Array = [
+		_entrada(250.0, 90.0, VERDE),
+		_entrada(250.0 - esp, 90.0, AMARELO),
+		_entrada(100.0, 90.0, AMARELO),
+		_entrada(100.0 - esp, 90.0, AMARELO),
+	]
+	var res_fallback: Dictionary = _escolher_cru(fallback)
+	assert_true(bool(res_fallback["fallback"]), "sem AZUL na tela vale o fallback")
+	assert_eq(int(res_fallback["indice"]), 2, "no fallback a candidata sem a propria cor acima tambem fica de fora")
+	# Nenhuma com saida: nenhuma (derrota padrao em quem chama)
+	var sem_saida: Dictionary = _escolher_cru([_entrada(250.0, 90.0, AZUL), _entrada(250.0 - esp, 90.0, VERDE)])
+	assert_eq(int(sem_saida["indice"]), -1, "so candidata sem a cor na linha de cima: nenhuma")
 
 
 # --- C648: chaves de estado em entradas_de_plataformas -------------------------------------------------------------

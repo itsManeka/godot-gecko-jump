@@ -5,7 +5,8 @@ extends RefCounted
 # de cena, recebe tudo por parametro (entradas ja convertidas, posicao da queda, cor do gecko, area jogavel e
 # scroll vigente) e nunca altera os argumentos.
 #
-# Regra unica (Q4 do G1): entre as candidatas visiveis, solidas e com tempo de tela suficiente, a de menor
+# Regra unica (Q4 do G1): entre as candidatas visiveis, solidas, com tempo de tela suficiente e com a cor dela na
+# linha de cima (predicado de saida, Q6 c), a de menor
 # distancia euclidiana ao ponto da queda — de preferencia da cor do gecko; sem nenhuma da cor, a mais proxima de
 # qualquer cor, e o resultado informa a cor a assumir (fallback do ADR 0014). Empate exato de distancia: menor y
 # (mais alta), depois menor x, depois menor cor — a ordem da lista nunca decide. Sem nenhuma candidata:
@@ -27,7 +28,7 @@ static func escolher(
 ) -> Dictionary:
 	var candidatas: Array = []
 	for i in range(entradas.size()):
-		if _e_candidata(entradas[i], largura, altura_visivel, scroll):
+		if _e_candidata(entradas[i], entradas, largura, altura_visivel, scroll):
 			candidatas.append(i)
 	if candidatas.is_empty():
 		return _nenhuma()
@@ -45,9 +46,11 @@ static func _nenhuma() -> Dictionary:
 
 
 # Candidata: dentro da tela (y em [0, altura_visivel], x em [0, largura]), solida (nem desmoronada, nem
-# desmoronando, nem invisivel por piscar) e com tempo ate sair da tela >= janela minima. Scroll 0 = tempo
-# infinito (nunca descarta, sem divisao por zero).
-static func _e_candidata(e: Dictionary, largura: float, altura_visivel: float, scroll: float) -> bool:
+# desmoronando, nem invisivel por piscar), com tempo ate sair da tela >= janela minima e com plataforma da sua
+# cor na linha de cima. Scroll 0 = tempo infinito (nunca descarta, sem divisao por zero).
+static func _e_candidata(
+	e: Dictionary, entradas: Array, largura: float, altura_visivel: float, scroll: float
+) -> bool:
 	var y: float = float(e["y"])
 	var x: float = float(e["x"])
 	if y < 0.0 or y > altura_visivel:
@@ -56,7 +59,19 @@ static func _e_candidata(e: Dictionary, largura: float, altura_visivel: float, s
 		return false
 	if bool(e.get("desmoronada", false)) or bool(e.get("desmoronando", false)) or bool(e.get("pisca_oculta", false)):
 		return false
-	return _tempo_ate_sair(y, altura_visivel, scroll) >= _janela_minima(scroll)
+	if _tempo_ate_sair(y, altura_visivel, scroll) < _janela_minima(scroll):
+		return false
+	return _tem_cor_na_linha_de_cima(e, entradas, largura, scroll)
+
+
+# Saida do reaparecimento (Q6 c): a linha de cima da candidata tem plataforma da cor da propria candidata (a cor
+# que o gecko tera ali) alcancavel na janela do pulo, pela mesma regra do preditor de cor (ReachableColors). Sem
+# isso o gecko reapareceria sobre uma plataforma da qual so se cai.
+static func _tem_cor_na_linha_de_cima(e: Dictionary, entradas: Array, largura: float, scroll: float) -> bool:
+	var cores: Array = ReachableColors.coletar_cores_linha_acima(
+		entradas, float(e["y"]), largura, ReachableColors.tempo_de_pulo(scroll), PlayerFisica.ESPERA_MAXIMA_S
+	)
+	return cores.has(int(e["cor"]))
 
 
 # Segundos que a plataforma em y ainda fica na tela descendo `scroll` px/s; scroll 0 = INF (nunca sai).
