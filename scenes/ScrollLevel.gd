@@ -34,7 +34,12 @@ func _snapshot() -> DifficultySnapshot:
 
 # Fator vigente do scroll (power-up de desaceleracao); sem estado injetado = 1.0 (neutro)
 func _fator_scroll() -> float:
-	return power_up_estado.fator_scroll() if power_up_estado != null else 1.0
+	var fator_power_up: float = power_up_estado.fator_scroll() if power_up_estado != null else 1.0
+	return fator_power_up * fator_forcado
+
+# Fator forcado pela regra do modo (f527: Zen = 0.0 zera so a curva; GameModeRule.fator_scroll_forcado, atribuido pela
+# Stage em _ready e na troca de modo). Padrao 1.0 = neutro. O avanco da camera (avancar_camera) nao passa por ele.
+var fator_forcado: float = 1.0
 
 # Quantas linhas do fluxo já nasceram (uma a cada InitialRows.ESPACAMENTO px de scroll)
 var _rows_spawned: int = 0

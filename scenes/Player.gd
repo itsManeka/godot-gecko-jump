@@ -213,7 +213,10 @@ func scroll_efetivo() -> float:
 	if dificuldade == null:
 		return 0.0
 	var fator: float = power_up_estado.fator_scroll() if power_up_estado != null else 1.0
-	return DifficultySnapshot.de(dificuldade).get_scroll() * fator
+	return DifficultySnapshot.de(dificuldade).get_scroll() * fator * fator_scroll_forcado
+
+# Fator forcado pela regra do modo (f527: Zen = 0.0), o mesmo que a Stage entrega ao ScrollLevel; 1.0 = neutro
+var fator_scroll_forcado: float = 1.0
 
 # Retorna se o jogador está atualmente pulando
 func is_jumping() -> bool:

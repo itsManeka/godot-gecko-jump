@@ -158,6 +158,7 @@ func _ready():
 		scroll_level.power_ups_habilitados = power_ups_habilitados
 	# O Player le o scroll vigente da mesma dificuldade para prever a cor da janela de chegada
 	player.dificuldade = dificuldade
+	_aplicar_fator_scroll_forcado()
 	player.power_up_estado = power_up_estado
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
@@ -510,6 +511,7 @@ func _fechar_modos(modo: GameMode) -> void:
 	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
 	if scroll_level != null:
 		scroll_level.power_ups_habilitados = power_ups_habilitados
+	_aplicar_fator_scroll_forcado()
 	lastscore.text = "Last Score: " + str(Global.get_last_score())
 	bestscore.text = "Best Score: " + str(Global.get_best_score())
 	modo_botao.definir_modo(atual)
@@ -518,6 +520,15 @@ func _fechar_modos(modo: GameMode) -> void:
 		_mostrar_menu(true)
 		modo_botao.focar(true)
 	_republicar_estado()
+
+# Entrega o fator de scroll da regra do modo (f527) ao ScrollLevel e ao Player (a previsao de cor do pouso usa o
+# scroll que de fato move o mundo). Reaplicado na troca de modo do menu, sem reload.
+func _aplicar_fator_scroll_forcado() -> void:
+	var fator: float = regra.fator_scroll_forcado()
+	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
+	if scroll_level != null:
+		scroll_level.fator_forcado = fator
+	player.fator_scroll_forcado = fator
 
 # Voltar: fecha a tela e devolve o menu (foco no botao Opcoes) ou o overlay de pausa (foco em Opcoes, ainda pausado)
 func _voltar_opcoes() -> void:
