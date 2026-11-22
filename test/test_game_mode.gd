@@ -24,6 +24,45 @@ func test_game_mode_rule_defaults_seguem_o_jogo_de_hoje() -> void:
 	assert_true(regra.power_ups_habilitados(), "contrato: power-ups habilitados no padrao")
 
 
+# C707 [mutacao]: defaults dos hooks novos em instancia nua (mutar um default faz este teste falhar).
+func test_c707_defaults_dos_hooks_novos_em_instancia_nua() -> void:
+	var regra := GameModeRule.new()
+	assert_eq(regra.fator_scroll_forcado(), 1.0, "C707: scroll forcado padrao e 1.0 (curva normal)")
+	assert_false(regra.reposiciona_ao_cair(), "C707: padrao nao reposiciona ao cair")
+	assert_true(regra.mostra_recorde(), "C707: padrao mostra o recorde")
+
+
+# C708: Classico, Puro e Tempo sem os overrides que repetiam o default mantem o comportamento de antes.
+func test_c708_classico_puro_tempo_mantem_comportamento_apos_limpeza() -> void:
+	var antigo_tempo := Global.tempo_inicial_s
+	Global.tempo_inicial_s = 7.5
+	var classico := ClassicoRule.new()
+	var puro := PuroRule.new()
+	var tempo := TempoRule.new()
+	for par in [["Classico", classico], ["Puro", puro], ["Tempo", tempo]]:
+		var regra: GameModeRule = par[1]
+		assert_true(regra.ao_cair({}), "C708: %s encerra ao cair" % par[0])
+		assert_eq(regra.pontuar(3), 3, "C708: %s pontua direto" % par[0])
+		assert_true(regra.grava_recorde(), "C708: %s grava recorde" % par[0])
+	assert_true(classico.power_ups_habilitados(), "C708: Classico habilita power-ups")
+	assert_false(puro.power_ups_habilitados(), "C708: Puro desabilita power-ups")
+	assert_true(tempo.power_ups_habilitados(), "C708: Tempo habilita power-ups")
+	assert_false(classico.fim_por_regra({PartidaCtx.TEMPO: 999.0}), "C708: Classico sem fim por regra com o relogio alto")
+	assert_false(puro.fim_por_regra({PartidaCtx.TEMPO: 999.0}), "C708: Puro sem fim por regra com o relogio alto")
+	assert_false(tempo.fim_por_regra({PartidaCtx.TEMPO: 0.0}), "C708: Tempo nao termina com relogio zerado")
+	assert_true(tempo.fim_por_regra({PartidaCtx.TEMPO: 7.5}), "C708: Tempo termina com relogio no limite")
+	Global.tempo_inicial_s = antigo_tempo
+
+
+# C709: os tres hooks novos tem o valor default nos modos antigos (nenhum reposiciona nem esconde recorde).
+func test_c709_modos_antigos_herdam_os_hooks_novos_com_default() -> void:
+	for par in [["Classico", ClassicoRule.new()], ["Puro", PuroRule.new()], ["Tempo", TempoRule.new()]]:
+		var regra: GameModeRule = par[1]
+		assert_eq(regra.fator_scroll_forcado(), 1.0, "C709: %s mantem o scroll da curva" % par[0])
+		assert_false(regra.reposiciona_ao_cair(), "C709: %s nao reposiciona ao cair" % par[0])
+		assert_true(regra.mostra_recorde(), "C709: %s mostra o recorde" % par[0])
+
+
 # GameMode guarda os dados de exibicao e a regra do hook (sem cena: puro dado + regra).
 func test_game_mode_guarda_dados_e_regra() -> void:
 	var regra := GameModeRule.new()

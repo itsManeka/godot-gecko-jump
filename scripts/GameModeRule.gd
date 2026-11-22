@@ -28,3 +28,18 @@ func grava_recorde() -> bool:
 # Se as plataformas podem nascer com power-up (gancho copiado ao ScrollLevel uma vez no _ready da Stage).
 func power_ups_habilitados() -> bool:
 	return true
+
+
+# Multiplicador do scroll forcado da curva (1.0 = scroll normal; 0.0 = mundo parado).
+func fator_scroll_forcado() -> float:
+	return 1.0
+
+
+# Ao cair (sem encerrar), reposiciona o gecko na ultima plataforma pisada em vez de deixar cair.
+func reposiciona_ao_cair() -> bool:
+	return false
+
+
+# Se o menu mostra o recorde do modo (Best/Last e a faixa de placar).
+func mostra_recorde() -> bool:
+	return true
