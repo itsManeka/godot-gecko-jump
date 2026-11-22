@@ -161,6 +161,7 @@ func _ready():
 	# O Player le o scroll vigente da mesma dificuldade para prever a cor da janela de chegada
 	player.dificuldade = dificuldade
 	_aplicar_fator_scroll_forcado()
+	_aplicar_visibilidade_recorde(true)
 	player.power_up_estado = power_up_estado
 	player.visible = false
 	player.add_point.connect(_on_player_add_point)
@@ -514,6 +515,7 @@ func _fechar_modos(modo: GameMode) -> void:
 	if scroll_level != null:
 		scroll_level.power_ups_habilitados = power_ups_habilitados
 	_aplicar_fator_scroll_forcado()
+	_aplicar_visibilidade_recorde(not started)
 	lastscore.text = "Last Score: " + str(Global.get_last_score())
 	bestscore.text = "Best Score: " + str(Global.get_best_score())
 	modo_botao.definir_modo(atual)
@@ -569,11 +571,16 @@ func _republicar_estado() -> void:
 	var player_dict: Dictionary = ultimo_estado.get("player", {}) as Dictionary
 	_publicar_estado(str(ultimo_estado.get("state", "")), bool(player_dict.get("alive", true)))
 
+# f527 T5 (D1): Last, Best e a faixa so aparecem com o menu visivel E a regra do modo mostrando recorde (Zen: nunca)
+func _aplicar_visibilidade_recorde(menu_visivel: bool) -> void:
+	var visivel: bool = menu_visivel and regra.mostra_recorde()
+	lastscore.visible = visivel
+	bestscore.visible = visivel
+	faixaplacar.visible = visivel
+
 func _mostrar_menu(valor: bool) -> void:
 	playbutton.visible = valor
-	lastscore.visible = valor
-	bestscore.visible = valor
-	faixaplacar.visible = valor
+	_aplicar_visibilidade_recorde(valor)
 	if valor:
 		opcoes_botao.mostrar()
 		modo_botao.mostrar()
