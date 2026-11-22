@@ -75,6 +75,8 @@ var power_ups_habilitados: bool = true
 # Regra do modo de jogo da partida (hook f523): lida de Global.modo_jogo em _ready quando o chamador nao a setou.
 # Seam de teste/modos: setar ANTES do add_child (o _ready le `power_ups_habilitados()` da regra antes da copia ao ScrollLevel).
 var regra: GameModeRule = null
+# Ultima plataforma pisada (a do ultimo ponto); sem tipo porque pode ser liberada (checar is_instance_valid). f527 T4
+var _ultima_plataforma = null
 # Faixa de HUD da duracao do power-up (filha da Stage, criada em _ready)
 var power_up_hud: PowerUpHud = null
 # Valor anterior do espelho de cor livre (f522 T3): a borda — ativacao/expiracao do Camaleao — forca a
@@ -594,6 +596,10 @@ func _on_CheckPlayer_body_exited(body):
 	if not body.is_inside_tree():
 		return
 	if !body.is_jumping() && !body.is_end():
+		# f527 T4: a regra do modo pode trocar a queda por reposicionamento (Zen); sem derrota e sem gastar carga
+		if regra.reposiciona_ao_cair():
+			_reposicionar_na_ultima_plataforma(body)
+			return
 		# A regra do modo decide se cair encerra (Classico: sim, como sempre); falso = carga intacta (Q5)
 		if not regra.ao_cair(_ctx_partida()):
 			return
@@ -602,6 +608,32 @@ func _on_CheckPlayer_body_exited(body):
 		if _tentar_reaparecimento(body):
 			return
 		_encerrar_partida(body)
+
+# f527 T4 (Zen): devolve o gecko a ultima plataforma pisada, com a cor dela (D4); pontos intactos (D2). Sem pisada
+# ainda ou com a ultima ja liberada (D3), cai na escolha da Segunda chance (SegundaChanceAlvo) com a cor da escolhida.
+# Sem nenhuma candidata visivel nao ha o que fazer: o gecko segue caindo e a partida continua.
+func _reposicionar_na_ultima_plataforma(body) -> void:
+	var alvo: Platform = null
+	var cor: int = -1
+	if is_instance_valid(_ultima_plataforma):
+		alvo = _ultima_plataforma as Platform
+		cor = int(alvo.color)
+	else:
+		_ultima_plataforma = null
+		var escolha: Dictionary = SegundaChanceAlvo.escolher(
+			ReachableColors.entradas_de_plataformas(Global.platforms),
+			body.global_position,
+			int(Global.cor_gecko),
+			_tamanho_visivel.x,
+			_tamanho_visivel.y,
+			player.scroll_efetivo()
+		)
+		if int(escolha["indice"]) < 0:
+			return
+		alvo = escolha["entrada"]["plataforma"]
+		cor = int(escolha["cor"])
+	body.reaparecer_sobre(alvo, cor)
+	_publicar_estado(GameState.STATE_PLAYING, true)
 
 # f526 T5: gasta a carga da Segunda chance na linha de derrota. O alvo vem do predicado puro de T3 (a
 # Stage nunca recalcula a escolha) e o reposicionamento e o teleporte de resgate de T4; a carga so sai
@@ -648,6 +680,8 @@ func _on_animation_end():
 
 # Callback para quando o jogador ganha um ponto
 func _on_player_add_point():
+	# f527 T4: a plataforma do pouso (a pontuada) e o alvo do reposicionamento do Zen; sem tipo: pode ser liberada depois
+	_ultima_plataforma = player.actual_platform
 	add_point()
 
 
