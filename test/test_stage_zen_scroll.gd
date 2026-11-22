@@ -96,6 +96,33 @@ func test_troca_classico_zen_classico_no_menu_religa_e_desliga_o_fator_sem_reloa
 	assert_almost_eq(_p.scroll_efetivo(), curva_agora, EPS, "C718: de volta ao Classico o scroll volta ao valor da curva")
 
 
+# Correcao 2 (06-review Aviso #2): o alcance da cor da cicladora no nascimento usa o mesmo scroll efetivo do Player
+func test_alcance_da_linha_usa_o_fator_forcado_do_modo() -> void:
+	await _spawn(ZenRule.new())
+	var curva: float = DifficultySnapshot.de(_stage.dificuldade).get_scroll()
+	assert_gt(curva, 0.0, "pre-condicao: a curva tem scroll")
+	var linha: Node2D = load("res://scenes/RunningPlatforms.gd").new()
+	autofree(linha)
+	linha._snapshot_nascimento = DifficultySnapshot.de(_stage.dificuldade)
+	var periodo := 0.01
+	var pulo_curva: float = ReachableColors.tempo_de_pulo(curva)
+	var pulo_parado: float = ReachableColors.tempo_de_pulo(0.0)
+	assert_ne(pulo_curva, pulo_parado, "pre-condicao: o tempo de pulo depende do scroll")
+	assert_gt(pulo_curva, periodo, "pre-condicao: o pulo domina o periodo")
+	assert_almost_eq(linha._alcance_s(periodo), pulo_curva + periodo, EPS, "sem fator forcado: scroll da curva")
+	linha.fator_forcado = _scroll.fator_forcado
+	assert_almost_eq(_scroll.fator_forcado, 0.0, EPS, "pre-condicao: Zen zera o fator")
+	assert_almost_eq(linha._alcance_s(periodo), pulo_parado + periodo, EPS, "Zen: mesmo scroll (0) do Player.scroll_efetivo")
+
+
+func test_scroll_level_repassa_o_fator_forcado_a_linha_nova() -> void:
+	await _spawn(ZenRule.new())
+	_scroll.create_new_running_platform(-500.0)
+	await wait_process_frames(1)
+	var linha: Node = _scroll.running_platforms.get_child(_scroll.running_platforms.get_child_count() - 1)
+	assert_almost_eq(float(linha.fator_forcado), 0.0, EPS, "a linha nova nasce com o fator forcado do ScrollLevel")
+
+
 # C719
 func test_zen_avancar_camera_com_gecko_acima_do_limite_sobe_o_mundo_e_cria_linha() -> void:
 	await _spawn(ZenRule.new())

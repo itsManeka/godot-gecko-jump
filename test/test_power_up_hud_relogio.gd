@@ -74,12 +74,14 @@ func test_c698_visivel_so_no_tempo_com_partida_iniciada_e_antes_de_lost() -> voi
 	# O modo so troca com o jogo nao iniciado (como no seletor)
 	Global.iniciado = false
 	Global.set_modo_jogo(GameModes.ID_CLASSICO, false)
+	_stage.regra = GameModes.de_id(GameModes.ID_CLASSICO).regra
 	Global.iniciado = true
 	assert_eq(Global.get_modo_jogo(), GameModes.ID_CLASSICO, "fixture: modo Classico ativo")
 	_hud().atualizar()
 	assert_false(_hud().relogio_visivel(), "C698: Classico nao mostra o relogio")
 	Global.iniciado = false
 	Global.set_modo_jogo(GameModes.ID_PURO, false)
+	_stage.regra = GameModes.de_id(GameModes.ID_PURO).regra
 	Global.iniciado = true
 	assert_eq(Global.get_modo_jogo(), GameModes.ID_PURO, "fixture: modo Puro ativo")
 	_hud().atualizar()
@@ -95,6 +97,7 @@ func test_c738_zen_nunca_mostra_relogio_e_hud_recebe_o_relogio_da_stage() -> voi
 	assert_eq(_hud().texto_relogio(), "0:42", "C738: Tempo mostra o restante da Stage")
 	Global.iniciado = false
 	Global.set_modo_jogo(GameModes.ID_ZEN, false)
+	_stage.regra = GameModes.de_id(GameModes.ID_ZEN).regra
 	Global.iniciado = true
 	assert_eq(Global.get_modo_jogo(), GameModes.ID_ZEN, "fixture: modo Zen ativo")
 	_publicar("playing", 42)

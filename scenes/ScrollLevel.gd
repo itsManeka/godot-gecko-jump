@@ -140,6 +140,8 @@ func create_new_running_platform(y_local: float = NAN):
 	running_platform.dificuldade = dificuldade
 	# Estado de power-up: a previsao de cor da linha usa o scroll efetivo (f522 T4)
 	running_platform.power_up_estado = power_up_estado
+	# Fator forcado do modo: o alcance da cor no nascimento usa o mesmo scroll que move o mundo (f527)
+	running_platform.fator_forcado = fator_forcado
 	# So as linhas de fluxo (indice >= 1) sorteiam power-up; as do .tscn e as extras iniciais nunca ligam a flag
 	running_platform.power_ups_elegivel = true
 	# Gancho da Stage: com power-ups desabilitados a linha nasce sem sorteio (nenhum icone)

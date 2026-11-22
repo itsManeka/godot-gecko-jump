@@ -221,6 +221,36 @@ func test_C728_zen_queda_com_gecko_pulando_segue_ignorada() -> void:
 	assert_false(_p.is_end(), "C728: nem encerrado")
 
 
+# Correcao 2 (06-review Aviso #1): sem ultima plataforma valida e sem candidata da Segunda chance, o gecko reaparece
+# sobre a plataforma existente mais proxima (qualquer cor) em vez de seguir caindo com a partida presa.
+func test_zen_sem_candidata_visivel_reaparece_na_plataforma_mais_proxima() -> void:
+	await _novo_stage(ZenRule.new())
+	var longe := _solta(_outra_cor(Global.cor_gecko), 150.0, 100.0)
+	var perto := _solta(_outra_cor(Global.cor_gecko), 30.0, 300.0)
+	var escolha: Dictionary = SegundaChanceAlvo.escolher(
+		ReachableColors.entradas_de_plataformas(Global.platforms),
+		QUEDA,
+		int(Global.cor_gecko),
+		VISIVEL.x,
+		VISIVEL.y,
+		_p.scroll_efetivo()
+	)
+	assert_eq(int(escolha["indice"]), -1, "fixture: o predicado da Segunda chance nao acha candidata")
+	_cair()
+	assert_false(_p.is_end(), "ramo sem candidata: a partida segue")
+	assert_eq(_stage.ultimo_estado["state"], GameState.STATE_PLAYING, "ramo sem candidata: playing")
+	assert_eq(_p.actual_platform, perto, "ramo sem candidata: reaparece na mais proxima da queda, nao em %s" % longe.name)
+	assert_eq(int(_p.color), int(perto.color), "ramo sem candidata: assume a cor dela")
+	_no_topo(perto)
+
+
+func test_zen_sem_nenhuma_plataforma_nao_encerra_nem_quebra() -> void:
+	await _novo_stage(ZenRule.new())
+	_cair()
+	assert_false(_p.is_end(), "sem plataforma alguma: sem derrota")
+	assert_eq(_p.global_position, QUEDA, "sem plataforma alguma: nada a fazer, o gecko nao foi movido")
+
+
 # C729
 func test_C729_classico_puro_e_tempo_seguem_encerrando_na_queda() -> void:
 	var regras: Array = [ClassicoRule.new(), PuroRule.new(), TempoRule.new()]

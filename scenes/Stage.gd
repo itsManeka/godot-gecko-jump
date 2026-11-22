@@ -78,8 +78,8 @@ var power_ups_habilitados: bool = true
 # Regra do modo de jogo da partida (hook f523): lida de Global.modo_jogo em _ready quando o chamador nao a setou.
 # Seam de teste/modos: setar ANTES do add_child (o _ready le `power_ups_habilitados()` da regra antes da copia ao ScrollLevel).
 var regra: GameModeRule = null
-# Ultima plataforma pisada (a do ultimo ponto); sem tipo porque pode ser liberada (checar is_instance_valid). f527 T4
-var _ultima_plataforma = null
+# Ultima plataforma pisada (a do ultimo ponto); pode ser liberada (checar is_instance_valid antes de ler). f527 T4
+var _ultima_plataforma: Node2D = null
 # Faixa de HUD da duracao do power-up (filha da Stage, criada em _ready)
 var power_up_hud: PowerUpHud = null
 # Valor anterior do espelho de cor livre (f522 T3): a borda — ativacao/expiracao do Camaleao — forca a
@@ -641,7 +641,7 @@ func _on_CheckPlayer_body_exited(body):
 
 # f527 T4 (Zen): devolve o gecko a ultima plataforma pisada, com a cor dela (D4); pontos intactos (D2). Sem pisada
 # ainda ou com a ultima ja liberada (D3), cai na escolha da Segunda chance (SegundaChanceAlvo) com a cor da escolhida.
-# Sem nenhuma candidata visivel nao ha o que fazer: o gecko segue caindo e a partida continua.
+# Sem candidata, vale a plataforma solida mais proxima; sem plataforma alguma nao ha o que fazer (o gecko segue caindo).
 func _reposicionar_na_ultima_plataforma(body) -> void:
 	var alvo: Platform = null
 	var cor: int = -1
@@ -650,20 +650,48 @@ func _reposicionar_na_ultima_plataforma(body) -> void:
 		cor = int(alvo.color)
 	else:
 		_ultima_plataforma = null
+		var entradas: Array = ReachableColors.entradas_de_plataformas(Global.platforms)
 		var escolha: Dictionary = SegundaChanceAlvo.escolher(
-			ReachableColors.entradas_de_plataformas(Global.platforms),
+			entradas,
 			body.global_position,
 			int(Global.cor_gecko),
 			_tamanho_visivel.x,
 			_tamanho_visivel.y,
 			player.scroll_efetivo()
 		)
-		if int(escolha["indice"]) < 0:
-			return
-		alvo = escolha["entrada"]["plataforma"]
-		cor = int(escolha["cor"])
+		if int(escolha["indice"]) >= 0:
+			alvo = escolha["entrada"]["plataforma"]
+			cor = int(escolha["cor"])
+		else:
+			# Sem candidata da Segunda chance: no Zen a partida nao encerra e, sem novo body_exited, ficaria presa
+			# com o gecko caindo. Vale a plataforma solida mais proxima da queda, de qualquer cor (cor dela assumida)
+			var indice: int = _mais_proxima_solida(entradas, body.global_position)
+			if indice < 0:
+				return
+			alvo = entradas[indice]["plataforma"]
+			cor = int(entradas[indice]["cor"])
 	body.reaparecer_sobre(alvo, cor)
 	_publicar_estado(GameState.STATE_PLAYING, true)
+
+
+# f527 correcao 2: indice da entrada solida (nem desmoronada, nem desmoronando, nem invisivel por piscar) acima da
+# linha de derrota mais proxima de `ponto` (dx ciente do wrap horizontal); -1 sem nenhuma
+func _mais_proxima_solida(entradas: Array, ponto: Vector2) -> int:
+	var melhor: int = -1
+	var melhor_distancia: float = INF
+	for i in range(entradas.size()):
+		var e: Dictionary = entradas[i]
+		if float(e["y"]) > _tamanho_visivel.y:
+			continue
+		if bool(e.get("desmoronada", false)) or bool(e.get("desmoronando", false)) or bool(e.get("pisca_oculta", false)):
+			continue
+		var dx_abs: float = absf(float(e["x"]) - ponto.x)
+		var dx: float = minf(dx_abs, _tamanho_visivel.x - dx_abs)
+		var distancia: float = Vector2(dx, float(e["y"]) - ponto.y).length()
+		if distancia < melhor_distancia:
+			melhor_distancia = distancia
+			melhor = i
+	return melhor
 
 # f526 T5: gasta a carga da Segunda chance na linha de derrota. O alvo vem do predicado puro de T3 (a
 # Stage nunca recalcula a escolha) e o reposicionamento e o teleporte de resgate de T4; a carga so sai
@@ -759,7 +787,7 @@ func _relogio_atual() -> int:
 # f527 T8: relogio entregue ao HUD. Ativo = a regra do modo atual tem relogio e a partida nao esta em `lost`;
 # o restante e o ultimo publicado (o HUD nao conhece modo nem estado publicado).
 func _relogio_para_hud() -> Dictionary:
-	var tem: bool = GameModes.de_id(Global.get_modo_jogo()).regra.tem_relogio()
+	var tem: bool = regra.tem_relogio()
 	var perdida: bool = ultimo_estado.get("state", "") == GameState.STATE_LOST
 	var publicado: Dictionary = ultimo_estado.get("relogio", {})
 	return {"ativo": tem and not perdida, "restante": float(publicado.get("restante", 0))}

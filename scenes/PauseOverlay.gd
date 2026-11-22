@@ -193,6 +193,9 @@ func fechar() -> void:
 # Reaplica o ultimo layout: com Sair o bloco cresce de 118 para 158 px e o conjunto fica centrado igual.
 func definir_permite_sair(valor: bool) -> void:
 	permite_sair = valor
+	# Sair oculto nao pode ficar com o foco (alcancavel com o overlay aberto)
+	if not permite_sair and _foco == Botao.SAIR:
+		_foco = Botao.CONTINUAR
 	if _fundo != null and _tamanho_layout != Vector2.ZERO:
 		aplicar_layout(_tamanho_layout, _safe_layout)
 	_atualizar_visual()

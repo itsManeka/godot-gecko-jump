@@ -32,6 +32,8 @@ var _guarda_reaparecimento := false  # f526 T4: o reaparecimento (Segunda chance
 var rng: RandomNumberGenerator = null  # Sorteio da cor no pouso; null usa o global (so teste fixa semente)
 var dificuldade: DifficultyState = null  # Injetada pela Stage (scroll vigente para a previsao); null = cena isolada
 var power_up_estado: PowerUpState = null  # Injetado pela Stage (fator do scroll efetivo na previsao, f522 T4); null = neutro
+# Fator forcado pela regra do modo (f527: Zen = 0.0), o mesmo que a Stage entrega ao ScrollLevel; 1.0 = neutro
+var fator_scroll_forcado: float = 1.0
 
 # Inicializa o jogador definindo sua cor inicial
 func _ready():
@@ -214,9 +216,6 @@ func scroll_efetivo() -> float:
 		return 0.0
 	var fator: float = power_up_estado.fator_scroll() if power_up_estado != null else 1.0
 	return DifficultySnapshot.de(dificuldade).get_scroll() * fator * fator_scroll_forcado
-
-# Fator forcado pela regra do modo (f527: Zen = 0.0), o mesmo que a Stage entrega ao ScrollLevel; 1.0 = neutro
-var fator_scroll_forcado: float = 1.0
 
 # Retorna se o jogador está atualmente pulando
 func is_jumping() -> bool:

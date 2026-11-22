@@ -74,6 +74,9 @@ var power_ups_elegivel: bool = false
 var power_ups_habilitados: bool = true
 # Estado de power-up da partida (injetado pelo ScrollLevel antes do add_child, f522 T4); null = scroll cheio
 var power_up_estado: PowerUpState = null
+# Fator de scroll forcado pela regra do modo (f527; repassado pelo ScrollLevel no nascimento, a mesma fonte do
+# ScrollLevel.fator_forcado e do Player.fator_scroll_forcado); 1.0 = neutro
+var fator_forcado: float = 1.0
 # rng dedicado do sorteio de power-up (derivado da semente do gerador, sem consumir o rng do layout nem o da cor)
 var _rng_power_up: RandomNumberGenerator = null
 # Mistura a semente do gerador para o rng do power-up nao repetir a sequencia dos demais
@@ -426,7 +429,7 @@ func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:
 # nascimento) mais 1 periodo de espera em cima, com piso de 2 periodos (a cor do indice 0 e a ja pintada na plataforma).
 func _alcance_s(periodo: float) -> float:
 	var fator: float = power_up_estado.fator_scroll() if power_up_estado != null else 1.0
-	var pulo: float = ReachableColors.tempo_de_pulo(_snapshot_nascimento.get_scroll() * fator)
+	var pulo: float = ReachableColors.tempo_de_pulo(_snapshot_nascimento.get_scroll() * fator * fator_forcado)
 	return maxf(pulo, periodo) + periodo
 
 # Inicia o timer para gerar próxima plataforma
