@@ -30,3 +30,8 @@ func power_ups_habilitados() -> bool:
 
 func fim_por_regra(_ctx: Dictionary) -> bool:
 	return false
+
+
+# f527 T6: a pausa do Zen oferece Sair — sai da partida pela pausa, voltando ao menu sem gravar recorde.
+func permite_sair_pela_pausa() -> bool:
+	return true

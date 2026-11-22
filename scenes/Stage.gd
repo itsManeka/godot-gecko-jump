@@ -40,6 +40,9 @@ var tutorial_card: TutorialCard = null
 var tutorial_flag: TutorialFlag = null
 # Callable() -> bool que substitui DisplayServer.is_touchscreen_available() na escolha da variante do card (teste)
 var touchscreen_disponivel: Callable = Callable()
+# f527 T6: recarga da cena pedida por Sair na pausa (mesma do fim da animacao de derrota). Callable injetavel em
+# teste: o GUT nao pode trocar a cena do proprio runner, entao registra o pedido; invalido (producao) recarrega.
+var recarregar_cena: Callable = Callable()
 var pause_overlay: PauseOverlay = null
 var pause_state: PauseState = null
 # Tela de Opcoes (filha da Stage, criada em _ready)
@@ -216,6 +219,7 @@ func _ready():
 	pause_overlay = PauseOverlay.new()
 	pause_overlay.retomar.connect(_retomar)
 	pause_overlay.opcoes.connect(_abrir_opcoes_da_pausa)
+	pause_overlay.sair.connect(_sair_da_pausa)
 	add_child(pause_overlay)
 	# Botao Opcoes do menu: filho da Stage, entao o toque nele e consumido antes do _input da Stage (nao inicia a partida)
 	opcoes_botao = OpcoesBotao.new()
@@ -460,12 +464,14 @@ func _sincronizar_tutorial() -> void:
 		tutorial_card.fechar(true)
 		_atualizar_zonas_mortas()
 
-# Pausa a arvore (Global.iniciado nao muda), cancela o toque de jogo em curso e abre o overlay
+# Pausa a arvore (Global.iniciado nao muda), cancela o toque de jogo em curso e abre o overlay — com o botao
+# Sair quando a regra do modo permite (predicado unico `permite_sair_pela_pausa()`, o mesmo da acao)
 func _pausar() -> bool:
 	if pause_state.esta_pausado() or not pause_state.pausar():
 		return false
 	touch_controls.cancelar_tudo()
 	pause_botao.cancelar()
+	pause_overlay.definir_permite_sair(regra.permite_sair_pela_pausa())
 	pause_overlay.abrir()
 	_atualizar_card_partida()
 	return true
@@ -487,6 +493,23 @@ func _atualizar_card_partida() -> void:
 func _abrir_opcoes_da_pausa() -> void:
 	pause_overlay.fechar()
 	options_screen.abrir()
+
+
+# f527 T6 (D5): Sair da pausa — so a regra do modo permite (o mesmo predicado `permite_sair_pela_pausa()` que
+# decide a visibilidade do botao). Despausa a arvore e recarrega a Stage: a nova nasce no menu (`started ==
+# false`), sem `Global.set_score` (recorde do modo intacto) e sem som/animacao de derrota (a derrota nunca roda).
+# `recarregar_cena`: Callable injetavel em teste (o GUT nao pode trocar a cena do proprio runner); sem injecao
+# vale o reload real, o mesmo caminho do fim da animacao de perda (`_on_animation_end`).
+func _sair_da_pausa() -> void:
+	if not regra.permite_sair_pela_pausa():
+		return
+	pause_state.retomar()
+	pause_overlay.fechar()
+	options_screen.fechar()
+	if recarregar_cena.is_valid():
+		recarregar_cena.call()
+		return
+	_on_animation_end()
 
 # Opcoes pelo menu (so com o jogo nao iniciado): Play, Last, Best e o botao saem de cena; a arvore nao esta pausada
 func _abrir_opcoes_do_menu() -> void:

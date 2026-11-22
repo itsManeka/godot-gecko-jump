@@ -133,6 +133,12 @@ func test_c348_play_e_botoes_de_menu_comportam_o_rotulo() -> void:
 	for par in [["> Continuar", pausa.rect_continuar()], ["> Opcoes", pausa.rect_opcoes()]]:
 		var l := UiHelpers.FONTE.get_string_size(par[0], HORIZONTAL_ALIGNMENT_LEFT, -1, UiHelpers.TAMANHO_TEXTO).x
 		assert_lte(l, (par[1] as Rect2).size.x, "'%s' cabe no botao da pausa" % par[0])
+	# f527 T6 (D5): o terceiro botao do Zen no mesmo estilo dos atuais e o rotulo cabe nele
+	pausa.definir_permite_sair(true)
+	assert_eq(pausa.rect_sair().size, Vector2(112.0, 32.0), "Sair no estilo 112x32 dos botoes atuais")
+	assert_eq(pausa.rect_sair().size, pausa.rect_opcoes().size, "Sair do mesmo tamanho que Opcoes")
+	var l_sair := UiHelpers.FONTE.get_string_size("> Sair", HORIZONTAL_ALIGNMENT_LEFT, -1, UiHelpers.TAMANHO_TEXTO).x
+	assert_lte(l_sair, pausa.rect_sair().size.x, "'> Sair' cabe no botao da pausa")
 
 	var botao: OpcoesBotao = add_child_autofree(OpcoesBotao.new())
 	botao.aplicar_layout(Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA))
