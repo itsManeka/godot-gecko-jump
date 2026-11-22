@@ -45,6 +45,11 @@ func mostra_recorde() -> bool:
 	return true
 
 
+# f527 T8: se o modo tem relogio de partida mostrado no HUD (so o Contra o tempo).
+func tem_relogio() -> bool:
+	return false
+
+
 # f527 T6: se o overlay de pausa oferece saida da partida (botao Sair: despausa e volta ao menu sem
 # gravar nada). false = o overlay segue so com Continuar/Opcoes; o Zen permite.
 func permite_sair_pela_pausa() -> bool:

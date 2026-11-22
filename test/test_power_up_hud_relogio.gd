@@ -86,6 +86,41 @@ func test_c698_visivel_so_no_tempo_com_partida_iniciada_e_antes_de_lost() -> voi
 	assert_false(_hud().relogio_visivel(), "C698: Puro nao mostra o relogio")
 
 
+func test_c738_zen_nunca_mostra_relogio_e_hud_recebe_o_relogio_da_stage() -> void:
+	await _novo_stage()
+	Global.iniciado = true
+	_publicar("playing", 42)
+	_hud().atualizar()
+	assert_true(_hud().relogio_visivel(), "C738: Tempo mostra o relogio injetado pela Stage")
+	assert_eq(_hud().texto_relogio(), "0:42", "C738: Tempo mostra o restante da Stage")
+	Global.iniciado = false
+	Global.set_modo_jogo(GameModes.ID_ZEN, false)
+	Global.iniciado = true
+	assert_eq(Global.get_modo_jogo(), GameModes.ID_ZEN, "fixture: modo Zen ativo")
+	_publicar("playing", 42)
+	_hud().atualizar()
+	assert_false(_hud().relogio_visivel(), "C738: Zen nunca mostra o relogio")
+
+
+func test_c738_hud_sem_fonte_de_relogio_nunca_mostra() -> void:
+	var hud: PowerUpHud = PowerUpHud.new()
+	add_child_autofree(hud)
+	Global.iniciado = true
+	hud.atualizar()
+	assert_false(hud.relogio_visivel(), "C738: sem fonte injetada o relogio fica oculto")
+	hud.fonte_relogio = func() -> Dictionary: return {"ativo": true, "restante": 9.0}
+	hud.atualizar()
+	assert_true(hud.relogio_visivel(), "C738: com fonte ativa o HUD mostra o que recebeu")
+	assert_eq(hud.texto_relogio(), "0:09", "C738: texto vem do restante injetado")
+
+
+func test_c739_hud_nao_referencia_modo_tempo_nem_fonte_estado() -> void:
+	var texto: String = FileAccess.get_file_as_string("res://scenes/PowerUpHud.gd")
+	assert_ne(texto, "", "fixture: PowerUpHud.gd lido")
+	assert_eq(texto.find("ID_TEMPO"), -1, "C739: o HUD nao referencia GameModes.ID_TEMPO")
+	assert_eq(texto.find("fonte_estado"), -1, "C739: o HUD nao referencia fonte_estado")
+
+
 func test_c698_card_do_tutorial_oculta_o_relogio_e_fechar_mostra_sem_zerar_o_texto() -> void:
 	await _novo_stage()
 	Global.iniciado = true

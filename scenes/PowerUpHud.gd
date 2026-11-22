@@ -28,8 +28,9 @@ const COR_PRETO: Color = UiHelpers.COR_CONTORNO
 # Estado de power-up da Stage e o card do tutorial da 1a partida (injetados por quem cria o HUD)
 var estado: PowerUpState = null
 var tutorial_card: TutorialCard = null
-# Fonte do estado publicado da Stage (Dictionary com `state` e `relogio.restante`); sem fonte, o relogio nunca aparece
-var fonte_estado: Callable = Callable()
+# Fonte do relogio injetada pela Stage: Callable que devolve {"ativo": bool, "restante": float} (ativo = o modo tem
+# relogio e a partida nao acabou); sem fonte, o relogio nunca aparece
+var fonte_relogio: Callable = Callable()
 
 var _relogio: Label = null
 var _y0: float = OFFSET_Y
@@ -210,14 +211,9 @@ func atualizar() -> void:
 # Relogio: so no Contra o tempo, com a partida iniciada e antes de `lost`; o card do tutorial so o oculta (o texto
 # fica e volta ao fechar o card)
 func _atualizar_relogio(oculta: bool) -> void:
-	var publicado: Dictionary = fonte_estado.call() if fonte_estado.is_valid() else {}
-	var ativo: bool = (
-		Global.get_modo_jogo() == GameModes.ID_TEMPO
-		and Global.is_iniciado()
-		and publicado.get("state", "") != GameState.STATE_LOST
-	)
+	var relogio: Dictionary = fonte_relogio.call() if fonte_relogio.is_valid() else {}
+	var ativo: bool = bool(relogio.get("ativo", false)) and Global.is_iniciado()
 	if ativo:
-		var relogio: Dictionary = publicado.get("relogio", {})
 		_relogio.text = formatar_relogio(float(relogio.get("restante", 0)))
 	_relogio.visible = ativo and not oculta
 

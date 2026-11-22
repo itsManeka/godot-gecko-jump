@@ -208,7 +208,7 @@ func _ready():
 	power_up_hud = PowerUpHud.new()
 	power_up_hud.estado = power_up_estado
 	power_up_hud.tutorial_card = tutorial_card
-	power_up_hud.fonte_estado = func() -> Dictionary: return ultimo_estado
+	power_up_hud.fonte_relogio = _relogio_para_hud
 	add_child(power_up_hud)
 	# Botao e overlay de pausa: filhos depois de touch_controls/touch_hint (o _input chega a eles antes). So o overlay
 	# e ALWAYS (retoma com a arvore pausada); a Stage segue pausavel.
@@ -755,6 +755,15 @@ func _relogio_atual() -> int:
 	if Global.get_modo_jogo() != GameModes.ID_TEMPO:
 		return 0
 	return ceili(maxf(0.0, Global.limite_tempo_s() - tempo_partida))
+
+# f527 T8: relogio entregue ao HUD. Ativo = a regra do modo atual tem relogio e a partida nao esta em `lost`;
+# o restante e o ultimo publicado (o HUD nao conhece modo nem estado publicado).
+func _relogio_para_hud() -> Dictionary:
+	var tem: bool = GameModes.de_id(Global.get_modo_jogo()).regra.tem_relogio()
+	var perdida: bool = ultimo_estado.get("state", "") == GameState.STATE_LOST
+	var publicado: Dictionary = ultimo_estado.get("relogio", {})
+	return {"ativo": tem and not perdida, "restante": float(publicado.get("restante", 0))}
+
 
 # Adiciona um ponto à pontuação e atualiza a interface
 func add_point():
