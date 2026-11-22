@@ -31,7 +31,7 @@ const ROTEIROS_LONGOS: Array[String] = [
 ]
 const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga", "modo", "relogio.restante"]
 # Roteiros dos modos de jogo (seletor, Puro, Contra o tempo): fora de ROTEIROS porque o do Tempo espera `lost` pelo relogio.
-const ROTEIROS_MODOS: Array[String] = ["modos", "modo-puro", "modo-tempo"]
+const ROTEIROS_MODOS: Array[String] = ["modos", "modo-puro", "modo-tempo", "modo-zen"]
 const ROTEIROS_SEMDERROTA: Array[String] = [
 	"camaleao",
 	"desacelera",
@@ -521,6 +521,49 @@ func test_roteiro_puro_joga_com_modo_puro_e_powerup_vazio() -> void:
 		assert_eq(valor, "", "no Puro powerup.ativo so e esperado vazio")
 		vazios += 1
 	assert_gt(vazios, 0, "o roteiro puro confere powerup.ativo vazio")
+
+
+func test_roteiro_zen_joga_sem_derrota_cai_e_sai_pela_pausa_ao_menu() -> void:
+	var nome: String = "modo-zen"
+	assert_true(ROTEIROS_MODOS.has(nome), "C740: o roteiro zen esta em ROTEIROS_MODOS")
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_true("progresso=" in caminho, "o roteiro zen adianta o progresso")
+	assert_true(_valores_expect(nome, "modo").has("zen"), "o roteiro confere modo zen")
+	var vazios: int = 0
+	for valor in _valores_expect(nome, "powerup.ativo"):
+		assert_eq(valor, "", "no Zen powerup.ativo so e esperado vazio")
+		vazios += 1
+	assert_gt(vazios, 0, "o roteiro zen confere powerup.ativo vazio")
+	var passos := _passos(nome)
+	var i_queda: int = -1
+	for i in passos.size():
+		if passos[i].get("down", "") == "ArrowLeft" or passos[i].get("down", "") == "ArrowRight":
+			i_queda = i
+			break
+	assert_gte(i_queda, 0, "a queda proposital usa down de seta (sem gesto)")
+	assert_true(passos[i_queda + 2].has("up"), "a seta e solta depois do wait")
+	var i_pos_queda: int = -1
+	for i in range(i_queda + 3, passos.size()):
+		if passos[i].has("expect"):
+			i_pos_queda = i
+			break
+	assert_gte(i_pos_queda, 0, "ha expect depois da queda")
+	assert_eq(passos[i_pos_queda]["expect"].get("state", null), "playing", "depois da queda o Zen segue playing")
+	var i_escape: int = -1
+	for i in range(i_pos_queda, passos.size()):
+		if passos[i].get("down", "") == "Escape":
+			i_escape = i
+			break
+	assert_gte(i_escape, 0, "a pausa abre pela tecla da acao pause")
+	var ultimo: Dictionary = passos[passos.size() - 1]
+	var ultimo_expect: Dictionary = {}
+	for i in range(passos.size() - 1, i_escape, -1):
+		if passos[i].has("expect"):
+			ultimo_expect = passos[i]["expect"]
+			break
+	assert_eq(ultimo_expect.get("state", null), "menu", "depois de Sair a ponte volta a state menu")
+	assert_eq(ultimo_expect.get("modo", null), "zen", "e o modo segue zen")
+	assert_true(ultimo.has("shots"), "o roteiro termina com o print do menu")
 
 
 func test_roteiro_tempo_usa_tempo_curto_e_termina_em_lost_com_gecko_vivo() -> void:
