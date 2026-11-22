@@ -95,8 +95,10 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if tratar_evento(event):
-		get_viewport().set_input_as_handled()
+	# Viewport capturado antes: Sair pode recarregar a cena e tirar o overlay da arvore (get_viewport() viraria null)
+	var vp := get_viewport()
+	if tratar_evento(event) and vp != null:
+		vp.set_input_as_handled()
 
 
 # Processa um evento de entrada; devolve true se foi consumido (overlay aberto consome todo toque).

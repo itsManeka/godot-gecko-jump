@@ -194,6 +194,18 @@ func test_c737_com_o_sair_visivel_continuar_e_opcoes_comportam_se_como_hoje() ->
 	assert_eq(_saiu, 0, "C737: nenhum Sair acionado pelos botoes originais")
 
 
+# f527 T6 (correcao 1): o Sair do Zen recarrega a cena e o overlay sai da arvore durante o `_input`; o viewport
+# capturado antes de `tratar_evento` evita `set_input_as_handled` em null (SCRIPT ERROR do smoke `modo-zen`).
+func test_f527_t6_input_em_sair_com_overlay_removido_da_arvore_nao_usa_viewport_nulo() -> void:
+	var o := _novo_zen(PEQUENA)
+	o.sair.connect(func() -> void: o.get_parent().remove_child(o))
+	var dentro := o.rect_sair().get_center()
+	o._input(_clique(dentro, true))
+	o._input(_clique(dentro, false))
+	assert_eq(_saiu, 1, "clique em Sair emitiu sair uma vez pelo _input")
+	assert_false(o.is_inside_tree(), "overlay saiu da arvore durante o _input (simula o reload)")
+
+
 func _clique(pos: Vector2, pressed: bool, device: int = 0, botao: int = MOUSE_BUTTON_LEFT) -> InputEventMouseButton:
 	var e := InputEventMouseButton.new()
 	e.position = pos
