@@ -230,6 +230,17 @@ func test_c702_classico_com_raridade_1_gera_icones_e_o_puro_na_mesma_seed_nao() 
 	assert_eq(_contar_icones(puro), 0, "Puro, mesma seed e raridade 1: nenhum icone (nao herda o gancho do Classico)")
 
 
+func test_c715_zen_com_raridade_1_nenhum_icone_e_o_classico_na_mesma_seed_gera() -> void:
+	var zen := await _nivel_do_modo(GameModes.ID_ZEN, 1.0)
+	assert_gt(_contar_plataformas(zen), 10, "fixture: a partida do Zen gerou plataformas")
+	assert_false(zen.power_ups_habilitados, "Zen: a Stage leu false da regra")
+	assert_eq((zen.get_node("ScrollLevel") as ScrollLevel).power_ups_habilitados, false, "false chegou ao ScrollLevel")
+	assert_eq(_contar_icones(zen), 0, "Zen com raridade 1: nenhuma plataforma elegivel nasce com icone")
+	await _liberar(zen)
+	var classico := await _nivel_do_modo(GameModes.ID_CLASSICO, 1.0)
+	assert_gt(_contar_icones(classico), 0, "mesmo setup no Classico gera ao menos um icone (o teste nao e vacuo)")
+
+
 func test_c703_puro_e_classico_mesma_seed_raridade_0_layout_e_pontuacao_identicos() -> void:
 	var classico := await _nivel_do_modo(GameModes.ID_CLASSICO, 0.0)
 	var layout_classico: Array[String] = _layout(classico)

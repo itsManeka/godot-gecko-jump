@@ -64,6 +64,19 @@ func test_set_modo_jogo_persiste_e_novo_store_le() -> void:
 	assert_eq(Global.modo_jogo, &"teste", "C577: novo OptionsStore no mesmo caminho devolve teste")
 
 
+func test_c713_modo_zen_persiste_restaura_e_nao_cria_arquivo_de_recorde() -> void:
+	Global.usar_options_store(OptionsStore.new(TMP_OPCOES))
+	Global.set_modo_jogo(&"zen")
+	assert_eq(Global.modo_jogo, GameModes.ID_ZEN, "C713: modo Zen aplicado")
+	Global.usar_options_store(OptionsStore.new(TMP_OPCOES))
+	assert_eq(Global.modo_jogo, GameModes.ID_ZEN, "C713: novo OptionsStore no mesmo caminho restaura o Zen (sem a flag de debug)")
+	assert_eq(Global.get_best_score(), 0, "C713: o Zen comeca sem recorde")
+	assert_false(FileAccess.file_exists("user://best_score_zen.cfg"), "C713: nenhum user://best_score_zen.cfg nasce")
+	var store := Global.store_do_modo(GameModes.ID_ZEN)
+	var caminho := "" if store == null else store.path
+	assert_false(caminho.begins_with("user://best_score"), "C713: recorde do Zen isolado pelo pre-run (%s)" % caminho)
+
+
 func test_modo_teste_salvo_com_flag_desligada_vira_classico() -> void:
 	Global.modos_teste_habilitado = true
 	Global.usar_options_store(OptionsStore.new(TMP_OPCOES))

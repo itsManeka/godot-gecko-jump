@@ -2,17 +2,19 @@ class_name GameModes
 extends RefCounted
 
 # Registro de modos de jogo: lista ordenada do seletor, resolucao por id e ciclo do carrossel. O Classico
-# sempre existe, e o primeiro da lista e o padrao de toda resolucao; Puro e Tempo vem depois dele em release,
+# sempre existe, e o primeiro da lista e o padrao de toda resolucao; Puro, Tempo e Zen vem depois dele em release,
 # e o modo de teste so entra com a flag de debug ligada. Cada modo (e a regra dele) e uma instancia unica,
 # criada na 1a consulta e reusada: regras sem estado proprio, o relogio da partida vive na Stage.
 
 const ID_CLASSICO: StringName = &"classico"
 const ID_PURO: StringName = &"puro"
 const ID_TEMPO: StringName = &"tempo"
+const ID_ZEN: StringName = &"zen"
 
 static var _classico: GameMode = null
 static var _puro: GameMode = null
 static var _tempo: GameMode = null
+static var _zen: GameMode = null
 static var _teste: GameMode = null
 
 
@@ -55,16 +57,29 @@ static func tempo() -> GameMode:
 	return _tempo
 
 
+# Zen: sem pressa, sem derrota e sem recorde; o mundo para e a queda devolve o gecko a uma plataforma.
+static func zen() -> GameMode:
+	if _zen == null:
+		_zen = GameMode.new(
+			ID_ZEN,
+			"Zen",
+			"Zen",
+			"Sem pressa e sem derrota: o mundo para e, se cair, voce volta.",
+			ZenRule.new()
+		)
+	return _zen
+
+
 static func _teste_unico() -> GameMode:
 	if _teste == null:
 		_teste = GameModeTeste.criar()
 	return _teste
 
 
-# Lista ordenada do seletor: Classico, Puro, Tempo; incluir_teste acrescenta o modo de teste por ultimo
+# Lista ordenada do seletor: Classico, Puro, Tempo, Zen; incluir_teste acrescenta o modo de teste por ultimo
 # (debug/GUT, mesma regra do Classico com recorde proprio).
 static func lista(incluir_teste := false) -> Array[GameMode]:
-	var modos: Array[GameMode] = [classico(), puro(), tempo()]
+	var modos: Array[GameMode] = [classico(), puro(), tempo(), zen()]
 	if incluir_teste:
 		modos.append(_teste_unico())
 	return modos
@@ -86,6 +101,8 @@ static func de_id(id: Variant) -> GameMode:
 			return puro()
 		if texto == String(ID_TEMPO):
 			return tempo()
+		if texto == String(ID_ZEN):
+			return zen()
 		if texto == String(GameModeTeste.ID) and Global.modos_teste_habilitado:
 			return _teste_unico()
 	return classico()

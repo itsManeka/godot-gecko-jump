@@ -32,14 +32,48 @@ func _ids(modos: Array[GameMode]) -> Array[StringName]:
 # Registro: Classico primeiro e padrao; Puro e Tempo em seguida; teste so com incluir_teste, por ultimo.
 func test_registro_tem_classico_primeiro_e_padrao() -> void:
 	var modos := GameModes.lista()
-	assert_eq(_ids(modos), [&"classico", &"puro", &"tempo"] as Array[StringName], "lista sem teste: Classico, Puro, Tempo")
+	assert_eq(
+		_ids(modos), [&"classico", &"puro", &"tempo", &"zen"] as Array[StringName], "lista sem teste: Classico, Puro, Tempo, Zen"
+	)
 	assert_eq(GameModes.padrao().id, &"classico", "padrao() devolve o Classico")
 	var com_teste := GameModes.lista(true)
 	assert_eq(
 		_ids(com_teste),
-		[&"classico", &"puro", &"tempo", &"teste"] as Array[StringName],
+		[&"classico", &"puro", &"tempo", &"zen", &"teste"] as Array[StringName],
 		"incluir_teste acrescenta o modo de teste por ultimo"
 	)
+
+
+func test_c710_lista_tem_4_modos_em_release_e_5_com_teste_por_ultimo() -> void:
+	var release := GameModes.lista()
+	assert_eq(release.size(), 4, "C710: lista() tem 4 modos")
+	assert_eq(_ids(release), [&"classico", &"puro", &"tempo", &"zen"] as Array[StringName], "C710: ordem classico, puro, tempo, zen")
+	var com_teste := GameModes.lista(true)
+	assert_eq(com_teste.size(), 5, "C710: lista(true) tem 5 modos")
+	assert_eq(com_teste[4].id, &"teste", "C710: teste por ultimo")
+	assert_eq(com_teste[3].id, GameModes.ID_ZEN, "C710: Zen logo antes do teste")
+
+
+func test_c711_de_id_reconhece_zen_e_nunca_devolve_zen_para_id_invalido() -> void:
+	assert_eq(GameModes.de_id("zen").id, &"zen", "C711: de_id(String zen) devolve o Zen")
+	assert_eq(GameModes.de_id(&"zen").id, &"zen", "C711: de_id(StringName zen) devolve o Zen")
+	assert_eq(GameModes.de_id("zen").rotulo, "Zen", "C711: rotulo curto do Zen")
+	assert_same(GameModes.de_id(&"zen"), GameModes.zen(), "C711: de_id devolve a instancia reusada")
+	assert_eq(GameModes.de_id("").id, &"classico", "C711: id vazio devolve o Classico")
+	assert_eq(GameModes.de_id(null).id, &"classico", "C711: id nulo devolve o Classico")
+	assert_eq(GameModes.de_id("ZEN").id, &"classico", "C711: caixa errada nao captura o Zen")
+	assert_eq(GameModes.de_id("zen2").id, &"classico", "C711: id desconhecido devolve o Classico")
+
+
+func test_zen_regra_reune_os_hooks_do_modo() -> void:
+	var regra: GameModeRule = GameModes.zen().regra
+	assert_false(regra.ao_cair({}), "Zen nao encerra ao cair")
+	assert_true(regra.reposiciona_ao_cair(), "Zen reposiciona ao cair")
+	assert_eq(regra.fator_scroll_forcado(), 0.0, "Zen para o scroll forcado")
+	assert_false(regra.grava_recorde(), "Zen nao grava recorde")
+	assert_false(regra.mostra_recorde(), "Zen nao mostra recorde")
+	assert_false(regra.power_ups_habilitados(), "Zen sem power-ups")
+	assert_false(regra.fim_por_regra({PartidaCtx.TEMPO: 1000.0}), "Zen nunca termina por regra")
 
 
 func test_c567_de_id_nulo_devolve_classico_sem_erro_de_tipo() -> void:
@@ -83,7 +117,8 @@ func test_c675_instancias_reusadas_de_modo_e_de_regra() -> void:
 	assert_same(GameModes.de_id(&"tempo"), primeira[2], "C675: de_id(&tempo) e a instancia da lista")
 	assert_same(GameModes.de_id(&"tempo").regra, primeira[2].regra, "C675: regra de de_id e a da lista")
 	assert_same(GameModes.de_id("puro"), primeira[1], "C675: de_id(puro) e a instancia da lista")
-	assert_same(GameModes.de_id("teste"), primeira[3], "C675: de_id(teste) e a instancia da lista")
+	assert_same(GameModes.de_id("zen"), primeira[3], "C675: de_id(zen) e a instancia da lista")
+	assert_same(GameModes.de_id("teste"), primeira[4],"C675: de_id(teste) e a instancia da lista")
 	assert_same(GameModes.padrao(), primeira[0], "C675: padrao() e o Classico da lista")
 	assert_same(GameModes.de_id("xyz"), primeira[0], "C675: fallback e a instancia do Classico")
 
@@ -113,17 +148,29 @@ func test_c675_regra_do_tempo_sem_estado_apos_partida_simulada() -> void:
 
 func test_c569_ciclo_voltam_nas_listas_com_e_sem_teste() -> void:
 	var quatro := GameModes.lista(true)
-	assert_eq(GameModes.proximo(quatro[3], quatro).id, &"classico", "C569: proximo do ultimo volta ao primeiro")
+	assert_eq(GameModes.proximo(quatro[quatro.size() - 1], quatro).id, &"classico","C569: proximo do ultimo volta ao primeiro")
 	assert_eq(GameModes.anterior(quatro[0], quatro).id, &"teste", "C569: anterior do primeiro vai ao ultimo")
 	var um: Array[GameMode] = [GameModes.padrao()]
 	assert_eq(GameModes.proximo(um[0], um).id, &"classico", "C569: lista de 1 cicla proximo para si mesmo, sem erro")
 	assert_eq(GameModes.anterior(um[0], um).id, &"classico", "C569: lista de 1 cicla anterior para si mesmo, sem erro")
 
 
-func test_c676_ciclo_fecha_o_anel_de_3_e_de_4_entradas() -> void:
+func test_c712_ciclo_fecha_com_zen_em_release_e_com_teste() -> void:
+	var release := GameModes.lista()
+	assert_eq(GameModes.proximo(GameModes.zen(), release).id, &"classico", "C712: zen -> classico em release")
+	assert_eq(GameModes.anterior(GameModes.classico(), release).id, &"zen", "C712: classico <- zen em release")
+	assert_eq(GameModes.proximo(GameModes.tempo(), release).id, &"zen", "C712: tempo -> zen")
+	var com_teste := GameModes.lista(true)
+	assert_eq(GameModes.proximo(GameModes.zen(), com_teste).id, &"teste", "C712: zen -> teste com o teste")
+	assert_eq(GameModes.proximo(com_teste[4], com_teste).id, &"classico", "C712: teste -> classico com o teste")
+	assert_eq(GameModes.anterior(com_teste[4], com_teste).id, &"zen", "C712: teste <- zen")
+	assert_eq(GameModes.anterior(GameModes.classico(), com_teste).id, &"teste", "C712: classico <- teste")
+
+
+func test_c676_ciclo_fecha_o_anel_de_4_e_de_5_entradas() -> void:
 	for incluir_teste: bool in [false, true]:
 		var modos := GameModes.lista(incluir_teste)
-		assert_eq(modos.size(), 4 if incluir_teste else 3, "C676: tamanho da lista (teste=%s)" % incluir_teste)
+		assert_eq(modos.size(), 5 if incluir_teste else 4,"C676: tamanho da lista (teste=%s)" % incluir_teste)
 		var atual := modos[0]
 		for i in modos.size():
 			assert_eq(atual.id, modos[i].id, "C676: proximo percorre na ordem (teste=%s, passo %d)" % [incluir_teste, i])

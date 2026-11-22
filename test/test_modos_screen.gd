@@ -138,6 +138,21 @@ func test_indicador_n_marcas_so_a_atual_8x4() -> void:
 	assert_eq(marcas[1].size, Vector2(8.0, 4.0), "depois da troca a 2a e 8x4")
 
 
+func test_c714_indicador_com_modos_reais_4_marcas_em_release_e_5_com_teste_atual_8x4_no_zen() -> void:
+	for incluir_teste: bool in [false, true]:
+		var modos := GameModes.lista(incluir_teste)
+		var indice_zen: int = modos.find(GameModes.zen())
+		assert_eq(indice_zen, 3, "C714: o Zen e o 4o modo (teste=%s)" % incluir_teste)
+		_tela.aplicar_layout(Vector2(180.0, 320.0), Rect2(0.0, 0.0, 180.0, 320.0))
+		assert_true(_tela.abrir(GameModes.zen(), modos), "abrir no Zen devolve true")
+		var marcas := _tela.rect_marcas()
+		assert_eq(marcas.size(), 5 if incluir_teste else 4, "C714: marcas = modos da lista (teste=%s)" % incluir_teste)
+		for i in marcas.size():
+			var esperado := Vector2(8.0, 4.0) if i == indice_zen else Vector2(4.0, 4.0)
+			assert_eq(marcas[i].size, esperado, "C714: marca %d (teste=%s)" % [i, incluir_teste])
+		_tela.fechar()
+
+
 func test_ok_fecha_consome_toque_sem_texto_toque_e_recusa_com_jogo_iniciado() -> void:
 	_abrir([_modo_a, _modo_b] as Array[GameMode])
 	_tocar(_centro(_tela.rect_seta_dir()))
