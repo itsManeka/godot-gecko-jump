@@ -176,3 +176,22 @@ func test_ok_fecha_consome_toque_sem_texto_toque_e_recusa_com_jogo_iniciado() ->
 	Global.set_iniciado(true)
 	assert_false(_tela.abrir(_modo_a, [_modo_a, _modo_b] as Array[GameMode]), "abrir com jogo iniciado e recusado")
 	assert_false(_tela.esta_aberta(), "recusada continua fechada")
+
+
+func test_input_nao_quebra_quando_ok_tira_a_tela_da_arvore() -> void:
+	# f528: o OK recarrega a Stage e o no sai da arvore durante o _input; get_viewport() nao pode ser chamado depois.
+	_abrir([_modo_a, _modo_b] as Array[GameMode])
+	var pai := _tela.get_parent()
+	_tela.fechado.connect(func(_m: GameMode) -> void: pai.remove_child(_tela))
+	var centro := _centro(_tela.rect_ok())
+	var ev := InputEventScreenTouch.new()
+	ev.index = 3
+	ev.position = centro
+	ev.pressed = true
+	_tela._input(ev)
+	ev.pressed = false
+	_tela._input(ev)
+	var fora_da_arvore := not _tela.is_inside_tree()
+	pai.add_child(_tela)
+	assert_true(fora_da_arvore, "OK tirou a tela da arvore durante o _input")
+	assert_eq(_fechados, [_modo_a.id], "OK emitiu fechado")

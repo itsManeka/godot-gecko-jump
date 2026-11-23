@@ -116,8 +116,10 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if tratar_evento(event):
-		get_viewport().set_input_as_handled()
+	# O OK pode recarregar a Stage e tirar este no da arvore: guarda o viewport antes de tratar o evento.
+	var vp := get_viewport()
+	if tratar_evento(event) and vp != null:
+		vp.set_input_as_handled()
 
 
 # Processa um evento; devolve true se foi consumido (tela aberta consome todo toque/clique).
