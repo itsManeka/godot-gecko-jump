@@ -18,3 +18,20 @@ func grava_recorde() -> bool:
 
 func usa_seed_do_dia() -> bool:
 	return true
+
+
+# f528 T6: uma tentativa por dia UTC (ADR 0014). O ctx da Stage traz o dia vigente (DIA), o dia que ela
+# guardou ao nascer (DIA_DA_STAGE) e o store do dia (STORE_DIARIO): false quando o dia ja foi jogado, o
+# relogio e invalido (sentinela) ou a virada encontrou a Stage aberta no dia antigo — a Stage recarrega
+# com a seed do dia novo antes de gastar (C783). ctx sem as chaves do dia (montado fora da Stage):
+# falha segura, false.
+func pode_iniciar(ctx: Dictionary) -> bool:
+	var dia: int = int(ctx.get(PartidaCtx.DIA, DiaUtc.DIA_INVALIDO))
+	if dia == DiaUtc.DIA_INVALIDO:
+		return false
+	if int(ctx.get(PartidaCtx.DIA_DA_STAGE, DiaUtc.DIA_INVALIDO)) != dia:
+		return false
+	var store: DesafioDiarioStore = ctx.get(PartidaCtx.STORE_DIARIO) as DesafioDiarioStore
+	if store == null:
+		return false
+	return store.tentativa_disponivel(dia)

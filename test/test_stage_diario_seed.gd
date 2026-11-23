@@ -147,6 +147,10 @@ func _gerar(dia: int, cor: Enums.COLOR) -> Dictionary:
 	)
 	Global.cor_gecko = cor
 	Global.platforms = []
+	# f528 T6: o Play do Diario gasta a tentativa do dia (uma por dia UTC); cada geracao comeca com o store
+	# limpo para o fixture (duas geracoes no MESMO dia, C767/C769) nao esbarrar no bloqueio de "ja jogado
+	# hoje" — o caminho e o isolado pelo gut_pre_run, nenhum teste grava o user:// real.
+	DirAccess.remove_absolute("user://desafio_diario_test_suite.cfg")
 	_resumos = {}
 	var stage: Node = load(STAGE_SCENE).instantiate()
 	_escutar_linhas(stage)

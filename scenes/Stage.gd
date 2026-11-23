@@ -19,6 +19,17 @@ const LAST_TOP: float = 230.0
 const LAST_BOTTOM: float = 247.0
 const BEST_TOP: float = 248.0
 const BEST_BOTTOM: float = 265.0
+# f528 T6 (D3): Play desabilitado com o texto do dia ("Ja jogado hoje", sem contagem regressiva), no estilo
+# existente de Play desabilitado. O texto do dia usa a fonte 16 (TAMANHO_TEXTO de UiHelpers) e o botao alarga
+# para caber (o rotulo "Play" em 32 nao cabe nos 56 px do Play normal).
+const TEXTO_DIA_JA_JOGADO: String = "Ja jogado hoje"
+const TAMANHO_TEXTO_DIA: int = 16
+const PLAY_WIDTH_DIA: float = 132.0
+const COR_TEXTO_DIA: Color = Color(0.93, 0.96, 0.9)
+# Chaves do ctx do dia (f528 T6), citadas pela Stage e pela regra do Diario so via PartidaCtx
+const CTX_DIA: String = PartidaCtx.DIA
+const CTX_DIA_DA_STAGE: String = PartidaCtx.DIA_DA_STAGE
+const CTX_STORE_DIARIO: String = PartidaCtx.STORE_DIARIO
 # Faixa escura atras do bloco Last/Best (legibilidade sobre as plataformas); cor e alfa = fundo do overlay de pausa
 const COR_FAIXA_PLACAR: Color = UiHelpers.COR_FUNDO_OVERLAY
 # Curva de producao (estagios da dificuldade); o estado de cada partida e criado em _ready a partir dela
@@ -92,6 +103,17 @@ var semente_partida: Variant = null
 # pede a seed do dia (Diario); DIA_INVALIDO (-1) = relogio invalido ou modo sem seed do dia — a sentinela nunca
 # vira seed (o validador devolve null). O bloqueio/gasto da tentativa e o reload da virada (T6) leem daqui.
 var _dia_da_stage: int = DiaUtc.DIA_INVALIDO
+# f528 T6: store do Desafio diario desta Stage (so no Diario): a tentativa e o resultado do dia passam por
+# ele — nunca pelo best_score_* do modo. Nasce no _ready (uma leitura por Stage; o reload da cena re-le o
+# disco, entao o estado de outra Stage/sessao chega) e entra no ctx para a regra consultar a tentativa.
+var _store_diario: DesafioDiarioStore = null
+# f528 T6 (D3): rotulo original do Play e o estado do dia avaliado na UI (decide largura/texto no layout)
+var _texto_play_original: String = ""
+var _ui_dia_bloqueada: bool = false
+# Tamanho de fonte do Play antes da UI do dia (override da cena ou do layout), para o estado habilitado restaurar
+var _play_capturado: bool = false
+var _play_tinha_tamanho_proprio: bool = false
+var _tamanho_play_original: int = 0
 # Estagio da dificuldade na ultima publicacao da ponte; mudanca por tempo republica 1x (ver _physics_process)
 var _estagio_publicado: int = 0
 # Moldura de aviso de subida de estagio (filha da Stage, criada em _ready) e o `aviso` da ultima publicacao da ponte
@@ -168,6 +190,9 @@ func _ready():
 	Global.set_iniciado(false)
 	if regra == null:
 		regra = GameModes.de_id(Global.get_modo_jogo()).regra
+	# f528 T6: store do dia quando o modo pede (Diario) e o rotulo original do Play para a UI do dia restaurar
+	_store_do_dia()
+	_texto_play_original = playbutton.text
 	# O gancho so desliga: quem setou `power_ups_habilitados = false` antes do add_child continua valendo
 	_power_ups_base = power_ups_habilitados
 	power_ups_habilitados = power_ups_habilitados and regra.power_ups_habilitados()
@@ -275,6 +300,8 @@ func _ready():
 	# (stretch keep_width: so a altura varia, a largura fica em 180)
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	_on_viewport_size_changed()
+	# f528 T6: UI do dia do menu avaliada ao nascer (o _on_viewport_size_changed acima ja deixou o layout pronto)
+	_aplicar_ui_dia()
 
 # Reaplica o layout com o tamanho/safe area atuais do viewport
 func _on_viewport_size_changed() -> void:
@@ -333,8 +360,10 @@ func _layout_hud(visible_size: Vector2, safe: Rect2) -> void:
 	var top := safe.position.y
 	var right := minf(visible_size.x, safe.end.x) - HUD_RIGHT_MARGIN
 	_place(pointslabel, right - POINTS_WIDTH, top, right, top + POINTS_HEIGHT)
-	var play_left := (visible_size.x - PLAY_WIDTH) / 2.0
-	_place(playbutton, play_left, top + PLAY_TOP, play_left + PLAY_WIDTH, top + PLAY_BOTTOM)
+	# f528 T6: o Play alarga no estado do dia (o texto "Ja jogado hoje" nao cabe nos 56 px do rotulo)
+	var play_width := PLAY_WIDTH_DIA if _ui_dia_bloqueada else PLAY_WIDTH
+	var play_left := (visible_size.x - play_width) / 2.0
+	_place(playbutton, play_left, top + PLAY_TOP, play_left + play_width, top + PLAY_BOTTOM)
 	_place(lastscore, 0.0, top + LAST_TOP, visible_size.x, top + LAST_BOTTOM)
 	_place(bestscore, 0.0, top + BEST_TOP, visible_size.x, top + BEST_BOTTOM)
 	faixaplacar.color = COR_FAIXA_PLACAR
@@ -576,8 +605,8 @@ func _fechar_modos(modo: GameMode) -> void:
 		scroll_level.power_ups_habilitados = power_ups_habilitados
 	_aplicar_fator_scroll_forcado()
 	_aplicar_visibilidade_recorde(not started)
-	lastscore.text = "Last Score: " + str(Global.get_last_score())
-	bestscore.text = "Best Score: " + str(Global.get_best_score())
+	# f528 T6: placar e Play reavaliados com o modo vigente (C787: o Best do Diario le o resultado do dia)
+	_aplicar_ui_dia()
 	modo_botao.definir_modo(atual)
 	_aguardar_soltar_jump = Input.is_action_pressed("jump")
 	if not started:
@@ -644,6 +673,8 @@ func _mostrar_menu(valor: bool) -> void:
 	playbutton.visible = valor
 	_aplicar_visibilidade_recorde(valor)
 	if valor:
+		# f528 T6: menu de volta a aparecer (Opcoes/Modos fecharam): UI do dia reavaliada (C787/C779)
+		_aplicar_ui_dia()
 		opcoes_botao.mostrar()
 		modo_botao.mostrar()
 	else:
@@ -764,12 +795,36 @@ func _encerrar_partida(body) -> void:
 	loseaudio.play()
 	if regra.grava_recorde():
 		Global.set_score(points)
+	# f528 T6 (D7): o resultado do dia vive no DesafioDiarioStore, sempre no DIA DA STAGE — o do inicio:
+	# virada no meio da partida nao muda o dia de gravacao (C784) — e nunca no best_score_* do modo (C781).
+	# Stage Diario sem dia (seed setada pelo chamador em teste) nao grava nada no store.
+	var store_dia: DesafioDiarioStore = _store_do_dia()
+	if store_dia != null and _dia_da_stage != DiaUtc.DIA_INVALIDO:
+		store_dia.gravar_resultado(_dia_da_stage, points)
 	_publicar_estado(GameState.STATE_LOST, false)
 	animation.play("lose_animation")
 
-# Snapshot da partida entregue a regra do modo
+# Snapshot da partida entregue a regra do modo. f528 T6: no Diario acrescenta o dia vigente, o dia guardado
+# pela Stage e o store do dia (a regra consulta a tentativa; gasto e gravacao sao sempre da Stage, no dia
+# guardado) — o _ctx_partida roda por frame de fisica, entao as chaves extras so entram no modo que as usa.
 func _ctx_partida() -> Dictionary:
-	return {CTX_PONTOS: points, CTX_INICIADO: Global.is_iniciado(), CTX_TEMPO: tempo_partida}
+	var ctx := {CTX_PONTOS: points, CTX_INICIADO: Global.is_iniciado(), CTX_TEMPO: tempo_partida}
+	if regra != null and regra.usa_seed_do_dia():
+		ctx[CTX_DIA] = _dia_utc_atual()
+		ctx[CTX_DIA_DA_STAGE] = _dia_da_stage
+		ctx[CTX_STORE_DIARIO] = _store_do_dia()
+	return ctx
+
+
+# f528 T6: store do dia desta Stage, so enquanto o modo vigente usa a seed do dia (Diario): criado sob demanda
+# (uma leitura por Stage) e null nos demais modos — a UI e o gasto nunca olham o store num modo sem dia, mesmo
+# depois de uma troca Diario -> Classico na mesma Stage (a recarga da fronteira vem em seguida).
+func _store_do_dia() -> DesafioDiarioStore:
+	if regra == null or not regra.usa_seed_do_dia():
+		return null
+	if _store_diario == null:
+		_store_diario = DesafioDiarioStore.new()
+	return _store_diario
 
 # Reinicia o jogo após a animação de perda
 func _on_animation_end():
@@ -856,6 +911,16 @@ func _on_Play_button_down():
 	# Idempotente: toque + button_down emulado, toque durante a derrota ou jump preso nao reiniciam nada
 	if started:
 		return
+	# f528 T6: o mesmo predicado do estado do botao decide as tres entradas de inicio (Play, acao `jump` do
+	# _process, toque do _input). Bloqueado, nada comeca — sem started, sem tutorial, sem som, sem
+	# partida_iniciada; liberado, a tentativa do dia e gasta ANTES do started (conta mesmo que o app feche
+	# logo depois, D7), sempre no dia que a Stage guardou ao nascer.
+	if not _pode_iniciar():
+		_bloquear_inicio()
+		return
+	var store_dia: DesafioDiarioStore = _store_do_dia()
+	if store_dia != null:
+		store_dia.gastar_tentativa(_dia_da_stage)
 	started = true
 	partida_iniciada.emit()
 	_mostrar_menu(false)
@@ -863,6 +928,72 @@ func _on_Play_button_down():
 	Global.set_iniciado(true)
 	_abrir_tutorial()
 	_publicar_estado(GameState.STATE_PLAYING, true)
+
+
+# f528 T6: predicado UNICO do inicio, citado nos dois lados — a acao que inicia (as tres entradas) e o
+# estado do Play no menu (C779, sem divergencia entre o que o botao promete e o que a acao faz). A regra
+# do modo decide com o ctx vigente; o Diario nega o dia ja jogado, o relogio invalido e a Stage aberta na
+# virada (o bloqueio dessa recarga com a seed do dia novo, C783); os demais seguem o default neutro (true,
+# inicio como hoje, C786).
+func _pode_iniciar() -> bool:
+	return regra.pode_iniciar(_ctx_partida())
+
+
+# f528 T6: o predicado negou o inicio. So o Diario chega aqui; o caso acionavel e a virada com a Stage
+# aberta (dia da Stage != dia vigente, dia novo valido com tentativa disponivel): recarrega a Stage no
+# menu — a nova nasce com a seed do dia novo e o Play seguinte gasta a tentativa de d+1 (a do dia antigo
+# segue intacta, C783). Dia ja jogado ou relogio invalido (sentinela): nada comeca (C776/C785).
+func _bloquear_inicio() -> void:
+	var store_dia: DesafioDiarioStore = _store_do_dia()
+	if store_dia == null:
+		return
+	var dia: int = _dia_utc_atual()
+	if dia == DiaUtc.DIA_INVALIDO or dia == _dia_da_stage:
+		return
+	if not store_dia.tentativa_disponivel(dia):
+		return
+	_recarregar_stage()
+
+
+# f528 T6 (D3/D4): UI do dia no menu — reavaliada ao nascer a Stage (menu aberto), na troca de modo
+# (_fechar_modos) e quando o menu volta a aparecer (_mostrar_menu(true)). O estado do Play e o MESMO
+# predicado do inicio (`_pode_iniciar`): bloqueado, o botao mostra o texto do dia no estilo do Play
+# desabilitado (D3, "Ja jogado hoje", sem contagem regressiva); o placar do Diario le o resultado do dia
+# vigente (D4: o recorde proprio do dia — o Best do menu; o Last e a partida do dia, a mesma coisa num
+# modo de uma tentativa), nunca o best_score_* do modo. Nao reavalia por frame: a virada com a Stage
+# aberta e resolvida pela recarga do primeiro inicio bloqueado (C783), nao por polling do relogio.
+func _aplicar_ui_dia() -> void:
+	var bloqueado: bool = not _pode_iniciar()
+	if not _play_capturado:
+		# 1a avaliacao (fim do _ready, o estilo da cena ja aplicado e o estado do dia ainda nao): guarda o tamanho do Play
+		_play_capturado = true
+		_play_tinha_tamanho_proprio = playbutton.has_theme_font_size_override("font_size")
+		_tamanho_play_original = playbutton.get_theme_font_size("font_size")
+	_ui_dia_bloqueada = bloqueado
+	playbutton.disabled = bloqueado
+	if bloqueado:
+		playbutton.text = TEXTO_DIA_JA_JOGADO
+		playbutton.add_theme_font_size_override("font_size", TAMANHO_TEXTO_DIA)
+		# Texto claro so neste estado: a cor padrao do Play desabilitado fica escura sobre o verde (ilegivel)
+		playbutton.add_theme_color_override("font_disabled_color", COR_TEXTO_DIA)
+	else:
+		playbutton.text = _texto_play_original
+		if playbutton.has_theme_color_override("font_disabled_color"):
+			playbutton.remove_theme_color_override("font_disabled_color")
+		# Devolve o tamanho que a cena dava ao Play (o override do .tscn, ex. TAMANHO_BOTAO), nunca o do tema
+		if _play_tinha_tamanho_proprio:
+			playbutton.add_theme_font_size_override("font_size", _tamanho_play_original)
+		elif playbutton.has_theme_font_size_override("font_size"):
+			playbutton.remove_theme_font_size_override("font_size")
+	var store_dia: DesafioDiarioStore = _store_do_dia()
+	if store_dia != null:
+		var resultado: int = store_dia.resultado_do(_dia_utc_atual())
+		bestscore.text = "Best Score: " + str(resultado)
+		lastscore.text = "Last Score: " + str(resultado)
+	else:
+		bestscore.text = "Best Score: " + str(Global.get_best_score())
+		lastscore.text = "Last Score: " + str(Global.get_last_score())
+	_layout_hud(_tamanho_visivel, safe_area)
 
 # Monta e publica o estado na ponte do smoke (no-op fora de web debug); score nunca negativo (points inicia em -1)
 func _publicar_estado(state: String, alive: bool) -> void:
