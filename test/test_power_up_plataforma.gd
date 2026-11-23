@@ -11,22 +11,23 @@ const LINHAS_CRIADAS := 6
 const TIPO_A: StringName = &"teste"
 const TIPO_B: StringName = &"outro"
 
-# Sequencia literal capturada no HEAD (antes do sorteio de power-up) com a SEMENTE e o estado de _estado().
+# Sequencia literal (golden) com a SEMENTE e o estado de _estado(), sem o sorteio de power-up. Regenerada quando a
+# mistura da seed em RowSeed passou a ser aritmetica int64 propria (estavel entre plataformas): mesma seed, outro layout.
 # Uma string por linha: tipo|speed|x:cor:mecanicas por plataforma.
 const LAYOUT_HEAD: Array[String] = [
-	"2|-60.00|49.0:2:,128.0:2:,207.0:0:,-30.0:3:",
-	"2|-60.00|49.0:2:,128.0:1:,207.0:0:,-30.0:2:",
+	"1|60.00|131.0:2:,52.0:3:,-27.0:3:,210.0:2:",
+	"1|60.00|131.0:2:,52.0:1:,-27.0:0:,210.0:2:",
+	"0|60.00|5.0:1:,90.0:2:,175.0:0:",
+	"2|-60.00|49.0:2:,128.0:3:,207.0:1:,-30.0:2:",
+	"0|60.00|5.0:0:,90.0:1:,175.0:0:",
+	"2|-60.00|49.0:2:,128.0:3:,207.0:1:,-30.0:2:",
 	"1|60.00|131.0:2:,52.0:0:,-27.0:0:,210.0:2:",
-	"1|60.00|131.0:2:,52.0:0:,-27.0:2:,210.0:2:",
-	"0|60.00|5.0:3:,90.0:3:,175.0:0:",
-	"1|60.00|131.0:2:,52.0:0:,-27.0:1:,210.0:2:",
-	"1|60.00|131.0:2:,52.0:2:,-27.0:0:,210.0:0:",
-	"1|81.91|124.0:2:,38.0:1:PlatformColorCycle,210.0:1:",
-	"2|-91.93|58.9:2:PlatformColorCycle,147.7:1:PlatformColorCycle,-30.0:0:",
-	"2|-63.87|49.8:2:PlatformColorCycle+PlatformSineMotion,129.7:0:PlatformColorCycle,209.5:2:PlatformColorCycle+PlatformSineMotion,-30.0:1:PlatformColorCycle",
-	"2|-82.54|55.3:2:PlatformColorCycle+PlatformSineMotion,140.6:1:PlatformColorCycle,-30.0:2:",
-	"0|80.00|5.0:3:PlatformColorCycle,90.0:0:PlatformColorCycle,175.0:3:PlatformBlink",
-	"0|80.00|5.0:2:PlatformColorCycle,90.0:3:PlatformBlink,175.0:0:PlatformBlink",
+	"2|-83.75|56.5:2:PlatformSineMotion,143.1:3:PlatformSineMotion,-30.0:0:PlatformColorCycle+PlatformSineMotion",
+	"0|80.00|5.0:2:PlatformColorCycle,90.0:0:PlatformColorCycle,175.0:0:",
+	"0|80.00|5.0:3:,90.0:2:,175.0:3:PlatformColorCycle",
+	"0|80.00|5.0:1:,90.0:1:PlatformColorCycle,175.0:1:",
+	"2|-81.68|55.8:2:PlatformColorCycle+PlatformSineMotion,141.5:3:PlatformColorCycle,-30.0:0:PlatformSineMotion",
+	"0|80.00|5.0:1:PlatformBlink,90.0:3:PlatformColorCycle,175.0:2:PlatformColorCycle",
 ]
 
 var _cor_original: Enums.COLOR

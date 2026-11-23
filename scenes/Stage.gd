@@ -118,11 +118,12 @@ var tempo_partida: float = 0.0
 
 # Repassa a seed da partida ao ScrollLevel em _enter_tree (f517 T4, D1): roda antes do _ready de qualquer filho,
 # entao as linhas do .tscn ja recebem os rngs no _enter_tree do ScrollLevel. Quem seta semente_partida e o chamador,
-# ANTES do add_child; nenhum chamador de producao seta nesta feature. Sem seed a atribuicao leva null (no-op).
+# ANTES do add_child; nenhum chamador de producao seta nesta feature. A seed passa por SeedPartida.validar (f528 T1):
+# valor invalido vira null (sem seed), nunca chega ao ScrollLevel como String/float/negativo.
 func _enter_tree() -> void:
 	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
 	if scroll_level != null:
-		scroll_level.semente = semente_partida
+		scroll_level.semente = SeedPartida.validar(semente_partida)
 
 # Ao sair da arvore (troca de cena): a flag de cor livre e espelho deste no, nao estado global — a Stage
 # seguinte nao herda o efeito de uma partida que ja acabou (mesmo padrao do Player com Global.cor_gecko)
