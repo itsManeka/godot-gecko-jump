@@ -142,6 +142,11 @@ GODOT_PATH=/caminho/para/Godot_v4.7.2-stable_linux.x86_64 node .verify.mjs ci
 
 No Windows, defina `GODOT_PATH` com o caminho do executavel antes de rodar o mesmo comando.
 
+### Jogar no celular fora de casa
+
+Para testar o export web no celular sem deploy, suba-o por um túnel HTTPS temporário. Passo a passo em
+[`wiki/playtest-remoto-por-tunel.md`](wiki/playtest-remoto-por-tunel.md).
+
 ### Smoke do build web
 
 O roteiro `test/smoke/gecko.smoke.json` joga o export web num navegador headless (iniciar, pular, morrer, reiniciar,
