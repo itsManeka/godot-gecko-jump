@@ -92,7 +92,7 @@ func _limiar() -> float:
 # Stage real sem ScrollLevel (as plataformas sao as do teste: sem o gerador de linhas a linha de cima do apoio
 # e deterministica), layout 180x320 e partida iniciada pelo caminho do Play. Player parado: so o campo `alvo`
 # e a posicao movem o estado publicado.
-func _novo_stage() -> Node:
+func _novo_stage(alvo_ativo: bool = true) -> Node:
 	_stage = load(STAGE_SCENE).instantiate()
 	var scroll: Node = _stage.get_node("ScrollLevel")
 	_stage.remove_child(scroll)
@@ -104,6 +104,9 @@ func _novo_stage() -> Node:
 	_p = _stage.get_node("Node2D/Player")
 	_p.set_physics_process(false)
 	_p.jumping = false
+	# o GUT roda em headless (a ponte nao publica); liga o calculo do campo como no web debug
+	if alvo_ativo:
+		_stage._alvo_ativo = true
 	_stage._on_Play_button_down()
 	return _stage
 
@@ -168,6 +171,34 @@ func test_C805_no_chao_publica_alinhado_desalinhado_e_sem_alvo() -> void:
 	_tick()
 	assert_eq(_alvo_publicado()["alinhado"], false, "C805: sem alvo da cor na linha de cima: false")
 	assert_eq(_alvo_publicado()["dx"], 0, "C805: sem alvo: dx 0")
+
+
+# Correcao f530: em release/headless/desktop (sem web debug) a Stage nao varre as plataformas: com o alvo alinhado
+# montado na arvore, o campo publicado fica no padrao e nenhum tick republica por causa dele.
+func test_headless_nao_calcula_alvo_e_publica_o_padrao() -> void:
+	_stage = await _novo_stage(false)
+	assert_false(
+		_stage._alvo_ativo,
+		"o GUT roda em headless: o calculo do alvo nasce desligado (o mesmo decisor de GameState.publish)"
+	)
+	var cor: Enums.COLOR = Global.cor_gecko
+	var apoio := _plataforma(cor, 90.0, Y_APOIO)
+	_plataforma(cor, 90.0, _y_linha_de_cima())
+	_no_chao(apoio, 90.0)
+	_tick()
+	assert_eq(
+		_stage._alvo_atual(GameState.STATE_PLAYING),
+		{"alinhado": false, "dx": 0},
+		"sem web debug o alvo nao e calculado mesmo alinhado na arvore"
+	)
+	assert_eq(_alvo_publicado(), {"alinhado": false, "dx": 0}, "o campo publicado fica no padrao")
+	var publicado: Dictionary = _stage.ultimo_estado
+	_tick(20)
+	assert_same(_stage.ultimo_estado, publicado, "nenhum tick republica por causa do alvo")
+	_stage._alvo_ativo = true
+	assert_eq(
+		_stage._alvo_atual(GameState.STATE_PLAYING)["alinhado"], true, "controle: ligado, o mesmo cenario alinha"
+	)
 
 
 # C806: gecko no ar (sem plataforma de apoio) ou state != playing: alinhado false e dx 0 mesmo com o alvo

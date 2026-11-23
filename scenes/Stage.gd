@@ -133,6 +133,9 @@ var _relogio_publicado: int = 0
 # f530 T4: campo `alvo` ({alinhado, dx}) da ultima publicacao: a movel da linha de cima anda sem mover o gecko,
 # entao a mudanca do par tem gatilho proprio junto do de posicao (ver _physics_process), nunca por frame
 var _alvo_publicado: Dictionary = {"alinhado": false, "dx": 0}
+# Correcao f530: o campo `alvo` so e calculado (varredura de Global.platforms) quando a ponte publica de fato (web
+# debug, o mesmo decisor de GameState.publish); release/headless/desktop ficam no padrao sem varrer plataformas
+var _alvo_ativo: bool = GameState.deve_publicar(OS.has_feature("web"), OS.is_debug_build())
 # y do limite de topo da camera (fracao da altura visivel em CameraFollow); recalculado a cada apply_layout
 var _limite_camera: float = 0.0
 # Relogio da partida em segundos (f524 T3): membro da Stage (nunca da regra, que e instancia reusada); nasce em 0 a cada
@@ -897,7 +900,7 @@ func _relogio_atual() -> int:
 # que de fato move o mundo, espera = ESPERA_MAXIMA_S), reduzidas ao par do gecko com wrap horizontal. Sem apoio
 # (gecko no ar) ou fora de playing: {alinhado: false, dx: 0} — o roteiro de smoke nao toca fora da partida.
 func _alvo_atual(state: String) -> Dictionary:
-	if state != GameState.STATE_PLAYING or not is_instance_valid(player.actual_platform):
+	if not _alvo_ativo or state != GameState.STATE_PLAYING or not is_instance_valid(player.actual_platform):
 		return {"alinhado": false, "dx": 0}
 	var alvos: Array = ReachableColors.alvos_da_linha_acima(
 		ReachableColors.entradas_de_plataformas(Global.platforms, player.actual_platform),

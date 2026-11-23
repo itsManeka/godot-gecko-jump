@@ -12,6 +12,25 @@ const STATE_LOST := "lost"
 const STATE_TUTORIAL_ABERTO := "aberto"
 const STATE_TUTORIAL_FECHADO := "fechado"
 
+# Chaves (caminho com ponto) que a ponte publica e que um `expect` de roteiro de smoke pode ler: fonte unica do
+# validador dos roteiros (test_smoke_roteiros.gd); `build` tem de publicar cada uma delas (C804)
+const CHAVES_PUBLICADAS: Array[String] = [
+	"score",
+	"best",
+	"state",
+	"player.alive",
+	"player.x",
+	"player.y",
+	"dificuldade.estagio",
+	"powerup.ativo",
+	"powerup.restante",
+	"powerup.carga",
+	"modo",
+	"relogio.restante",
+	"alvo.alinhado",
+	"alvo.dx",
+]
+
 # Monta o estado publicado: `score` e `best` (int), `state` ("menu"|"playing"|"lost"), `player.alive` (bool) e
 # `volume.music`/`volume.sfx` (int 0-100, o mesmo valor mostrado nos sliders de Opcoes) e
 # `tutorial` ("aberto"|"fechado": card do tutorial) e `dificuldade.estagio` (int, indice do estagio na curva; 0 = inicial) e
@@ -59,6 +78,10 @@ static func build(
 		"relogio": {"restante": relogio_restante},
 		"alvo": {"alinhado": alvo_alinhado, "dx": alvo_dx},
 	}
+
+# Validador de chave de `expect` do roteiro de smoke: true se a ponte publica essa chave
+static func chave_publicada(chave: String) -> bool:
+	return CHAVES_PUBLICADAS.has(chave)
 
 # Decisor puro da trava de publicacao: so web de debug publica (release ignora; headless/desktop nao tem web)
 static func deve_publicar(is_web: bool, is_debug: bool) -> bool:

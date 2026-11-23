@@ -30,7 +30,8 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-1170x2532",
 	"retrato-720x1280",
 ]
-const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga", "modo", "relogio.restante", "alvo.alinhado", "alvo.dx"]
+# Fonte unica no codigo de producao (GameState): o teste estatico dos roteiros e o C804 usam a mesma lista/validador
+const CHAVES_PUBLICADAS: Array[String] = GameState.CHAVES_PUBLICADAS
 # Roteiros dos modos de jogo (seletor, Puro, Contra o tempo, Diario): fora de ROTEIROS porque o do Tempo espera `lost`
 # pelo relogio e o do Diario espera `lost` pela queda do dia.
 const ROTEIROS_MODOS: Array[String] = ["modos", "modo-puro", "modo-tempo", "modo-zen", "modo-diario"]
@@ -194,8 +195,8 @@ func test_expect_usa_so_chaves_e_operadores_do_contrato() -> void:
 		for passo in _expects(nome):
 			var exigencia: Dictionary = passo["expect"]
 			assert_gt(exigencia.size(), 0, "expect nao pode ser vazio")
+			assert_eq(_chaves_nao_publicadas(exigencia).size(), 0, "a chave do expect deve ser uma das publicadas pela ponte: %s" % str(_chaves_nao_publicadas(exigencia)))
 			for chave in exigencia.keys():
-				assert_true(CHAVES_PUBLICADAS.has(str(chave)), "a chave do expect deve ser uma das publicadas pela ponte")
 				var valor: Variant = exigencia[chave]
 				if typeof(valor) == TYPE_DICTIONARY:
 					assert_eq(valor.size(), 1, "o objeto de comparacao deve ter exatamente um operador")
@@ -730,23 +731,28 @@ func test_nome_de_powerup_invalido_reprova() -> void:
 	assert_true(POWERUPS_REAIS.has(_nome_powerup("index.html?seed=1&powerup=camaleao&semderrota=1")), "powerup= no meio da query e lido ate o &")
 
 
+# Chaves de um `expect` que a ponte nao publica, pelo validador de producao (GameState.chave_publicada); o mesmo
+# helper valida os roteiros reais (test_expect_usa_so_chaves_e_operadores_do_contrato) e o roteiro fake do C804.
+func _chaves_nao_publicadas(exigencia: Dictionary) -> Array[String]:
+	var ruins: Array[String] = []
+	for chave in exigencia.keys():
+		if not GameState.chave_publicada(str(chave)):
+			ruins.append(str(chave))
+	return ruins
+
+
 func test_C804_chaves_publicadas_incluem_alvo_e_chave_inexistente_reprova() -> void:
-	assert_true(CHAVES_PUBLICADAS.has("alvo.alinhado"), "C804: alvo.alinhado esta em CHAVES_PUBLICADAS")
-	assert_true(CHAVES_PUBLICADAS.has("alvo.dx"), "C804: alvo.dx esta em CHAVES_PUBLICADAS")
+	assert_true(GameState.chave_publicada("alvo.alinhado"), "C804: alvo.alinhado e chave publicada")
+	assert_true(GameState.chave_publicada("alvo.dx"), "C804: alvo.dx e chave publicada")
 	# a ponte de verdade publica cada chave alvo.* declarada (o teste cai se o montador deixar uma de fora)
 	var publicado: Dictionary = GameState.build(0, 0, "menu", true)["alvo"] as Dictionary
 	for chave in ["alinhado", "dx"]:
 		assert_true(publicado.has(chave), "C804: GameState.build publica alvo.%s" % chave)
-	# roteiro fake: expect com as chaves novas passa; chave que a ponte nao publica reprova
+	# roteiro fake: expect com as chaves novas passa pelo validador de producao; chave inexistente reprova
 	var fake_ok: Dictionary = {"expect": {"alvo.alinhado": true, "alvo.dx": {"lt": 20}}}
-	for chave in fake_ok["expect"].keys():
-		assert_true(CHAVES_PUBLICADAS.has(str(chave)), "C804: chave do expect fake publicada: %s" % str(chave))
+	assert_eq(_chaves_nao_publicadas(fake_ok["expect"]).size(), 0, "C804: expect com alvo.alinhado e alvo.dx passa no validador")
 	var fake_ruim: Dictionary = {"expect": {"alvo.cor": true}}
-	var reprovou: bool = false
-	for chave in fake_ruim["expect"].keys():
-		if not CHAVES_PUBLICADAS.has(str(chave)):
-			reprovou = true
-	assert_true(reprovou, "C804: chave inexistente (alvo.cor) reprova no teste estatico")
+	assert_eq(_chaves_nao_publicadas(fake_ruim["expect"]), ["alvo.cor"], "C804: chave inexistente (alvo.cor) reprova no validador")
 
 
 # f530 T5: corte de player.y em repouso apos cruzar o limite (medido na T1: antes 169-180, depois 145-152).
