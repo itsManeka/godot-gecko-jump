@@ -21,7 +21,10 @@ const STATE_TUTORIAL_FECHADO := "fechado"
 # `powerup.ativo` (nome do temporizado ativo ou ""), `powerup.restante` (int, segundos restantes arredondados para
 # cima; 0 sem ativo) e `powerup.carga` (int, 0 ou 1) e
 # `modo` (string, id do modo de jogo atual; padrao "classico") e `relogio.restante` (int, segundos restantes do
-# Contra o tempo arredondados para cima; 0 fora do modo `tempo`; ultimo parametro, padrao 0)
+# Contra o tempo arredondados para cima; 0 fora do modo `tempo`; padrao 0) e
+# `alvo.alinhado` (bool, true se o gecko pode tocar reto agora: ha plataforma da sua cor na linha de cima alinhada em x)
+# e `alvo.dx` (int, px com sinal ate a plataforma elegivel da linha de cima na chegada; 0 sem alvo);
+# ultimo grupo de parametros, padrao `{alinhado: false, dx: 0}`
 static func build(
 	score: int,
 	best: int,
@@ -39,7 +42,9 @@ static func build(
 	powerup_restante: float = 0.0,
 	powerup_carga: int = 0,
 	modo: String = "classico",
-	relogio_restante: int = 0
+	relogio_restante: int = 0,
+	alvo_alinhado: bool = false,
+	alvo_dx: int = 0
 ) -> Dictionary:
 	return {
 		"score": score,
@@ -52,6 +57,7 @@ static func build(
 		"powerup": {"ativo": powerup_ativo, "restante": ceili(powerup_restante), "carga": powerup_carga},
 		"modo": modo,
 		"relogio": {"restante": relogio_restante},
+		"alvo": {"alinhado": alvo_alinhado, "dx": alvo_dx},
 	}
 
 # Decisor puro da trava de publicacao: so web de debug publica (release ignora; headless/desktop nao tem web)

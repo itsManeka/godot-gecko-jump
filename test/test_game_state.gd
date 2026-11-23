@@ -243,3 +243,37 @@ func test_C695_build_publica_relogio_restante_zero_por_padrao_e_chave_publicada(
 	assert_eq(tempo["score"], 7, "C695: score segue")
 	var chaves: Array = load("res://test/test_smoke_roteiros.gd").get_script_constant_map()["CHAVES_PUBLICADAS"]
 	assert_true(chaves.has("relogio.restante"), "C695: relogio.restante esta em CHAVES_PUBLICADAS")
+
+
+func test_C802_build_publica_alvo_padrao_e_valores_informados_inteiros() -> void:
+	# (a) default: sem o grupo, alvo fica alinhado false e dx 0 (int)
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	var alvo_padrao: Dictionary = padrao["alvo"] as Dictionary
+	assert_eq(alvo_padrao["alinhado"], false, "C802: alvo.alinhado padrao false")
+	assert_eq(alvo_padrao["dx"], 0, "C802: alvo.dx padrao 0")
+	assert_eq(typeof(alvo_padrao["dx"]), TYPE_INT, "C802: alvo.dx padrao e int")
+	# (b) comum: valores informados (ultimo grupo de parametros) vao ao campo exatos
+	var mirando: Dictionary = GameState.build(7, 12, "playing", true, 100, 100, false, 2, false, 0.0, 0.0, 0.0, "", 0.0, 0, "classico", 0, true, -37)
+	var alvo: Dictionary = mirando["alvo"] as Dictionary
+	assert_eq(alvo["alinhado"], true, "C802: alvo.alinhado true publicado")
+	assert_eq(alvo["dx"], -37, "C802: alvo.dx -37 publicado exato")
+	assert_eq(typeof(alvo["dx"]), TYPE_INT, "C802: alvo.dx publicado e int")
+	# (c) degenerado: round-trip JSON preserva bool e o inteiro
+	var volta: Dictionary = JSON.parse_string(JSON.stringify(mirando)) as Dictionary
+	assert_eq((volta["alvo"] as Dictionary)["alinhado"], true, "C802: round-trip preserva alinhado")
+	assert_eq(int((volta["alvo"] as Dictionary)["dx"]), -37, "C802: round-trip preserva dx -37")
+
+
+func test_C803_campos_anteriores_iguais_com_e_sem_alvo_e_publicacao_inalterada() -> void:
+	var sem_alvo: Dictionary = GameState.build(7, 12, "playing", true, 40, 50, true, 2, true, 30.0, 70.0, 0.5, "teste", 1.2, 1, "tempo", 42)
+	var com_alvo: Dictionary = GameState.build(7, 12, "playing", true, 40, 50, true, 2, true, 30.0, 70.0, 0.5, "teste", 1.2, 1, "tempo", 42, true, 9)
+	var antigos_sem: Dictionary = sem_alvo.duplicate()
+	var antigos_com: Dictionary = com_alvo.duplicate()
+	antigos_sem.erase("alvo")
+	antigos_com.erase("alvo")
+	assert_eq(antigos_com, antigos_sem, "C803: os campos anteriores ficam identicos com e sem alvo")
+	assert_eq(sem_alvo["alvo"], {"alinhado": false, "dx": 0}, "C803: sem o grupo o alvo e o padrao")
+	# release e headless seguem sem ponte: a trava nao depende do campo novo
+	assert_false(GameState.deve_publicar(false, false), "C803: release nao publica com alvo")
+	assert_false(GameState.deve_publicar(OS.has_feature("web"), OS.is_debug_build()), "C803: headless nao publica com alvo")
+	GameState.publish(com_alvo)

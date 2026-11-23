@@ -29,7 +29,7 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-1170x2532",
 	"retrato-720x1280",
 ]
-const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga", "modo", "relogio.restante"]
+const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga", "modo", "relogio.restante", "alvo.alinhado", "alvo.dx"]
 # Roteiros dos modos de jogo (seletor, Puro, Contra o tempo, Diario): fora de ROTEIROS porque o do Tempo espera `lost`
 # pelo relogio e o do Diario espera `lost` pela queda do dia.
 const ROTEIROS_MODOS: Array[String] = ["modos", "modo-puro", "modo-tempo", "modo-zen", "modo-diario"]
@@ -727,3 +727,22 @@ func test_nome_de_powerup_invalido_reprova() -> void:
 	assert_false(POWERUPS_REAIS.has(_nome_powerup("index.html?seed=1&semderrota=1&powerup=fantasma")), "powerup fora da lista de power-ups reais reprova")
 	assert_eq(_nome_powerup("index.html?seed=1&semderrota=1"), "", "path sem powerup= nao traz nome")
 	assert_true(POWERUPS_REAIS.has(_nome_powerup("index.html?seed=1&powerup=camaleao&semderrota=1")), "powerup= no meio da query e lido ate o &")
+
+
+func test_C804_chaves_publicadas_incluem_alvo_e_chave_inexistente_reprova() -> void:
+	assert_true(CHAVES_PUBLICADAS.has("alvo.alinhado"), "C804: alvo.alinhado esta em CHAVES_PUBLICADAS")
+	assert_true(CHAVES_PUBLICADAS.has("alvo.dx"), "C804: alvo.dx esta em CHAVES_PUBLICADAS")
+	# a ponte de verdade publica cada chave alvo.* declarada (o teste cai se o montador deixar uma de fora)
+	var publicado: Dictionary = GameState.build(0, 0, "menu", true)["alvo"] as Dictionary
+	for chave in ["alinhado", "dx"]:
+		assert_true(publicado.has(chave), "C804: GameState.build publica alvo.%s" % chave)
+	# roteiro fake: expect com as chaves novas passa; chave que a ponte nao publica reprova
+	var fake_ok: Dictionary = {"expect": {"alvo.alinhado": true, "alvo.dx": {"lt": 20}}}
+	for chave in fake_ok["expect"].keys():
+		assert_true(CHAVES_PUBLICADAS.has(str(chave)), "C804: chave do expect fake publicada: %s" % str(chave))
+	var fake_ruim: Dictionary = {"expect": {"alvo.cor": true}}
+	var reprovou: bool = false
+	for chave in fake_ruim["expect"].keys():
+		if not CHAVES_PUBLICADAS.has(str(chave)):
+			reprovou = true
+	assert_true(reprovou, "C804: chave inexistente (alvo.cor) reprova no teste estatico")
