@@ -30,8 +30,9 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-720x1280",
 ]
 const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio", "powerup.ativo", "powerup.restante", "powerup.carga", "modo", "relogio.restante"]
-# Roteiros dos modos de jogo (seletor, Puro, Contra o tempo): fora de ROTEIROS porque o do Tempo espera `lost` pelo relogio.
-const ROTEIROS_MODOS: Array[String] = ["modos", "modo-puro", "modo-tempo", "modo-zen"]
+# Roteiros dos modos de jogo (seletor, Puro, Contra o tempo, Diario): fora de ROTEIROS porque o do Tempo espera `lost`
+# pelo relogio e o do Diario espera `lost` pela queda do dia.
+const ROTEIROS_MODOS: Array[String] = ["modos", "modo-puro", "modo-tempo", "modo-zen", "modo-diario"]
 const ROTEIROS_SEMDERROTA: Array[String] = [
 	"camaleao",
 	"desacelera",
@@ -211,6 +212,17 @@ func _inicia_partida(passos: Array, i: int) -> bool:
 	if j >= passos.size() or not passos[j].has("expect"):
 		return false
 	return passos[j]["expect"].get("state", null) == "playing"
+
+
+# State do 1o `expect` depois do passo `i` (pulando so `wait`/`up`); null quando nao ha expect direto — serve para
+# conferir que uma acao bloqueada (clique no Play desabilitado, `jump` no menu com o dia gasto) mantem o estado.
+func _estado_do_proximo_expect(passos: Array, i: int) -> Variant:
+	var j: int = i + 1
+	while j < passos.size() and (passos[j].has("wait") or passos[j].has("up")):
+		j += 1
+	if j >= passos.size() or not passos[j].has("expect"):
+		return null
+	return passos[j]["expect"].get("state", null)
 
 
 func _estouros_de_orcamento(nome: String) -> Array[String]:
@@ -425,6 +437,21 @@ func _nome_powerup(caminho: String) -> String:
 	return resto.substr(0, fim)
 
 
+# Valor inteiro de `<chave>=` do path (ate o proximo `&`); -1 quando ausente, vazia ou nao inteira.
+func _valor_query_int(caminho: String, chave: String) -> int:
+	var busca: String = chave + "="
+	var idx: int = caminho.find(busca)
+	if idx < 0:
+		return -1
+	var resto: String = caminho.substr(idx + busca.length())
+	var fim: int = resto.find("&")
+	if fim >= 0:
+		resto = resto.substr(0, fim)
+	if not resto.is_valid_int():
+		return -1
+	return resto.to_int()
+
+
 func test_camaleao_e_desacelera_parseiam_com_seed_e_powerup_real() -> void:
 	for nome in ["camaleao", "desacelera"]:
 		_checar_roteiro_com_seed(nome)
@@ -594,6 +621,106 @@ func test_roteiro_tempo_usa_tempo_curto_e_termina_em_lost_com_gecko_vivo() -> vo
 		assert_false(passos[i_lost]["expect"].has("player.alive"), "a ponte publica alive=false em todo lost: o roteiro nao le player.alive no lost")
 		assert_true(_valores_expect(nome, "relogio.restante").size() >= 2, "o fim por relogio e provado por relogio.restante (gt 0 no playing, eq 0 depois)")
 		assert_gte(int(passos[i_lost].get("timeout_ms", 0)), int(segundos.to_float() * 1000.0), "o timeout do lost cobre o relogio curto")
+
+
+func test_roteiro_diario_valida_passos_e_seletor_com_6_entradas() -> void:
+	var nome: String = "modo-diario"
+	assert_true(ROTEIROS_MODOS.has(nome), "C793: o roteiro do Diario esta registrado em ROTEIROS_MODOS")
+	var spec := _carregar(nome)
+	assert_gt(spec.size(), 0, "o roteiro do Diario existe e parseia como objeto JSON")
+	var caminho: String = str(spec.get("path", ""))
+	assert_true("modos=teste" in caminho, "o roteiro do Diario liga a lista de debug (modos=teste)")
+	assert_true("progresso=1.0" in caminho, "o roteiro joga com progresso 1.0 (raridade maxima) para provar que nenhum power-up nasce")
+	var dia: int = _valor_query_int(caminho, "dia")
+	assert_true(dia >= 0 and dia <= SeedSource.MAX_SEED, "o ?dia= e um inteiro na faixa 0..MAX_SEED (ModoDiaInicial)")
+	# C793: o seletor de debug tem 6 entradas e o Diario e o 5o (depois do Zen, antes do teste): as setas do roteiro
+	# batem com a posicao no registro — e o ciclo do modos.smoke.json percorre essas mesmas 6 entradas.
+	var lista_debug: Array[GameMode] = GameModes.lista(true)
+	assert_eq(lista_debug.size(), 6, "C793: a lista de debug tem 6 entradas (classico, puro, tempo, zen, diario, teste)")
+	var indice_diario: int = -1
+	for i in lista_debug.size():
+		if String(lista_debug[i].id) == "diario":
+			indice_diario = i
+	assert_eq(indice_diario, 4, "o Diario e o 5o modo da lista de debug")
+	var passos := _passos(nome)
+	var setas: int = 0
+	var fechou_seletor: bool = false
+	for passo in passos:
+		if fechou_seletor:
+			break
+		if not passo.has("click"):
+			continue
+		if passo["click"] == [328.0, 240.0]:
+			setas += 1
+		elif passo["click"] == [180.0, 518.0]:
+			fechou_seletor = true
+	assert_true(fechou_seletor, "a selecao fecha com o OK do seletor")
+	assert_eq(setas, indice_diario, "as setas ate o Diario batem com a sua posicao no seletor (4 a partir do classico)")
+	# modos.smoke.json percorre as 6 entradas: 6 confirmacoes (OK) e a ponte passa por cada id da lista de debug
+	var oks: int = 0
+	for passo in _passos("modos"):
+		if passo.has("click") and passo["click"] == [180.0, 518.0]:
+			oks += 1
+	assert_eq(oks, 6, "C793: modos.smoke.json confirma o seletor 6 vezes (uma por entrada da lista de debug)")
+	var ids_modos: Array = _valores_expect("modos", "modo")
+	for modo_debug in lista_debug:
+		assert_true(ids_modos.has(String(modo_debug.id)), "C793: modos.smoke.json confere o modo %s pela ponte" % modo_debug.id)
+	# a partida do dia: ponte modo diario, powerup.ativo vazio, playing -> lost -> menu com o dia gasto
+	assert_true(_valores_expect(nome, "modo").has("diario"), "o roteiro confere o modo diario pela ponte")
+	var vazios: int = 0
+	for valor in _valores_expect(nome, "powerup.ativo"):
+		assert_eq(valor, "", "no Diario powerup.ativo so e esperado vazio (nenhum icone nasce)")
+		vazios += 1
+	assert_gt(vazios, 0, "o roteiro confere powerup.ativo vazio com progresso 1.0")
+	var i_playing: int = -1
+	var i_lost: int = -1
+	var i_menu_depois: int = -1
+	for i in passos.size():
+		if not passos[i].has("expect"):
+			continue
+		var exigencia: Dictionary = passos[i]["expect"]
+		if i_playing < 0 and exigencia.get("state", null) == "playing":
+			i_playing = i
+		elif i_playing >= 0 and i_lost < 0 and exigencia.get("state", null) == "lost":
+			i_lost = i
+		elif i_lost >= 0 and i_menu_depois < 0 and exigencia.get("state", null) == "menu":
+			i_menu_depois = i
+	assert_gte(i_playing, 0, "o roteiro prova o Play (state playing)")
+	assert_gt(i_lost, i_playing, "a queda encerra a partida (lost depois do playing)")
+	assert_gt(i_menu_depois, i_lost, "a derrota volta ao menu com o dia jogado")
+	var inicio_menu: int = maxi(i_menu_depois, 0)
+	# menu bloqueado: clicar no Play desabilitado mantem state menu
+	var cliques_no_play: int = 0
+	for i in range(inicio_menu, passos.size()):
+		if not (passos[i].has("click") and passos[i]["click"] == [180.0, 324.0]):
+			continue
+		cliques_no_play += 1
+		assert_eq(_estado_do_proximo_expect(passos, i), "menu", "clicar no Play desabilitado mantem state menu")
+	assert_gte(cliques_no_play, 1, "o roteiro clica no botao Play desabilitado (centro logico (90,162) da Stage)")
+	# o jump no menu bloqueado: um antes do reload e outro depois, ambos mantem state menu
+	var i_primeiro_jump: int = -1
+	var i_ultimo_jump: int = -1
+	var i_reload: int = -1
+	for i in range(inicio_menu, passos.size()):
+		if passos[i].has("reload") and passos[i]["reload"] == true:
+			i_reload = i
+		if not (passos[i].has("down") and passos[i]["down"] == "Space"):
+			continue
+		if i_primeiro_jump < 0:
+			i_primeiro_jump = i
+		i_ultimo_jump = i
+		assert_eq(_estado_do_proximo_expect(passos, i), "menu", "o jump no menu com o dia jogado mantem state menu")
+	assert_lt(i_primeiro_jump, i_ultimo_jump, "o roteiro da jump no menu bloqueado ao menos 2 vezes")
+	assert_gte(i_reload, i_primeiro_jump, "o reload vem depois do 1o jump bloqueado")
+	assert_lt(i_reload, i_ultimo_jump, "o ultimo jump bloqueado acontece depois do reload (dia jogado lido do disco)")
+	# passos validos (contrato do game-smoke): cada passo declara exatamente uma acao do runner
+	var acoes: Array[String] = ["down", "up", "press", "click", "tap", "hold", "drag", "touches", "wait", "shots", "expect", "reload", "blur", "hidden"]
+	for i in passos.size():
+		var declaradas: int = 0
+		for acao in acoes:
+			if passos[i].has(acao):
+				declaradas += 1
+		assert_eq(declaradas, 1, "o passo %d declara exatamente uma acao do runner" % i)
 
 
 func test_nome_de_powerup_invalido_reprova() -> void:
