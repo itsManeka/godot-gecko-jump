@@ -7,6 +7,7 @@ extends GutTest
 const PASTA: String = "res://test/smoke/"
 const ROTEIROS: Array[String] = [
 	"camaleao",
+	"camera-cruza-limite",
 	"desacelera",
 	"dica-toque",
 	"estagio",
@@ -746,3 +747,60 @@ func test_C804_chaves_publicadas_incluem_alvo_e_chave_inexistente_reprova() -> v
 		if not CHAVES_PUBLICADAS.has(str(chave)):
 			reprovou = true
 	assert_true(reprovou, "C804: chave inexistente (alvo.cor) reprova no teste estatico")
+
+
+# f530 T5: corte de player.y em repouso apos cruzar o limite (medido na T1: antes 169-180, depois 145-152).
+const CORTE_Y_CRUZOU: float = 160.0
+
+
+func test_C810_camera_cruza_limite_esta_registrado_com_seed_e_regra_real() -> void:
+	var nome: String = "camera-cruza-limite"
+	assert_true(ROTEIROS.has(nome), "C810: o roteiro camera-cruza-limite esta em ROTEIROS")
+	_checar_roteiro_com_seed(nome)
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_true("seed=472" in caminho, "C810: seed fixa na URL")
+	assert_true("tutorial=visto" in caminho, "C810: pula o tutorial")
+	assert_true("toque=b" in caminho, "C810: modo de toque B")
+	assert_false("semderrota" in caminho, "C810: joga a regra real, sem semderrota (D2)")
+	assert_false("powerup" in caminho, "C810: sem power-up (D4)")
+	assert_false(ROTEIROS_SEMDERROTA.has(nome), "C810: nao esta na lista de roteiros sem derrota")
+
+
+func test_C811_camera_cruza_limite_prova_alinhado_corte_e_termina_vivo() -> void:
+	var nome: String = "camera-cruza-limite"
+	var passos := _passos(nome)
+	assert_gt(passos.size(), 0, "C811: o roteiro tem passos")
+	for passo in _expects(nome):
+		for chave in passo["expect"].keys():
+			assert_true(CHAVES_PUBLICADAS.has(str(chave)), "C811: chave publicada pela ponte: %s" % str(chave))
+			var valor: Variant = passo["expect"][chave]
+			if typeof(valor) == TYPE_DICTIONARY:
+				assert_eq(valor.size(), 1, "C811: um operador por comparacao")
+				for operador in valor.keys():
+					assert_true(OPERADORES.has(str(operador)), "C811: operador valido")
+	var alinhados: int = 0
+	for valor in _valores_expect(nome, "alvo.alinhado"):
+		assert_eq(valor, true, "C811: alvo.alinhado so e esperado true")
+		alinhados += 1
+	assert_gte(alinhados, 4, "C811: varios pousos alinhados antes de cruzar o limite")
+	var i_corte: int = _indice_expect(nome, "player.y", "lt")
+	assert_gte(i_corte, 0, "C811: ha expect player.y lt <corte>")
+	assert_eq(passos[i_corte]["expect"]["player.y"]["lt"], CORTE_Y_CRUZOU, "C811: o corte e o medido na T1 (repouso apos cruzar < 160)")
+	var ultimo_expect: Dictionary = {}
+	for i in range(passos.size() - 1, -1, -1):
+		if passos[i].has("expect"):
+			ultimo_expect = passos[i]["expect"]
+			break
+	assert_eq(ultimo_expect.get("player.y", null), {"gte": 0.0}, "C811: ao fim player.y gte 0")
+	assert_eq(ultimo_expect.get("state", null), "playing", "C811: ao fim state playing")
+	assert_eq(ultimo_expect.get("player.alive", null), true, "C811: ao fim player.alive true")
+
+
+func test_C812_camera_cruza_limite_usa_retrato_720x1280_e_tem_shots_do_cruzamento() -> void:
+	var nome: String = "camera-cruza-limite"
+	var spec := _carregar(nome)
+	assert_eq(spec.get("viewport", null), [720.0, 1280.0], "C812: viewport 720x1280 (altura logica 320, limite 128)")
+	var i_corte: int = _indice_expect(nome, "player.y", "lt")
+	var i_shots: int = _indice_shots(nome, "cruzou-limite")
+	assert_gt(i_shots, i_corte, "C812: o print do cruzamento vem depois do expect do corte")
+	assert_gt(_indice_shots(nome, "camera-cruza-fim"), i_shots, "C812: o print final vem depois do do cruzamento")

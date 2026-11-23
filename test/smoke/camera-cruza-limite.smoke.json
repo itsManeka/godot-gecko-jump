@@ -1,0 +1,22 @@
+{
+  "path": "index.html?seed=472&tutorial=visto&toque=b",
+  "viewport": [720, 1280],
+  "boot_ms": 6000,
+  "notes": "f530: o gecko cruza o limite de topo da camera (y=128 de 320 logicos, viewport 720x1280 = 4x) jogando a regra real (sem semderrota, sem power-up). Cada pulo espera alvo.alinhado true (ha plataforma da cor do gecko na linha de cima ao alcance do pulo reto; so existe com o gecko pousado) e toca reto com o dedo direito (metade x >= 360). Medido na T1: em repouso o y e 169-180 antes de cruzar e 145-152 depois; o corte e player.y lt 160, lido logo apos o pouso (no ar a camera segura o y em 128-137, e o poll de 100 ms nao pega o apice).",
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "tap": [360, 640] },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "expect": { "alvo.alinhado": true }, "timeout_ms": 6000 },
+    { "touches": [{ "from": [540, 1000], "ms": 150 }] },
+    { "expect": { "alvo.alinhado": true }, "timeout_ms": 6000 },
+    { "touches": [{ "from": [540, 1000], "ms": 150 }] },
+    { "expect": { "alvo.alinhado": true }, "timeout_ms": 6000 },
+    { "touches": [{ "from": [540, 1000], "ms": 150 }] },
+    { "expect": { "alvo.alinhado": true }, "timeout_ms": 6000 },
+    { "expect": { "player.y": { "lt": 160 } }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "cruzou-limite", "moving": true },
+    { "expect": { "player.y": { "gte": 0 }, "state": "playing", "player.alive": true }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 100, "name": "camera-cruza-fim", "moving": true }
+  ]
+}
