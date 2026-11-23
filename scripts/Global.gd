@@ -124,6 +124,21 @@ var tempo_inicial_s: float = 0.0
 func aplicar_tempo_inicial(raw: Variant, is_debug: bool) -> void:
 	tempo_inicial_s = ModoTempoInicial.decide(raw, is_debug)
 
+# Dia UTC forcado do Desafio diario (so smoke debug via `?dia=<int>`): ModoDiaInicial.SEM_OVERRIDE = relogio real.
+var dia_inicial: int = ModoDiaInicial.SEM_OVERRIDE
+
+# Aplica o dia forcado a partir do valor bruto do parametro e da flag de build.
+func aplicar_dia_inicial(raw: Variant, is_debug: bool) -> void:
+	dia_inicial = ModoDiaInicial.decide(raw, is_debug)
+
+# Relogio do DiaUtc: com `?dia=` valido (debug) devolve o unix do inicio desse dia; sem override devolve o
+# Callable vazio (DiaUtc usa o relogio do sistema). Lido a cada chamada, como `limite_tempo_s`.
+func relogio_do_dia() -> Callable:
+	if dia_inicial == ModoDiaInicial.SEM_OVERRIDE:
+		return Callable()
+	var dia := dia_inicial
+	return func() -> float: return float(dia * DiaUtc.SEGUNDOS_POR_DIA)
+
 # Limite de tempo vigente do Contra o tempo: o seam de debug (se aplicado) ou o leitor do `.tres`.
 # Lido a cada chamada (nao cacheia o numero): vale mesmo se o seam for aplicado depois do registro montado.
 func limite_tempo_s(caminho: String = TempoConfig.CAMINHO_PADRAO) -> float:
@@ -174,6 +189,7 @@ func _ready():
 	aplicar_progresso_inicial(ModoProgressoInicial.read_raw(), OS.is_debug_build())
 	aplicar_power_up_inicial(ModoPowerUpInicial.read_raw(), OS.is_debug_build())
 	aplicar_tempo_inicial(ModoTempoInicial.read_raw(), OS.is_debug_build())
+	aplicar_dia_inicial(ModoDiaInicial.read_raw(), OS.is_debug_build())
 	aplicar_moldura_fixa(ModoMolduraFixa.read_raw(), OS.is_debug_build())
 	aplicar_moldura_lenta(ModoMolduraLenta.read_raw(), OS.is_debug_build())
 	# Antes do store: o `teste` salvo so e lido como modo quando a flag de debug esta ligada.

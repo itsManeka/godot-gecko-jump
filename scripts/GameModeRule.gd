@@ -54,3 +54,14 @@ func tem_relogio() -> bool:
 # gravar nada). false = o overlay segue so com Continuar/Opcoes; o Zen permite.
 func permite_sair_pela_pausa() -> bool:
 	return false
+
+
+# f528 T4: se a partida pode ser iniciada com o ctx vigente (default neutro: sempre pode, como hoje).
+# O Diario consulta a tentativa do dia (ligado em T6); nenhum modo existente sobrescreve.
+func pode_iniciar(ctx: Dictionary) -> bool:
+	return true
+
+
+# f528 T4: se a partida nasce da seed do dia UTC (default neutro: false = sorteio livre de hoje). So o Diario usa.
+func usa_seed_do_dia() -> bool:
+	return false

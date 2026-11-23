@@ -77,6 +77,19 @@ func test_c713_modo_zen_persiste_restaura_e_nao_cria_arquivo_de_recorde() -> voi
 	assert_false(caminho.begins_with("user://best_score"), "C713: recorde do Zen isolado pelo pre-run (%s)" % caminho)
 
 
+# f528 T4 (C761): o Diario persiste no OptionsStore e restaura apos recarregar o config, como o Zen; o
+# recorde do modo nunca nasce aqui (grava_recorde false: o resultado do dia vive no DesafioDiarioStore, T6).
+func test_c761_modo_diario_persiste_e_restaura_apos_recarregar_o_config() -> void:
+	Global.usar_options_store(OptionsStore.new(TMP_OPCOES))
+	Global.set_modo_jogo(&"diario")
+	assert_eq(Global.modo_jogo, GameModes.ID_DIARIO, "C761: modo Diario aplicado")
+	Global.usar_options_store(OptionsStore.new(TMP_OPCOES))
+	assert_eq(Global.modo_jogo, GameModes.ID_DIARIO, "C761: novo OptionsStore no mesmo caminho restaura o Diario")
+	assert_eq(Global.get_best_score(), 0, "C761: o Diario comeca sem recorde")
+	assert_false(FileAccess.file_exists("user://best_score_diario.cfg"), "C761: nenhum user://best_score_diario.cfg nasce")
+	assert_null(Global.store_do_modo(GameModes.ID_DIARIO), "C761: recorde do Diario fora do best_score_* (isolado pelo pre-run)")
+
+
 func test_modo_teste_salvo_com_flag_desligada_vira_classico() -> void:
 	Global.modos_teste_habilitado = true
 	Global.usar_options_store(OptionsStore.new(TMP_OPCOES))

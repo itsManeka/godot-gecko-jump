@@ -138,7 +138,7 @@ func test_indicador_n_marcas_so_a_atual_8x4() -> void:
 	assert_eq(marcas[1].size, Vector2(8.0, 4.0), "depois da troca a 2a e 8x4")
 
 
-func test_c714_indicador_com_modos_reais_4_marcas_em_release_e_5_com_teste_atual_8x4_no_zen() -> void:
+func test_c714_indicador_com_modos_reais_5_marcas_em_release_e_6_com_teste_atual_8x4_no_zen() -> void:
 	for incluir_teste: bool in [false, true]:
 		var modos := GameModes.lista(incluir_teste)
 		var indice_zen: int = modos.find(GameModes.zen())
@@ -146,7 +146,7 @@ func test_c714_indicador_com_modos_reais_4_marcas_em_release_e_5_com_teste_atual
 		_tela.aplicar_layout(Vector2(180.0, 320.0), Rect2(0.0, 0.0, 180.0, 320.0))
 		assert_true(_tela.abrir(GameModes.zen(), modos), "abrir no Zen devolve true")
 		var marcas := _tela.rect_marcas()
-		assert_eq(marcas.size(), 5 if incluir_teste else 4, "C714: marcas = modos da lista (teste=%s)" % incluir_teste)
+		assert_eq(marcas.size(), 6 if incluir_teste else 5, "C714: marcas = modos da lista (teste=%s)" % incluir_teste)
 		for i in marcas.size():
 			var esperado := Vector2(8.0, 4.0) if i == indice_zen else Vector2(4.0, 4.0)
 			assert_eq(marcas[i].size, esperado, "C714: marca %d (teste=%s)" % [i, incluir_teste])

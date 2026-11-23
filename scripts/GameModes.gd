@@ -2,19 +2,22 @@ class_name GameModes
 extends RefCounted
 
 # Registro de modos de jogo: lista ordenada do seletor, resolucao por id e ciclo do carrossel. O Classico
-# sempre existe, e o primeiro da lista e o padrao de toda resolucao; Puro, Tempo e Zen vem depois dele em release,
-# e o modo de teste so entra com a flag de debug ligada. Cada modo (e a regra dele) e uma instancia unica,
-# criada na 1a consulta e reusada: regras sem estado proprio, o relogio da partida vive na Stage.
+# sempre existe, e o primeiro da lista e o padrao de toda resolucao; Puro, Tempo, Zen e o Desafio diario vem
+# depois dele em release, e o modo de teste so entra com a flag de debug ligada. Cada modo (e a regra dele) e
+# uma instancia unica, criada na 1a consulta e reusada: regras sem estado proprio, o relogio da partida vive na Stage.
 
 const ID_CLASSICO: StringName = &"classico"
 const ID_PURO: StringName = &"puro"
 const ID_TEMPO: StringName = &"tempo"
 const ID_ZEN: StringName = &"zen"
+# f528 T4: id do Desafio diario, constante estavel (nunca derivada de entrada externa).
+const ID_DIARIO: StringName = &"diario"
 
 static var _classico: GameMode = null
 static var _puro: GameMode = null
 static var _tempo: GameMode = null
 static var _zen: GameMode = null
+static var _diario: GameMode = null
 static var _teste: GameMode = null
 
 
@@ -70,16 +73,30 @@ static func zen() -> GameMode:
 	return _zen
 
 
+# Desafio diario (f528 T4): uma tentativa por dia UTC com a fase sorteada pela data, sem power-ups; o
+# recorde e o resultado do dia (nunca o best_score_* do modo).
+static func diario() -> GameMode:
+	if _diario == null:
+		_diario = GameMode.new(
+			ID_DIARIO,
+			"Diario",
+			"Desafio diario",
+			"Uma tentativa por dia, com a fase da data; o resultado vale so para hoje.",
+			DiarioRule.new()
+		)
+	return _diario
+
+
 static func _teste_unico() -> GameMode:
 	if _teste == null:
 		_teste = GameModeTeste.criar()
 	return _teste
 
 
-# Lista ordenada do seletor: Classico, Puro, Tempo, Zen; incluir_teste acrescenta o modo de teste por ultimo
-# (debug/GUT, mesma regra do Classico com recorde proprio).
+# Lista ordenada do seletor: Classico, Puro, Tempo, Zen, Diario; incluir_teste acrescenta o modo de teste por
+# ultimo (debug/GUT, mesma regra do Classico com recorde proprio).
 static func lista(incluir_teste := false) -> Array[GameMode]:
-	var modos: Array[GameMode] = [classico(), puro(), tempo(), zen()]
+	var modos: Array[GameMode] = [classico(), puro(), tempo(), zen(), diario()]
 	if incluir_teste:
 		modos.append(_teste_unico())
 	return modos
@@ -103,6 +120,8 @@ static func de_id(id: Variant) -> GameMode:
 			return tempo()
 		if texto == String(ID_ZEN):
 			return zen()
+		if texto == String(ID_DIARIO):
+			return diario()
 		if texto == String(GameModeTeste.ID) and Global.modos_teste_habilitado:
 			return _teste_unico()
 	return classico()

@@ -492,8 +492,8 @@ func test_modos_smoke_cicla_classico_puro_tempo_zen_teste_e_volta() -> void:
 	for modo in GameModes.lista(true):
 		esperados.append(String(modo.id))
 	esperados.append(esperados[0])
-	assert_eq(ids, esperados, "C716: o roteiro percorre a lista de debug (classico -> puro -> tempo -> zen -> teste) e volta ao primeiro")
-	assert_eq(ids, ["classico", "puro", "tempo", "zen", "teste", "classico"], "C716: ordem literal do roteiro de modos")
+	assert_eq(ids, esperados, "C716: o roteiro percorre a lista de debug (classico -> puro -> tempo -> zen -> diario -> teste) e volta ao primeiro")
+	assert_eq(ids, ["classico", "puro", "tempo", "zen", "diario", "teste", "classico"], "C716: ordem literal do roteiro de modos")
 	# o registro cicla igual nas duas direcoes (seta direita e esquerda) com a lista de debug
 	var lista: Array[GameMode] = GameModes.lista(true)
 	var modo: GameMode = lista[0]
@@ -501,13 +501,13 @@ func test_modos_smoke_cicla_classico_puro_tempo_zen_teste_e_volta() -> void:
 	for i in lista.size() + 1:
 		vistos.append(String(modo.id))
 		modo = GameModes.proximo(modo, lista)
-	assert_eq(vistos, ["classico", "puro", "tempo", "zen", "teste", "classico"], "seta direita: classico -> puro -> tempo -> zen -> teste -> classico")
+	assert_eq(vistos, ["classico", "puro", "tempo", "zen", "diario", "teste", "classico"], "seta direita: classico -> puro -> tempo -> zen -> diario -> teste -> classico")
 	var voltando: Array = []
 	modo = lista[0]
 	for i in lista.size() + 1:
 		voltando.append(String(modo.id))
 		modo = GameModes.anterior(modo, lista)
-	assert_eq(voltando, ["classico", "teste", "zen", "tempo", "puro", "classico"], "seta esquerda: classico -> teste -> zen -> tempo -> puro -> classico")
+	assert_eq(voltando, ["classico", "teste", "diario", "zen", "tempo", "puro", "classico"], "seta esquerda: classico -> teste -> diario -> zen -> tempo -> puro -> classico")
 
 
 func test_roteiro_puro_joga_com_modo_puro_e_powerup_vazio() -> void:
