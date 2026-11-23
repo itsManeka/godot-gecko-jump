@@ -34,6 +34,9 @@ const CTX_STORE_DIARIO: String = PartidaCtx.STORE_DIARIO
 const COR_FAIXA_PLACAR: Color = UiHelpers.COR_FUNDO_OVERLAY
 # Curva de producao (estagios da dificuldade); o estado de cada partida e criado em _ready a partir dela
 const CURVA_DIFICULDADE: DifficultyCurve = preload("res://ressources/curva_dificuldade.tres")
+# f530 T4: script do Player (nao tem class_name), so para ler ESPERA_MAXIMA_S — a mesma espera maxima do
+# sorteio de cor do pouso, agora tambem o fim da janela de chegada do campo `alvo` da ponte.
+const SCRIPT_PLAYER := preload("res://scenes/Player.gd")
 # Chaves do ctx da partida entregue as regras de modo (definidas em PartidaCtx; a Stage e as regras citam so a constante)
 const CTX_PONTOS: String = PartidaCtx.PONTOS
 const CTX_INICIADO: String = PartidaCtx.INICIADO
@@ -127,6 +130,9 @@ var _posicao_publicada: Vector2i = Vector2i.ZERO
 var _powerup_publicado: Dictionary = {}
 # Relogio restante (inteiro, segundos para cima) da ultima publicacao (f524 T5): a mudanca de segundo republica 1x
 var _relogio_publicado: int = 0
+# f530 T4: campo `alvo` ({alinhado, dx}) da ultima publicacao: a movel da linha de cima anda sem mover o gecko,
+# entao a mudanca do par tem gatilho proprio junto do de posicao (ver _physics_process), nunca por frame
+var _alvo_publicado: Dictionary = {"alinhado": false, "dx": 0}
 # y do limite de topo da camera (fracao da altura visivel em CameraFollow); recalculado a cada apply_layout
 var _limite_camera: float = 0.0
 # Relogio da partida em segundos (f524 T3): membro da Stage (nunca da regra, que e instancia reusada); nasce em 0 a cada
@@ -431,7 +437,13 @@ func _physics_process(delta: float) -> void:
 		_republicar_estado()
 		return
 	# Posicao do jogador (par arredondado) em partida: republica 1x por mudanca; parado ou fora de partida, nunca
-	if started and ultimo_estado.get("state", "") == GameState.STATE_PLAYING and _posicao_atual() != _posicao_publicada:
+	# f530 T4: o campo `alvo` tem o mesmo contrato junto do de posicao — a plataforma movel da linha de cima anda
+	# sem tocar o gecko e a mudanca de {alinhado, dx} republica 1x, nunca por frame sem mudanca
+	if (
+		started
+		and ultimo_estado.get("state", "") == GameState.STATE_PLAYING
+		and (_posicao_atual() != _posicao_publicada or _alvo_atual(GameState.STATE_PLAYING) != _alvo_publicado)
+	):
 		_republicar_estado()
 
 # Aplica o avanco da camera do topo (issue #46) no ScrollLevel, que sobe o mundo quando o gecko passa do limite.
@@ -878,6 +890,25 @@ func _relogio_atual() -> int:
 		return 0
 	return ceili(maxf(0.0, Global.limite_tempo_s() - tempo_partida))
 
+
+# f530 T4: campo `alvo` da ponte — {alinhado: bool, dx: int} do pouso reto lido da arvore: as elegiveis da linha
+# de cima da plataforma de apoio (excluida ela mesma, como em cor_no_pouso), da cor do gecko, na MESMA janela de
+# chegada do sorteio de cor de Player.change_color_random (dt_chegada = tempo_de_pulo(scroll_efetivo) pelo scroll
+# que de fato move o mundo, espera = ESPERA_MAXIMA_S), reduzidas ao par do gecko com wrap horizontal. Sem apoio
+# (gecko no ar) ou fora de playing: {alinhado: false, dx: 0} — o roteiro de smoke nao toca fora da partida.
+func _alvo_atual(state: String) -> Dictionary:
+	if state != GameState.STATE_PLAYING or not is_instance_valid(player.actual_platform):
+		return {"alinhado": false, "dx": 0}
+	var alvos: Array = ReachableColors.alvos_da_linha_acima(
+		ReachableColors.entradas_de_plataformas(Global.platforms, player.actual_platform),
+		player.actual_platform.global_position.y,
+		int(Global.cor_gecko),
+		float(PlayArea.LARGURA),
+		ReachableColors.tempo_de_pulo(player.scroll_efetivo()),
+		SCRIPT_PLAYER.ESPERA_MAXIMA_S
+	)
+	return ReachableColors.alinhamento_do_alvo(alvos, player.global_position.x)
+
 # f527 T8: relogio entregue ao HUD. Ativo = a regra do modo atual tem relogio e a partida nao esta em `lost`;
 # o restante e o ultimo publicado (o HUD nao conhece modo nem estado publicado).
 func _relogio_para_hud() -> Dictionary:
@@ -1003,6 +1034,7 @@ func _publicar_estado(state: String, alive: bool) -> void:
 	_alpha_publicado = _alpha_atual() if state != GameState.STATE_LOST else 0.0
 	_powerup_publicado = _powerup_atual()
 	_relogio_publicado = _relogio_atual()
+	_alvo_publicado = _alvo_atual(state)
 	ultimo_estado = GameState.build(
 		maxi(points, 0),
 		Global.get_best_score(),
@@ -1021,5 +1053,7 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		int(_powerup_publicado["carga"]),
 		String(Global.get_modo_jogo()),
 		_relogio_publicado,
+		bool(_alvo_publicado["alinhado"]),
+		int(_alvo_publicado["dx"]),
 	)
 	GameState.publish(ultimo_estado)
