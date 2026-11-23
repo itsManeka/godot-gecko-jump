@@ -40,8 +40,9 @@ var tutorial_card: TutorialCard = null
 var tutorial_flag: TutorialFlag = null
 # Callable() -> bool que substitui DisplayServer.is_touchscreen_available() na escolha da variante do card (teste)
 var touchscreen_disponivel: Callable = Callable()
-# f527 T6: recarga da cena pedida por Sair na pausa (mesma do fim da animacao de derrota). Callable injetavel em
-# teste: o GUT nao pode trocar a cena do proprio runner, entao registra o pedido; invalido (producao) recarrega.
+# f527 T6: recarga da cena pedida por Sair na pausa; f528 T5 tambem pela troca de modo que cruza a fronteira do
+# Diario no menu (a fase de fundo muda de origem: dia x sorteio). Callable injetavel em teste: o GUT nao pode
+# trocar a cena do proprio runner, entao registra o pedido; invalido (producao) recarrega.
 var recarregar_cena: Callable = Callable()
 var pause_overlay: PauseOverlay = null
 var pause_state: PauseState = null
@@ -87,6 +88,10 @@ var power_up_hud: PowerUpHud = null
 var _cor_livre_anterior: bool = false
 # Seed da partida (int ou null) repassada ao ScrollLevel em _enter_tree (f517 T4): setada pelo chamador antes do add_child
 var semente_partida: Variant = null
+# Dia UTC usado como seed desta Stage (f528 T5, D2a): guardado em _enter_tree quando a regra do modo persistido
+# pede a seed do dia (Diario); DIA_INVALIDO (-1) = relogio invalido ou modo sem seed do dia — a sentinela nunca
+# vira seed (o validador devolve null). O bloqueio/gasto da tentativa e o reload da virada (T6) leem daqui.
+var _dia_da_stage: int = DiaUtc.DIA_INVALIDO
 # Estagio da dificuldade na ultima publicacao da ponte; mudanca por tempo republica 1x (ver _physics_process)
 var _estagio_publicado: int = 0
 # Moldura de aviso de subida de estagio (filha da Stage, criada em _ready) e o `aviso` da ultima publicacao da ponte
@@ -118,12 +123,31 @@ var tempo_partida: float = 0.0
 
 # Repassa a seed da partida ao ScrollLevel em _enter_tree (f517 T4, D1): roda antes do _ready de qualquer filho,
 # entao as linhas do .tscn ja recebem os rngs no _enter_tree do ScrollLevel. Quem seta semente_partida e o chamador,
-# ANTES do add_child; nenhum chamador de producao seta nesta feature. A seed passa por SeedPartida.validar (f528 T1):
-# valor invalido vira null (sem seed), nunca chega ao ScrollLevel como String/float/negativo.
+# ANTES do add_child (nenhum chamador de producao seta); a seed passa por SeedPartida.validar (f528 T1): valor
+# invalido vira null (sem seed), nunca chega ao ScrollLevel como String/float/negativo. f528 T5 (D2a): sem
+# semente_partida, o modo persistido em Global decide — usa_seed_do_dia() (Diario) atribui o dia UTC vigente como
+# seed e guarda o dia usado em _dia_da_stage; quem setou antes do add_child (teste, debug) vence o dia; modo sem
+# seed do dia segue sorteado como hoje. O Diario nunca toca Global.aplicar_seed.
 func _enter_tree() -> void:
 	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
-	if scroll_level != null:
+	if scroll_level == null:
+		return
+	if semente_partida != null:
 		scroll_level.semente = SeedPartida.validar(semente_partida)
+		return
+	if not GameModes.de_id(Global.get_modo_jogo()).regra.usa_seed_do_dia():
+		scroll_level.semente = null
+		return
+	var dia: int = _dia_utc_atual()
+	_dia_da_stage = dia
+	scroll_level.semente = SeedPartida.validar(dia)
+
+
+# Dia UTC vigente pelo relogio do dia (f528 T5): Global.relogio_do_dia e o ponto de injecao do DiaUtc — os smokes
+# debug (`?dia=`) e os testes injetam ANTES do add_child; sem injecao vale o relogio do sistema. Lido a cada
+# chamada (nao cacheia), como limite_tempo_s. Relogio invalido devolve a sentinela, que nunca vira seed.
+func _dia_utc_atual() -> int:
+	return DiaUtc.new(Global.relogio_do_dia()).dia_atual()
 
 # Ao sair da arvore (troca de cena): a flag de cor livre e espelho deste no, nao estado global — a Stage
 # seguinte nao herda o efeito de uma partida que ja acabou (mesmo padrao do Player com Global.cor_gecko)
@@ -499,14 +523,21 @@ func _abrir_opcoes_da_pausa() -> void:
 # f527 T6 (D5): Sair da pausa — so a regra do modo permite (o mesmo predicado `permite_sair_pela_pausa()` que
 # decide a visibilidade do botao). Despausa a arvore e recarrega a Stage: a nova nasce no menu (`started ==
 # false`), sem `Global.set_score` (recorde do modo intacto) e sem som/animacao de derrota (a derrota nunca roda).
-# `recarregar_cena`: Callable injetavel em teste (o GUT nao pode trocar a cena do proprio runner); sem injecao
-# vale o reload real, o mesmo caminho do fim da animacao de perda (`_on_animation_end`).
+# `recarregar_cena` (via `_recarregar_stage`): Callable injetavel em teste (o GUT nao pode trocar a cena do
+# proprio runner); sem injecao vale o reload real do fim da animacao de perda (`_on_animation_end`).
 func _sair_da_pausa() -> void:
 	if not regra.permite_sair_pela_pausa():
 		return
 	pause_state.retomar()
 	pause_overlay.fechar()
 	options_screen.fechar()
+	_recarregar_stage()
+
+
+# f528 T5: recarga da Stage (a mesma do fim da animacao de derrota). A seam `recarregar_cena` registra o pedido
+# em teste (o GUT nao pode trocar a cena do proprio runner); sem injecao vale o reload real do `_on_animation_end`,
+# que recria a cena e roda o _enter_tree desta Stage de novo (modo persistido + seed do dia, se for o caso).
+func _recarregar_stage() -> void:
 	if recarregar_cena.is_valid():
 		recarregar_cena.call()
 		return
@@ -528,11 +559,16 @@ func _abrir_modos_do_menu() -> void:
 		return
 	_mostrar_menu(false)
 
-# OK: aplica o modo exibido, fecha a tela e devolve o menu com Best/Last do modo escolhido (foco no botao Modo)
+# OK: aplica o modo exibido, fecha a tela e devolve o menu com Best/Last do modo escolhido (foco no botao Modo).
+# f528 T5 (D2a): troca que cruza a fronteira do Diario (entrar ou sair) recarrega a Stage no menu — a fase de
+# fundo nasce da seed do dia (ou sorteada) sem reload no Play; trocas entre modos sem seed do dia (inclusive
+# reconfirmar o Diario) seguem sem recarga, atualizando tudo in place como antes.
 func _fechar_modos(modo: GameMode) -> void:
 	modos_screen.fechar()
 	Global.set_modo_jogo(modo.id)
 	var atual: GameMode = GameModes.de_id(Global.get_modo_jogo())
+	# Fronteira antes de trocar a regra: `regra` ainda e a do modo anterior ao OK
+	var recarregar := atual.regra.usa_seed_do_dia() != regra.usa_seed_do_dia()
 	regra = atual.regra
 	power_ups_habilitados = _power_ups_base and regra.power_ups_habilitados()
 	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
@@ -548,6 +584,8 @@ func _fechar_modos(modo: GameMode) -> void:
 		_mostrar_menu(true)
 		modo_botao.focar(true)
 	_republicar_estado()
+	if recarregar:
+		_recarregar_stage()
 
 # Entrega o fator de scroll da regra do modo (f527) ao ScrollLevel e ao Player (a previsao de cor do pouso usa o
 # scroll que de fato move o mundo). Reaplicado na troca de modo do menu, sem reload.
