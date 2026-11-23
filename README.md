@@ -56,7 +56,9 @@ No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
 Na primeira partida, um cartão mostra os controles e some no primeiro pouso (ou em **Pular**). Para vê-lo de novo,
 use **Opções > Ver tutorial**.
 
-No menu inicial, o botão **Modo: <nome>** (logo acima do **Play**) abre a tela de modos. Arraste para os lados ou use as setas para trocar o modo; **OK** confirma e a próxima partida usa o modo escolhido. Com o teclado, `↑` leva o foco ao botão, `Enter` abre a tela, `←`/`→` trocam o modo e `Enter`, `Esc` ou `P` confirmam. Hoje o **Clássico** é o único modo disponível para jogar; cada modo guarda o seu próprio recorde.
+No menu inicial, o botão **Modo: <nome>** (logo acima do **Play**) abre a tela de modos. Arraste para os lados ou use as setas para trocar o modo; **OK** confirma e a próxima partida usa o modo escolhido. Com o teclado, `↑` leva o foco ao botão, `Enter` abre a tela, `←`/`→` trocam o modo e `Enter`, `Esc` ou `P` confirmam. Hoje dá para jogar o **Clássico** e o **Zen**; cada modo guarda o seu próprio recorde, menos o Zen, que não grava recorde.
+
+No **Zen** a tela não sobe sozinha e não há power-ups: se o gecko cai, ele reaparece na última plataforma em que pisou e a partida segue sem fim de jogo. O menu mostra só os pontos da partida atual, sem Best. Na pausa, o botão **Sair** volta ao menu.
 
 ## 🚀 Como Jogar
 
