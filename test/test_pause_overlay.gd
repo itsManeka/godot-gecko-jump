@@ -169,9 +169,6 @@ func test_c736_teclado_percorre_continuar_opcoes_sair_e_toque_e_clique_arbitram_
 	assert_true(o.tratar_evento(_toque(Vector2(5, 5), true)), "C736: toque no fundo e consumido")
 
 
-# C737 [f527 T6]: com o Sair visivel, Continuar e Opcoes se comportam como hoje (`_acionar` do overlay:
-# Continuar emite retomar, Opcoes emite opcoes, acao `pause` = Continuar); os testes do Classico (sem Sair)
-# seguem verdes sem edicao.
 func test_permite_sair_voltando_a_false_com_foco_em_sair_devolve_o_foco_a_continuar() -> void:
 	var o := _novo_zen(PEQUENA)
 	o.tratar_evento(_acao("ui_up"))
@@ -184,6 +181,9 @@ func test_permite_sair_voltando_a_false_com_foco_em_sair_devolve_o_foco_a_contin
 	assert_eq(_saiu, 0, "Sair oculto nunca aciona")
 
 
+# C737 [f527 T6]: com o Sair visivel, Continuar e Opcoes se comportam como hoje (`_acionar` do overlay:
+# Continuar emite retomar, Opcoes emite opcoes, acao `pause` = Continuar); os testes do Classico (sem Sair)
+# seguem verdes sem edicao.
 func test_c737_com_o_sair_visivel_continuar_e_opcoes_comportam_se_como_hoje() -> void:
 	var o := _novo_zen(PEQUENA)
 	o.tratar_evento(_acao("ui_accept"))

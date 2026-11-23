@@ -52,6 +52,12 @@ static func _nenhuma() -> Dictionary:
 	return {"indice": -1, "entrada": null, "cor": -1, "fallback": false}
 
 
+# Solida: nem desmoronada, nem desmoronando, nem invisivel por piscar (um so predicado para a Segunda chance e para o
+# reposicionamento do Zen, f527)
+static func e_solida(e: Dictionary) -> bool:
+	return not (bool(e.get("desmoronada", false)) or bool(e.get("desmoronando", false)) or bool(e.get("pisca_oculta", false)))
+
+
 # Candidata: dentro da tela (y em [0, altura_visivel], x em [0, largura]), solida (nem desmoronada, nem
 # desmoronando, nem invisivel por piscar), com tempo ate sair da tela >= janela minima e com plataforma da sua
 # cor na linha de cima. Scroll 0 = tempo infinito (nunca descarta, sem divisao por zero).
@@ -64,7 +70,7 @@ static func _e_candidata(
 		return false
 	if x < 0.0 or x > largura:
 		return false
-	if bool(e.get("desmoronada", false)) or bool(e.get("desmoronando", false)) or bool(e.get("pisca_oculta", false)):
+	if not e_solida(e):
 		return false
 	if _tempo_ate_sair(y, altura_visivel, scroll) < _janela_minima(scroll):
 		return false

@@ -683,7 +683,7 @@ func _mais_proxima_solida(entradas: Array, ponto: Vector2) -> int:
 		var e: Dictionary = entradas[i]
 		if float(e["y"]) > _tamanho_visivel.y:
 			continue
-		if bool(e.get("desmoronada", false)) or bool(e.get("desmoronando", false)) or bool(e.get("pisca_oculta", false)):
+		if not SegundaChanceAlvo.e_solida(e):
 			continue
 		var dx_abs: float = absf(float(e["x"]) - ponto.x)
 		var dx: float = minf(dx_abs, _tamanho_visivel.x - dx_abs)
