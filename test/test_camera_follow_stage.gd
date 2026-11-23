@@ -199,6 +199,47 @@ func _converge_ao_limite(altura: int, excesso: float, max_frames: int, rotulo: S
 	assert_almost_eq(_p.global_position.y, _limite(altura), EPS, "%s: gecko acima do limite converge a ele" % rotulo)
 
 
+# f531: gecko parado no limite (y = limite arredondado a float32, como o Vector2 guarda) por N frames: o limite e double
+# e global_position.y e float32, entao pode sobrar excesso < 1 ulp; position_scrolled nao pode acumular esse residuo
+func _parado_no_limite_nao_avanca(altura: int, frames: int) -> void:
+	await _spawn(false, altura)
+	await _iniciar_com_gecko_acima(0.0, altura)
+	var limite: float = _limite(altura)
+	var scrolled_antes: float = _scroll.position_scrolled
+	var plataformas_antes: float = _scroll.running_platforms.position.y
+	var excesso_inicial: float = CameraFollow.excesso(_p.global_position.y, limite)
+	gut.p("f531 altura %d: limite=%s y_float32=%s excesso=%s" % [altura, limite, _p.global_position.y, excesso_inicial])
+
+	for i in range(frames):
+		_scroll.avancar_camera(_p, limite)
+
+	assert_eq(_scroll.position_scrolled, scrolled_antes, "f531 altura %d: position_scrolled nao muda com o gecko parado no limite (%d frames)" % [altura, frames])
+	assert_eq(_scroll.running_platforms.position.y, plataformas_antes, "f531 altura %d: as plataformas nao se movem com o gecko parado no limite" % altura)
+
+
+# f531: alturas com limite nao representavel em float32 (462 -> 184,8; 333 -> 133,2; 517 -> 206,8)
+func test_f531_gecko_parado_no_limite_nao_acumula_residuo_de_float() -> void:
+	for altura in [462, 333, 517, 320, 400]:
+		await _parado_no_limite_nao_avanca(altura, 600)
+		if is_instance_valid(_sv):
+			_sv.queue_free()
+
+
+# f531: excesso real no piso (EXCESSO_MINIMO_PX) ainda avanca a camera; so o abaixo do piso e ignorado
+func test_f531_excesso_no_piso_ainda_avanca_e_abaixo_do_piso_nao() -> void:
+	await _spawn()
+	await _iniciar_com_gecko_acima(0.0)
+	var scrolled_antes: float = _scroll.position_scrolled
+
+	_p.global_position.y = _limite() - CameraFollow.EXCESSO_MINIMO_PX / 2.0
+	_scroll.avancar_camera(_p, _limite())
+	assert_eq(_scroll.position_scrolled, scrolled_antes, "f531: excesso abaixo do piso e ignorado")
+
+	_p.global_position.y = _limite() - CameraFollow.EXCESSO_MINIMO_PX * 4.0
+	_scroll.avancar_camera(_p, _limite())
+	assert_gt(_scroll.position_scrolled, scrolled_antes, "f531: excesso acima do piso continua avancando")
+
+
 # C438: altura 320, limite 128
 func test_c438_altura_320_gecko_acima_do_limite_converge_a_128() -> void:
 	await _converge_ao_limite(320, EXCESSO_01, _teto_justo(EXCESSO_01), "C438")

@@ -109,6 +109,9 @@ func avancar_camera(player: Node2D, limite: float) -> void:
 	if player == null or !Global.is_iniciado():
 		return
 	var excesso: float = CameraFollow.excesso(player.global_position.y, limite)
+	# Residuo de float32 vs double (f531): excesso de ruido nao move o mundo
+	if excesso < CameraFollow.EXCESSO_MINIMO_PX:
+		return
 	# Easing (issue #49): so a parcela do excesso restante neste frame; o restante e o excesso recalculado do y do gecko
 	# (cada parcela desce o gecko junto), entao nao ha estado novo e o acumulado fecha no mesmo excesso de antes
 	var parcela: float = CameraFollow.parcela(excesso)
