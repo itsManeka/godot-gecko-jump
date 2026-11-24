@@ -56,9 +56,35 @@ No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
 Na primeira partida, um cartão mostra os controles e some no primeiro pouso (ou em **Pular**). Para vê-lo de novo,
 use **Opções > Ver tutorial**.
 
-No menu inicial, o botão **Modo: <nome>** (logo acima do **Play**) abre a tela de modos. Arraste para os lados ou use as setas para trocar o modo; **OK** confirma e a próxima partida usa o modo escolhido. Com o teclado, `↑` leva o foco ao botão, `Enter` abre a tela, `←`/`→` trocam o modo e `Enter`, `Esc` ou `P` confirmam. Hoje dá para jogar o **Clássico** e o **Zen**; cada modo guarda o seu próprio recorde, menos o Zen, que não grava recorde.
+No menu inicial, o botão **Modo: <nome>** (logo acima do **Play**) abre a tela de modos. Arraste para os lados ou use as setas para trocar o modo; **OK** confirma e a próxima partida usa o modo escolhido. Com o teclado, `↑` leva o foco ao botão, `Enter` abre a tela, `←`/`→` trocam o modo e `Enter`, `Esc` ou `P` confirmam. Hoje dá para jogar o **Clássico**, o **Puro**, o **Contra o tempo**, o **Zen** e o **Desafio diário**.
 
-No **Zen** a tela não sobe sozinha e não há power-ups: se o gecko cai, ele reaparece na última plataforma em que pisou e a partida segue sem fim de jogo. O menu mostra só os pontos da partida atual, sem Best. Na pausa, o botão **Sair** volta ao menu.
+## ⚡ Modos e Power-ups
+
+### Modos de jogo
+
+| Modo | Como se joga |
+| --- | --- |
+| **Clássico** | A partida de sempre: pule, suba o máximo que puder e não caia. |
+| **Puro** | O Clássico sem power-ups: só você, o pulo e a cor. |
+| **Contra o tempo** | Pontue o máximo antes do relógio zerar (60 s). |
+| **Zen** | Sem pressa e sem derrota: a tela não sobe sozinha e, se você cair, o gecko volta para a última plataforma em que pisou. Sem power-ups e sem recorde; o menu mostra só os pontos da partida atual, sem Best. Na pausa, o botão **Sair** volta ao menu. |
+| **Desafio diário** | Uma tentativa por dia, com a fase sorteada pela data; o resultado vale só para hoje. Sem power-ups. |
+
+Cada modo guarda o seu próprio recorde (o melhor pouso), menos o Zen, que não grava recorde, e o Desafio diário, que
+guarda só o resultado do dia.
+
+### Power-ups
+
+De vez em quando, uma plataforma elegível traz um power-up (ícone em branco e preto, no topo da plataforma). Enquanto
+ele está ativo, o HUD mostra o ícone e uma barra com o tempo que resta:
+
+| Power-up | Efeito |
+| --- | --- |
+| **Camaleão** | Por 5 s, o gecko pousa em plataformas de qualquer cor. |
+| **Desacelera** | Por 5 s, a tela sobe (e a dificuldade avança) pela metade da velocidade. |
+| **Segunda chance** | Uma carga única: se o gecko cair, ele volta em vez de acabar a partida. |
+
+No **Puro**, no **Zen** e no **Desafio diário** não há power-ups.
 
 ## 🚀 Como Jogar
 
@@ -282,7 +308,35 @@ On the menu, `↓` moves the focus to **Opcoes** and `Enter` opens the screen.
 In the first match, a card shows the controls and fades out on the first landing (or on **Pular**). To see it again,
 use **Opcoes > Ver tutorial**.
 
-On the start menu, the **Modo: <name>** button (just above **Play**) opens the modes screen. Drag sideways or use the arrows to change the mode; **OK** confirms and the next match uses the chosen mode. With the keyboard, `↑` moves the focus to the button, `Enter` opens the screen, `←`/`→` change the mode and `Enter`, `Esc` or `P` confirm. Today **Classico** is the only mode available to play; each mode keeps its own best score.
+On the start menu, the **Modo: <name>** button (just above **Play**) opens the modes screen. Drag sideways or use the arrows to change the mode; **OK** confirms and the next match uses the chosen mode. With the keyboard, `↑` moves the focus to the button, `Enter` opens the screen, `←`/`→` change the mode and `Enter`, `Esc` or `P` confirm. Today you can play **Classico**, **Puro**, **Contra o tempo**, **Zen** and **Desafio diario**.
+
+### ⚡ Modes and Power-ups
+
+#### Game modes
+
+| Mode | How it plays |
+| --- | --- |
+| **Classico** | The usual run: jump, climb as high as you can and do not fall. |
+| **Puro** | Classico without power-ups: just you, the jump and the color. |
+| **Contra o tempo** | Score as much as you can before the clock runs out (60 s). |
+| **Zen** | No rush and no defeat: the screen does not climb on its own and, if you fall, the gecko comes back to the last platform it stepped on. No power-ups and no best score; the menu shows only the points of the current run, no Best. In the pause screen, the **Sair** button goes back to the menu. |
+| **Desafio diario** | One attempt per day, on the stage drawn from the date; the result only counts for today. No power-ups. |
+
+Each mode keeps its own best score (your best landing), except Zen, which does not keep one, and Desafio diario,
+which only keeps the result of the day.
+
+#### Power-ups
+
+Every now and then an eligible platform carries a power-up (a white and black icon, on top of the platform). While it is
+active, the HUD shows the icon and a bar with the time left:
+
+| Power-up | Effect |
+| --- | --- |
+| **Camaleao** | For 5 s the gecko lands on platforms of any color. |
+| **Desacelera** | For 5 s the screen (and the difficulty) climbs at half speed. |
+| **Segunda chance** | A single charge: if the gecko falls, it comes back instead of ending the run. |
+
+**Puro**, **Zen** and **Desafio diario** have no power-ups.
 
 ### 🚀 How to Play
 
