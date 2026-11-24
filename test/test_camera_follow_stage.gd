@@ -14,6 +14,8 @@ const EXCESSO_01 := 28.0
 # Excesso de 1 frame de pulo (o pior caso que o pulo mede) e o cenario do repro (y global -35,4, acima do topo)
 const EXCESSO_PULO := 4.0
 const Y_REPRO := -35.4
+# Altura cujo limite (133,2) fica acima do y em float32: unico caso do f531 com residuo positivo
+const ALTURA_COM_RESIDUO := 333
 var _sv: SubViewport
 var _stage: Node
 var _scroll: Node
@@ -209,6 +211,10 @@ func _parado_no_limite_nao_avanca(altura: int, frames: int) -> void:
 	var plataformas_antes: float = _scroll.running_platforms.position.y
 	var excesso_inicial: float = CameraFollow.excesso(_p.global_position.y, limite)
 	gut.p("f531 altura %d: limite=%s y_float32=%s excesso=%s" % [altura, limite, _p.global_position.y, excesso_inicial])
+	# Pre-condicao: o excesso e ruido (abaixo do piso); na 333 ele e positivo, entao o teste reproduz o bug sem o fix
+	assert_lt(excesso_inicial, CameraFollow.EXCESSO_MINIMO_PX, "f531 altura %d: excesso inicial e ruido de float" % altura)
+	if altura == ALTURA_COM_RESIDUO:
+		assert_gt(excesso_inicial, 0.0, "f531 altura %d: o residuo existe (limite em double acima do y em float32)" % altura)
 
 	for i in range(frames):
 		_scroll.avancar_camera(_p, limite)
@@ -217,7 +223,8 @@ func _parado_no_limite_nao_avanca(altura: int, frames: int) -> void:
 	assert_eq(_scroll.running_platforms.position.y, plataformas_antes, "f531 altura %d: as plataformas nao se movem com o gecko parado no limite" % altura)
 
 
-# f531: alturas com limite nao representavel em float32 (462 -> 184,8; 333 -> 133,2; 517 -> 206,8)
+# f531: so a 333 (limite 133,2) deixa residuo positivo: o float32 arredonda para baixo. 462 (184,8) e 517 (206,8)
+# arredondam para cima (excesso 0); 320 e 400 tem limite exato. Todas entram como guarda.
 func test_f531_gecko_parado_no_limite_nao_acumula_residuo_de_float() -> void:
 	for altura in [462, 333, 517, 320, 400]:
 		await _parado_no_limite_nao_avanca(altura, 600)
@@ -225,8 +232,8 @@ func test_f531_gecko_parado_no_limite_nao_acumula_residuo_de_float() -> void:
 			_sv.queue_free()
 
 
-# f531: excesso real no piso (EXCESSO_MINIMO_PX) ainda avanca a camera; so o abaixo do piso e ignorado
-func test_f531_excesso_no_piso_ainda_avanca_e_abaixo_do_piso_nao() -> void:
+# f531: excesso de 0,5x o piso (EXCESSO_MINIMO_PX) e ignorado; 4x o piso ainda avanca a camera
+func test_f531_excesso_acima_do_piso_avanca_e_abaixo_do_piso_nao() -> void:
 	await _spawn()
 	await _iniciar_com_gecko_acima(0.0)
 	var scrolled_antes: float = _scroll.position_scrolled

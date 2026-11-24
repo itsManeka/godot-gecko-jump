@@ -18,7 +18,7 @@ const DURACAO_FRAMES := 4
 const PASSO_MINIMO_PX := 1.0
 
 # Excesso abaixo disso e ruido de ponto flutuante, nao subida do gecko: o limite e double e global_position.y e float32,
-# entao o gecko parado no limite pode ficar ~1 ulp (float32 em y ~100-200: ate ~1.5e-5 px) acima do limite e a camera
+# entao o gecko parado no limite pode ficar ate meio ulp (float32 em y ~100-200: ate ~8e-6 px) acima do limite e a camera
 # acumularia esse residuo em position_scrolled a cada frame. Bem abaixo de 1 px, invisivel na tela de 180x320.
 const EXCESSO_MINIMO_PX := 0.001
 
