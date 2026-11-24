@@ -8,6 +8,7 @@
     { "wait": 150 },
     { "up": "Space" },
     { "expect": { "state": "playing", "powerup.carga": { "eq": 1 }, "powerup.ativo": "" }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 200, "name": "segunda-chance-carga", "moving": true },
     { "down": "ArrowLeft" },
     { "expect": { "state": "playing", "powerup.carga": { "eq": 0 } }, "timeout_ms": 6000 },
     { "up": "ArrowLeft" },

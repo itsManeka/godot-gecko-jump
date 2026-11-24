@@ -21,6 +21,7 @@ const CHAVES_PUBLICADAS: Array[String] = [
 	"player.alive",
 	"player.x",
 	"player.y",
+	"player.on_floor",
 	"dificuldade.estagio",
 	"powerup.ativo",
 	"powerup.restante",
@@ -42,8 +43,9 @@ const CHAVES_PUBLICADAS: Array[String] = [
 # `modo` (string, id do modo de jogo atual; padrao "classico") e `relogio.restante` (int, segundos restantes do
 # Contra o tempo arredondados para cima; 0 fora do modo `tempo`; padrao 0) e
 # `alvo.alinhado` (bool, true se o gecko pode tocar reto agora: ha plataforma da sua cor na linha de cima alinhada em x)
-# e `alvo.dx` (int, px com sinal ate a plataforma elegivel da linha de cima na chegada; 0 sem alvo);
-# ultimo grupo de parametros, padrao `{alinhado: false, dx: 0}`
+# e `alvo.dx` (int, px com sinal ate a plataforma elegivel da linha de cima na chegada; 0 sem alvo) e
+# `player.on_floor` (bool, estado de contato com o chao no momento da publicacao);
+# ultimo parametro, padrao `false` para compatibilidade.
 static func build(
 	score: int,
 	best: int,
@@ -63,13 +65,14 @@ static func build(
 	modo: String = "classico",
 	relogio_restante: int = 0,
 	alvo_alinhado: bool = false,
-	alvo_dx: int = 0
+	alvo_dx: int = 0,
+	player_on_floor: bool = false
 ) -> Dictionary:
 	return {
 		"score": score,
 		"best": best,
 		"state": state,
-		"player": {"alive": alive, "x": roundi(player_x), "y": roundi(player_y)},
+		"player": {"alive": alive, "x": roundi(player_x), "y": roundi(player_y), "on_floor": player_on_floor},
 		"volume": {"music": music, "sfx": sfx},
 		"tutorial": STATE_TUTORIAL_ABERTO if tutorial_aberto else STATE_TUTORIAL_FECHADO,
 		"dificuldade": {"estagio": estagio, "aviso": aviso, "alpha": alpha},

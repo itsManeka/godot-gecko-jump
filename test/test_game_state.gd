@@ -117,6 +117,26 @@ func test_build_publica_player_xy_inteiros_arredondados() -> void:
 	assert_eq(inv["y"], 12, "12.4 -> 12")
 
 
+func test_C1_build_publica_player_on_floor_e_chave() -> void:
+	# (a) default: chamadas existentes continuam definindo o booleano como false
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	var player_padrao: Dictionary = padrao["player"] as Dictionary
+	assert_eq(player_padrao["on_floor"], false, "C1: on_floor false por padrao")
+	assert_eq(typeof(player_padrao["on_floor"]), TYPE_BOOL, "C1: on_floor e bool")
+	assert_true(GameState.chave_publicada("player.on_floor"), "C1: player.on_floor e chave publicada")
+	# (b) comum: estado real informado no fim dos argumentos e publicado no player
+	var pousado: Dictionary = GameState.build(1, 2, "playing", true, 100, 100, false, 0, false, 0.0, 0.0, 0.0, "", 0.0, 0, "classico", 0, false, 0, true)
+	var player_pousado: Dictionary = pousado["player"] as Dictionary
+	assert_eq(player_pousado["on_floor"], true, "C1: publica on_floor true")
+	# (c) degenerado: false explicito nao altera campos existentes
+	var no_ar: Dictionary = GameState.build(3, 9, "playing", true, 40, 50, false, 2, false, 30.0, 70.0, 0.0, "", 0.0, 0, "classico", 0, false, 0, false)
+	var player_no_ar: Dictionary = no_ar["player"] as Dictionary
+	assert_eq(player_no_ar["on_floor"], false, "C1: publica on_floor false")
+	assert_eq(player_no_ar["alive"], true, "C1: player.alive preservado")
+	assert_eq(player_no_ar["x"], 30, "C1: player.x preservado")
+	assert_eq(player_no_ar["y"], 70, "C1: player.y preservado")
+
+
 func test_build_publica_powerup_padrao_e_restante_arredondado_para_cima() -> void:
 	# (a) default: sem os parametros, ativo "", restante 0, carga 0 (int)
 	var padrao: Dictionary = (GameState.build(0, 0, "menu", true)["powerup"]) as Dictionary

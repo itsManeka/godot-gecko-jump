@@ -13,6 +13,16 @@ var _pontuacao_original: ScoreKeeper
 var _caminho_recorde_original: String
 
 
+# Global novo (fora do autoload) para exercitar o `_ready` real do script: sem semear o RNG global e sem ler as opcoes
+# nem aplicar volume nos buses do jogo (os dois sao o que o `_ready` faz fora do recorde). O resto do `_ready` roda.
+class GlobalNovo extends "res://scripts/Global.gd":
+	func aplicar_seed(_valor: Variant) -> void:
+		pass
+
+	func usar_options_store(_store: OptionsStore) -> void:
+		pass
+
+
 func before_each() -> void:
 	_opcoes_original = Global.opcoes
 	_flag_original = Global.modos_teste_habilitado
@@ -179,6 +189,20 @@ func test_primeiro_carregamento_liga_o_keeper_do_classico_ao_store() -> void:
 	_simular_boot_sem_isolamento()
 	Global._iniciar_keeper()
 	assert_eq(Global.get_best_score(), 6, "1o carregamento: recorde salvo e carregado no keeper do Classico")
+
+
+# f523 (re-review 2): o `_ready` do Global chama `_iniciar_keeper`; o teste acima chama a funcao direto e nao
+# pegaria a chamada removida do `_ready`. Aqui o no entra na arvore de verdade e o recorde salvo tem de estar carregado.
+func test_ready_do_global_liga_o_keeper_do_classico_ao_store_salvo() -> void:
+	DirAccess.make_dir_recursive_absolute(TMP_RECORDE_DIR)
+	BestScoreStore.new(TMP_RECORDE).save_best(7)
+	var novo := GlobalNovo.new()
+	novo.caminho_recorde_classico = TMP_RECORDE
+	add_child_autofree(novo)
+	assert_not_null(novo.store_do_modo(GameModes.ID_CLASSICO), "_ready: keeper do Classico ligado a um store")
+	assert_eq(novo.get_best_score(), 7, "_ready: recorde salvo carregado no keeper do Classico")
+	novo.set_score(9)
+	assert_eq(BestScoreStore.new(TMP_RECORDE).load_best(), 9, "_ready: pontuacao acima do best grava no store")
 
 
 func test_pontuacao_segue_membro_atribuivel() -> void:

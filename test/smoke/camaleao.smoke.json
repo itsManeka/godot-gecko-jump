@@ -8,6 +8,7 @@
     { "wait": 150 },
     { "up": "Space" },
     { "expect": { "state": "playing", "powerup.ativo": "camaleao", "powerup.restante": { "gt": 0 } }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 200, "name": "camaleao-ativo", "moving": true },
     { "expect": { "powerup.ativo": "" }, "timeout_ms": 8000 },
     { "expect": { "powerup.restante": { "eq": 0 } }, "timeout_ms": 3000 },
     { "expect": { "state": "playing" }, "timeout_ms": 3000 }

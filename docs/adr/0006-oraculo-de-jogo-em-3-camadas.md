@@ -33,7 +33,9 @@ Todo criterio de aceite de mudanca no jogo e classificado, e cada classe tem a c
   - `game-smoke`: joga cada roteiro no export web, em navegador headless, na verificacao final da mudanca
     (`verify-wave final` do dev-workspace). Reprova erro de pagina, `SCRIPT ERROR`, recurso faltando e tela congelada.
   - `game-bot`: joga o mesmo roteiro no Godot nativo, na versao atual e na referencia (branch base da mudanca), e
-    guarda os prints lado a lado.
+    guarda os prints lado a lado. Limite: o bot nativo nao le os passos `expect` (pula com aviso), clica nas mesmas
+    coordenadas do web e pode mostrar outro modo de jogo no menu; so o smoke web prova, pela ponte de estado, qual
+    modo foi escolhido e o estado que o roteiro espera.
   - Agente `game-tester`: na revisao de mudanca jogavel, classifica os criterios, estende o roteiro ate cada criterio
     (b), roda o smoke e o bot e le os prints. Criterio (b) so e aprovado com um print que o mostre.
 - **Camada 3 — o dono joga.** So a classe (c), e sempre depois da camada 2 verde. Os agentes listam os itens (c) sem

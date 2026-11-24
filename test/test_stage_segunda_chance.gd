@@ -299,6 +299,28 @@ func test_C661_coletar_de_novo_recarrega_e_reload_nasce_zerado() -> void:
 	assert_eq(_estado().carga(), 0, "C661: partida nova nasce com carga 0")
 
 
+# f526 (06-review Aviso 3): reload da Stage com carga guardada na anterior. A Stage nova nasce com um
+# PowerUpState proprio e sem carga (a carga vive no estado da partida, nunca compartilhada entre Stages).
+func test_reload_da_stage_nasce_com_carga_zerada_e_estado_proprio() -> void:
+	_stage = await _novo_stage()
+	_iniciar_partida()
+	_coletar_carga()
+	var anterior: PowerUpState = _estado()
+	assert_eq(anterior.carga(), 1, "fixture: a Stage anterior guarda 1 carga")
+	# Reload: a anterior sai de cena (o resgate nao roda: gecko encerrado e body_exited desligado, como no C661)
+	_p.end = true
+	var area: Area2D = _stage.get_node("CheckPlayer") as Area2D
+	var chamada := Callable(_stage, "_on_CheckPlayer_body_exited")
+	if area.body_exited.is_connected(chamada):
+		area.body_exited.disconnect(chamada)
+	_stage.queue_free()
+	await _fisica(3)
+	_stage = await _novo_stage()
+	assert_eq(_estado().carga(), 0, "reload: a Stage nova nasce com carga 0")
+	assert_ne(_estado(), anterior, "reload: a Stage nova tem o proprio PowerUpState")
+	assert_eq(anterior.carga(), 1, "reload: a carga da Stage anterior nao vazou para ela nem foi consumida")
+
+
 # C662: pausa — nenhuma fisica roda pausada: a queda pendente nao consumiu a carga nem reposicionou;
 # retomada, a queda completa e o resgate acontece
 func test_C662_pausa_nao_consome_carga_nem_reposiciona() -> void:

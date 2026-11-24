@@ -22,6 +22,7 @@ const ROTEIROS: Array[String] = [
 	"retrato-pontua-1080x2772",
 	"retrato-queda-720x1280",
 	"toque",
+	"toque-modo-b",
 ]
 const ROTEIROS_LONGOS: Array[String] = [
 	"gecko",
@@ -43,6 +44,7 @@ const ROTEIROS_SEMDERROTA: Array[String] = [
 	"estagio-alto",
 	"gecko",
 	"power-up",
+	"toque-modo-b",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
 	"retrato-1170x2532",
@@ -753,6 +755,12 @@ func test_C804_chaves_publicadas_incluem_alvo_e_chave_inexistente_reprova() -> v
 	assert_eq(_chaves_nao_publicadas(fake_ok["expect"]).size(), 0, "C804: expect com alvo.alinhado e alvo.dx passa no validador")
 	var fake_ruim: Dictionary = {"expect": {"alvo.cor": true}}
 	assert_eq(_chaves_nao_publicadas(fake_ruim["expect"]), ["alvo.cor"], "C804: chave inexistente (alvo.cor) reprova no validador")
+
+
+func test_C1_expect_player_on_floor_e_aceito_pelo_validador() -> void:
+	var expect_pousado: Dictionary = {"player.on_floor": true}
+	assert_true(CHAVES_PUBLICADAS.has("player.on_floor"), "C1: player.on_floor consta no contrato da ponte")
+	assert_eq(_chaves_nao_publicadas(expect_pousado).size(), 0, "C1: expect player.on_floor passa pelo validador")
 
 
 # f530 T5: corte de player.y em repouso apos cruzar o limite (medido na T1: antes 169-180, depois 145-152).

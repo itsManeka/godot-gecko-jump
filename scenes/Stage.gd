@@ -1058,5 +1058,6 @@ func _publicar_estado(state: String, alive: bool) -> void:
 		_relogio_publicado,
 		bool(_alvo_publicado["alinhado"]),
 		int(_alvo_publicado["dx"]),
+		player.is_on_floor(),
 	)
 	GameState.publish(ultimo_estado)
