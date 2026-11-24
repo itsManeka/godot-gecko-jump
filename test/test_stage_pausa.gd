@@ -19,6 +19,7 @@ func after_each() -> void:
 	get_tree().paused = false
 	for acao in ["jump", "ui_left", "ui_right", "pause"]:
 		Input.action_release(acao)
+	Global.set_modo_jogo(GameModes.ID_CLASSICO)
 	Global.platforms = []
 	Global.iniciado = false
 
@@ -34,6 +35,35 @@ func _novo_stage(iniciar: bool = true) -> Node:
 		stage._on_Play_button_down()
 		await wait_frames(2)
 	return stage
+
+
+# f527 T6: Stage no modo Zen (a regra vem do registro em _ready via `de_id`, como na producao)
+func _novo_stage_zen(iniciar: bool = true) -> Node:
+	Global.set_modo_jogo(GameModes.ID_ZEN)
+	var stage: Node = add_child_autofree(load(STAGE_SCENE).instantiate())
+	await wait_frames(2)
+	if iniciar:
+		stage._on_Play_button_down()
+		await wait_frames(2)
+	return stage
+
+
+# Toque entregue direto ao overlay de pausa (mesma entrada que o `_input` dele receberia)
+func _toque_no_overlay(pos: Vector2, pressionado: bool) -> InputEventScreenTouch:
+	var e := InputEventScreenTouch.new()
+	e.index = 0
+	e.pressed = pressionado
+	e.position = pos
+	return e
+
+
+# Botoes visiveis do overlay (3 no Zen, 2 nos outros modos)
+func _botoes_visiveis(overlay: PauseOverlay) -> int:
+	var visiveis: int = 0
+	for b in [PauseOverlay.Botao.CONTINUAR, PauseOverlay.Botao.OPCOES, PauseOverlay.Botao.SAIR]:
+		if overlay._paineis[b].visible:
+			visiveis += 1
+	return visiveis
 
 
 func _acao_pause() -> void:
@@ -316,6 +346,52 @@ func test_toque_sobre_o_botao_de_pausa_com_overlay_aberto_nao_pausa_nem_retoma()
 	assert_true(stage.pause_overlay.esta_aberto(), "toque sobre o botao nao retoma: overlay segue aberto")
 	assert_true(get_tree().paused, "toque sobre o botao nao retoma: arvore segue pausada")
 	assert_eq(ouvinte.toques, 0, "toque sobre o botao e consumido pelo overlay")
+
+
+# C734 [f527 T6]: Zen abre o overlay com 3 botoes (Continuar, Opcoes, Sair); Classico/Puro/Tempo seguem com 2 —
+# o predicado unico `permite_sair_pela_pausa()` decide a visibilidade (o Stage o injeta ao abrir o overlay).
+func test_c734_zen_abre_o_overlay_com_3_botoes_e_classico_puro_tempo_com_2() -> void:
+	var stage := await _novo_stage_zen()
+	stage._pausar()
+	assert_true(stage.pause_overlay.esta_aberto(), "precondicao: overlay aberto no Zen")
+	assert_eq(_botoes_visiveis(stage.pause_overlay), 3, "C734: overlay do Zen tem Continuar, Opcoes e Sair")
+	assert_true(stage.pause_overlay._paineis[PauseOverlay.Botao.SAIR].visible, "C734: botao Sair visivel no Zen")
+	for par in [["classico", ClassicoRule.new()], ["puro", PuroRule.new()], ["tempo", TempoRule.new()]]:
+		stage._retomar()
+		stage.regra = par[1] as GameModeRule
+		stage._pausar()
+		assert_eq(_botoes_visiveis(stage.pause_overlay), 2, "C734: overlay do %s segue com 2 botoes" % par[0])
+		assert_false(stage.pause_overlay._paineis[PauseOverlay.Botao.SAIR].visible, "C734: Sair oculto no %s" % par[0])
+
+
+# C735 [f527 T6]: Sair acionado no Zen despausa a arvore e recarrega a Stage — a nova nasce no menu com
+# `started == false` — sem `Global.set_score` (recorde do Zen inalterado) e sem som/animacao de derrota.
+# O reload passa pelo Callable `recarregar_cena`: em teste registra o pedido (o GUT nao pode trocar a cena do
+# proprio runner); sem injecao vale o `_on_animation_end` de producao.
+func test_c735_sair_no_zen_despausa_e_recarrega_a_stage_sem_derrota_nem_recorde() -> void:
+	var stage := await _novo_stage_zen()
+	var recargas: Array = []
+	stage.recarregar_cena = func() -> void: recargas.append(1)
+	stage._pausar()
+	assert_true(get_tree().paused, "precondicao: arvore pausada no Zen")
+	var best_antes: int = Global.get_best_score()
+	var last_antes: int = Global.get_last_score()
+	var alvo: Vector2 = stage.pause_overlay.rect_sair().get_center()
+	assert_true(stage.pause_overlay.tratar_evento(_toque_no_overlay(alvo, true)), "C735: toque em Sair pertence ao overlay")
+	assert_true(stage.pause_overlay.tratar_evento(_toque_no_overlay(alvo, false)), "C735: soltar em Sair e consumido pelo overlay")
+	assert_false(get_tree().paused, "C735: Sair despausa a arvore")
+	assert_false(stage.pause_overlay.esta_aberto(), "C735: overlay fechado ao sair")
+	assert_eq(recargas.size(), 1, "C735: Sair pede exatamente 1 reload da Stage")
+	assert_false(stage.player.is_end(), "C735: sem lose_game: o jogador nao termina")
+	assert_false(stage.loseaudio.playing, "C735: sem som de derrota")
+	assert_ne(stage.animation.current_animation, "lose_animation", "C735: sem animacao de derrota")
+	assert_eq(Global.get_best_score(), best_antes, "C735: nenhum set_score: recorde do Zen inalterado")
+	assert_eq(Global.get_last_score(), last_antes, "C735: last do Zen inalterado")
+	# O reload pedido carrega Stage.tscn de novo: a instancia fresca nasce no menu (`started == false`, ponte menu)
+	var nova: Node = add_child_autofree(load(STAGE_SCENE).instantiate())
+	await wait_frames(2)
+	assert_false(nova.started, "C735: a Stage recarregada nasce com started == false")
+	assert_eq(String(nova.ultimo_estado.get("state", "")), String(GameState.STATE_MENU), "C735: a Stage recarregada nasce no menu")
 
 
 func _toque_real(pos: Vector2, pressionado: bool) -> void:

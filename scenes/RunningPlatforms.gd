@@ -21,6 +21,11 @@ var speed = 0
 # Sorteio das moveis: null = randi() global; teste injeta um rng de seed fixa
 var rng: RandomNumberGenerator = null
 
+# RNG separado para a cor das moveis (canal cor_movel da RowSeed): o consumo e condicionado a janela do
+# gecko (ReachableColors), entao nao pode compartilhar o rng do layout (deslocaria tipo/x/mecanicas conforme
+# a jogada). null = cai no rng (testes que injetam so rng) ou, sem rng, no sorteio global como hoje.
+var rng_cor_movel: RandomNumberGenerator = null
+
 # Estado de dificuldade da partida (injetado antes do add_child); null = snapshot do estagio 0
 var dificuldade: DifficultyState = null
 
@@ -44,6 +49,13 @@ var _seno_ligado: bool = false
 var _vai_e_vem_ligado: bool = false
 # A mecanica que pisca esta ligada neste gerador (nunca na linha garantir_cor_inicial)
 var _pisca_ligado: bool = false
+# A mecanica plataformas_que_caem esta ligada neste gerador (nunca na linha garantir_cor_inicial); quem cai e sorteado
+# por plataforma (proporcao_que_caem), nunca na lista compartilhada
+var _queda_ligada: bool = false
+# rng dedicado do sorteio de quem cai (derivado da semente do gerador, sem consumir o rng do layout); criado so no 1o sorteio
+var _rng_queda: RandomNumberGenerator = null
+# Mistura a semente do gerador para o rng da queda nao repetir a sequencia do rng do gerador nem a do piscar
+const SEMENTE_CAI: int = 0xCA1DA
 # rng dedicado do piscar (derivado da semente do gerador, sem consumir o rng dele); criado so no 1o sorteio
 var _rng_pisca: RandomNumberGenerator = null
 # Mistura a semente do gerador para o rng do piscar nao repetir a sequencia do rng do gerador
@@ -55,6 +67,20 @@ var _piscantes_na_linha: int = 0
 # moveis consecutivas nunca ha piscante ao lado de cicladora: a anterior era cicladora / a piscante anterior e neutralizada.
 var _ciclo_anterior: bool = false
 var _ultima_pisca: PlatformBlink = null
+# Linha elegivel ao sorteio de power-up: so ScrollLevel.create_new_running_platform liga (linhas de fluxo)
+var power_ups_elegivel: bool = false
+# Gancho da Stage (f524, repassado pelo ScrollLevel no nascimento): falso = esta linha nunca sorteia
+# power-up, mesmo elegivel (nenhum icone nasce); padrao true
+var power_ups_habilitados: bool = true
+# Estado de power-up da partida (injetado pelo ScrollLevel antes do add_child, f522 T4); null = scroll cheio
+var power_up_estado: PowerUpState = null
+# Fator de scroll forcado pela regra do modo (f527; repassado pelo ScrollLevel no nascimento, a mesma fonte do
+# ScrollLevel.fator_forcado e do Player.fator_scroll_forcado); 1.0 = neutro
+var fator_forcado: float = 1.0
+# rng dedicado do sorteio de power-up (derivado da semente do gerador, sem consumir o rng do layout nem o da cor)
+var _rng_power_up: RandomNumberGenerator = null
+# Mistura a semente do gerador para o rng do power-up nao repetir a sequencia dos demais
+const SEMENTE_POWER_UP: int = 0x90E5B1
 
 # Inicializa o gerador de plataformas
 func _ready():
@@ -64,7 +90,7 @@ func _ready():
 	speed = snapshot.get_speed_moveis()
 
 	# Resolve tipos de plataforma aleatórios (sorteio em PlatformTypePicker)
-	platform_type = PlatformTypePicker.resolve(platform_type, null, snapshot.get_proporcao_estaticas())
+	platform_type = PlatformTypePicker.resolve(platform_type, rng, snapshot.get_proporcao_estaticas())
 
 	# Configura comportamento baseado no tipo (Platform.gd: velocity = -speed, entao speed > 0 anda a esquerda)
 	match platform_type:
@@ -112,16 +138,17 @@ func create_static_platforms():
 	var planas: int = 0
 	var ultima_pisca: PlatformBlink = null
 	if garantir_cor_inicial:
-		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL)
+		cores = StaticPlatformColors.sortear(Enums.COR_INICIAL, rng)
 	for i in 3:
 		var platform = pre_platform.instantiate()
 		if Global.sem_derrota:
 			# Modo sem derrota (smoke debug): cor unica, a plataforma de origem nunca desliga
 			platform.set_color(Enums.COR_INICIAL)
 		else:
-			platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color())
+			platform.set_color(cores[i] if not cores.is_empty() else Enums.get_random_color(rng))
 		platform.position.x = position_x
 		_aplicar_mecanicas(platform)
+		_aplicar_power_up(platform)
 		platform.set_speed(0)  # Plataformas estáticas não se movem
 		if platform.obter_pisca() != null:
 			ultima_pisca = platform.obter_pisca()
@@ -161,7 +188,9 @@ func _cor_movel() -> int:
 		primeira_cor_gecko_lida = cor_gecko
 	# K relido a cada plataforma criada (pode mudar no meio da linha)
 	var k: int = _snapshot().get_k()
-	var cor: int = ReachableColors.cor_plataforma_movel(cor_gecko, _cores_criadas, rng, k)
+	var cor: int = ReachableColors.cor_plataforma_movel(
+		cor_gecko, _cores_criadas, rng_cor_movel if rng_cor_movel != null else rng, k
+	)
 	_cores_criadas.append(cor)
 	var maximo: int = maxi(k - 1, 0)
 	while _cores_criadas.size() > maximo:
@@ -176,7 +205,26 @@ func _criar_plataforma(x: float):
 	platform.position.x = x
 	platform.set_speed(0 if Global.sem_derrota else speed)
 	_aplicar_mecanicas(platform)
+	_aplicar_power_up(platform)
 	add_child(platform)
+
+# Sorteio do power-up da plataforma (rng dedicado, depois dos demais sorteios): so linha elegivel, com o
+# gancho da Stage ligado, e nunca em sem_derrota (D5). Sem tipo registrado com peso ou com raridade 0 o
+# sorteio devolve vazio sem consumir rng.
+func _aplicar_power_up(platform: Platform) -> void:
+	if not power_ups_elegivel or not power_ups_habilitados or Global.sem_derrota:
+		return
+	platform.definir_power_up(PowerUpDraw.sortear(_fonte_power_up(), _snapshot_nascimento))
+
+# rng dedicado do power-up: semente derivada da do gerador (reprodutivel em teste); sem rng, aleatorio proprio
+func _fonte_power_up() -> RandomNumberGenerator:
+	if _rng_power_up == null:
+		_rng_power_up = RandomNumberGenerator.new()
+		if rng == null:
+			_rng_power_up.randomize()
+		else:
+			_rng_power_up.seed = rng.seed ^ SEMENTE_POWER_UP
+	return _rng_power_up
 
 # Resolve os modificadores do snapshot do nascimento; linha com garantir_cor_inicial (Q5) nunca desmorona
 func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
@@ -187,8 +235,13 @@ func _ler_mecanicas(snapshot: DifficultySnapshot) -> void:
 	_seno_ligado = false
 	_vai_e_vem_ligado = false
 	_pisca_ligado = false
+	_queda_ligada = false
 	for modificador in PlatformModifiers.resolver(snapshot):
 		if garantir_cor_inicial and not modificador.vale_em_linha_inicial():
+			continue
+		if modificador is PlatformCrumble:
+			# Quem cai e sorteado por plataforma (instancia propria no sorteio), nunca na lista compartilhada
+			_queda_ligada = true
 			continue
 		if modificador is PlatformSineMotion or modificador is PlatformPingPongMotion:
 			# Estado por plataforma (fase): nunca na lista compartilhada; o sorteio cria a instancia propria
@@ -231,7 +284,34 @@ func _aplicar_mecanicas(platform: Platform) -> void:
 		if is_same(lista, _modificadores):
 			lista = _modificadores.duplicate()
 		lista.append(piscante)
+	# Independente das demais mecanicas: piscante/cicladora/oscilante tambem podem cair
+	if _sorteia_que_cai():
+		if is_same(lista, _modificadores):
+			lista = _modificadores.duplicate()
+		lista.append(PlatformCrumble.new())
 	platform.definir_modificadores(lista, _snapshot_nascimento)
+
+# Sorteio de quem cai (rng dedicado, aplicado depois dos demais sorteios): nunca com a mecanica desligada (inclui a linha
+# inicial) nem em sem_derrota; fracao >= 1.0 cai e <= 0.0 nao cai, ambos sem consumir rng; so o intervalo aberto sorteia.
+func _sorteia_que_cai() -> bool:
+	if not _queda_ligada or Global.sem_derrota:
+		return false
+	var proporcao: float = _snapshot_nascimento.get_proporcao_que_caem()
+	if proporcao >= 1.0:
+		return true
+	if proporcao <= 0.0:
+		return false
+	return _fonte_queda().randf() < proporcao
+
+# rng dedicado da queda: semente derivada da do gerador (reprodutivel em teste); sem rng, aleatorio proprio
+func _fonte_queda() -> RandomNumberGenerator:
+	if _rng_queda == null:
+		_rng_queda = RandomNumberGenerator.new()
+		if rng == null:
+			_rng_queda.randomize()
+		else:
+			_rng_queda.seed = rng.seed ^ SEMENTE_CAI
+	return _rng_queda
 
 # Sorteio do piscar (rng dedicado, so consumido quando a plataforma e elegivel):
 # - nunca com a mecanica desligada, em sem_derrota (D5) ou numa cicladora (D6);
@@ -332,8 +412,7 @@ func _sorteia_cicladora() -> bool:
 	var proporcao: float = _snapshot_nascimento.get_proporcao_cicladoras()
 	if proporcao <= 0.0:
 		return false
-	var sorteio: float = randf() if rng == null else rng.randf()
-	return sorteio < proporcao
+	return _sorteio() < proporcao
 
 # Instancia propria de PlatformColorCycle: sequencia sorteada a partir da cor da plataforma e forcada a ter a cor do gecko
 func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:
@@ -349,7 +428,8 @@ func _novo_ciclo(cor_inicial: int) -> PlatformColorCycle:
 # Tempo em que a plataforma recem-nascida segue alcancavel: o tempo de pulo ate a linha dela (pelo scroll do snapshot do
 # nascimento) mais 1 periodo de espera em cima, com piso de 2 periodos (a cor do indice 0 e a ja pintada na plataforma).
 func _alcance_s(periodo: float) -> float:
-	var pulo: float = ReachableColors.tempo_de_pulo(_snapshot_nascimento.get_scroll())
+	var fator: float = power_up_estado.fator_scroll() if power_up_estado != null else 1.0
+	var pulo: float = ReachableColors.tempo_de_pulo(_snapshot_nascimento.get_scroll() * fator * fator_forcado)
 	return maxf(pulo, periodo) + periodo
 
 # Inicia o timer para gerar próxima plataforma

@@ -246,7 +246,7 @@ func _todos_os_textos(h: TouchHint) -> Array[String]:
 func test_c415_modo_a_mostra_o_texto_curto_e_nao_desenha_zonas() -> void:
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var h := _nova_dica(true)
-	assert_eq(h.textos_atuais(TouchHint.Lado.CENTRO), ["arraste: anda", "flick: pula"], "bloco central com o texto do modo A")
+	assert_eq(h.textos_atuais(TouchHint.Lado.CENTRO), ["Toque: Flick", "arraste anda, flick pula"] as Array[String], "bloco central com o texto do modo A")
 	assert_true(h.bloco_visivel(TouchHint.Lado.CENTRO), "bloco central visivel")
 	assert_false(h.bloco_visivel(TouchHint.Lado.ESQUERDA), "sem bloco esquerdo")
 	assert_false(h.bloco_visivel(TouchHint.Lado.DIREITA), "sem bloco direito")
@@ -287,6 +287,54 @@ func test_c418_textos_renderizados_diferem_entre_os_modos_e_sem_o_esquema_velho(
 		assert_false(vistos.has(visiveis), "modo %s renderiza textos diferentes dos outros" % TouchMode.nome(modo))
 		vistos.append(visiveis)
 	assert_eq(vistos.size(), 2, "2 modos, 2 conjuntos de textos")
+
+
+func test_c524_dica_a_mostra_o_nome_e_o_texto_curto_no_centro() -> void:
+	assert_eq(TouchHint.textos_bloco(TouchMode.Modo.A, TouchHint.Lado.CENTRO), ["Toque: Flick", "arraste anda, flick pula"] as Array[String], "textos_bloco A centro")
+	assert_eq(TouchHint.textos_bloco(TouchMode.Modo.A, TouchHint.Lado.CENTRO)[0], TouchMode.rotulo(TouchMode.Modo.A), "1a linha vem de TouchMode.rotulo")
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var h := _nova_dica(true)
+	assert_eq(h.textos_atuais(TouchHint.Lado.CENTRO), ["Toque: Flick", "arraste anda, flick pula"] as Array[String], "textos_atuais no modo A")
+
+
+func test_c525_textos_do_centro_cabem_no_bloco_com_a_fonte_real() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var h := _nova_dica(false)
+	var largura: float = h.rect_bloco(TouchHint.Lado.CENTRO).size.x
+	assert_eq(largura, 166.0, "bloco central tem 166 px")
+	for t in TouchHint.textos_bloco(TouchMode.Modo.A, TouchHint.Lado.CENTRO):
+		assert_lte(TouchHint.largura_texto(t), largura, "'%s' cabe no bloco central" % t)
+	for filho in h._bloco_de(TouchHint.Lado.CENTRO).get_children():
+		if filho is Label:
+			assert_lte((filho as Label).get_minimum_size().x, largura, "label '%s' cabe no bloco" % filho.text)
+
+
+func test_c526_dica_b_laterais_sem_nome_e_dentro_de_76_px() -> void:
+	assert_eq(TouchHint.textos_bloco(TouchMode.Modo.B, TouchHint.Lado.ESQUERDA), ["anda", "segura aqui"] as Array[String], "esquerda do B")
+	assert_eq(TouchHint.textos_bloco(TouchMode.Modo.B, TouchHint.Lado.DIREITA), ["pula", "toque aqui"] as Array[String], "direita do B")
+	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
+		for t in TouchHint.textos_bloco(TouchMode.Modo.B, lado):
+			assert_false(t.contains("Toque:") or t.contains("Joy") or t.contains("Flick"), "'%s' sem nome de modo" % t)
+			assert_lte(TouchHint.largura_texto(t), BLOCO_LARGURA_MAX, "'%s' cabe em 76 px" % t)
+
+
+func test_c527_troca_a_b_a_reescreve_os_textos_e_rearma_a_dica() -> void:
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var h := _nova_dica(true)
+	Global.dica_toque_mostrada = true
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	assert_false(Global.dica_toque_mostrada, "A->B rearma a dica")
+	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), ["anda", "segura aqui"] as Array[String], "B: esquerda sem nome")
+	assert_eq(h.textos_atuais(TouchHint.Lado.DIREITA), ["pula", "toque aqui"] as Array[String], "B: direita sem nome")
+	Global.dica_toque_mostrada = true
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	assert_false(Global.dica_toque_mostrada, "B->A rearma a dica")
+	assert_eq(h.textos_atuais(TouchHint.Lado.CENTRO), ["Toque: Flick", "arraste anda, flick pula"] as Array[String], "A volta com o nome no centro")
+
+
+func test_c528_modo_fora_da_faixa_nao_tem_bloco_e_o_nome_cai_no_padrao() -> void:
+	assert_true(TouchHint.textos_bloco(2, TouchHint.Lado.CENTRO).is_empty(), "textos_bloco(2, CENTRO) vazio")
+	assert_eq(TouchMode.rotulo(2), "Toque: Joy invisivel", "rotulo fora da faixa cai no padrao")
 
 
 func test_c481_b_mostra_dois_blocos_laterais_e_linha_sem_central() -> void:

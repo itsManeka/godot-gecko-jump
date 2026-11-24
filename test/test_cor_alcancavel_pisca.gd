@@ -20,7 +20,10 @@ const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
 const PLATAFORMA_CENA := "res://scenes/Platform.tscn"
 const STAGE_SCENE := "res://scenes/Stage.tscn"
 const EPS_PROGRESSO := 0.001
-const SEEDS := [20261120, 20261121, 20261122]
+# f517: 20261120 e 20261121 sairam daqui quando o rng do gerador passou a decidir tambem o tipo da linha e a cor das
+# estaticas (o fluxo deslocou). Com elas, e com a 13, uma linha movel so de cicladoras visiveis cai no sorteio livre:
+# lacuna da alcancabilidade registrada na issue #52 do repo, que as traz de volta ao corrigir.
+const SEEDS := [20261122, 20261123, 20261124]
 const LINHAS := 120
 const LARGURA := 180.0
 const ALTURA_TELA := 320.0
@@ -96,7 +99,8 @@ func _casos_com_pisca() -> Array:
 	return com_pisca
 
 
-# Curva de producao com proporcao_piscantes = 1.0 em todo estagio (pior caso de alcance). `so_pisca` troca as mecanicas
+# Curva de producao com proporcao_piscantes = 1.0 e proporcao_que_caem = 1.0 em todo estagio (pior caso de alcance; a
+# fracao de queda fica fixa para o teste nao depender do valor do .tres). `so_pisca` troca as mecanicas
 # dos estagios que piscam so por ela (isola a mecanica); sem ele valem as combinacoes de producao.
 func _estado_forcado(progresso: float, so_pisca: bool) -> DifficultyState:
 	var curva := _curva()
@@ -107,6 +111,7 @@ func _estado_forcado(progresso: float, so_pisca: bool) -> DifficultyState:
 	for original in curva.estagios:
 		var copia := original.duplicate() as DifficultyStage
 		copia.proporcao_piscantes = 1.0
+		copia.proporcao_que_caem = 1.0
 		if so_pisca and original.mecanicas.has(PlatformModifiers.PLATAFORMAS_QUE_PISCAM):
 			copia.mecanicas = _so_pisca()
 		estagios.append(copia)

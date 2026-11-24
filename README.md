@@ -35,12 +35,12 @@ _Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 | **Mover para Direita**  | `D` ou `→`                       | Depende do modo de toque (abaixo)         |
 | **Pausar / Continuar**  | `Esc` ou `P` (start no controle) | Botão de pausa no canto superior esquerdo |
 
-O toque tem dois modos, escolhidos em **Opções → Toque** (o padrão é o B):
+O toque tem dois modos, escolhidos em **Opções → Toque** (o padrão é Joy invisivel):
 
-- **A — arrastar + flick (um polegar):** arraste para um lado para andar; um movimento rápido para cima pula, reto
+- **Flick — arrastar + flick (um polegar):** arraste para um lado para andar; um movimento rápido para cima pula, reto
   com o dedo parado ou na diagonal com o dedo deslocado. Arrastar o dedo para cima sem parar dá um pulo só; para pular
   de novo, pare o dedo ou desça um pouco antes do próximo flick.
-- **B — dois polegares:** a metade esquerda dirige pelo arraste; a metade direita pula ao tocar.
+- **Joy invisivel — dois polegares:** a metade esquerda dirige pelo arraste; a metade direita pula ao tocar.
 
 No celular, uma dica discreta mostra como jogar no modo escolhido na primeira partida e some sozinha.
 
@@ -48,13 +48,43 @@ A partida também pausa sozinha quando a janela ou a aba perde o foco, ou quando
 voltar, use **Continuar**, `Esc` ou `P`. No desktop, o botão de pausa e o menu de pausa também aceitam clique do mouse.
 
 **Opções** (botão no menu inicial, entre Play e Last, ou no menu de pausa): volume da música e dos efeitos sonoros, de
-0 (mudo) a 100%, por arrasto ou com `←`/`→`, e o modo de toque (A ou B). Com o modo A ativo aparece também a
+0 (mudo) a 100%, por arrasto ou com `←`/`→`, e o modo de toque (Flick ou Joy invisivel). Com o modo Flick ativo aparece também a
 **Sensibilidade** do arraste e do flick (de 0,5x a 2x; maior = gesto menor basta). Volumes, modo e sensibilidade
 ficam salvos e continuam valendo quando você abre o jogo de novo.
 No menu, `↓` leva o foco até **Opções** e `Enter` abre a tela.
 
 Na primeira partida, um cartão mostra os controles e some no primeiro pouso (ou em **Pular**). Para vê-lo de novo,
 use **Opções > Ver tutorial**.
+
+No menu inicial, o botão **Modo: <nome>** (logo acima do **Play**) abre a tela de modos. Arraste para os lados ou use as setas para trocar o modo; **OK** confirma e a próxima partida usa o modo escolhido. Com o teclado, `↑` leva o foco ao botão, `Enter` abre a tela, `←`/`→` trocam o modo e `Enter`, `Esc` ou `P` confirmam. Hoje dá para jogar o **Clássico**, o **Puro**, o **Contra o tempo**, o **Zen** e o **Desafio diário**.
+
+## ⚡ Modos e Power-ups
+
+### Modos de jogo
+
+| Modo | Como se joga |
+| --- | --- |
+| **Clássico** | A partida de sempre: pule, suba o máximo que puder e não caia. |
+| **Puro** | O Clássico sem power-ups: só você, o pulo e a cor. |
+| **Contra o tempo** | Pontue o máximo antes do relógio zerar (60 s). |
+| **Zen** | Sem pressa e sem derrota: a tela não sobe sozinha e, se você cair, o gecko volta para a última plataforma em que pisou. Sem power-ups e sem recorde; o menu mostra só os pontos da partida atual, sem Best. Na pausa, o botão **Sair** volta ao menu. |
+| **Desafio diário** | Uma tentativa por dia, com a fase sorteada pela data; o resultado vale só para hoje. Sem power-ups. |
+
+Cada modo guarda o seu próprio recorde (o melhor pouso), menos o Zen, que não grava recorde, e o Desafio diário, que
+guarda só o resultado do dia.
+
+### Power-ups
+
+De vez em quando, uma plataforma elegível traz um power-up (ícone em branco e preto, no topo da plataforma). Enquanto
+ele está ativo, o HUD mostra o ícone e uma barra com o tempo que resta:
+
+| Power-up | Efeito |
+| --- | --- |
+| **Camaleão** | Por 5 s, o gecko pousa em plataformas de qualquer cor. |
+| **Desacelera** | Por 5 s, a tela sobe (e a dificuldade avança) pela metade da velocidade. |
+| **Segunda chance** | Uma carga única: se o gecko cair, ele volta em vez de acabar a partida. |
+
+No **Puro**, no **Zen** e no **Desafio diário** não há power-ups.
 
 ## 🚀 Como Jogar
 
@@ -138,6 +168,11 @@ GODOT_PATH=/caminho/para/Godot_v4.7.2-stable_linux.x86_64 node .verify.mjs ci
 
 No Windows, defina `GODOT_PATH` com o caminho do executavel antes de rodar o mesmo comando.
 
+### Jogar no celular fora de casa
+
+Para testar o export web no celular sem deploy, suba-o por um túnel HTTPS temporário. Passo a passo em
+[`wiki/playtest-remoto-por-tunel.md`](wiki/playtest-remoto-por-tunel.md).
+
 ### Smoke do build web
 
 O roteiro `test/smoke/gecko.smoke.json` joga o export web num navegador headless (iniciar, pular, morrer, reiniciar,
@@ -165,7 +200,8 @@ release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot n
   `touches` (vários dedos) e conferem a direção pelo `player.x`/`player.y`.
 - `?tutorial=visto` marca o tutorial da primeira partida como já visto (sem gravar nada), para o cartão não cobrir a
   tela. Todo roteiro leva o parâmetro, menos `tutorial.smoke.json`, que joga a primeira partida com o armazenamento limpo.
-- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`), `player.alive`,
+- `?modos=teste` inclui o modo de teste no seletor de modo (so no build de debug; no nativo, `-- --modos=teste`), usado pelo roteiro `modos.smoke.json`.
+- O jogo publica `window.__GAME_STATE__` com `score`, `best`, `state` (`menu`, `playing` ou `lost`), `modo` (id do modo: `classico`, ou `teste` so com o parametro acima; publicado em `menu` e em `playing`), `player.alive`,
   `player.x`/`player.y` (posição do gecko em px lógicos, inteiros, só durante a partida) e
   `dificuldade.estagio` (inteiro, 0 no inicio da partida; republicado quando o estagio muda).
   O passo `expect` do roteiro le esses campos, por exemplo `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.
@@ -251,12 +287,12 @@ Jogo desenvolvido para a **[#1JAM Chroma](https://itch.io/jam/1jam-chroma)** - u
 | **Move Right**     | `D` or `→`                        | Depends on the touch mode (below)   |
 | **Pause / Resume** | `Esc` or `P` (start on a gamepad) | Pause button in the top-left corner |
 
-Touch has two modes, chosen in **Opcoes → Toque** (the default is B):
+Touch has two modes, chosen in **Opcoes → Toque** (the default is Joy invisivel):
 
-- **A — drag + flick (one thumb):** drag to one side to walk; a quick upward swipe jumps, straight with the finger
+- **Flick — drag + flick (one thumb):** drag to one side to walk; a quick upward swipe jumps, straight with the finger
   still or diagonally with the finger shifted. Dragging the finger up without stopping gives a single jump; to jump
   again, stop the finger or move it down a little before the next flick.
-- **B — two thumbs:** the left half steers by dragging; the right half jumps on touch.
+- **Joy invisivel — two thumbs:** the left half steers by dragging; the right half jumps on touch.
 
 On phones, a subtle hint shows how to play the chosen mode in the first match and fades out on its own.
 
@@ -264,13 +300,43 @@ The match also pauses on its own when the window or tab loses focus, or when the
 use **Continuar**, `Esc` or `P`. On desktop, the pause button and the pause menu also accept mouse clicks.
 
 **Options** (button on the start menu, between Play and Last, or in the pause menu): music and sound effects volume,
-from 0 (muted) to 100%, by dragging or with `←`/`→`, and the touch mode (A or B). With mode A active, a drag and flick
+from 0 (muted) to 100%, by dragging or with `←`/`→`, and the touch mode (Flick or Joy invisivel). With mode Flick active, a drag and flick
 **Sensibilidade** (sensitivity) setting also shows up (0.5x to 2x; higher = a smaller gesture is enough). Volumes,
 mode and sensitivity are saved and still apply the next time you open the game.
 On the menu, `↓` moves the focus to **Opcoes** and `Enter` opens the screen.
 
 In the first match, a card shows the controls and fades out on the first landing (or on **Pular**). To see it again,
 use **Opcoes > Ver tutorial**.
+
+On the start menu, the **Modo: <name>** button (just above **Play**) opens the modes screen. Drag sideways or use the arrows to change the mode; **OK** confirms and the next match uses the chosen mode. With the keyboard, `↑` moves the focus to the button, `Enter` opens the screen, `←`/`→` change the mode and `Enter`, `Esc` or `P` confirm. Today you can play **Classico**, **Puro**, **Contra o tempo**, **Zen** and **Desafio diario**.
+
+### ⚡ Modes and Power-ups
+
+#### Game modes
+
+| Mode | How it plays |
+| --- | --- |
+| **Classico** | The usual run: jump, climb as high as you can and do not fall. |
+| **Puro** | Classico without power-ups: just you, the jump and the color. |
+| **Contra o tempo** | Score as much as you can before the clock runs out (60 s). |
+| **Zen** | No rush and no defeat: the screen does not climb on its own and, if you fall, the gecko comes back to the last platform it stepped on. No power-ups and no best score; the menu shows only the points of the current run, no Best. In the pause screen, the **Sair** button goes back to the menu. |
+| **Desafio diario** | One attempt per day, on the stage drawn from the date; the result only counts for today. No power-ups. |
+
+Each mode keeps its own best score (your best landing), except Zen, which does not keep one, and Desafio diario,
+which only keeps the result of the day.
+
+#### Power-ups
+
+Every now and then an eligible platform carries a power-up (a white and black icon, on top of the platform). While it is
+active, the HUD shows the icon and a bar with the time left:
+
+| Power-up | Effect |
+| --- | --- |
+| **Camaleao** | For 5 s the gecko lands on platforms of any color. |
+| **Desacelera** | For 5 s the screen (and the difficulty) climbs at half speed. |
+| **Segunda chance** | A single charge: if the gecko falls, it comes back instead of ending the run. |
+
+**Puro**, **Zen** and **Desafio diario** have no power-ups.
 
 ### 🚀 How to Play
 
@@ -327,7 +393,8 @@ build (the published one) ignores the parameters below and publishes nothing. On
   (several fingers) steps and check the direction through `player.x`/`player.y`.
 - `?tutorial=visto` marks the first-match tutorial as already seen (without saving anything), so the card does not
   cover the screen. Every script carries it, except `tutorial.smoke.json`, which plays the first match with clean storage.
-- The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`),
+- `?modos=teste` adds the test mode to the mode selector (debug build only; on native, `-- --modos=teste`), used by the `modos.smoke.json` script.
+- The game publishes `window.__GAME_STATE__` with `score`, `best`, `state` (`menu`, `playing` or `lost`), `modo` (the mode id: `classico`, or `teste` only with the parameter above; published in `menu` and `playing`),
   `player.alive`, `player.x`/`player.y` (the gecko's position in logical px, integers, only during the match) and
   `dificuldade.estagio` (an integer, 0 at the start of the match; republished when the stage changes).
   The script `expect` step reads those fields, for example `{"expect": {"state": "playing"}, "timeout_ms": 3000}`.

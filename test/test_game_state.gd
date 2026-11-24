@@ -117,6 +117,49 @@ func test_build_publica_player_xy_inteiros_arredondados() -> void:
 	assert_eq(inv["y"], 12, "12.4 -> 12")
 
 
+func test_C1_build_publica_player_on_floor_e_chave() -> void:
+	# (a) default: chamadas existentes continuam definindo o booleano como false
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	var player_padrao: Dictionary = padrao["player"] as Dictionary
+	assert_eq(player_padrao["on_floor"], false, "C1: on_floor false por padrao")
+	assert_eq(typeof(player_padrao["on_floor"]), TYPE_BOOL, "C1: on_floor e bool")
+	assert_true(GameState.chave_publicada("player.on_floor"), "C1: player.on_floor e chave publicada")
+	# (b) comum: estado real informado no fim dos argumentos e publicado no player
+	var pousado: Dictionary = GameState.build(1, 2, "playing", true, 100, 100, false, 0, false, 0.0, 0.0, 0.0, "", 0.0, 0, "classico", 0, false, 0, true)
+	var player_pousado: Dictionary = pousado["player"] as Dictionary
+	assert_eq(player_pousado["on_floor"], true, "C1: publica on_floor true")
+	# (c) degenerado: false explicito nao altera campos existentes
+	var no_ar: Dictionary = GameState.build(3, 9, "playing", true, 40, 50, false, 2, false, 30.0, 70.0, 0.0, "", 0.0, 0, "classico", 0, false, 0, false)
+	var player_no_ar: Dictionary = no_ar["player"] as Dictionary
+	assert_eq(player_no_ar["on_floor"], false, "C1: publica on_floor false")
+	assert_eq(player_no_ar["alive"], true, "C1: player.alive preservado")
+	assert_eq(player_no_ar["x"], 30, "C1: player.x preservado")
+	assert_eq(player_no_ar["y"], 70, "C1: player.y preservado")
+
+
+func test_build_publica_powerup_padrao_e_restante_arredondado_para_cima() -> void:
+	# (a) default: sem os parametros, ativo "", restante 0, carga 0 (int)
+	var padrao: Dictionary = (GameState.build(0, 0, "menu", true)["powerup"]) as Dictionary
+	assert_eq(padrao["ativo"], "", "padrao: powerup.ativo vazio")
+	assert_eq(padrao["restante"], 0, "padrao: powerup.restante 0")
+	assert_eq(padrao["carga"], 0, "padrao: powerup.carga 0")
+	assert_eq(typeof(padrao["restante"]), TYPE_INT, "padrao: restante e int")
+	# (b) comum: restante fracionario arredonda para cima
+	var ativo: Dictionary = (
+		GameState.build(1, 2, "playing", true, 100, 100, false, 0, false, 0.0, 0.0, 0.0, "teste", 1.2, 1)["powerup"]
+		as Dictionary
+	)
+	assert_eq(ativo["ativo"], "teste", "powerup.ativo publicado")
+	assert_eq(ativo["restante"], 2, "1.2 s -> 2 (para cima)")
+	assert_eq(ativo["carga"], 1, "powerup.carga publicado")
+	assert_eq(typeof(ativo["restante"]), TYPE_INT, "restante e int")
+	# (c) degenerado: restante exato nao sobe; os demais campos seguem
+	var estado: Dictionary = GameState.build(3, 9, "playing", true, 40, 50, false, 2, false, 0.0, 0.0, 0.0, "teste", 1.0)
+	assert_eq((estado["powerup"] as Dictionary)["restante"], 1, "1.0 s -> 1")
+	assert_eq(estado["score"], 3, "score segue")
+	assert_eq((estado["dificuldade"] as Dictionary)["estagio"], 2, "dificuldade segue")
+
+
 func test_build_alive_false_preserva_posicao_e_demais_campos() -> void:
 	var estado: Dictionary = GameState.build(3, 9, "lost", false, 40, 50, false, 2, false, 30.0, 70.0)
 	var jogador: Dictionary = estado["player"] as Dictionary
@@ -126,6 +169,21 @@ func test_build_alive_false_preserva_posicao_e_demais_campos() -> void:
 	assert_eq(estado["score"], 3, "score igual")
 	assert_eq((estado["volume"] as Dictionary)["music"], 40, "volume igual")
 	assert_eq((estado["dificuldade"] as Dictionary)["estagio"], 2, "dificuldade igual")
+
+
+func test_C590_build_publica_modo_classico_por_padrao_e_id_informado() -> void:
+	# (a) default: sem o parametro, o modo publicado e o Classico
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	assert_eq(padrao["modo"], "classico", "C590: modo padrao classico")
+	# (b) comum: id informado (ultimo parametro) vai ao campo
+	var teste: Dictionary = GameState.build(7, 12, "playing", true, 100, 100, false, 2, false, 0.0, 0.0, 0.0, "", 0.0, 0, "teste")
+	assert_eq(teste["modo"], "teste", "C590: id teste publicado")
+	# (c) degenerado: as chaves antigas seguem iguais com o campo novo presente
+	assert_eq(teste["score"], 7, "C590: score inalterado")
+	assert_eq(teste["best"], 12, "C590: best inalterado")
+	assert_eq(teste["state"], "playing", "C590: state inalterado")
+	assert_eq(teste["tutorial"], "fechado", "C590: tutorial inalterado")
+	assert_eq((teste["dificuldade"] as Dictionary)["estagio"], 2, "C590: dificuldade.estagio inalterado")
 
 
 func _nova_stage() -> Node:
@@ -190,3 +248,52 @@ func test_publish_no_headless_e_no_op() -> void:
 	# O ambiente do GUT (headless) nao e web: a trava deve barrar, e publish nao chama JavaScriptBridge nem lanca
 	assert_false(GameState.deve_publicar(OS.has_feature("web"), OS.is_debug_build()), "headless nao publica")
 	GameState.publish(GameState.build(1, 2, "playing", true))
+
+
+func test_C695_build_publica_relogio_restante_zero_por_padrao_e_chave_publicada() -> void:
+	# (a) default: sem o argumento, relogio.restante 0 (int); chamadas antigas seguem com o campo zerado
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	assert_eq((padrao["relogio"] as Dictionary)["restante"], 0, "C695: relogio.restante 0 por padrao")
+	assert_eq(typeof((padrao["relogio"] as Dictionary)["restante"]), TYPE_INT, "C695: relogio.restante e int")
+	# (b) comum: valor passado (ultimo parametro) aparece no campo
+	var tempo: Dictionary = GameState.build(7, 12, "playing", true, 100, 100, false, 2, false, 0.0, 0.0, 0.0, "", 0.0, 0, "tempo", 42)
+	assert_eq((tempo["relogio"] as Dictionary)["restante"], 42, "C695: relogio.restante 42 publicado")
+	# (c) degenerado: o campo novo nao altera os antigos
+	assert_eq(tempo["modo"], "tempo", "C695: modo segue")
+	assert_eq(tempo["score"], 7, "C695: score segue")
+	var chaves: Array = load("res://test/test_smoke_roteiros.gd").get_script_constant_map()["CHAVES_PUBLICADAS"]
+	assert_true(chaves.has("relogio.restante"), "C695: relogio.restante esta em CHAVES_PUBLICADAS")
+
+
+func test_C802_build_publica_alvo_padrao_e_valores_informados_inteiros() -> void:
+	# (a) default: sem o grupo, alvo fica alinhado false e dx 0 (int)
+	var padrao: Dictionary = GameState.build(0, 0, "menu", true)
+	var alvo_padrao: Dictionary = padrao["alvo"] as Dictionary
+	assert_eq(alvo_padrao["alinhado"], false, "C802: alvo.alinhado padrao false")
+	assert_eq(alvo_padrao["dx"], 0, "C802: alvo.dx padrao 0")
+	assert_eq(typeof(alvo_padrao["dx"]), TYPE_INT, "C802: alvo.dx padrao e int")
+	# (b) comum: valores informados (ultimo grupo de parametros) vao ao campo exatos
+	var mirando: Dictionary = GameState.build(7, 12, "playing", true, 100, 100, false, 2, false, 0.0, 0.0, 0.0, "", 0.0, 0, "classico", 0, true, -37)
+	var alvo: Dictionary = mirando["alvo"] as Dictionary
+	assert_eq(alvo["alinhado"], true, "C802: alvo.alinhado true publicado")
+	assert_eq(alvo["dx"], -37, "C802: alvo.dx -37 publicado exato")
+	assert_eq(typeof(alvo["dx"]), TYPE_INT, "C802: alvo.dx publicado e int")
+	# (c) degenerado: round-trip JSON preserva bool e o inteiro
+	var volta: Dictionary = JSON.parse_string(JSON.stringify(mirando)) as Dictionary
+	assert_eq((volta["alvo"] as Dictionary)["alinhado"], true, "C802: round-trip preserva alinhado")
+	assert_eq(int((volta["alvo"] as Dictionary)["dx"]), -37, "C802: round-trip preserva dx -37")
+
+
+func test_C803_campos_anteriores_iguais_com_e_sem_alvo_e_publicacao_inalterada() -> void:
+	var sem_alvo: Dictionary = GameState.build(7, 12, "playing", true, 40, 50, true, 2, true, 30.0, 70.0, 0.5, "teste", 1.2, 1, "tempo", 42)
+	var com_alvo: Dictionary = GameState.build(7, 12, "playing", true, 40, 50, true, 2, true, 30.0, 70.0, 0.5, "teste", 1.2, 1, "tempo", 42, true, 9)
+	var antigos_sem: Dictionary = sem_alvo.duplicate()
+	var antigos_com: Dictionary = com_alvo.duplicate()
+	antigos_sem.erase("alvo")
+	antigos_com.erase("alvo")
+	assert_eq(antigos_com, antigos_sem, "C803: os campos anteriores ficam identicos com e sem alvo")
+	assert_eq(sem_alvo["alvo"], {"alinhado": false, "dx": 0}, "C803: sem o grupo o alvo e o padrao")
+	# release e headless seguem sem ponte: a trava nao depende do campo novo
+	assert_false(GameState.deve_publicar(false, false), "C803: release nao publica com alvo")
+	assert_false(GameState.deve_publicar(OS.has_feature("web"), OS.is_debug_build()), "C803: headless nao publica com alvo")
+	GameState.publish(com_alvo)

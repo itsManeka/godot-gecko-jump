@@ -1,0 +1,21 @@
+{
+  "path": "index.html?seed=455&tutorial=visto&powerup=segunda_chance",
+  "viewport": [720, 1280],
+  "boot_ms": 6000,
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "expect": { "state": "playing", "powerup.carga": { "eq": 1 }, "powerup.ativo": "" }, "timeout_ms": 3000 },
+    { "shots": 3, "every": 200, "name": "segunda-chance-carga", "moving": true },
+    { "down": "ArrowLeft" },
+    { "expect": { "state": "playing", "powerup.carga": { "eq": 0 } }, "timeout_ms": 6000 },
+    { "up": "ArrowLeft" },
+    { "wait": 300 },
+    { "expect": { "state": "playing", "powerup.carga": { "eq": 0 } }, "timeout_ms": 1000 },
+    { "down": "ArrowLeft" },
+    { "expect": { "state": "lost" }, "timeout_ms": 6000 },
+    { "up": "ArrowLeft" }
+  ]
+}

@@ -18,6 +18,7 @@
     { "expect": { "player.x": { "lt": 90 } }, "timeout_ms": 3000 },
     { "expect": { "player.y": { "gt": 190 } }, "timeout_ms": 3000 },
     { "wait": 500 },
+    { "expect": { "player.on_floor": true }, "timeout_ms": 3000 },
     {
       "touches": [
         { "from": [200, 1000], "to": [120, 1000], "ms": 150 },

@@ -15,9 +15,31 @@ var position_scrolled: float = 0.0
 # Dificuldade da partida (atribuida pela Stage em _ready); null = estagio 0 (cena isolada)
 var dificuldade: DifficultyState = null
 
+# Estado de power-up da partida (atribuido pela Stage em _ready, no padrao da dificuldade injetada);
+# null = neutro. O consumo do fator de scroll e do Desacelera (f522 T4); o campo chega pronto (f522 T1).
+var power_up_estado: PowerUpState = null
+
+# Gancho de modos da Stage (f524, atribuido em _ready): falso = as linhas de fluxo nao sorteiam
+# power-up (nenhum icone nasce); padrao true
+var power_ups_habilitados: bool = true
+
+# Seed da partida (int ou null): setada pela Stage ANTES de entrar na arvore (D1); null = partida sem
+# seed, sorteio global como hoje. Nao toca Global: quem consome sao os rngs por linha, injetados via
+# RowSeed pelo indice do y local de cada linha.
+var semente: Variant = null
+
 # Foto vigente da dificuldade; sem estado injetado = estagio 0
 func _snapshot() -> DifficultySnapshot:
 	return DifficultySnapshot.de(dificuldade)
+
+# Fator vigente do scroll (power-up de desaceleracao); sem estado injetado = 1.0 (neutro)
+func _fator_scroll() -> float:
+	var fator_power_up: float = power_up_estado.fator_scroll() if power_up_estado != null else 1.0
+	return fator_power_up * fator_forcado
+
+# Fator forcado pela regra do modo (f527: Zen = 0.0 zera so a curva; GameModeRule.fator_scroll_forcado, atribuido pela
+# Stage em _ready e na troca de modo). Padrao 1.0 = neutro. O avanco da camera (avancar_camera) nao passa por ele.
+var fator_forcado: float = 1.0
 
 # Quantas linhas do fluxo já nasceram (uma a cada InitialRows.ESPACAMENTO px de scroll)
 var _rows_spawned: int = 0
@@ -27,6 +49,28 @@ var _rows_spawned: int = 0
 # (test_scroll_level_linhas_iniciais.gd acusa duplicata ou buraco pela contagem 7/9/10).
 const ULTIMA_LINHA_TSCN := 190.0
 const EPSILON := 0.0001
+
+# D1 (02-impact): as 5 linhas do .tscn entram na seed. _enter_tree roda antes do _ready de qualquer
+# filho — o @onready running_platforms ainda nao existe, mas os nos do .tscn ja estao instanciados —,
+# entao a semente setada antes do add_child chega a tempo: injeta os rngs nas linhas do .tscn antes
+# do _ready delas.
+func _enter_tree() -> void:
+	var container: Node = get_node_or_null("RunningPlatforms")
+	if container == null:
+		return
+	for linha in container.get_children():
+		_injetar_rng_na_linha(linha)
+
+
+# Injeta na linha os rngs do seu indice (canais layout e cor_movel da RowSeed) pelo y local, ANTES do
+# add_child/_ready dela: a linha le tipo, mecanicas, cores e speed no _ready. Sem semente nao injeta
+# nada (partida sem seed: sorteio global como hoje). ScrollLevel nao chama seed() nem randomize().
+func _injetar_rng_na_linha(linha: Node2D) -> void:
+	if semente == null:
+		return
+	var indice: int = RowSeed.indice_do_y(linha.position.y)
+	linha.rng = RowSeed.rng_layout(int(semente), indice)
+	linha.rng_cor_movel = RowSeed.rng_cor_movel(int(semente), indice)
 
 # Preenche a altura visível com linhas iniciais abaixo das 5 do .tscn.
 # Limitação: redimensionar a janela durante a partida não preenche faixa nova (sem religar size_changed).
@@ -39,6 +83,8 @@ func _ready():
 		linha.name = "Linha_%d" % int(y)
 		linha.set_platform_type(Enums.PLATFORM_TYPE.RANDOM_ALL)
 		linha.position = Vector2(0, y)
+		# Rngs da seed ANTES do add_child: a linha sorteia tipo/mecanicas/cores no _ready
+		_injetar_rng_na_linha(linha)
 		running_platforms.add_child(linha)
 
 # Processa o scroll contínuo do nível
@@ -47,26 +93,33 @@ func _physics_process(delta):
 		return
 	
 	# Calcula movimento de scroll baseado no delta time
-	var new_position: float = _snapshot().get_scroll() * delta
+	var new_position: float = _snapshot().get_scroll() * _fator_scroll() * delta
 	running_platforms.position.y += new_position
 	position_scrolled += new_position
 	# Gatilho aritmético: uma linha a cada ESPACAMENTO px, sem depender de altura nem de colisão
 	_criar_linhas_pendentes()
 
-# Avanco da camera do topo (issue #46): o mundo sobe o quanto o gecko passou do limite, e o gecko continua no limite.
-# Quem chama e a Stage, com prioridade de physics depois do Player (o y do gecko ja e o do frame, entao ele nao fica
-# 1 frame acima do limite). Sem Player (cena isolada) ninguem chama: o scroll da curva segue identico ao de antes.
-# O excesso soma em running_platforms.position.y, position_scrolled e no y global do gecko: a posicao relativa entre
-# gecko e plataformas se mantem, e as linhas novas saem pelo mesmo gatilho aritmetico do scroll da curva.
+# Avanco da camera do topo (issue #46): o mundo sobe o quanto o gecko passou do limite, suavizado em parcelas por
+# frame que convergem ao limite (o gecko desce junto a cada parcela; por isso ele fica acima do limite por alguns
+# frames e depois converge). Quem chama e a Stage, com prioridade de physics depois do Player. Sem Player (cena
+# isolada) ninguem chama: o scroll da curva segue identico ao de antes. O excesso soma em
+# running_platforms.position.y, position_scrolled e no y global do gecko: a posicao relativa entre gecko e plataformas
+# se mantem, e as linhas novas saem pelo mesmo gatilho aritmetico do scroll da curva.
 func avancar_camera(player: Node2D, limite: float) -> void:
 	if player == null or !Global.is_iniciado():
 		return
 	var excesso: float = CameraFollow.excesso(player.global_position.y, limite)
-	if excesso <= 0.0:
+	# Residuo de float32 vs double (f531): excesso de ruido nao move o mundo
+	if excesso < CameraFollow.EXCESSO_MINIMO_PX:
 		return
-	running_platforms.position.y += excesso
-	position_scrolled += excesso
-	player.global_position.y += excesso
+	# Easing (issue #49): so a parcela do excesso restante neste frame; o restante e o excesso recalculado do y do gecko
+	# (cada parcela desce o gecko junto), entao nao ha estado novo e o acumulado fecha no mesmo excesso de antes
+	var parcela: float = CameraFollow.parcela(excesso)
+	if parcela <= 0.0:
+		return
+	running_platforms.position.y += parcela
+	position_scrolled += parcela
+	player.global_position.y += parcela
 	_criar_linhas_pendentes()
 
 # Cria as linhas que o scroll ja alcancou: uma a cada ESPACAMENTO px de position_scrolled, sem depender de altura nem de
@@ -88,6 +141,17 @@ func create_new_running_platform(y_local: float = NAN):
 	running_platform.position = Vector2(0, y_local)
 	# Estado injetado ANTES do add_child (adiado): a linha le speed/proporcao/K no _ready
 	running_platform.dificuldade = dificuldade
+	# Estado de power-up: a previsao de cor da linha usa o scroll efetivo (f522 T4)
+	running_platform.power_up_estado = power_up_estado
+	# Fator forcado do modo: o alcance da cor no nascimento usa o mesmo scroll que move o mundo (f527)
+	running_platform.fator_forcado = fator_forcado
+	# So as linhas de fluxo (indice >= 1) sorteiam power-up; as do .tscn e as extras iniciais nunca ligam a flag
+	running_platform.power_ups_elegivel = true
+	# Gancho da Stage: com power-ups desabilitados a linha nasce sem sorteio (nenhum icone)
+	running_platform.power_ups_habilitados = power_ups_habilitados
+	# Rngs da seed pelo indice do y local ANTES do add_child adiado (o ramo NAN entra aqui com o y ja
+	# resolvido); sem semente a injecao e no-op
+	_injetar_rng_na_linha(running_platform)
 
 	running_platforms.call_deferred("add_child", running_platform)
 

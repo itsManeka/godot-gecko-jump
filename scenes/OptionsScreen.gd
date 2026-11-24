@@ -8,8 +8,8 @@ extends CanvasLayer
 # Voltar aciona ao soltar com o dedo dentro do retangulo. Esc/P (acao `pause`) = Voltar, nunca retoma a partida.
 # Layout por lista de itens (TIPOS/ESPACO_ANTES): acrescentar um item e inserir nas listas TIPOS/ESPACO_ANTES/NOMES,
 # no enum Item e em _valores; as contas de y seguem a lista visivel. Sliders: Music, SFX e Sensibilidade (este so no
-# modo A, decisao 2a do G1: em B o bloco volta a 260 px e a ordem de foco pula o item). Botoes: Toque (alterna o modo
-# A/B pelo Global), Ver tutorial (sinal `ver_tutorial`) e Voltar.
+# modo A (Flick), decisao 2a do G1: em B (Joy invisivel) o bloco volta a 260 px e a ordem de foco pula o item). Botoes: Toque (alterna o modo
+# Flick <-> Joy invisivel pelo Global), Ver tutorial (sinal `ver_tutorial`) e Voltar.
 
 # Emitido por Voltar e pela acao `pause` com a tela aberta.
 signal voltar
@@ -265,7 +265,7 @@ func rect_sfx() -> Rect2:
 	return _rects[Item.SFX]
 
 
-# Area de toque do slider de Sensibilidade (vazia com o modo B ativo: o item nao aparece).
+# Area de toque do slider de Sensibilidade (vazia com o modo Joy invisivel (B) ativo: o item nao aparece).
 func rect_sensibilidade() -> Rect2:
 	return _rects[Item.SENSIBILIDADE]
 
@@ -279,7 +279,7 @@ func rect_toque() -> Rect2:
 	return _rects[Item.TOQUE]
 
 
-# Texto do seletor de modo de toque sem o marcador de foco ("Toque: A").
+# Texto do seletor de modo de toque sem o marcador de foco ("Toque: Flick").
 func texto_toque() -> String:
 	return _texto_item(Item.TOQUE)
 
@@ -297,7 +297,7 @@ func foco_atual() -> int:
 	return _foco
 
 
-# Item desenhado agora (o slider de Sensibilidade so no modo A).
+# Item desenhado agora (o slider de Sensibilidade so no modo Flick (A)).
 func item_visivel(item: int) -> bool:
 	if _nomes.is_empty():
 		return _visivel(item)
@@ -347,7 +347,7 @@ func _altura_bloco() -> float:
 	return h
 
 
-# Item aparece na tela: o slider de Sensibilidade so com o modo A ativo (decisao 2a do G1). Em B o bloco volta a
+# Item aparece na tela: o slider de Sensibilidade so com o modo Flick (A) ativo (decisao 2a do G1). Em Joy invisivel (B) o bloco volta a
 # 260 px e a ordem de foco passa de SFX direto a Toque.
 func _visivel(item: int) -> bool:
 	return item != Item.SENSIBILIDADE or Global.get_touch_mode() == TouchMode.Modo.A
@@ -481,7 +481,7 @@ func _acionar(item: int) -> void:
 		voltar.emit()
 
 
-# Alterna A <-> B: o Global grava no store e avisa (TouchControls cancela o gesto, TouchHint rearma a dica e o sinal
+# Alterna Flick <-> Joy invisivel (A <-> B): o Global grava no store e avisa (TouchControls cancela o gesto, TouchHint rearma a dica e o sinal
 # `touch_mode_changed` refaz o layout daqui, mostrando/ocultando a Sensibilidade).
 func _alternar_modo_toque() -> void:
 	var proximo := (int(Global.get_touch_mode()) + 1) % TouchMode.NOMES.size()

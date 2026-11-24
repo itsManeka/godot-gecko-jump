@@ -576,3 +576,95 @@ func test_pisca_so_liga_no_e3_com_valores_aprovados_e_ordem_antiga_intacta() -> 
 	assert_almost_eq(e3.aviso_pisca, 0.6, EPS, "E3 aviso aprovado (D2)")
 	var snap := DifficultySnapshot.new(e3.scroll, e3.speed_moveis, e3.k, e3.proporcao_estaticas, e3.mecanicas)
 	assert_eq(PlatformModifiers.resolver(snap).size(), e3.mecanicas.size(), "todo nome do E3 resolve no registro")
+
+
+func _curva_duas_quedas() -> DifficultyCurve:
+	var a := DifficultyStage.new()
+	a.progresso_inicio = 0.0
+	a.proporcao_que_caem = 0.2
+	var b := DifficultyStage.new()
+	b.progresso_inicio = 1.0
+	b.proporcao_que_caem = 0.8
+	var curva := DifficultyCurve.new()
+	curva.estagios = [a, b]
+	curva.pontos_plato = 100.0
+	return curva
+
+
+# Snapshot com todos os parametros no padrao; so a proporcao_que_caem (ultimo argumento) varia.
+func _snapshot_com_queda(valor: float) -> DifficultySnapshot:
+	return DifficultySnapshot.new(
+		DifficultyStage.SCROLL_PADRAO,
+		DifficultyStage.SPEED_PADRAO,
+		DifficultyStage.K_PADRAO,
+		DifficultyStage.PROPORCAO_PADRAO,
+		[],
+		DifficultyStage.LARGURA_PLATAFORMA_PADRAO,
+		DifficultyStage.ATRASO_DESMORONAR_PADRAO,
+		DifficultyStage.PROPORCAO_CICLADORAS_PADRAO,
+		DifficultyStage.PERIODO_CICLO_PADRAO,
+		DifficultyStage.AMPLITUDE_MOVIMENTO_PADRAO,
+		DifficultyStage.PERIODO_MOVIMENTO_PADRAO,
+		DifficultyStage.PROPORCAO_OSCILANTES_PADRAO,
+		DifficultyStage.PROPORCAO_VAI_E_VEM_PADRAO,
+		DifficultyStage.VARIACAO_SPEED_LINHA_PADRAO,
+		DifficultyStage.PROPORCAO_PISCANTES_PADRAO,
+		DifficultyStage.DURACAO_VISIVEL_PADRAO,
+		DifficultyStage.DURACAO_INVISIVEL_PADRAO,
+		DifficultyStage.AVISO_PISCA_PADRAO,
+		valor
+	)
+
+
+func test_estagio_sem_campo_de_queda_e_curva_vazia_devolvem_proporcao_1() -> void:
+	# C522: default do estagio = 1.0 (todas caem, como antes do campo); curva sem estagios tambem.
+	assert_almost_eq(DifficultyStage.new().proporcao_que_caem, 1.0, EPS, "default do estagio = 1.0")
+	var curva := DifficultyCurve.new()
+	curva.estagios = [DifficultyStage.new()]
+	assert_almost_eq(curva.avaliar(0.0, 0.0).get_proporcao_que_caem(), 1.0, EPS, "estagio sem campo = 1.0")
+	assert_almost_eq(DifficultyCurve.new().avaliar(5.0, 5.0).get_proporcao_que_caem(), 1.0, EPS, "curva vazia = 1.0")
+
+
+func test_chamada_posicional_antiga_do_snapshot_le_proporcao_que_caem_1() -> void:
+	# C522: 18 posicionais antigos (sem o campo novo) continuam validos; o campo cai no padrao 1.0.
+	var posicional := DifficultySnapshot.new(
+		30.0, 90.0, 4, 0.5, [], 50.0, 0.9, 0.2, 3.0, 8.0, 2.5, 0.5, 0.5, 0.1, 0.25, 4.0, 2.0, 0.6
+	)
+	assert_almost_eq(posicional.get_proporcao_que_caem(), 1.0, EPS, "posicional antigo: queda no padrao")
+	assert_almost_eq(posicional.get_aviso_pisca(), 0.6, EPS, "posicional antigo: aviso preservado")
+
+
+func test_snapshot_clampa_proporcao_que_caem_em_0_e_1() -> void:
+	# C520: fora de [0,1] clampa no construtor: -0.5 le 0.0 e 1.5 le 1.0; dentro do intervalo passa.
+	assert_almost_eq(_snapshot_com_queda(-0.5).get_proporcao_que_caem(), 0.0, EPS, "-0.5 le 0.0")
+	assert_almost_eq(_snapshot_com_queda(1.5).get_proporcao_que_caem(), 1.0, EPS, "1.5 le 1.0")
+	assert_almost_eq(_snapshot_com_queda(0.3).get_proporcao_que_caem(), 0.3, EPS, "0.3 passa inteiro")
+
+
+func test_interpolacao_da_proporcao_que_caem_a_meio_e_media_exata() -> void:
+	# C521: 0.2 e 0.8 a meio de dois estagios = 0.5 exato (valor esperado vem dos estagios).
+	var s := _curva_duas_quedas().avaliar(50.0, 0.0)
+	assert_almost_eq(s.get_proporcao_que_caem(), 0.5, EPS, "meio = media de 0.2 e 0.8")
+
+
+func test_teto_devolve_proporcao_que_caem_do_ultimo_estagio() -> void:
+	# C521: no teto o snapshot copia o campo do ultimo estagio (0.8), nao o padrao 1.0.
+	var s := _curva_duas_quedas().avaliar(1e9, 0.0)
+	assert_almost_eq(s.get_proporcao_que_caem(), 0.8, EPS, "teto = proporcao do ultimo estagio")
+
+
+func test_proporcao_que_caem_de_producao_e_0_5_em_e2_e_e3_e_1_em_e0_e_e1() -> void:
+	# C537: valor decidido no G1 (dono, 2026-11-19) = 0.5 em E2 e E3; E0/E1 sem o campo = padrao 1.0.
+	# O literal 0.5 e o valor decidido, nao o numero lido do .tres.
+	assert_not_null(_curva, "load() do .tres devolve DifficultyCurve")
+	assert_eq(_curva.estagios.size(), 4, "4 estagios")
+	var e0: DifficultyStage = _curva.estagios[0]
+	var e1: DifficultyStage = _curva.estagios[1]
+	var e2: DifficultyStage = _curva.estagios[2]
+	var e3: DifficultyStage = _curva.estagios[3]
+	assert_almost_eq(e0.proporcao_que_caem, 1.0, EPS, "E0 sem o campo = padrao 1.0")
+	assert_almost_eq(e1.proporcao_que_caem, 1.0, EPS, "E1 sem o campo = padrao 1.0")
+	assert_almost_eq(e2.proporcao_que_caem, 0.5, EPS, "E2 = 0.5 (G1)")
+	assert_almost_eq(e3.proporcao_que_caem, 0.5, EPS, "E3 = 0.5 (G1)")
+	assert_true(e2.mecanicas.has(&"plataformas_que_caem"), "E2 mantem plataformas_que_caem")
+	assert_true(e3.mecanicas.has(&"plataformas_que_caem"), "E3 mantem plataformas_que_caem")

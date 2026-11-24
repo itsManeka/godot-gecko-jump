@@ -12,6 +12,8 @@ k = 3
 proporcao_estaticas = 0.3333333333333333
 largura_plataforma = 60.0
 mecanicas = Array[StringName]([])
+raridade_power_up = 0.04
+pesos_power_ups = {&"camaleao": 2, &"desacelera": 2, &"segunda_chance": 1}
 
 [sub_resource type="Resource" id="Resource_e1"]
 script = ExtResource("2_estagio")
@@ -23,6 +25,8 @@ proporcao_estaticas = 0.25
 largura_plataforma = 56.0
 mecanicas = Array[StringName]([&"plataformas_menores", &"speed_por_linha"])
 variacao_speed_linha = 0.15
+raridade_power_up = 0.04
+pesos_power_ups = {&"camaleao": 2, &"desacelera": 2, &"segunda_chance": 1}
 
 [sub_resource type="Resource" id="Resource_e2"]
 script = ExtResource("2_estagio")
@@ -33,11 +37,14 @@ k = 5
 proporcao_estaticas = 0.15
 largura_plataforma = 50.0
 atraso_desmoronar = 1.0
+proporcao_que_caem = 0.5
 mecanicas = Array[StringName]([&"plataformas_menores", &"plataformas_que_caem", &"speed_por_linha", &"movimento_seno"])
 amplitude_movimento = 6.0
 periodo_movimento = 2.5
 proporcao_oscilantes = 0.4
 variacao_speed_linha = 0.15
+raridade_power_up = 0.04
+pesos_power_ups = {&"camaleao": 2, &"desacelera": 2, &"segunda_chance": 1}
 
 [sub_resource type="Resource" id="Resource_e3"]
 script = ExtResource("2_estagio")
@@ -48,6 +55,7 @@ k = 6
 proporcao_estaticas = 0.1
 largura_plataforma = 44.0
 atraso_desmoronar = 0.8
+proporcao_que_caem = 0.5
 proporcao_cicladoras = 0.3
 periodo_ciclo = 3.0
 mecanicas = Array[StringName]([&"plataformas_menores", &"plataformas_que_caem", &"plataformas_que_mudam_de_cor", &"speed_por_linha", &"movimento_seno", &"movimento_vai_e_vem", &"plataformas_que_piscam"])
@@ -60,6 +68,8 @@ proporcao_piscantes = 0.25
 duracao_visivel = 3.0
 duracao_invisivel = 1.2
 aviso_pisca = 0.6
+raridade_power_up = 0.04
+pesos_power_ups = {&"camaleao": 2, &"desacelera": 2, &"segunda_chance": 1}
 
 [resource]
 script = ExtResource("1_curva")

@@ -18,3 +18,4 @@ antigo como "superado por".
 | [0011](0011-movimento-de-plataformas.md)               | Movimento de plataformas: oscilacao como desvio de velocidade, sem inversao, so x | aceito                                                     |
 | [0012](0012-plataformas-que-piscam.md)                 | Plataformas que piscam: somem e voltam em ritmo fixo, com aviso e trava           | aceito                                                     |
 | [0013](0013-modos-de-toque-alternaveis.md)             | Modos de toque alternaveis: A e B selecionaveis, B padrao                         | aceito                                                     |
+| [0014](0014-power-ups-e-modos-de-jogo.md)              | 3 power-ups e 5 modos de jogo no seletor; seed do Desafio diario por data UTC     | aceito                                                     |

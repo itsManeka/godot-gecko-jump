@@ -13,6 +13,8 @@ func before_each() -> void:
 func after_each() -> void:
 	Global.platforms = []
 	Global.iniciado = false
+	Global.modos_teste_habilitado = false
+	Global.set_modo_jogo("classico", false)
 
 
 func _novo_stage() -> Node:
@@ -81,3 +83,16 @@ func test_recarga_volta_a_menu_com_score_zero_e_best_preservado() -> void:
 	assert_eq(e["score"], 0, "recarga deve zerar o score")
 	assert_true(e["player"]["alive"], "recarga deve ter player vivo")
 	assert_eq(e["best"], best, "recarga deve preservar o best")
+
+
+func test_C591_stage_publica_modo_de_global_no_menu_republica_na_troca_e_em_playing() -> void:
+	Global.modos_teste_habilitado = true
+	Global.set_modo_jogo("classico", false)
+	var stage := await _novo_stage()
+	assert_eq(stage.ultimo_estado["modo"], "classico", "C591: menu publica o modo de Global")
+	Global.set_modo_jogo("teste", false)
+	stage._republicar_estado()
+	assert_eq(stage.ultimo_estado["modo"], "teste", "C591: troca no menu republica o modo novo")
+	stage._on_Play_button_down()
+	assert_eq(stage.ultimo_estado["state"], "playing", "C591: partida publica playing")
+	assert_eq(stage.ultimo_estado["modo"], "teste", "C591: playing publica o modo atual")

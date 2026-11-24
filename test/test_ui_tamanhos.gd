@@ -91,8 +91,8 @@ func test_c347_tutorial_e_dica_cabem_na_viewport_180x320() -> void:
 	var card: TutorialCard = add_child_autofree(TutorialCard.new())
 	card.aplicar_layout(Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA))
 	var textos: Array[String] = ["Pise na cor dele.", "Pouso troca a cor.", "Setas e espaco", "diferente"]
-	for linhas in TutorialCard.TEXTO_CONTROLE_TOQUE_POR_MODO:
-		textos.append_array(linhas)
+	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
+		textos.append_array(TutorialCard.linhas_controle_toque(modo))
 	for t in textos:
 		assert_lte(TutorialCard.largura_texto(t), TutorialCard.LARGURA_CONTEUDO, "'%s' cabe em 148 px" % t)
 	var tela := Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA)
@@ -133,6 +133,12 @@ func test_c348_play_e_botoes_de_menu_comportam_o_rotulo() -> void:
 	for par in [["> Continuar", pausa.rect_continuar()], ["> Opcoes", pausa.rect_opcoes()]]:
 		var l := UiHelpers.FONTE.get_string_size(par[0], HORIZONTAL_ALIGNMENT_LEFT, -1, UiHelpers.TAMANHO_TEXTO).x
 		assert_lte(l, (par[1] as Rect2).size.x, "'%s' cabe no botao da pausa" % par[0])
+	# f527 T6 (D5): o terceiro botao do Zen no mesmo estilo dos atuais e o rotulo cabe nele
+	pausa.definir_permite_sair(true)
+	assert_eq(pausa.rect_sair().size, Vector2(112.0, 32.0), "Sair no estilo 112x32 dos botoes atuais")
+	assert_eq(pausa.rect_sair().size, pausa.rect_opcoes().size, "Sair do mesmo tamanho que Opcoes")
+	var l_sair := UiHelpers.FONTE.get_string_size("> Sair", HORIZONTAL_ALIGNMENT_LEFT, -1, UiHelpers.TAMANHO_TEXTO).x
+	assert_lte(l_sair, pausa.rect_sair().size.x, "'> Sair' cabe no botao da pausa")
 
 	var botao: OpcoesBotao = add_child_autofree(OpcoesBotao.new())
 	botao.aplicar_layout(Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA))
@@ -147,6 +153,18 @@ func test_c348_play_e_botoes_de_menu_comportam_o_rotulo() -> void:
 		var l_toque := UiHelpers.FONTE.get_string_size("> Toque: %s" % nome, HORIZONTAL_ALIGNMENT_LEFT, -1, OptionsScreen.TAMANHO_TEXTO).x
 		assert_lte(l_toque, opcoes.rect_toque().size.x, "'> Toque: %s' cabe no botao" % nome)
 	assert_true(Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA).encloses(opcoes.rect_voltar()), "Voltar dentro de 180x320 com 5 itens")
+
+
+# C516: o rotulo "> Toque: <nome>" de cada nome de NOMES cabe no botao Toque (rect_toque, 112 px) e nos 180 px da tela.
+func test_c516_rotulo_do_toque_de_cada_nome_cabe_no_botao_e_na_tela() -> void:
+	var opcoes: OptionsScreen = add_child_autofree(OptionsScreen.new())
+	opcoes.aplicar_layout(Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA))
+	assert_eq(opcoes.rect_toque().size.x, 112.0, "botao Toque tem 112 px de largura")
+	assert_gt(TouchMode.NOMES.size(), 0, "ha pelo menos um nome de modo de toque")
+	for nome in TouchMode.NOMES:
+		var largura := UiHelpers.FONTE.get_string_size("> Toque: %s" % nome, HORIZONTAL_ALIGNMENT_LEFT, -1, OptionsScreen.TAMANHO_TEXTO).x
+		assert_lte(largura, opcoes.rect_toque().size.x, "'> Toque: %s' cabe nos 112 px do botao" % nome)
+		assert_lte(largura, LARGURA_TELA, "'> Toque: %s' cabe nos 180 px da tela" % nome)
 
 
 # T2 corr1: o Play da Stage usa o papel TAMANHO_BOTAO da escala.

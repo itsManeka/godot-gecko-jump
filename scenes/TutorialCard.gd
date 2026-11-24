@@ -49,10 +49,11 @@ const TEXTO_TITULO: String = "Como jogar"
 const TEXTO_PULAR: String = "Pular"
 const TEXTO_VOLTAR: String = "Voltar"
 const TEXTO_REGRA: Array[String] = ["Pise na cor dele.", "Pouso troca a cor."]
-# Linhas de controle do toque por modo (coerentes com a dica da TouchHint); cada linha cabe em 148 px
-const TEXTO_CONTROLE_TOQUE_A: Array[String] = ["Arraste: anda", "Flick pra cima: pula", "Sensibilidade: Opcoes"]
-const TEXTO_CONTROLE_TOQUE_B: Array[String] = ["Esquerda segura: anda", "Direita toca: pula", "Zonas invisiveis"]
-# Indice = TouchMode.Modo
+# Linhas de controle do toque por modo (coerentes com a dica da TouchHint); cada linha cabe em 148 px.
+# Sem a 1a linha: ela e sempre `TouchMode.rotulo(modo)` ("Toque: <nome>"), montada em `linhas_controle_toque`.
+const TEXTO_CONTROLE_TOQUE_A: Array[String] = ["Arraste anda, flick pula", "Sensibilidade: Opcoes"]
+const TEXTO_CONTROLE_TOQUE_B: Array[String] = ["Esquerda segura: anda", "Direita toca: pula"]
+# Indice = TouchMode.Modo (resto das linhas, depois do rotulo)
 const TEXTO_CONTROLE_TOQUE_POR_MODO: Array[Array] = [TEXTO_CONTROLE_TOQUE_A, TEXTO_CONTROLE_TOQUE_B]
 const LINHAS_CONTROLE_MAX: int = 3
 const TEXTO_CONTROLE_TECLADO: String = "Setas e espaco"
@@ -329,10 +330,10 @@ func _atualizar_textos() -> void:
 		_fundo.size = _tamanho_fundo()
 
 
-# Linhas de controle no toque para o modo dado (fora da faixa, vale o padrao).
+# Linhas de controle no toque para o modo dado (fora da faixa, vale o padrao): 1a = TouchMode.rotulo, depois o resto.
 static func linhas_controle_toque(modo: int) -> Array[String]:
-	var out: Array[String] = []
-	out.assign(TEXTO_CONTROLE_TOQUE_POR_MODO[TouchMode.de_valor(modo)])
+	var out: Array[String] = [TouchMode.rotulo(modo)]
+	out.append_array(TEXTO_CONTROLE_TOQUE_POR_MODO[TouchMode.de_valor(modo)])
 	return out
 
 

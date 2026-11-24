@@ -10,12 +10,75 @@ var iniciado : bool = false
 # Publico de proposito (seam de teste): test/test_score_keeper.gd sobrescreve `Global.pontuacao` por atribuicao
 # em before_each/after_each. Trocar por reset explicito exige atualizar esse teste.
 var pontuacao: ScoreKeeper = ScoreKeeper.new()
-# Persistencia do recorde em user://, ligada ao `pontuacao` so no _ready (os keepers de teste nascem sem ligacao).
-# Mantido em membro para o store nao ser liberado ao fim do _ready.
-var _best_store: BestScoreStore
+# Modo de jogo selecionado (id em GameModes) e um ScoreKeeper por modo; `pontuacao` aponta para o do modo atual.
+# Cada keeper nasce ligado ao BestScoreStore do seu modo (criacao preguicosa), exceto com os recordes isolados
+# (suite de testes): ai nenhum keeper tem store e nada grava em user:// real.
+signal modo_jogo_changed(id: StringName)
+const MODO_SECTION := "modo"
+const MODO_KEY := "jogo"
+var modo_jogo: StringName = GameModes.ID_CLASSICO
+var _keepers: Dictionary = {}
+var _stores: Dictionary = {}
+var _recordes_isolados: bool = false
+# Caminho do recorde do Classico (os demais modos ficam no mesmo diretorio). Publico de proposito (seam de teste):
+# o teste do 1o carregamento aponta para um diretorio temporario e nunca toca o user://best_score.cfg real.
+var caminho_recorde_classico: String = BestScoreStore.DEFAULT_PATH
+
+# 1o carregamento: `pontuacao` nasce sem store (valor de campo); liga o keeper do modo atual (Classico) ao store dele,
+# carregando o recorde salvo. `usar_options_store` so reaplica o modo quando ele muda, entao sem isto o Classico nunca
+# seria ligado ao store.
+func _iniciar_keeper() -> void:
+	pontuacao = keeper_do_modo(modo_jogo)
+
+# Keeper do modo; cria (e liga ao store do modo, salvo isolamento) na 1a consulta. O id ja vem resolvido por GameModes.
+func keeper_do_modo(id: StringName) -> ScoreKeeper:
+	var chave := String(id)
+	if _keepers.has(chave):
+		return _keepers[chave]
+	var keeper := ScoreKeeper.new()
+	if not _recordes_isolados:
+		var store := BestScoreStore.para_modo(id, caminho_recorde_classico)
+		keeper.load_best(store.load_best())
+		keeper.best_changed.connect(store.save_best)
+		_stores[chave] = store
+	_keepers[chave] = keeper
+	return keeper
+
+# Store de recorde do modo; null quando o keeper nao tem persistencia (recordes isolados ou modo ainda sem keeper).
+func store_do_modo(id: StringName) -> BestScoreStore:
+	return _stores.get(String(id))
+
+# Descarta keepers e stores e passa a criar keepers sem store (usado pelo pre-run do GUT). `pontuacao` volta a
+# apontar para um keeper limpo do modo atual.
+func isolar_recordes() -> void:
+	_recordes_isolados = true
+	_keepers.clear()
+	_stores.clear()
+	pontuacao = keeper_do_modo(modo_jogo)
+
+# Troca o modo na hora (so com a partida nao iniciada); grava no store de opcoes so com `persistir`.
+func set_modo_jogo(id: Variant, persistir: bool = true) -> void:
+	if iniciado:
+		return
+	var modo := GameModes.de_id(id)
+	_aplicar_modo(modo.id)
+	if persistir:
+		opcoes.save_value(MODO_SECTION, MODO_KEY, String(modo.id))
+
+func get_modo_jogo() -> StringName:
+	return modo_jogo
+
+func _aplicar_modo(id: StringName) -> void:
+	modo_jogo = id
+	pontuacao = keeper_do_modo(id)
+	modo_jogo_changed.emit(id)
 # Cor corrente do gecko (lida pelos geradores de plataforma). Volta a Enums.COR_INICIAL a cada partida nova:
 # o Player a reseta ao sair da arvore (Player._exit_tree), antes de a Stage seguinte gerar as plataformas.
 var cor_gecko: Enums.COLOR = Enums.COR_INICIAL
+# Cor livre do power-up da partida (f522): espelho de leitura do PowerUpState da Stage — a Stage escreve
+# por frame e zera ao sair da arvore (como o Player faz com cor_gecko); o estado nunca vive aqui alem da
+# flag. Lida pela regra de colisao da Platform (f522 T3).
+var cor_livre: bool = false
 
 # Aplica a seed do RNG: null = sorteio livre (producao), inteiro = sequencia fixa (smoke debug).
 func aplicar_seed(valor: Variant) -> void:
@@ -47,6 +110,46 @@ var progresso_inicial: float = 0.0
 func aplicar_progresso_inicial(raw: Variant, is_debug: bool) -> void:
 	progresso_inicial = ModoProgressoInicial.decide(raw, is_debug)
 
+# Power-up ativo desde o inicio da partida (so smoke debug via `?powerup=`): "" em release e sem o parametro.
+var power_up_inicial: String = ""
+
+# Aplica o power-up inicial a partir do valor bruto do parametro e da flag de build.
+func aplicar_power_up_inicial(raw: Variant, is_debug: bool) -> void:
+	power_up_inicial = ModoPowerUpInicial.decide(raw, is_debug)
+
+# Duracao do Contra o tempo forcada (so smoke debug via `?tempo=<s>`): 0.0 = sem override (vale o `.tres`).
+var tempo_inicial_s: float = 0.0
+
+# Aplica o tempo forcado a partir do valor bruto do parametro e da flag de build.
+func aplicar_tempo_inicial(raw: Variant, is_debug: bool) -> void:
+	tempo_inicial_s = ModoTempoInicial.decide(raw, is_debug)
+
+# Dia UTC forcado do Desafio diario (so smoke debug via `?dia=<int>`): ModoDiaInicial.SEM_OVERRIDE = relogio real.
+var dia_inicial: int = ModoDiaInicial.SEM_OVERRIDE
+
+# Aplica o dia forcado a partir do valor bruto do parametro e da flag de build.
+func aplicar_dia_inicial(raw: Variant, is_debug: bool) -> void:
+	dia_inicial = ModoDiaInicial.decide(raw, is_debug)
+
+# Relogio do DiaUtc: com `?dia=` valido (debug) devolve o unix do inicio desse dia; sem override devolve o
+# Callable vazio (DiaUtc usa o relogio do sistema). Lido a cada chamada, como `limite_tempo_s`.
+func relogio_do_dia() -> Callable:
+	if dia_inicial == ModoDiaInicial.SEM_OVERRIDE:
+		return Callable()
+	var dia := dia_inicial
+	return func() -> float: return float(dia * DiaUtc.SEGUNDOS_POR_DIA)
+
+# Limite de tempo vigente do Contra o tempo: o seam de debug (se aplicado) ou o leitor do `.tres`.
+# Lido a cada chamada (nao cacheia o numero): vale mesmo se o seam for aplicado depois do registro montado.
+func limite_tempo_s(caminho: String = TempoConfig.CAMINHO_PADRAO) -> float:
+	if tempo_inicial_s > 0.0:
+		return tempo_inicial_s
+	return TempoConfig.carregar(caminho).duracao_vigente()
+
+# Inclui o modo de teste no seletor (so debug, parametro `?modos=teste`). Nunca liga em release.
+func aplicar_modos_teste(raw: Variant, is_debug: bool) -> void:
+	modos_teste_habilitado = GameModesDebug.decide(raw, is_debug)
+
 # Moldura de subida de estagio fixa (so smoke debug via `?moldura=fixa`): fica acesa ate interromper. Nunca em release.
 var moldura_fixa: bool = false
 
@@ -61,6 +164,11 @@ var moldura_lenta: bool = false
 # Aplica o pulso lento a partir do valor bruto do parametro e da flag de build.
 func aplicar_moldura_lenta(raw: Variant, is_debug: bool) -> void:
 	moldura_lenta = ModoMolduraLenta.decide(raw, is_debug)
+
+# Modos de jogo: quando true, o registro GameModes expoe o 2o modo de teste (`teste`) alem do Classico.
+# Ligado so em debug pelo parametro `?modos=teste` (decisor do seletor de debug); default false = release
+# e qualquer build sem o parametro. Modo `teste` salvo lido com a flag desligada cai no Classico.
+var modos_teste_habilitado: bool = false
 
 # Espelho em memoria do "tutorial visto" (TutorialFlag.marcar): impede o card de reaparecer na mesma sessao se a
 # gravacao em disco falhar. Publico de proposito (seam de teste: before_each reseta).
@@ -79,11 +187,14 @@ func _ready():
 	aplicar_modo_dica(ModoDicaToque.read_raw(), OS.is_debug_build())
 	aplicar_modo_tutorial(ModoTutorialVisto.read_raw(), OS.is_debug_build())
 	aplicar_progresso_inicial(ModoProgressoInicial.read_raw(), OS.is_debug_build())
+	aplicar_power_up_inicial(ModoPowerUpInicial.read_raw(), OS.is_debug_build())
+	aplicar_tempo_inicial(ModoTempoInicial.read_raw(), OS.is_debug_build())
+	aplicar_dia_inicial(ModoDiaInicial.read_raw(), OS.is_debug_build())
 	aplicar_moldura_fixa(ModoMolduraFixa.read_raw(), OS.is_debug_build())
 	aplicar_moldura_lenta(ModoMolduraLenta.read_raw(), OS.is_debug_build())
-	_best_store = BestScoreStore.new()
-	pontuacao.load_best(_best_store.load_best())
-	pontuacao.best_changed.connect(_best_store.save_best)
+	# Antes do store: o `teste` salvo so e lido como modo quando a flag de debug esta ligada.
+	aplicar_modos_teste(GameModesDebug.read_raw(), OS.is_debug_build())
+	_iniciar_keeper()
 	usar_options_store(OptionsStore.new())
 	# Depois do store: o modo forcado por `?toque=` (so smoke debug) vence o salvo, sem gravar.
 	aplicar_modo_toque_inicial(ModoToqueInicial.read_raw(), OS.is_debug_build())
@@ -96,6 +207,12 @@ var _volume_sfx: float = OptionsStore.DEFAULT_VOLUME
 # Define o store das opcoes, le os volumes salvos e aplica nos buses.
 func usar_options_store(store: OptionsStore) -> void:
 	opcoes = store
+	# Modo salvo: ausente/invalido/desconhecido (ou `teste` sem a flag) = Classico. Nao grava.
+	# So reaplica quando o modo lido difere do atual (reatribuir `pontuacao` e emitir o sinal a cada troca de store
+	# descartaria um keeper atribuido de fora e avisaria sem mudanca).
+	var lido: StringName = GameModes.de_id(store.load_value(MODO_SECTION, MODO_KEY, "")).id
+	if lido != modo_jogo:
+		_aplicar_modo(lido)
 	_volume_music = store.load_music()
 	_volume_sfx = store.load_sfx()
 	_aplicar_bus("Music", _volume_music)

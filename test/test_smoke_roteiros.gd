@@ -6,11 +6,15 @@ extends GutTest
 
 const PASTA: String = "res://test/smoke/"
 const ROTEIROS: Array[String] = [
+	"camaleao",
+	"camera-cruza-limite",
+	"desacelera",
 	"dica-toque",
 	"estagio",
 	"estagio-alto",
 	"gecko",
 	"janela-larga-1280x720",
+	"power-up",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
 	"retrato-1170x2532",
@@ -18,6 +22,7 @@ const ROTEIROS: Array[String] = [
 	"retrato-pontua-1080x2772",
 	"retrato-queda-720x1280",
 	"toque",
+	"toque-modo-b",
 ]
 const ROTEIROS_LONGOS: Array[String] = [
 	"gecko",
@@ -26,18 +31,30 @@ const ROTEIROS_LONGOS: Array[String] = [
 	"retrato-1170x2532",
 	"retrato-720x1280",
 ]
-const CHAVES_PUBLICADAS: Array[String] = ["score", "best", "state", "player.alive", "player.x", "player.y", "dificuldade.estagio"]
+# Fonte unica no codigo de producao (GameState): o teste estatico dos roteiros e o C804 usam a mesma lista/validador
+const CHAVES_PUBLICADAS: Array[String] = GameState.CHAVES_PUBLICADAS
+# Roteiros dos modos de jogo (seletor, Puro, Contra o tempo, Diario): fora de ROTEIROS porque o do Tempo espera `lost`
+# pelo relogio e o do Diario espera `lost` pela queda do dia.
+const ROTEIROS_MODOS: Array[String] = ["modos", "modo-puro", "modo-tempo", "modo-zen", "modo-diario"]
 const ROTEIROS_SEMDERROTA: Array[String] = [
+	"camaleao",
+	"desacelera",
 	"retrato-pontua-1080x2772",
 	"estagio",
 	"estagio-alto",
 	"gecko",
+	"power-up",
+	"toque-modo-b",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
 	"retrato-1170x2532",
 	"retrato-720x1280",
 ]
 const OPERADORES: Array[String] = ["eq", "ne", "gt", "gte", "lt", "lte"]
+# Power-ups reais do registro de producao (ADR 0014); o roteiro de cada um passa `?powerup=<nome>` (so-debug).
+const POWERUPS_REAIS: Array[String] = ["camaleao", "desacelera"]
+# Duracao temporizada de Camaleao e Desacelera (ADR 0014: 5 s de tempo de jogo).
+const DURACAO_POWERUP_MS: int = 5000
 const TIMEOUT_MIN_APOS_QUEDA_MS: int = 3000
 # Orcamento do tempo nominal (wait + (shots-1)*every) do Play ate o ultimo print de uma rajada moving true: a recarga
 # pos-derrota so ocorre ~2,3 s depois do Play; 1,5 s deixa folga para a sobrecarga do screenshot (issue #40).
@@ -180,8 +197,8 @@ func test_expect_usa_so_chaves_e_operadores_do_contrato() -> void:
 		for passo in _expects(nome):
 			var exigencia: Dictionary = passo["expect"]
 			assert_gt(exigencia.size(), 0, "expect nao pode ser vazio")
+			assert_eq(_chaves_nao_publicadas(exigencia).size(), 0, "a chave do expect deve ser uma das publicadas pela ponte: %s" % str(_chaves_nao_publicadas(exigencia)))
 			for chave in exigencia.keys():
-				assert_true(CHAVES_PUBLICADAS.has(str(chave)), "a chave do expect deve ser uma das publicadas pela ponte")
 				var valor: Variant = exigencia[chave]
 				if typeof(valor) == TYPE_DICTIONARY:
 					assert_eq(valor.size(), 1, "o objeto de comparacao deve ter exatamente um operador")
@@ -199,6 +216,17 @@ func _inicia_partida(passos: Array, i: int) -> bool:
 	if j >= passos.size() or not passos[j].has("expect"):
 		return false
 	return passos[j]["expect"].get("state", null) == "playing"
+
+
+# State do 1o `expect` depois do passo `i` (pulando so `wait`/`up`); null quando nao ha expect direto — serve para
+# conferir que uma acao bloqueada (clique no Play desabilitado, `jump` no menu com o dia gasto) mantem o estado.
+func _estado_do_proximo_expect(passos: Array, i: int) -> Variant:
+	var j: int = i + 1
+	while j < passos.size() and (passos[j].has("wait") or passos[j].has("up")):
+		j += 1
+	if j >= passos.size() or not passos[j].has("expect"):
+		return null
+	return passos[j]["expect"].get("state", null)
 
 
 func _estouros_de_orcamento(nome: String) -> Array[String]:
@@ -374,9 +402,419 @@ func test_estagio_alto_prova_estagio_3_com_progresso_1_e_semderrota() -> void:
 	assert_gt(espera_ms, TROCA_COR_MS, "entre antes-troca e depois-troca ha mais de 3 s (um periodo de cor da cicladora)")
 
 
+func test_power_up_parseia_usa_powerup_teste_e_so_chaves_publicadas() -> void:
+	var nome: String = "power-up"
+	_checar_roteiro_com_seed(nome)
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_true("powerup=teste" in caminho, "o roteiro power-up passa powerup=teste")
+	assert_true("semderrota=1" in caminho, "o roteiro power-up liga semderrota")
+	assert_true("tutorial=visto" in caminho, "o roteiro power-up pula o tutorial")
+	assert_true(CHAVES_PUBLICADAS.has("powerup.ativo"), "powerup.ativo e chave publicada")
+	assert_true(CHAVES_PUBLICADAS.has("powerup.restante"), "powerup.restante e chave publicada")
+	assert_true(CHAVES_PUBLICADAS.has("powerup.carga"), "powerup.carga e chave publicada")
+	var chaves_powerup: int = 0
+	for passo in _expects(nome):
+		for chave in passo["expect"].keys():
+			assert_true(CHAVES_PUBLICADAS.has(str(chave)), "chave do expect publicada pela ponte: %s" % str(chave))
+			if str(chave).begins_with("powerup."):
+				chaves_powerup += 1
+	assert_gt(chaves_powerup, 0, "o roteiro power-up confere a ponte do powerup")
+
+
 func _indice_shots(nome: String, rotulo: String) -> int:
 	var passos := _passos(nome)
 	for i in passos.size():
 		if str(passos[i].get("name", "")) == rotulo:
 			return i
 	return -1
+
+
+# Valor de `powerup=` do path (ate o proximo `&`); vazio quando o path nao traz o parametro.
+func _nome_powerup(caminho: String) -> String:
+	var idx: int = caminho.find("powerup=")
+	if idx < 0:
+		return ""
+	var resto: String = caminho.substr(idx + "powerup=".length())
+	var fim: int = resto.find("&")
+	if fim < 0:
+		return resto
+	return resto.substr(0, fim)
+
+
+# Valor inteiro de `<chave>=` do path (ate o proximo `&`); -1 quando ausente, vazia ou nao inteira.
+func _valor_query_int(caminho: String, chave: String) -> int:
+	var busca: String = chave + "="
+	var idx: int = caminho.find(busca)
+	if idx < 0:
+		return -1
+	var resto: String = caminho.substr(idx + busca.length())
+	var fim: int = resto.find("&")
+	if fim >= 0:
+		resto = resto.substr(0, fim)
+	if not resto.is_valid_int():
+		return -1
+	return resto.to_int()
+
+
+func test_camaleao_e_desacelera_parseiam_com_seed_e_powerup_real() -> void:
+	for nome in ["camaleao", "desacelera"]:
+		_checar_roteiro_com_seed(nome)
+		var caminho: String = str(_carregar(nome).get("path", ""))
+		assert_true(POWERUPS_REAIS.has(_nome_powerup(caminho)), "?powerup= deve ser um power-up real (camaleao ou desacelera)")
+		assert_eq(_nome_powerup(caminho), nome, "?powerup= deve ser o proprio nome do roteiro")
+
+
+func test_roteiro_powerup_real_ativa_com_o_nome_e_expira_dentro_da_duracao() -> void:
+	for nome in ["camaleao", "desacelera"]:
+		var passos := _passos(nome)
+		var i_ativo: int = -1
+		var i_expira: int = -1
+		for i in passos.size():
+			if not passos[i].has("expect"):
+				continue
+			var exigencia: Dictionary = passos[i]["expect"]
+			if i_ativo < 0 and exigencia.get("powerup.ativo", null) == nome:
+				i_ativo = i
+			elif i_ativo >= 0 and i_expira < 0 and exigencia.get("powerup.ativo", null) == "":
+				i_expira = i
+		assert_gte(i_ativo, 0, "%s: deve haver expect powerup.ativo igual ao nome do power-up" % nome)
+		assert_gt(i_expira, i_ativo, "%s: deve haver expect powerup.ativo vazio depois da ativacao" % nome)
+		if i_ativo >= 0:
+			var restante: Variant = passos[i_ativo]["expect"].get("powerup.restante", null)
+			assert_true(typeof(restante) == TYPE_DICTIONARY and restante.has("gt"), "%s: a ativacao confere powerup.restante gt 0" % nome)
+		if i_expira >= 0:
+			assert_gte(int(passos[i_expira].get("timeout_ms", 0)), DURACAO_POWERUP_MS, "%s: a expiracao deve ter timeout_ms >= a duracao de 5 s" % nome)
+
+
+func _valores_expect(nome: String, chave: String) -> Array:
+	var out: Array = []
+	for passo in _expects(nome):
+		if passo["expect"].has(chave):
+			out.append(passo["expect"][chave])
+	return out
+
+
+func test_roteiros_dos_modos_parseiam_com_seed_tutorial_e_so_chaves_publicadas() -> void:
+	for nome in ROTEIROS_MODOS:
+		_checar_roteiro_com_seed(nome)
+		var caminho: String = str(_carregar(nome).get("path", ""))
+		assert_true("tutorial=visto" in caminho, "%s: o roteiro pula o tutorial" % nome)
+		assert_gt(_expects(nome).size(), 0, "%s: deve ter ao menos um passo expect" % nome)
+		for passo in _expects(nome):
+			assert_gte(int(passo.get("timeout_ms", 0)), TIMEOUT_MIN_APOS_QUEDA_MS, "%s: todo expect deve ter timeout_ms >= 3000" % nome)
+			for chave in passo["expect"].keys():
+				assert_true(CHAVES_PUBLICADAS.has(str(chave)), "%s: chave do expect publicada pela ponte: %s" % [nome, str(chave)])
+				var valor: Variant = passo["expect"][chave]
+				if typeof(valor) == TYPE_DICTIONARY:
+					assert_eq(valor.size(), 1, "%s: o objeto de comparacao tem um operador" % nome)
+					for operador in valor.keys():
+						assert_true(OPERADORES.has(str(operador)), "%s: operador eq/ne/gt/gte/lt/lte" % nome)
+
+
+func test_modos_smoke_cicla_classico_puro_tempo_zen_teste_e_volta() -> void:
+	var caminho: String = str(_carregar("modos").get("path", ""))
+	assert_true("modos=teste" in caminho, "o roteiro dos modos liga a lista com teste")
+	var ids: Array = []
+	for passo in _expects("modos"):
+		var exigencia: Dictionary = passo["expect"]
+		if exigencia.get("state", "") == "menu" and exigencia.has("modo") and (ids.is_empty() or ids[ids.size() - 1] != exigencia["modo"]):
+			ids.append(exigencia["modo"])
+	var esperados: Array = []
+	for modo in GameModes.lista(true):
+		esperados.append(String(modo.id))
+	esperados.append(esperados[0])
+	assert_eq(ids, esperados, "C716: o roteiro percorre a lista de debug (classico -> puro -> tempo -> zen -> diario -> teste) e volta ao primeiro")
+	assert_eq(ids, ["classico", "puro", "tempo", "zen", "diario", "teste", "classico"], "C716: ordem literal do roteiro de modos")
+	# o registro cicla igual nas duas direcoes (seta direita e esquerda) com a lista de debug
+	var lista: Array[GameMode] = GameModes.lista(true)
+	var modo: GameMode = lista[0]
+	var vistos: Array = []
+	for i in lista.size() + 1:
+		vistos.append(String(modo.id))
+		modo = GameModes.proximo(modo, lista)
+	assert_eq(vistos, ["classico", "puro", "tempo", "zen", "diario", "teste", "classico"], "seta direita: classico -> puro -> tempo -> zen -> diario -> teste -> classico")
+	var voltando: Array = []
+	modo = lista[0]
+	for i in lista.size() + 1:
+		voltando.append(String(modo.id))
+		modo = GameModes.anterior(modo, lista)
+	assert_eq(voltando, ["classico", "teste", "diario", "zen", "tempo", "puro", "classico"], "seta esquerda: classico -> teste -> diario -> zen -> tempo -> puro -> classico")
+
+
+func test_roteiro_puro_joga_com_modo_puro_e_powerup_vazio() -> void:
+	var nome: String = "modo-puro"
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_true("progresso=" in caminho, "o roteiro puro adianta o progresso (raridade de power-up alta)")
+	assert_true("semderrota=1" in caminho, "o roteiro puro liga semderrota")
+	assert_true(_valores_expect(nome, "modo").has("puro"), "o roteiro confere modo puro")
+	var vazios: int = 0
+	for valor in _valores_expect(nome, "powerup.ativo"):
+		assert_eq(valor, "", "no Puro powerup.ativo so e esperado vazio")
+		vazios += 1
+	assert_gt(vazios, 0, "o roteiro puro confere powerup.ativo vazio")
+
+
+func test_roteiro_zen_joga_sem_derrota_cai_e_sai_pela_pausa_ao_menu() -> void:
+	var nome: String = "modo-zen"
+	assert_true(ROTEIROS_MODOS.has(nome), "C740: o roteiro zen esta em ROTEIROS_MODOS")
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_true("progresso=" in caminho, "o roteiro zen adianta o progresso")
+	assert_true(_valores_expect(nome, "modo").has("zen"), "o roteiro confere modo zen")
+	var vazios: int = 0
+	for valor in _valores_expect(nome, "powerup.ativo"):
+		assert_eq(valor, "", "no Zen powerup.ativo so e esperado vazio")
+		vazios += 1
+	assert_gt(vazios, 0, "o roteiro zen confere powerup.ativo vazio")
+	var passos := _passos(nome)
+	var i_queda: int = -1
+	for i in passos.size():
+		if passos[i].get("down", "") == "ArrowLeft" or passos[i].get("down", "") == "ArrowRight":
+			i_queda = i
+			break
+	assert_gte(i_queda, 0, "a queda proposital usa down de seta (sem gesto)")
+	assert_true(passos[i_queda + 2].has("up"), "a seta e solta depois do wait")
+	var i_pos_queda: int = -1
+	for i in range(i_queda + 3, passos.size()):
+		if passos[i].has("expect"):
+			i_pos_queda = i
+			break
+	assert_gte(i_pos_queda, 0, "ha expect depois da queda")
+	assert_eq(passos[i_pos_queda]["expect"].get("state", null), "playing", "depois da queda o Zen segue playing")
+	var i_escape: int = -1
+	for i in range(i_pos_queda, passos.size()):
+		if passos[i].get("down", "") == "Escape":
+			i_escape = i
+			break
+	assert_gte(i_escape, 0, "a pausa abre pela tecla da acao pause")
+	var ultimo: Dictionary = passos[passos.size() - 1]
+	var ultimo_expect: Dictionary = {}
+	for i in range(passos.size() - 1, i_escape, -1):
+		if passos[i].has("expect"):
+			ultimo_expect = passos[i]["expect"]
+			break
+	assert_eq(ultimo_expect.get("state", null), "menu", "depois de Sair a ponte volta a state menu")
+	assert_eq(ultimo_expect.get("modo", null), "zen", "e o modo segue zen")
+	assert_true(ultimo.has("shots"), "o roteiro termina com o print do menu")
+
+
+func test_roteiro_tempo_usa_tempo_curto_e_termina_em_lost_com_gecko_vivo() -> void:
+	var nome: String = "modo-tempo"
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	var idx: int = caminho.find("tempo=")
+	assert_gte(idx, 0, "o roteiro tempo passa ?tempo=<s>")
+	var resto: String = caminho.substr(idx + "tempo=".length())
+	var fim: int = resto.find("&")
+	var segundos: String = resto if fim < 0 else resto.substr(0, fim)
+	assert_true(segundos.is_valid_float() and segundos.to_float() > 0.0 and segundos.to_float() <= 10.0, "o ?tempo= e um relogio curto (1 a 10 s)")
+	assert_true("semderrota=1" in caminho, "sem derrota por queda: so o relogio encerra a partida")
+	assert_true(_valores_expect(nome, "modo").has("tempo"), "o roteiro confere modo tempo")
+	var i_playing: int = -1
+	var i_lost: int = -1
+	var passos := _passos(nome)
+	for i in passos.size():
+		if not passos[i].has("expect"):
+			continue
+		var exigencia: Dictionary = passos[i]["expect"]
+		if i_playing < 0 and exigencia.get("state", "") == "playing" and exigencia.has("relogio.restante"):
+			i_playing = i
+		elif i_playing >= 0 and i_lost < 0 and exigencia.get("state", "") == "lost":
+			i_lost = i
+	assert_gte(i_playing, 0, "deve haver expect playing com relogio.restante")
+	assert_gt(i_lost, i_playing, "o expect lost vem depois do playing")
+	if i_lost >= 0:
+		assert_false(passos[i_lost]["expect"].has("player.alive"), "a ponte publica alive=false em todo lost: o roteiro nao le player.alive no lost")
+		assert_true(_valores_expect(nome, "relogio.restante").size() >= 2, "o fim por relogio e provado por relogio.restante (gt 0 no playing, eq 0 depois)")
+		assert_gte(int(passos[i_lost].get("timeout_ms", 0)), int(segundos.to_float() * 1000.0), "o timeout do lost cobre o relogio curto")
+
+
+func test_roteiro_diario_valida_passos_e_seletor_com_6_entradas() -> void:
+	var nome: String = "modo-diario"
+	assert_true(ROTEIROS_MODOS.has(nome), "C793: o roteiro do Diario esta registrado em ROTEIROS_MODOS")
+	var spec := _carregar(nome)
+	assert_gt(spec.size(), 0, "o roteiro do Diario existe e parseia como objeto JSON")
+	var caminho: String = str(spec.get("path", ""))
+	assert_true("modos=teste" in caminho, "o roteiro do Diario liga a lista de debug (modos=teste)")
+	assert_true("progresso=1.0" in caminho, "o roteiro joga com progresso 1.0 (raridade maxima) para provar que nenhum power-up nasce")
+	var dia: int = _valor_query_int(caminho, "dia")
+	assert_true(dia >= 0 and dia <= SeedSource.MAX_SEED, "o ?dia= e um inteiro na faixa 0..MAX_SEED (ModoDiaInicial)")
+	# C793: o seletor de debug tem 6 entradas e o Diario e o 5o (depois do Zen, antes do teste): as setas do roteiro
+	# batem com a posicao no registro — e o ciclo do modos.smoke.json percorre essas mesmas 6 entradas.
+	var lista_debug: Array[GameMode] = GameModes.lista(true)
+	assert_eq(lista_debug.size(), 6, "C793: a lista de debug tem 6 entradas (classico, puro, tempo, zen, diario, teste)")
+	var indice_diario: int = -1
+	for i in lista_debug.size():
+		if String(lista_debug[i].id) == "diario":
+			indice_diario = i
+	assert_eq(indice_diario, 4, "o Diario e o 5o modo da lista de debug")
+	var passos := _passos(nome)
+	var setas: int = 0
+	var fechou_seletor: bool = false
+	for passo in passos:
+		if fechou_seletor:
+			break
+		if not passo.has("click"):
+			continue
+		if passo["click"] == [328.0, 240.0]:
+			setas += 1
+		elif passo["click"] == [180.0, 518.0]:
+			fechou_seletor = true
+	assert_true(fechou_seletor, "a selecao fecha com o OK do seletor")
+	assert_eq(setas, indice_diario, "as setas ate o Diario batem com a sua posicao no seletor (4 a partir do classico)")
+	# modos.smoke.json percorre as 6 entradas: 6 confirmacoes (OK) e a ponte passa por cada id da lista de debug
+	var oks: int = 0
+	for passo in _passos("modos"):
+		if passo.has("click") and passo["click"] == [180.0, 518.0]:
+			oks += 1
+	assert_eq(oks, 6, "C793: modos.smoke.json confirma o seletor 6 vezes (uma por entrada da lista de debug)")
+	var ids_modos: Array = _valores_expect("modos", "modo")
+	for modo_debug in lista_debug:
+		assert_true(ids_modos.has(String(modo_debug.id)), "C793: modos.smoke.json confere o modo %s pela ponte" % modo_debug.id)
+	# a partida do dia: ponte modo diario, powerup.ativo vazio, playing -> lost -> menu com o dia gasto
+	assert_true(_valores_expect(nome, "modo").has("diario"), "o roteiro confere o modo diario pela ponte")
+	var vazios: int = 0
+	for valor in _valores_expect(nome, "powerup.ativo"):
+		assert_eq(valor, "", "no Diario powerup.ativo so e esperado vazio (nenhum icone nasce)")
+		vazios += 1
+	assert_gt(vazios, 0, "o roteiro confere powerup.ativo vazio com progresso 1.0")
+	var i_playing: int = -1
+	var i_lost: int = -1
+	var i_menu_depois: int = -1
+	for i in passos.size():
+		if not passos[i].has("expect"):
+			continue
+		var exigencia: Dictionary = passos[i]["expect"]
+		if i_playing < 0 and exigencia.get("state", null) == "playing":
+			i_playing = i
+		elif i_playing >= 0 and i_lost < 0 and exigencia.get("state", null) == "lost":
+			i_lost = i
+		elif i_lost >= 0 and i_menu_depois < 0 and exigencia.get("state", null) == "menu":
+			i_menu_depois = i
+	assert_gte(i_playing, 0, "o roteiro prova o Play (state playing)")
+	assert_gt(i_lost, i_playing, "a queda encerra a partida (lost depois do playing)")
+	assert_gt(i_menu_depois, i_lost, "a derrota volta ao menu com o dia jogado")
+	var inicio_menu: int = maxi(i_menu_depois, 0)
+	# menu bloqueado: clicar no Play desabilitado mantem state menu
+	var cliques_no_play: int = 0
+	for i in range(inicio_menu, passos.size()):
+		if not (passos[i].has("click") and passos[i]["click"] == [180.0, 324.0]):
+			continue
+		cliques_no_play += 1
+		assert_eq(_estado_do_proximo_expect(passos, i), "menu", "clicar no Play desabilitado mantem state menu")
+	assert_gte(cliques_no_play, 1, "o roteiro clica no botao Play desabilitado (centro logico (90,162) da Stage)")
+	# o jump no menu bloqueado: um antes do reload e outro depois, ambos mantem state menu
+	var i_primeiro_jump: int = -1
+	var i_ultimo_jump: int = -1
+	var i_reload: int = -1
+	for i in range(inicio_menu, passos.size()):
+		if passos[i].has("reload") and passos[i]["reload"] == true:
+			i_reload = i
+		if not (passos[i].has("down") and passos[i]["down"] == "Space"):
+			continue
+		if i_primeiro_jump < 0:
+			i_primeiro_jump = i
+		i_ultimo_jump = i
+		assert_eq(_estado_do_proximo_expect(passos, i), "menu", "o jump no menu com o dia jogado mantem state menu")
+	assert_lt(i_primeiro_jump, i_ultimo_jump, "o roteiro da jump no menu bloqueado ao menos 2 vezes")
+	assert_gte(i_reload, i_primeiro_jump, "o reload vem depois do 1o jump bloqueado")
+	assert_lt(i_reload, i_ultimo_jump, "o ultimo jump bloqueado acontece depois do reload (dia jogado lido do disco)")
+	# passos validos (contrato do game-smoke): cada passo declara exatamente uma acao do runner
+	var acoes: Array[String] = ["down", "up", "press", "click", "tap", "hold", "drag", "touches", "wait", "shots", "expect", "reload", "blur", "hidden"]
+	for i in passos.size():
+		var declaradas: int = 0
+		for acao in acoes:
+			if passos[i].has(acao):
+				declaradas += 1
+		assert_eq(declaradas, 1, "o passo %d declara exatamente uma acao do runner" % i)
+
+
+func test_nome_de_powerup_invalido_reprova() -> void:
+	assert_false(POWERUPS_REAIS.has(_nome_powerup("index.html?seed=1&semderrota=1&powerup=fantasma")), "powerup fora da lista de power-ups reais reprova")
+	assert_eq(_nome_powerup("index.html?seed=1&semderrota=1"), "", "path sem powerup= nao traz nome")
+	assert_true(POWERUPS_REAIS.has(_nome_powerup("index.html?seed=1&powerup=camaleao&semderrota=1")), "powerup= no meio da query e lido ate o &")
+
+
+# Chaves de um `expect` que a ponte nao publica, pelo validador de producao (GameState.chave_publicada); o mesmo
+# helper valida os roteiros reais (test_expect_usa_so_chaves_e_operadores_do_contrato) e o roteiro fake do C804.
+func _chaves_nao_publicadas(exigencia: Dictionary) -> Array[String]:
+	var ruins: Array[String] = []
+	for chave in exigencia.keys():
+		if not GameState.chave_publicada(str(chave)):
+			ruins.append(str(chave))
+	return ruins
+
+
+func test_C804_chaves_publicadas_incluem_alvo_e_chave_inexistente_reprova() -> void:
+	assert_true(GameState.chave_publicada("alvo.alinhado"), "C804: alvo.alinhado e chave publicada")
+	assert_true(GameState.chave_publicada("alvo.dx"), "C804: alvo.dx e chave publicada")
+	# a ponte de verdade publica cada chave alvo.* declarada (o teste cai se o montador deixar uma de fora)
+	var publicado: Dictionary = GameState.build(0, 0, "menu", true)["alvo"] as Dictionary
+	for chave in ["alinhado", "dx"]:
+		assert_true(publicado.has(chave), "C804: GameState.build publica alvo.%s" % chave)
+	# roteiro fake: expect com as chaves novas passa pelo validador de producao; chave inexistente reprova
+	var fake_ok: Dictionary = {"expect": {"alvo.alinhado": true, "alvo.dx": {"lt": 20}}}
+	assert_eq(_chaves_nao_publicadas(fake_ok["expect"]).size(), 0, "C804: expect com alvo.alinhado e alvo.dx passa no validador")
+	var fake_ruim: Dictionary = {"expect": {"alvo.cor": true}}
+	assert_eq(_chaves_nao_publicadas(fake_ruim["expect"]), ["alvo.cor"], "C804: chave inexistente (alvo.cor) reprova no validador")
+
+
+func test_C1_expect_player_on_floor_e_aceito_pelo_validador() -> void:
+	var expect_pousado: Dictionary = {"player.on_floor": true}
+	assert_true(CHAVES_PUBLICADAS.has("player.on_floor"), "C1: player.on_floor consta no contrato da ponte")
+	assert_eq(_chaves_nao_publicadas(expect_pousado).size(), 0, "C1: expect player.on_floor passa pelo validador")
+
+
+# f530 T5: corte de player.y em repouso apos cruzar o limite (medido na T1: antes 169-180, depois 145-152).
+const CORTE_Y_CRUZOU: float = 160.0
+
+
+func test_C810_camera_cruza_limite_esta_registrado_com_seed_e_regra_real() -> void:
+	var nome: String = "camera-cruza-limite"
+	assert_true(ROTEIROS.has(nome), "C810: o roteiro camera-cruza-limite esta em ROTEIROS")
+	_checar_roteiro_com_seed(nome)
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_true("seed=472" in caminho, "C810: seed fixa na URL")
+	assert_true("tutorial=visto" in caminho, "C810: pula o tutorial")
+	assert_true("toque=b" in caminho, "C810: modo de toque B")
+	assert_false("semderrota" in caminho, "C810: joga a regra real, sem semderrota (D2)")
+	assert_false("powerup" in caminho, "C810: sem power-up (D4)")
+	assert_false(ROTEIROS_SEMDERROTA.has(nome), "C810: nao esta na lista de roteiros sem derrota")
+
+
+func test_C811_camera_cruza_limite_prova_alinhado_corte_e_termina_vivo() -> void:
+	var nome: String = "camera-cruza-limite"
+	var passos := _passos(nome)
+	assert_gt(passos.size(), 0, "C811: o roteiro tem passos")
+	for passo in _expects(nome):
+		for chave in passo["expect"].keys():
+			assert_true(CHAVES_PUBLICADAS.has(str(chave)), "C811: chave publicada pela ponte: %s" % str(chave))
+			var valor: Variant = passo["expect"][chave]
+			if typeof(valor) == TYPE_DICTIONARY:
+				assert_eq(valor.size(), 1, "C811: um operador por comparacao")
+				for operador in valor.keys():
+					assert_true(OPERADORES.has(str(operador)), "C811: operador valido")
+	var alinhados: int = 0
+	for valor in _valores_expect(nome, "alvo.alinhado"):
+		assert_eq(valor, true, "C811: alvo.alinhado so e esperado true")
+		alinhados += 1
+	assert_gte(alinhados, 4, "C811: varios pousos alinhados antes de cruzar o limite")
+	var i_corte: int = _indice_expect(nome, "player.y", "lt")
+	assert_gte(i_corte, 0, "C811: ha expect player.y lt <corte>")
+	assert_eq(passos[i_corte]["expect"]["player.y"]["lt"], CORTE_Y_CRUZOU, "C811: o corte e o medido na T1 (repouso apos cruzar < 160)")
+	var ultimo_expect: Dictionary = {}
+	for i in range(passos.size() - 1, -1, -1):
+		if passos[i].has("expect"):
+			ultimo_expect = passos[i]["expect"]
+			break
+	assert_eq(ultimo_expect.get("player.y", null), {"gte": 0.0}, "C811: ao fim player.y gte 0")
+	assert_eq(ultimo_expect.get("state", null), "playing", "C811: ao fim state playing")
+	assert_eq(ultimo_expect.get("player.alive", null), true, "C811: ao fim player.alive true")
+
+
+func test_C812_camera_cruza_limite_usa_retrato_720x1280_e_tem_shots_do_cruzamento() -> void:
+	var nome: String = "camera-cruza-limite"
+	var spec := _carregar(nome)
+	assert_eq(spec.get("viewport", null), [720.0, 1280.0], "C812: viewport 720x1280 (altura logica 320, limite 128)")
+	var i_corte: int = _indice_expect(nome, "player.y", "lt")
+	var i_shots: int = _indice_shots(nome, "cruzou-limite")
+	assert_gt(i_shots, i_corte, "C812: o print do cruzamento vem depois do expect do corte")
+	assert_gt(_indice_shots(nome, "camera-cruza-fim"), i_shots, "C812: o print final vem depois do do cruzamento")

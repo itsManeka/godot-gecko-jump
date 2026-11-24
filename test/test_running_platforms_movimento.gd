@@ -33,6 +33,7 @@ func _estado(osc: float, vai_e_vem: float, mecanicas: Array[StringName]) -> Diff
 	estagio.proporcao_oscilantes = osc
 	estagio.proporcao_vai_e_vem = vai_e_vem
 	estagio.proporcao_cicladoras = 1.0
+	estagio.proporcao_que_caem = 1.0  # todas caem: c287 conta PlatformCrumble, nao depende do .tres
 	estagio.mecanicas = mecanicas
 	var curva := DifficultyCurve.new()
 	curva.estagios = [estagio]

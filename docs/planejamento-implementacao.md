@@ -50,8 +50,8 @@ Divisao em epics (as fases 1 a 3 acima formam o E1):
 | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------- |
 | E1. Migracao e base solida                          | Migracao para Godot 4.7, oraculo headless, testes GUT, bugs da jam, recorde salvo (fases 1 a 3)                              | #8, #14, #7, #3, #4, #5, #6, #9                      | concluido (2026-11-09)              |
 | E2. CI, tela mobile e jogabilidade da base          | CI, roteiros de smoke, tela 180 px, borda lateral, linhas moveis, cor alcancavel                                             | #28, #26, #15, #25, #24, #23 (+ #38, achada no epic) | QA concluido em 2026-11-11 (PR #31) |
-| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes, tutorial e camera que acompanha o gecko no alto | #36, #37, #39, #40, #42, #11, #10, #12, #44-#48       | entregue em 2026-11-18 (PR do epic) |
-| E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                                                   | #16, #17                                             | planejado                           |
+| E3. Controles, dificuldade e pausa/opcoes/tutorial  | Primeiro as issues herdadas do E2; depois toque, dificuldade, pausa, opcoes, tutorial e camera que acompanha o gecko no alto | #36, #37, #39, #40, #42, #11, #10, #12, #44-#48      | entregue em 2026-11-18 (PR do epic) |
+| E4. Conteudo                                        | Power-ups, modos de jogo, gerador com seed                                                                                   | #16, #17, #49, #50                                   | entregue em 2026-11-24 (PR do epic)                                  |
 | E5. Ranking online por modo                         | Ranking por modo de jogo; depende do E4 e do ChumGames E1                                                                    | #29                                                  | planejado                           |
 | E6. Arte final e audio                              | Arte final em pixel art, sons e musica                                                                                       | #18, #13                                             | planejado                           |
 | E7. Publicacao                                      | Web no itch.io; build Android                                                                                                | #19, #20                                             | planejado                           |
@@ -143,9 +143,9 @@ export web de debug e o game-bot nativo contra a `main`. O PR fecha #10, #11, #1
    `DifficultyState`; a ponte publica `dificuldade.aviso` para os smokes. O som do aviso fica para a #43. O visual da
    moldura original foi redesenhado para vinheta (fecha #45). Sensacao e legibilidade sobre fundo claro: verificacao manual no playtest do dono.
 7. Modos de toque alternaveis (#47, [ADR 0013](adr/0013-modos-de-toque-alternaveis.md)): dois esquemas selecionaveis
-   nas Opcoes — A (arrastar + flick, um polegar) e B (dois polegares, zonas invisiveis, padrao do playtest) — com pulo
+   nas Opcoes — Flick (A, arrastar + flick, um polegar) e Joy invisivel (B, dois polegares, zonas invisiveis, padrao do playtest) — com pulo
    reto, correcao de direcao no ar e comeco a andar no press. O esquema C prototipado foi descartado no playtest e
-   podado do codigo, dos testes e dos textos; save antigo com ele cai no B. O modo A tem sensibilidade ajustavel nas Opcoes
+   podado do codigo, dos testes e dos textos; save antigo com ele cai no B. O modo Flick (A) tem sensibilidade ajustavel nas Opcoes
    (um controle que escala a zona morta e o dy do flick; o padrao reproduz 6 px / 24 px; faixa 0,5x a 2x provisoria) e o
    flick nao repula no arrasto vertical longo nem falha com FPS baixo (#48). Valores de sensacao em um simbolo cada
    (`scripts/TouchTuning.gd`). Os roteiros de smoke por modo (`toque-modo-{a,b}.smoke.json`) provam direcao, diagonal e
@@ -157,10 +157,58 @@ export web de debug e o game-bot nativo contra a `main`. O PR fecha #10, #11, #1
    translucida, na mesma cor do fundo da pausa (contraste acima de 4,5:1 sobre a plataforma amarela). Legibilidade no
    aparelho: verificacao manual no playtest do dono.
 9. Camera que acompanha o gecko no alto (#46): quando o gecko sobe acima do limite de topo (0,40 da altura visivel,
-   `scripts/CameraFollow.gd`), o mundo avanca o excesso no mesmo frame (plataformas, gatilho de linhas novas e gecko
-   deslocados juntos), entao ele nunca sai pelo topo; o scroll da curva de dificuldade segue como piso (nunca diminui) e,
+   `scripts/CameraFollow.gd`), o mundo avanca o excesso suavizado em parcelas por frame, convergindo ao limite
+   (plataformas, gatilho de linhas novas e gecko deslocados juntos), entao ele nunca sai pelo topo; o scroll da curva de dificuldade segue como piso (nunca diminui) e,
    sem partida iniciada (menu), nada se move. Sem roteiro de smoke: nenhum roteiro com seed fixa leva o gecko ao limite
    de forma deterministica (#48); cobertura por GUT e a sensacao do limite pelo playtest do dono.
+
+## Epic 4 — Conteudo
+
+Escopo: power-ups e modos de jogo (#16, #17). Criterios e frases de aceite de cada power-up em
+[ADR 0014](adr/0014-power-ups-e-modos-de-jogo.md); regras de negocio e armadilhas dos dois subsistemas em
+[architecture/modos-e-power-ups.md](../architecture/modos-e-power-ups.md).
+
+**Estado: entregue em 2026-11-24** (branch `epic/gecko-e4-conteudo`; QA tecnico verde, PR do epic aberto pelo
+fechamento). O que sobrou para o dono e o playtest manual (sensacao, dificuldade, legibilidade fina e toque no
+aparelho) e o merge do PR.
+
+1. Infra de power-ups (f521): contrato `PowerUp` com hooks virtuais de padrao neutro (`ignora_cor()`/`fator_scroll()`)
+   agregados no `PowerUpState` (ativo/carga), registro `PowerUps`, sorteio `PowerUpDraw` (raridade e pesos por estagio
+   da curva, com rng dedicado que nao desloca o layout), icone 16x16 na plataforma elegivel, HUD de duracao e ponte
+   `powerup.ativo|restante|carga` com `?powerup=` so-debug.
+2. Bloco A (f522): **Camaleao** — 5 s pisando em plataforma de qualquer cor, com a regra de cor reavaliada na ativacao
+   e na expiracao (mesmo com o gecko caindo; a plataforma sob o gecko fica travada); **Desacelera** — 5 s com o
+   deslocamento do scroll x 0,5, e a previsao de cor usa o scroll efetivo nos dois consumos (`avancar_camera`, moveis
+   horizontais e o tempo da dificuldade ficam fora). Duracao e fator em `ressources/power_ups.tres` (fallback do ADR
+   quando ausente/invalido); raridade 0,04 por plataforma elegivel e pesos 2:2 na curva. Icone unico e monocromatico
+   (branco/preto) na plataforma e no HUD pela fonte unica `PowerUpDesenho` (Camaleao: 4 quadrantes; Desacelera:
+   ampulheta) — a cor nunca e a unica pista.
+3. Ajuste pos-registro (f522 T10): `PowerUps._padrao()` deixou de ser vazio e a curva ganhou `pesos_power_ups`, entao o
+   jogo real passa a sortear icones em ~4% das plataformas elegiveis; os testes que nao tratam de power-up seguem
+   deterministicos (curva sintetica sem pesos, rng dedicado ao power-up ou `power_ups_habilitados = false`),
+   inventariados por grep na task.
+4. Bloco B (Segunda chance): carga unica, sem tempo, maximo 1 guardada, raridade 0,8% (peso 1 nos 4 estagios da curva).
+   Ao cruzar a linha de derrota com a carga, a partida segue, a carga vai a 0 e o gecko reaparece na plataforma visivel
+   mais proxima da cor dele; sem nenhuma dessa cor, na mais proxima de qualquer cor, e o gecko assume a cor dela. O
+   reaparecimento nao conta como pouso (sem ponto, sem sorteio de cor). Sem carga, ou sem plataforma visivel, vale a
+   derrota padrao. Scripts: `scripts/PowerUpSegundaChance.gd` (efeito neutro, o consumo fica na Stage) e
+   `scripts/SegundaChanceAlvo.gd` (escolha pura da plataforma de reaparicao).
+5. Gerador deterministico com seed (f517): a semente da partida vira a seed de cada linha (`RowSeed`), com canais
+   separados de layout e de cor movel para um canal nunca deslocar o outro, e `?seed=` so-debug para repetir a
+   mesma fase. Com ela vieram os ajustes herdados do E3 que entraram no E4: fracao de plataformas que caem (f518),
+   camera que acompanha o gecko no alto em parcelas (#49, f519) e os nomes de apresentacao dos modos de toque
+   (Flick e Joy invisivel, #50, f520).
+6. Infra de modos de jogo (f523): contrato `GameMode` (id, rotulo, descricao e regra) com o registro `GameModes` na
+   ordem do seletor, uma regra por modo (`GameModeRule`), recorde por modo em `user://best_score_<id>.cfg`, seletor
+   em carrossel na tela de modos, relogio da partida na Stage e modo de teste so em build debug.
+7. Bloco de modos (f524, f527, f528): **Puro** — o Classico sem power-ups; **Contra o tempo** — 60 s para pontuar
+   (duracao em `ressources/tempo.tres`, fallback de 60), com `lost` quando o relogio zera; **Zen** — sem pressa e
+   sem derrota, sem power-ups e sem recorde, com a queda devolvendo o gecko a uma plataforma; **Desafio diario** —
+   uma tentativa por dia UTC, com a fase sorteada pela data (a semente da partida e o dia) e resultado que vale so
+   para o dia.
+8. QA final (f525): suite de smoke do repo (40 roteiros no export web) mais `game-bot` atual x referencia; a QA
+   deixou a ponte de cor alvo no smoke (f530) e o residuo de float no excesso da camera (f531), que entraram
+   depois no mesmo branch.
 
 ## Regras de trabalho
 
