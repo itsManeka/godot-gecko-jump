@@ -19,3 +19,4 @@ antigo como "superado por".
 | [0012](0012-plataformas-que-piscam.md)                 | Plataformas que piscam: somem e voltam em ritmo fixo, com aviso e trava           | aceito                                                     |
 | [0013](0013-modos-de-toque-alternaveis.md)             | Modos de toque alternaveis: A e B selecionaveis, B padrao                         | aceito                                                     |
 | [0014](0014-power-ups-e-modos-de-jogo.md)              | 3 power-ups e 5 modos de jogo no seletor; seed do Desafio diario por data UTC     | aceito                                                     |
+| [0015](0015-direcao-de-arte-fonte-comercial-e-audio-dinamico.md) | Direcao de arte, fonte comercial livre (`m5x7`), menu remodelado e audio dinamico | aceito                                                     |

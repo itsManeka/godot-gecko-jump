@@ -1,6 +1,6 @@
-# Direção de Arte — Gecko Jump (E6)
+# Direção de Arte e Áudio — Gecko Jump (E6)
 
-Especificação visual definitiva do **Gecko Jump** para a entrega de arte do marco **E6** (issue `#18`), consolidando identidade visual 16-bit/GBC, paleta de 32 cores com contraste WCAG AA (`>= 4.5:1`), acessibilidade sem cor (issue `#41`), sprites de gameplay, 4 biomas com parallax e névoa reativa, tipografia comercial livre, kit UI em pixel art e remodelagem completa do menu com reserva de espaço para **Ranking (E5)** e **Remover anúncios (E8)**.
+Especificação visual, sonora e de licenciamento definitiva do **Gecko Jump** para o marco **E6** (issue `#18`), consolidando identidade visual 16-bit/GBC, paleta de 32 cores com contraste WCAG AA (`>= 4.5:1`), acessibilidade sem cor (issue `#41`), sprites de gameplay, 4 biomas com parallax e névoa reativa, tipografia comercial livre, kit UI em pixel art, remodelagem completa do menu com reserva de espaço para **Ranking (E5)** e **Remover anúncios (E8)**, direção de SFX (issues `#13`, `#43`), arquitetura de música dinâmica persistente (`ADR 0015`) e política de licenças comerciais (E7/E8).
 
 Base técnica imutável: largura lógica fixa de **`180 px`**, altura visível mínima `320 px` expandida em aparelhos altos (`180×400`, `180×462+`), pixel quadrado, filtro `Nearest` (`default_texture_filter = 0`) e escala inteira (`ADR 0002`). Fontes editáveis em Aseprite vivem isoladas em `assets/src/` (`ADR 0004`).
 
@@ -359,3 +359,135 @@ A remodelagem completa do menu e a troca da fonte `.ttf` na etapa de UI do E6 t�
   - `test/test_ui_tamanhos.gd` — atualizar o caminho `FONTE_IMPORT` de `alterebro-pixel-font.ttf.import` para o arquivo `.import` da fonte comercial (`m5x7`), preservando todas as asserções de `TAMANHOS_UI = [16, 32]`, `hinting = 0`, `subpixel_positioning = 0`, `oversampling = 1.0` e `antialiasing = 0`.
 - **Roteiros de smoke (`test/smoke/*.smoke.json`):**
   - Todos os roteiros que disparam clique/toque por coordenadas fixas nos botões do menu (`Play`, `Modo`, `Opcoes` — cerca de 10 roteiros, incluindo `modos.smoke.json`, `opcoes.smoke.json`, `opcoes-persistencia.smoke.json`, `modo-puro.smoke.json`, `modo-tempo.smoke.json`, `modo-zen.smoke.json`, `modo-diario.smoke.json` e `tutorial-reabertura.smoke.json`) devem ser atualizados para os centros exatos dos novos retângulos da tabela da seção 5.3.
+
+---
+
+## 6. Direção de Áudio (SFX e Música Dinâmica)
+
+### 6.1 Estética sonora, buses e fluxo de síntese de SFX
+
+- **Estética:** **Chiptune retrô alegre/arcade**, coesa com a identidade 16-bit/GBC das seções 1–4 — timbres limpos de ondas quadrada, triângulo, pulso e ruído curto, com ataque rápido para feedback tátil imediato e sem fadiga auditiva em sessões longas.
+- **Buses de áudio (`default_bus_layout.tres`):**
+  - `Master` (`bus 0`) — saída final.
+  - `Music` (`bus 1` -> `Master`) — música dinâmica em 4 variações e stingers musicais.
+  - `SFX` (`bus 2` -> `Master`) — efeitos de gameplay e interface.
+- **Controle de volume (`scripts/Global.gd:271-300`, `scripts/OptionsStore.gd:15-26`):**
+  - Sliders de `OptionsScreen` entregam ganho linear em `[0.0, 1.0]`, convertido por `OptionsStore.volume_linear_to_db(linear)` com piso finito `MUTE_DB = -80.0 dB`.
+  - Em `linear <= 0.0` (`0%`), o bus recebe `-80.0 dB` **e** `AudioServer.set_bus_mute(idx, true)`, garantindo silêncio total.
+- **Pré-requisito e formato de produção de SFX:**
+  - Os efeitos sonoros do bus `SFX` serão sintetizados e iterados com uma **ferramenta/agente local de síntese retrô baseada em `jsfxr`**, gerando sempre pares versionados em `sounds/`:
+    - `<nome>.wav` (PCM 16-bit, `44.1 kHz`, mono, normalizado com pico em **`-3 dBFS`** para evitar clipping em sobreposições);
+    - `<nome>.sfx.json` (parâmetros e semente completos de síntese, garantindo reprodutibilidade, ajustes finos posteriores e comprovação de origem autoral).
+
+### 6.2 Inventário completo de SFX (bus `SFX`)
+
+| Cue | Arquivos (`sounds/`) | Trigger exato no código | Estética / duração | Prioridade e anti-sobreposição | `process_mode` | Regras de exceção obrigatórias |
+|---|---|---|---|---|---|---|
+| **Pulo** | `jump.wav` + `jump.sfx.json` | `Player._physics_process` (`scenes/Player.gd:109-113`, `JumpAudio`) | Sweep ascendente alegre (`square`/`triangle`), `0.10–0.14 s` | Média; `polyphony = 1` (novo pulo reinicia o player) | `INHERIT` (pausável) | Substitui `sounds/jump.wav` atual (sem registro de licença). Só toca com `on_ground == true` e partida ativa. |
+| **Pouso que pontua (`#13`)** | `land_point.wav` + `land_point.sfx.json` | `Stage.add_point()` (`scenes/Stage.gd:925-941`, via `_on_player_add_point`) | Plim/chime arcade curto e nítido, `0.09–0.13 s` | Média; `polyphony = 2`, cooldown `40 ms`; cede destaque se coincidir com `powerup_collect` | `INHERIT` (pausável) | **Separação estrita:** dispara **somente** quando `points >= 0` antes do incremento (`0 -> 1`, `1 -> 2`, ...) e `state != STATE_LOST`. **Nunca dispara** no salto/pouso inicial `-1 -> 0` (`scenes/Stage.gd:928-930`) nem nos reaparecimentos sem ponto (`Segunda chance` em `Stage._tentar_reaparecimento` e `Zen` em `Stage._reposicionar_na_ultima_plataforma`, protegidos por `_guarda_reaparecimento` em `scenes/Player.gd:80,189`). |
+| **Derrota** | `lose.wav` + `lose.sfx.json` | `Stage._encerrar_partida` (`scenes/Stage.gd:806-810`, `LoseAudio`) | Descida chiptune expressiva de fim de partida, `0.50–0.65 s` | Máxima; interrompe `stage_up` caso coincidam | `INHERIT` (pausável) | Substitui `sounds/lose.wav` atual (sem registro de licença). Toca em derrota por queda ou por fim do relógio (`Contra o tempo`). **Não dispara** em `Sair` da pausa (`scenes/Stage.gd:572-578`), resgate `Segunda chance` ou reposicionamento `Zen`. |
+| **Aviso de subida de estágio (`#43`)** | `stage_up.wav` + `stage_up.sfx.json` | `Stage._on_estagio_mudou(novo)` (`scenes/Stage.gd:468-471`), sincronizado a `level_up_frame.pulsar(novo)` | Arpejo retrô curto e celebratório (~**`0.50 s`**, faixa `0.45–0.55 s`) | Alta; `polyphony = 1`, interrompido se ocorrer derrota | `INHERIT` (pausável, congela junto com `LevelUpFrame`) | **Bloqueado em `STATE_LOST`:** deve respeitar a mesma guarda `ultimo_estado.get("state", "") == GameState.STATE_LOST` (`scenes/Stage.gd:469-470`) e nunca disparar após a derrota. |
+| **Plataforma rachando** | `platform_crack.wav` + `platform_crack.sfx.json` | `Platform.iniciar_desmoronamento` (`scenes/Platform.gd:133-138`, chamado por `PlatformCrumble.ao_pousar` em `scripts/PlatformCrumble.gd:14-16`) | Estalo percussivo seco de pedra/madeira rachando, `0.12–0.18 s` | Média; disparado **1x** por plataforma (guarda `_desmoronando or desmoronada`); `polyphony = 2` | `INHERIT` (pausável) | **Inerte em `Global.sem_derrota`:** o som é totalmente desativado quando `Global.sem_derrota == true` (alinhado à guarda de `scripts/PlatformCrumble.gd:14`). |
+| **Plataforma colapsando** *(complementar)* | `platform_break.wav` + `platform_break.sfx.json` | `_avancar_desmoronamento` quando `_tempo_restante <= 0.0` (`scenes/Platform.gd:142-147`) | Ruído curto de fragmentação/queda, `0.15–0.22 s` | Baixa–média; `polyphony = 2`; tocado em player fora da `Platform` (pois ela executa `queue_free()` no mesmo frame) | `INHERIT` (pausável) | **Inerte em `Global.sem_derrota`:** segue a mesma guarda de `platform_crack`. |
+| **Coleta de power-up** | `powerup_collect.wav` + `powerup_collect.sfx.json` | `Stage._coletar_power_up(tipo)` (`scenes/Stage.gd:857-863`) | Fanfarra curta brilhante ascendente, `0.20–0.26 s` | Alta; sobrescreve/atenua `land_point` no mesmo frame para evitar saturação | `INHERIT` (pausável) | Só dispara com `power_ups_habilitados == true` e `PowerUps.resolver(tipo) != null` (nunca em `Puro`, `Zen`, `Diario` nem na injeção silenciosa de debug `_ativar_power_up_inicial`). |
+| **Expiração de power-up** | `powerup_expire.wav` + `powerup_expire.sfx.json` | Borda de expiração de efeito temporizado (`Camaleao` / `Desacelera`) em `PowerUpState` durante `STATE_PLAYING` | Tom curto suave descendente, `0.15–0.20 s` | Baixa–média; `polyphony = 1` | `INHERIT` (pausável) | Nunca dispara em `STATE_LOST`, no menu nem na liberação/recarga de cena; timbre claramente distinto de `lose.wav`. |
+| **Resgate `Segunda chance`** | `second_chance_save.wav` + `second_chance_save.sfx.json` | `Stage._tentar_reaparecimento(body)` (`scenes/Stage.gd:786-803`), no caminho de sucesso junto a `consumir_carga()` | Brilho heroico/teleporte ascendente, `0.28–0.38 s` | Muito alta; `polyphony = 1` | `INHERIT` (pausável) | Só toca quando há carga e candidata visível (`int(escolha["indice"]) >= 0`). Sem candidata visível cai na derrota padrão (`lose.wav`). Nunca dispara no reposicionamento `Zen`. |
+| **UI — foco / navegação** | `ui_focus.wav` + `ui_focus.sfx.json` | Troca de foco por teclado/joypad no Menu, `PauseOverlay`, `OptionsScreen`, `ModosScreen` e `TutorialCard` | Tick ultracurto e suave, `0.03–0.05 s` | Baixa; `polyphony = 1`, cooldown `50 ms` | **`ALWAYS`** (`Node.PROCESS_MODE_ALWAYS`) | Obrigatório `process_mode = ALWAYS` para soar na pausa (`ADR 0008`). Não dispara no foco inicial automático ao abrir a tela. |
+| **UI — clique / confirmar** | `ui_click.wav` + `ui_click.sfx.json` | Acionamento de botões habilitados (`Play`, `Modo`, `Opcoes`, `Continuar`, `Sair`, `OK`, `Pular`, `PauseBotao`) e ajuste discreto de slider | Blip tátil positivo, `0.06–0.09 s` | Média; `polyphony = 2`, cooldown `70 ms` durante arrasto de slider | **`ALWAYS`** (`Node.PROCESS_MODE_ALWAYS`) | Obrigatório `process_mode = ALWAYS` para soar em Pausa e Pausa -> Opções (`ADR 0008`). Botão desabilitado (`"Ja jogado hoje"`) não toca `ui_click`. |
+| **UI — voltar / cancelar** | `ui_back.wav` + `ui_back.sfx.json` | Ação `Voltar` / `Esc` em `OptionsScreen`, `ModosScreen` e revisão do `TutorialCard` | Blip curto levemente descendente, `0.06–0.09 s` | Média; `polyphony = 1` | **`ALWAYS`** (`Node.PROCESS_MODE_ALWAYS`) | Obrigatório `process_mode = ALWAYS` para funcionar na pausa (`ADR 0008`). |
+
+- **Avaliação dos sons atuais (`sounds/jump.wav` e `sounds/lose.wav`):** ambos são originais provisórios da game jam **sem registro de licença no repositório**. Ficam preservados apenas como referência histórica em `assets/src/_orig/` (excluídos do export via `assets/src/.gdignore`) e serão substituídos na etapa de SFX por versões sintetizadas com `.sfx.json` e timbre uniforme com todo o inventário acima.
+- **Ordem de prioridade e mixagem no bus `SFX`:** `lose` > `second_chance_save` > `stage_up` > `powerup_collect` > `jump` / `land_point` / `platform_crack` > `powerup_expire` / `platform_break` > `ui_*`. Em sobreposição no mesmo frame (`land_point` + `powerup_collect`), suprimir ou atenuar `-6 dB` o cue de menor prioridade para preservar clareza em alto-falantes móveis.
+
+### 6.3 Direção de Música Dinâmica (bus `Music`)
+
+#### 4 variações por estágio (`e0..e3`) + stingers
+
+A trilha acompanha a escalada visual dos 4 biomas (`ressources/curva_dificuldade.tres`) compartilhando tonalidade, andamento base (ex.: `120 BPM`, compasso `4/4`) e estrutura harmônica compatível para transições sem quebra de pulso:
+
+| Variação / Recurso | Arquivo esperado (`sounds/`) | Loop | Contexto e caráter musical |
+|---|---|---|---|
+| **Estágio `e0`** (*Floresta Tropical*) | `music_e0_floresta.ogg` | `loop = true` | Tema principal chiptune leve e convidativo (melodia principal + baixo triângulo suave); usado também no menu inicial e como base calma no modo `Zen`. |
+| **Estágio `e1`** (*Cachoeira & Neblina*) | `music_e1_cachoeira.ogg` | `loop = true` | Acrescenta arpejo fluido e percussão leve mantendo a mesma grade rítmica de `e0`. |
+| **Estágio `e2`** (*Ruínas Celestes*) | `music_e2_ruinas.ogg` | `loop = true` | Expande a harmonia com contracanto brilhante e condução rítmica mais firme. |
+| **Estágio `e3`** (*Espaço & Estrelas*) | `music_e3_espaco.ogg` | `loop = true` | Variação de clímax de alta energia com linhas rápidas de sintetizador retrô. |
+| **Stinger de transição** *(opcional/harmonizado)* | `stinger_stage_up.ogg` | `loop = false` | Frase musical de 1–2 tempos (ou integrada ao aviso `#43` sem disputar o mesmo espectro) marcando a mudança de variação. |
+
+- **Formato técnico:** **Ogg Vorbis (`.ogg`)**, `44.1 kHz`, `loop = true` nas 4 variações (`e0..e3`), masterizado em torno de **`-14 LUFS`** para deixar folga confortável aos SFX (`-3 dBFS` pico).
+- **Modos sem progressão fixa (`Zen`) e pós-platô:** no `Zen`, a música permanece na variação calma (`e0`, ou alterna suavemente entre `e0` e `e1` sem stinger de tensão ao ciclar biomas por distância); em `Classico` / `Puro` após `e3`, mantém `e3` (ou acompanha o ciclo de biomas com crossfade longo de `1.8 s`).
+
+#### Arquitetura no Godot 4.7.2: `AudioStreamInteractive` + fallback `AudioStreamSynchronized`
+
+- **Implementação primária — `AudioStreamInteractive`:**
+  - Os 4 clipes (`e0..e3`) são agrupados em um recurso `AudioStreamInteractive` (`bus = &"Music"`), com matriz de transições configurada para trocar no próximo tempo ou compasso (`TRANSITION_FROM_TIME_NEXT_BEAT` / `TRANSITION_FROM_TIME_NEXT_BAR`) com crossfade curto (`FADE_CROSS`, `0.25–0.50 s`).
+  - Ao receber `dificuldade.estagio_mudou(novo)`, o controlador solicita a troca de clipe (`playback.switch_to_clip_by_name(...)`), mantendo a continuidade métrica da música.
+- **Fallback técnico oficial para Web/WASM — `AudioStreamSynchronized` (stems em crossfade):**
+  - Caso o teste no export HTML5/WebAssembly do Godot 4.7.2 apresente estalos, travamento de buffer ou incompatibilidade no `AudioStreamInteractive`, o mesmo controlador de música troca apenas o recurso interno para **`AudioStreamSynchronized`** contendo as 4 variações sincronizadas em tempo real e interpola `set_sync_stream_volume(i, db)` por `Tween` (`0.8–1.2 s`, de `-80 dB` a `0 dB`).
+  - A API exposta ao restante do jogo (`definir_estagio(estagio: int)`, `definir_pausado(pausado: bool)`, `notificar_gesto_usuario()`) permanece idêntica entre `AudioStreamInteractive` e `AudioStreamSynchronized`, isolando completamente `Stage.gd` do detalhe do backend de áudio.
+
+#### Persistência fora de `Stage.tscn`, pausa (`ADR 0008`) e desbloqueio WebAudio
+
+1. **Hospedagem fora de `Stage.tscn` (sobrevivência a `change_scene_to_file`):**
+   - `Stage.tscn` é destruída e recarregada por `get_tree().change_scene_to_file("res://scenes/Stage.tscn")` em `Stage._on_animation_end()` (`scenes/Stage.gd:845-846`) e em `_recarregar_stage()` (`scenes/Stage.gd:584-588`: `Sair` da pausa, troca de modo cruzando a fronteira do Desafio Diário em `_fechar_modos` e virada de dia UTC em `_bloquear_inicio`).
+   - Por isso, o `AudioStreamPlayer` da música **nunca vive em `Stage.tscn`**: ele é hospedado em um **autoload persistente (`MusicManager`, ou nó filho persistente do autoload `Global`)**, no bus `&"Music"`, com **`process_mode = Node.PROCESS_MODE_ALWAYS`**.
+   - Em recargas de `Stage.tscn`, a trilha continua tocando sem corte; ao retornar ao menu (`!started`), transita suavemente de volta à variação `e0`.
+2. **Comportamento na pausa (`ADR 0008` — Opção A aprovada):**
+   - Quando `get_tree().paused == true`, a música **não pausa**: o player permanece em execução (`process_mode = Node.PROCESS_MODE_ALWAYS`) e sofre **atenuação suave (ducking) de `-12 dB`** (transição de `~0.15 s`) aplicada exclusivamente no `volume_db` do player de música (sem tocar `AudioServer.set_bus_volume_db` nem o valor salvo em `OptionsStore`).
+   - Ao retomar a partida ou sair para o menu, o `volume_db` do player retorna suavemente para `0.0 dB` relativo.
+   - **Feedback em tempo real do slider `Music` em Pausa -> Opções:** como o slider ajusta o bus `Music` (`Global.set_volume_music` em `scripts/Global.gd:271-300`), o jogador ouve imediatamente o efeito do ajuste enquanto está pausado; em **`0%` (`linear <= 0.0`)**, o bus recebe `MUTE_DB = -80.0 dB` e `AudioServer.set_bus_mute(idx, true)` (`scripts/OptionsStore.gd:15,24-26`), garantindo silêncio total.
+   - Em `NOTIFICATION_APPLICATION_PAUSED` / `NOTIFICATION_APPLICATION_FOCUS_OUT` (app em segundo plano no Android/Web), além de pausar a partida (`ADR 0008`), o gerenciador silencia temporariamente a saída enquanto o foco está ausente e restaura o estado atenuado (`-12 dB`) quando o foco retorna.
+3. **Desbloqueio de WebAudio após primeiro gesto do usuário:**
+   - Em navegadores (export Web/HTML5), o `AudioContext` nasce suspenso até o primeiro gesto de entrada do usuário.
+   - Quando `OS.has_feature("web")` é verdadeiro, o gerenciador de música não força `play()` no `_ready` antes da interação: registra um listener `_input` (`process_mode = ALWAYS`) que, no primeiro evento pressionado (`InputEventScreenTouch`, `InputEventMouseButton`, `InputEventKey` ou `InputEventJoypadButton`), desbloqueia e inicia a reprodução da trilha de forma idempotente (nunca reinicia se já estiver tocando).
+   - Em ambiente headless (`--headless`, suite GUT), o gerenciador opera de forma segura sem erros mesmo sem dispositivo de saída de áudio.
+
+#### Opções concretas de origem comercial para a música em 4 variações
+
+Todas as opções abaixo são compatíveis com distribuição gratuita (itch.io **E7**) e monetização comercial com anúncios e IAP (Play Store **E8**):
+
+1. **Composição original própria em tracker/DAW chiptune livre *(recomendada pela precisão dos loops sincronizados)*:**
+   - **Furnace Tracker** (GPLv2; emulação fiel de chips GBC/NES/SNES; áudio exportado `.wav`/`.ogg` 100% autoral sem restrição comercial), **LMMS** (GPLv2) ou **BeepBox / JummBox** (ferramentas livres para síntese chiptune cuja composição autoral pertence ao autor). Permite exportar as 4 variações (`e0..e3`) exatamente no mesmo BPM, tom e número de compassos, além de stingers sob medida.
+2. **Pacotes chiptune CC0 1.0 multi-seção / em stems:**
+   - Seleção de pacotes explicitamente sob **CC0 1.0 Universal** (domínio público) em catálogos consolidados como **OpenGameArt.org** (ex.: coleções chiptune CC0 multi-faixa no mesmo estilo/tom, como packs *SubspaceAudio / Juhani Junkala* CC0 ou equivalentes verificados no ato da coleta) ou **itch.io** (packs chiptune com licença CC0 confirmada na página do autor), adaptando/cortando 4 seções em loop coerentes no mesmo andamento.
+3. **Pack comercial royalty-free ou encomenda pontual:**
+   - Aquisição de pacote chiptune adaptativo/multi-camada (itch.io ou compositor independente) com licença escrita autorizando uso comercial em jogos gratuitos e monetizados por anúncios/IAP, arquivando os termos em `sounds/LICENSES.md`.
+
+> **Vedado:** qualquer faixa sob licença **Non-Commercial (`CC BY-NC*`)**, **No-Derivatives (`CC BY-ND*`)** (impede corte em loops e variações), origem não verificável ou serviço de geração por IA cujos termos restrinjam uso comercial/anúncios/IAP.
+
+---
+
+## 7. Política e Auditoria de Licenças Comerciais (E7 e E8)
+
+### 7.1 Regra de elegibilidade comercial
+
+Todo ativo embarcado no `.pck` (sprites, fontes, SFX, músicas) deve ser 100% compatível com publicação gratuita no **itch.io (E7)** e monetização comercial com anúncios e compras no aplicativo na **Play Store (E8)**:
+
+- **Licenças aceitas:** autoral próprio do projeto, **CC0 1.0 Universal**, **SIL OFL 1.1** (fontes), **MIT / Apache-2.0 / zlib**, **CC BY 4.0** (mediante crédito explícito no jogo e em `LICENSES.md`), ou licença comercial paga sem royalties devidamente arquivada.
+- **Licenças bloqueadas:** qualquer variante **Non-Commercial (`CC BY-NC`, `CC BY-NC-SA`, `CC BY-NC-ND`)**, **No-Derivatives (`CC BY-ND`)** em arquivos que exijam edição/loop, ou qualquer ativo **sem registro verificável de autor e licença**.
+
+### 7.2 Auditoria real dos ativos presentes no repositório
+
+| Ativo atual no repositório | Tipo | Licença encontrada | Situação comercial (E7/E8) | Ação obrigatória no E6 |
+|---|---|---|---|---|
+| `fonts/alterebro-pixel-font.ttf` | Fonte | **CC BY-NC** (não comercial) | **BLOQUEADO** — incompatível com distribuição comercial, anúncios e IAP | Substituir por `m5x7` (**CC0 1.0**) — ou contingência `m3x6` (CC0) / `Tiny5` / `Silkscreen` (SIL OFL 1.1) — na entrega de UI/Menu e registrar em `fonts/LICENSES.md` |
+| `sounds/jump.wav` | SFX | **Sem licença registrada** no repositório (provisório de game jam) | **BLOQUEADO** — ausência de licença impede distribuição comercial segura | Cópia histórica mantida em `assets/src/_orig/jump.wav` (isolada por `.gdignore`); substituir por síntese própria (`jsfxr`) + `jump.sfx.json` na entrega de SFX e registrar em `sounds/LICENSES.md` |
+| `sounds/lose.wav` | SFX | **Sem licença registrada** no repositório (provisório de game jam) | **BLOQUEADO** — ausência de licença impede distribuição comercial segura | Cópia histórica mantida em `assets/src/_orig/lose.wav` (isolada por `.gdignore`); substituir por síntese própria (`jsfxr`) + `lose.sfx.json` na entrega de SFX e registrar em `sounds/LICENSES.md` |
+| `assets/Gecko.png`, `assets/GeckoPlataforma.png`, `icon.png` | Sprites | Autoral do projeto (provisórios de game jam) | Elegível (substituídos pela arte final E6) | Cópias históricas mantidas em `assets/src/_orig/`; arte final produzida no Aseprite (`ADR 0004`) |
+
+### 7.3 Formato obrigatório de registro (`fonts/LICENSES.md` e `sounds/LICENSES.md`)
+
+As entregas de fonte/UI, SFX, música e polimento final do E6 devem manter dois inventários versionados — **`fonts/LICENSES.md`** e **`sounds/LICENSES.md`** — usando obrigatoriamente a estrutura de tabela abaixo:
+
+```markdown
+| Arquivo | Tipo | Autor | Origem / URL ou Preset/Seed jsfxr | Licença | Atribuição obrigatória | Uso comercial (E7/E8) |
+|---|---|---|---|---|---|---|
+| `m5x7.ttf` | Fonte | Daniel Linssen | https://managore.itch.io/m5x7 | CC0 1.0 | Não (crédito opcional) | Aprovado |
+| `jump.wav` | SFX | Projeto Gecko Jump | Sintetizado localmente (`sounds/jump.sfx.json`) | Autoral / CC0 | Não | Aprovado |
+| `music_e0_floresta.ogg` | Música | <autor> | <URL oficial ou ferramenta autoral> | <CC0 1.0 / CC BY 4.0 / Autoral> | <Não / Sim: texto exato> | Aprovado |
+```
+
+- **Critério de fechamento do E6:**
+  1. 100% dos arquivos de mídia em `fonts/` e `sounds/` possuem linha correspondente em `fonts/LICENSES.md` ou `sounds/LICENSES.md`.
+  2. Nenhum arquivo com licença `NC`, `ND` ou desconhecida permanece fora de `assets/src/_orig/` (que fica excluído do `.pck` via `assets/src/.gdignore`).
+  3. Qualquer ativo sob `CC BY 4.0` tem o texto exato de atribuição copiado no campo correspondente para inclusão nos créditos do E7/E8.
+
