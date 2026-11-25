@@ -37,3 +37,21 @@ Columns: 8
 107  75 130	b2_roxo
 235 139  84	b2_laranja
 154 176 201	nevoa_brilho
+# Rampa do gecko amarelo (variante aprovada pelo dono, provas r9b)
+177 120  52	amarelo 0 linha
+245 190  60	amarelo 1 sombra
+252 230  94	amarelo 2 base
+255 250 146	amarelo 3 luz
+255 252 216	amarelo 4 brilho
+196 143  41	amarelo_sombra
+255 244 208	amarelo barriga
+240 216 152	amarelo barriga sombra
+# Rampa do gecko azul (variante aprovada pelo dono, provas r10b)
+ 53  56 128	azul 0 linha
+ 92  95 200	azul 1 sombra
+ 89 145 255	azul 2 base
+ 97 175 249	azul 3 luz
+158 193 237	azul 4 brilho
+166 200 255	azul_luz
+226 238 250	azul barriga
+178 200 234	azul barriga sombra
