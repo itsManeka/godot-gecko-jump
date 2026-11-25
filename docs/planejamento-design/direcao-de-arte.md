@@ -79,7 +79,7 @@ Cálculo pela fórmula oficial WCAG 2.1 de luminância relativa `L = 0.2126·R_l
 
 #### Prova de composição alfa da faixa/overlay (`#161822` a `70%`) sobre plataformas e fundos claros
 
-Para superfícies translúcidas (`COR_FUNDO_OVERLAY = #161822` a `70%` de opacidade, usado em `PauseOverlay`, `TouchHint`, faixa de HUD sobre fundos claros e overlays sobre o jogo), cada cor composta resulta da mistura sRGB 8-bit `round(0.70 · fg + 0.30 · bg)`. Sobre fundos claros dos biomas luminosos (`e1` céu azul/nuvens, `e2` horizonte laranja do pôr do sol, `e0` água/cachoeira) — onde o contraste direto de `#fffdf5` cairia para `2.21:1`–`2.79:1` — a combinação de **contorno `#161822`** com a **faixa `#161822` a `70%`** garante folga acima de `4.5:1` inclusive sobre nuvem branca:
+Para superfícies translúcidas (`COR_FUNDO_OVERLAY = #161822` a `70%` de opacidade, usado em `PauseOverlay`, `TouchHint`, faixa de HUD sobre fundos claros e overlays sobre o jogo), cada cor composta resulta da mistura sRGB 8-bit `round(0.70 · fg + 0.30 · bg)` (arredondamento half-up; em empates `.5`, como `#f6db61` e `#eb8b54`, o half-to-even varia no máximo `0.1` na razão, mantendo folga ampla acima de `4.5:1`). Sobre fundos claros dos biomas luminosos (`e1` céu azul/nuvens, `e2` horizonte laranja do pôr do sol, `e0` água/cachoeira) — onde o contraste direto de `#fffdf5` cairia para `2.21:1`–`2.79:1` — a combinação de **contorno `#161822`** com a **faixa `#161822` a `70%`** garante folga acima de `4.5:1` inclusive sobre nuvem branca:
 
 | Superfície atrás da faixa / overlay | Cor composta (`#161822` a `70%`) | Contraste com `#fffdf5` | Contraste com `#d4e0e6` | Status (`>= 4.5:1`) |
 |---|---|---:|---:|---|
@@ -127,7 +127,7 @@ Nenhuma informação essencial de gameplay depende exclusivamente de matiz. Cada
 ### Regras de preservação do `#41`
 
 1. **Fim do tingimento chapado (`modulate`):** tanto o Gecko quanto as ilhotas abandonam o tingimento de sprite branco por `Enums.get_cor(...)`. Cada variante é desenhada diretamente com sua rampa de 3 cores + contorno `ink_contorno` (`#161822`), preservando olhos grandes (`#fffdf5` + pupila/espiral `#161822`), base de terra (`terra_luz/base/sombra`), brilhos quentes e marcas táteis sem lavagem de cor.
-2. **Validação obrigatória em escala de cinza:** a prancha de referência em escala de cinza (`assets/src/direcao-arte-cinza-4x.png` na base anterior e sua validação equivalente na escala `360×640`) comprova que todas as 4 ilhotas (`120 px` e `88 px`) e os 4 camaleões são diferenciáveis mesmo sem saturação cromática.
+2. **Validação obrigatória em escala de cinza:** a prancha de referência em escala de cinza (`assets/src/direcao-arte-cinza-4x.png`) comprova que todas as 4 ilhotas (`120 px` e `88 px`) e os 4 camaleões bípedes chibi são diferenciáveis mesmo sem saturação cromática.
 3. **Tutorial bilíngue cor + padrão:** em `scenes/TutorialCard.gd`, os retângulos chapados das amostras (`=` igual / `X` diferente) e dos 4 quadrados da legenda passam a exibir mini-sprites das ilhotas e do gecko com suas marcas reais acompanhados dos nomes (`amarelo`, `verde`, `azul`, `vermelho`).
 
 ---
@@ -440,9 +440,9 @@ A trilha acompanha a escalada visual dos 4 biomas (`ressources/curva_dificuldade
 | Variação / Recurso | Arquivo esperado (`sounds/`) | Loop | Contexto e caráter musical |
 |---|---|---|---|
 | **Estágio `e0`** (*Floresta e Cachoeira*) | `music_e0_floresta.ogg` | `loop = true` | Tema principal chiptune leve e convidativo (melodia principal + baixo triângulo suave); usado também no menu inicial e como base calma no modo `Zen`. |
-| **Estágio `e1`** (*Céu Azul e Nuvens*) | `music_e1_cachoeira.ogg` | `loop = true` | Acrescenta arpejo fluido e percussão leve mantendo a mesma grade rítmica de `e0`. |
-| **Estágio `e2`** (*Pôr do Sol*) | `music_e2_ruinas.ogg` | `loop = true` | Expande a harmonia com contracanto brilhante e condução rítmica mais firme. |
-| **Estágio `e3`** (*Noite Estrelada e Aurora*) | `music_e3_espaco.ogg` | `loop = true` | Variação de clímax de alta energia com linhas rápidas de sintetizador retrô. |
+| **Estágio `e1`** (*Céu Azul e Nuvens*) | `music_e1_ceu_nuvens.ogg` | `loop = true` | Acrescenta arpejo fluido e percussão leve mantendo a mesma grade rítmica de `e0`. |
+| **Estágio `e2`** (*Pôr do Sol*) | `music_e2_por_do_sol.ogg` | `loop = true` | Expande a harmonia com contracanto brilhante e condução rítmica mais firme. |
+| **Estágio `e3`** (*Noite Estrelada e Aurora*) | `music_e3_noite_aurora.ogg` | `loop = true` | Variação de clímax de alta energia com linhas rápidas de sintetizador retrô. |
 | **Stinger de transição** *(opcional/harmonizado)* | `stinger_stage_up.ogg` | `loop = false` | Frase musical de 1–2 tempos (ou integrada ao aviso `#43` sem disputar o mesmo espectro) marcando a mudança de variação. |
 
 - **Formato técnico:** **Ogg Vorbis (`.ogg`)**, `44.1 kHz`, `loop = true` nas 4 variações (`e0..e3`), masterizado em torno de **`-14 LUFS`** para deixar folga confortável aos SFX (`-3 dBFS` pico).
