@@ -1,7 +1,7 @@
 # 0015 — Direcao de arte, fonte comercial livre, menu remodelado e audio dinamico
 
 - **Status:** aceito
-- **Data:** 2026-11-24
+- **Data:** 2026-11-24 (consolidado em 2026-11-25 com resolucao `360x640`, gecko bipede chibi e referencias aprovadas)
 - **Decisores:** itsManeka + Claude
 
 ## Contexto
@@ -31,53 +31,84 @@ A especificacao visual, de acessibilidade, de geometria do menu, de audio e de l
 
 ### Relacao com ADRs anteriores
 
-Os ADRs seguintes **permanecem aceitos** e nao sao superados por esta decisao — este ADR os complementa e preserva
-integralmente suas garantias:
+- **Evolucao do [ADR 0002](0002-tela-mobile-largura-180.md) (`180x320` -> `360x640`):** esta decisao **evolui** o
+  `ADR 0002` (que fixava largura logica `180x320`) para **`360x640`** (fator exato **`2x`**), mantendo integralmente
+  todos os principios do `ADR 0002`: largura logica fixa em modo retrato (`keep_width`), filtro `Nearest`,
+  `scale_mode = "integer"`, altura expandida em aparelhos altos e **escala inteira exata** em todos os celulares-alvo
+  (`720 / 360 = 2x` em `720x1280` -> `360x640`; `1080 / 360 = 3x` em `1080x2400` -> `360x800`; `1440 / 360 = 4x`). A
+  migracao de codigo, fisica, camera e UI para `360x640` sera executada em entrega propria antes da integracao dos
+  sprites finais.
 
-- [ADR 0002](0002-tela-mobile-largura-180.md) (`aceito`): largura logica de `180 px`, altura expandida, pixel quadrado,
-  filtro `Nearest` e escala inteira (`TAMANHOS_UI = [16, 32]`).
+Os demais ADRs seguintes **permanecem aceitos integralmente**:
+
 - [ADR 0004](0004-arte-no-aseprite-com-rascunho-por-ia.md) (`aceito`): arte produzida no Aseprite local com fontes
-  editaveis isoladas em `assets/src/` (fora do `.pck` via `assets/src/.gdignore`).
-- [ADR 0006](0006-oraculo-de-jogo-em-3-camadas.md) (`aceito`): oraculo em 3 camadas mantido; alteracoes de layout de
-  menu atualizam explicitamente os testes GUT de `Rect2` e roteiros `test/smoke/*.smoke.json`.
+  editaveis isoladas em `assets/src/` (fora do `.pck` via `assets/src/.gdignore`), operando o fluxo de rascunho em
+  **2 etapas** (geracao visual sobre fundo neutro solido ancorada nas referencias aprovadas em `assets/src/refs/`,
+  seguida de recorte, remocao de fundo, alinhamento de grade/pivo, limpeza de contorno/paleta e montagem editavel
+  `.aseprite` + exportacao PNG/JSON no Aseprite local) antes do acabamento manual do dono.
+- [ADR 0006](0006-oraculo-de-jogo-em-3-camadas.md) (`aceito`): oraculo em 3 camadas mantido; alteracoes de resolucao e
+  layout de menu atualizam explicitamente os testes GUT de `Rect2` e roteiros `test/smoke/*.smoke.json`.
 - [ADR 0008](0008-pausa-por-tree-paused.md) (`aceito`): pausa governada por `get_tree().paused`, com
   `PROCESS_MODE_ALWAYS` restrito ao que precisa operar pausado (overlay, opcoes, sons de UI e player de musica
   atenuado).
-- [ADR 0014](0014-power-ups-e-modos-de-jogo.md) (`aceito`): 3 power-ups e 5 modos de jogo mantidos; icones `16x16`,
-  ilustracoes `64x64` e cues sonoros respeitam todas as regras de cada modo (incluindo `Zen` sem derrota e sem nevoa).
+- [ADR 0014](0014-power-ups-e-modos-de-jogo.md) (`aceito`): 3 power-ups e 5 modos de jogo mantidos; icones `32x32 px`,
+  ilustracoes `128x128 px` (`2x` sobre `16x16` e `64x64` na nova grade `360x640`) e cues sonoros respeitam todas as
+  regras de cada modo (incluindo `Zen` sem derrota e sem nevoa).
 
 ## Decisao
 
-### 1. Direcao de arte, acessibilidade `#41` e 4 biomas
+### 1. Direcao de arte, resolucao `360x640`, acessibilidade `#41` e 4 biomas luminosos
 
-- Adotar estetica pixel art **16-bit/GBC vibrante** com paleta coesa de **32 cores** ancorada nos 4 matizes de
-  `scripts/Enums.gd` (`#f6db61`, `#79cf5a`, `#5987e9`, `#ec4848`) e contraste **WCAG AA >= 4.5:1** em todos os pares de
-  texto/UI.
-- Implementar acessibilidade sem cor (issue #41) em quatro frentes sincronizadas e distinguiveis em escala de cinza a
-  `180 px`: 4 texturas/silhuetas de plataforma em 9-slice horizontal (`60/56/50/44 px`, preservando pontas no lugar de
-  recorte `region_rect`), 4 detalhes anatomicos no gecko (`32x32`), 4 formatos de particulas de `color_change` e
-  mini-sprites rotulados no `TutorialCard`.
-- Organizar o cenario em **4 biomas (`e0..e3`)** com parallax modular vertical de baixa saturacao/contraste, particulas
-  ambientais e **nevoa reativa na base** (oculta no modo `Zen` e sob `Global.sem_derrota`).
+- **Resolucao logica `360x640` (`2x` sobre `180x320`):** para acomodar o nivel de detalhe 16-bit SNES/GBA aprovado
+  (olhos expressivos, cauda espiral, ilhotas organicas com cogumelos/cristais/flores, biomas detalhados e logo arcade)
+  sem perda nem borrao, a resolucao logica passa para **`360x640`** (`keep_width`, `Nearest`,
+  `scale_mode = "integer"`), garantindo escala inteira exata em `720p` (`2x`), `1080p` (`3x`) e `1440p` (`4x`).
+- **Identidade, paleta e pipeline:** adotar estetica pixel art **16-bit SNES/GBA luminosa e carismatica** ancorada nas
+  referencias visuais aprovadas em `assets/src/ref-estilo-dono.jpg` e `assets/src/refs/`
+  (`gecko-bipede-chibi-ref.jpg`, `biomas-4-estagios-ref.jpg`, `ilhotas-powerups-ref.jpg`, `menu-mockup-ref.jpg`),
+  produzida no fluxo de 2 etapas + acabamento manual (`ADR 0004`), com contorno escuro limpo `#161822`, sombreado
+  quente e paleta de **32 cores unicas** ancorada nos 4 matizes de `scripts/Enums.gd` (`#f6db61`, `#79cf5a`, `#5987e9`,
+  `#ec4848`) mais 3 tons de terra/rocha organica para ilhotas flutuantes, garantindo contraste **WCAG AA >= 4.5:1** em
+  todos os pares de texto/UI (com contorno `#161822` e faixa `#161822` a `70%` no HUD sobre fundos claros).
+- **Acessibilidade sem cor (`#41`) e Gecko bipede chibi em `360x640`:** implementar acessibilidade sem cor (issue #41)
+  em quatro frentes sincronizadas e distinguiveis em escala de cinza a `360 px`:
+  - plataformas como **ilhotas flutuantes de terra/rocha** (`36-44 px` de altura visual, 9-slice `120/112/100/88 px` —
+    `2x` de `60/56/50/44 px`, endcaps `20 px`, topo pisavel e `ICONE_FOLGA = 4.0 px` proporcionais) com cobertura
+    colorida derramando na borda, micro-ornamentos no topo (grama/folhas, mel/florzinhas, gelo/cristais,
+    vermelho/cogumelos), 3 estagios de rachadura e faixa arco-iris na ciclagem (canais isolados de `PlatformBlink`);
+  - gecko **`64x64 px`** (`GHOST_HALF_WIDTH = 32.0`), **bipede (em pe sobre as duas patas traseiras) em todas as
+    poses** (`idle`, `run`, `jump`, `fall`, `lose`, `color_change`) com proporcao **chibi `1:1` cabeca/corpo**, olhoes
+    grandes esbugalhados com pupilas levemente desalinhadas (expressao fofa e confusa), cauda enrolada em espiral,
+    **`lose`** de cabeca para baixo com olhos em espiral e linguinha, **`color_change`** arco-iris com olhos
+    estrelados e brilhos dourados, e as **4 marcas `#41` sutis** aprovadas (amarelo: manchas solares; verde: brotinho
+    de 2 folhas na cabeca; azul: cristais de gelo no dorso/cabeca; vermelho: espinhos dorsais fofos);
+  - particulas de `color_change` (`8x8`–`10x10 px`), power-ups `32x32 px`, ilustracoes dos 5 modos `128x128 px` e
+    mini-sprites rotulados no `TutorialCard`.
+- **4 biomas luminosos:** organizar o cenario em **`e0` Floresta e Cachoeira, `e1` Ceu Azul e Nuvens, `e2` Por do Sol
+  roxo-laranja com montanhas e `e3` Noite Estrelada e Aurora** com alternancia ciclica por distancia (`2.400 px` em
+  `360x640`, `2x` de `1.200 px`) no `Zen` e pos-plato, `default_clear_color = #1f2738` e **nevoa reativa na base**
+  (oculta no modo `Zen` e sob `Global.sem_derrota`).
 
 ### 2. Troca comercial da fonte (`alterebro-pixel-font.ttf` -> `m5x7`)
 
 - Substituir `fonts/alterebro-pixel-font.ttf` (**CC BY-NC**, bloqueada para uso comercial) por **`m5x7`** (Daniel
-  Linssen, **CC0 1.0**, tamanho nativo `16 px`, proporcao 5x7), preservando integralmente
-  [ADR 0002](0002-tela-mobile-largura-180.md), `UiHelpers.FONTE_NATIVO = 16`, `TAMANHOS_UI = [16, 32]`
-  (`test/test_ui_tamanhos.gd`) e import sem antialiasing/hinting/subpixel (`antialiasing = 0`, `hinting = 0`,
-  `subpixel_positioning = 0`, `oversampling = 1.0`).
+  Linssen, **CC0 1.0**, tamanho nativo `16 px`, proporcao 5x7), com `UiHelpers.FONTE_NATIVO = 16`,
+  **`TAMANHOS_UI = [32, 64]`** (ou `[16, 32, 64]` — texto principal **`32 px` = `2x` inteiro exato** e titulo/`Play`
+  **`64 px` = `4x` inteiro exato** em `360x640`, zero fracao de pixel; `test/test_ui_tamanhos.gd` atualizado na
+  migracao) e import sem antialiasing/hinting/subpixel (`antialiasing = 0`, `hinting = 0`, `subpixel_positioning = 0`,
+  `oversampling = 1.0`).
 - Em caso de divergencia metrica na importacao real, adotar as alternativas comerciais pre-qualificadas em ordem:
   `m3x6` (**CC0 1.0**, nativo `16 px`) ou `Tiny5` / `Silkscreen` (**SIL OFL 1.1**, nativo `8 px`, multiplos inteiros
-  exatos em `16 px` e `32 px`).
+  exatos em `32 px` = `4x` e `64 px` = `8x`).
 
-### 3. Remodelagem do menu e estado dos slots reservados (E5 e E8)
+### 3. Remodelagem do menu em `360x640` e estado dos slots reservados (E5 e E8)
 
-- Remodelar o menu como um **bloco unificado centrado (`H_BLOCO = 278 px`)** dentro da `safe_area` para `180x320` e
-  `180x400+`, conforme a tabela de coordenadas exatas de `docs/planejamento-design/direcao-de-arte.md` (secao 5.3):
-  Logo `"GECKO JUMP"`, `Play` (normal `124x36` e estendido `148x36` para `"Ja jogado hoje"`), `Modo: <nome>` (`148x26`),
-  `CardPlacar` (`Last`/`Best`, `164x42`), `Opcoes` (`132x26`), slot `Ranking` (E5, `132x26`) e slot `Remover anuncios`
-  (E8, `148x26`), todos mutuamente disjuntos, com folga >= `2 px` e alvos >= `24x24`.
+- Remodelar o menu como um **bloco unificado centrado (`H_BLOCO = 556 px`, `y0 = 42` em `360x640`)** — escala exata
+  `2x` sobre `180x320` — dentro da `safe_area` para `360x640` e `360x800+`, conforme a tabela de coordenadas exatas de
+  `docs/planejamento-design/direcao-de-arte.md` (secao 5.3): Logo `"GECKO JUMP"` (`312x96`), `Play` (normal `248x72` e
+  estendido `296x72` para `"Ja jogado hoje"`), `Modo: <nome>` (`296x52`), `CardPlacar` (`328x84`, `4 px` entre `Last` e
+  `Best`), `Opcoes` (`264x52`), slot `Ranking` (E5, `264x52`) e slot `Remover anuncios` (E8, `296x52`), todos mutuamente
+  disjuntos, com folgas `>= 12 px` e alvos `>= 48x48`.
 - **Estado do slot `Remover anuncios` (E8) antes do E8 (decisao aprovada — Opcao A):** manter o **espaco reservado
   vazio** no menu durante o E6 e a publicacao gratuita do E7 no itch.io, enquanto o **ativo visual completo** (botao
   9-slice + icone) permanece pronto no kit UI para ativacao direta no E8 sem deslocar nenhum outro controle. O slot
@@ -136,13 +167,17 @@ integralmente suas garantias:
 
 ## Consequencias
 
-- **Positivas:** elimina risco juridico antes das entregas comerciais E7/E8; congela geometria unica do menu para E6,
-  E5 e E8 sem retrabalho de coordenadas; garante continuidade musical entre partidas e feedback imediato do slider
-  `Music` na pausa; formaliza plano B (`AudioStreamSynchronized`) contra riscos de Web/WASM.
-- **Negativas / trade-offs:** a remodelagem completa do menu exige atualizar os testes GUT de `Rect2`
-  (`test/test_stage_hud.gd`, `test/test_stage_faixa_placar.gd`, `test/test_modo_botao.gd`, `test/test_opcoes_botao.gd`),
-  `test/test_ui_tamanhos.gd` e os roteiros `test/smoke/*.smoke.json` que clicam coordenadas do menu; manter a musica
-  atenuada na pausa exige cuidar explicitamente do silencio em segundo plano no mobile/web.
+- **Positivas:** elimina risco juridico antes das entregas comerciais E7/E8; garante resolucao `360x640` (`2x` sobre
+  `180x320`) com escala inteira exata em 720p/1080p/1440p e nitidez suficiente para a estetica 16-bit SNES/GBA e o
+  camaleao bipede chibi aprovados; congela geometria unica do menu para E6, E5 e E8 sem retrabalho de coordenadas;
+  garante continuidade musical entre partidas e feedback imediato do slider `Music` na pausa; formaliza plano B
+  (`AudioStreamSynchronized`) contra riscos de Web/WASM.
+- **Negativas / trade-offs:** a evolucao para `360x640` exige uma entrega dedicada de migracao de codigo, fisica,
+  camera e UI antes da integracao dos sprites finais; a remodelagem completa do menu exige atualizar os testes GUT de
+  `Rect2` (`test/test_stage_hud.gd`, `test/test_stage_faixa_placar.gd`, `test/test_modo_botao.gd`,
+  `test/test_opcoes_botao.gd`), `test/test_ui_tamanhos.gd` (`TAMANHOS_UI = [32, 64]` ou `[16, 32, 64]`) e os roteiros
+  `test/smoke/*.smoke.json` que clicam coordenadas do menu; manter a musica atenuada na pausa exige cuidar
+  explicitamente do silencio em segundo plano no mobile/web.
 - **Riscos aceitos:** comportamento real de `AudioStreamInteractive` e do desbloqueio WebAudio em navegadores moveis
   depende de validacao no export Web da entrega de musica (mitigado pelo fallback `AudioStreamSynchronized` com a mesma
   interface).

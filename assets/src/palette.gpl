@@ -1,0 +1,44 @@
+GIMP Palette
+Name: Gecko Jump E6 (32 cores)
+Columns: 8
+# Paleta oficial de 32 cores do Gecko Jump (docs/planejamento-design/direcao-de-arte.md)
+# Neutros e Contorno (5)
+ 22  24  34	ink_contorno
+ 31  39  56	painel_escuro
+ 59  70  84	ui_desabilitado
+212 224 230	ui_texto_sec
+255 253 245	branco_texto
+# Gameplay Amarelo (3)
+255 244 184	amarelo_luz
+246 219  97	amarelo_base
+196 143  41	amarelo_sombra
+# Gameplay Verde (3)
+190 242 151	verde_luz
+121 207  90	verde_base
+ 63 143  66	verde_sombra
+# Gameplay Azul (3)
+166 200 255	azul_luz
+ 89 135 233	azul_base
+ 48  80 168	azul_sombra
+# Gameplay Vermelho (3)
+255 155 144	vermelho_luz
+236  72  72	vermelho_base
+158  36  51	vermelho_sombra
+# Terra / Rocha Organica (3)
+168 115  73	terra_luz
+120  75  46	terra_base
+ 71  43  27	terra_sombra
+# UI e Destaque (6)
+ 91 138  74	ui_btn_luz
+ 61 107  53	ui_btn_base
+ 39  74  36	ui_btn_sombra
+201 119  46	ui_cta_luz
+156  82  27	ui_cta_base
+110  54  17	ui_cta_sombra
+# Biomas Luminosos e Nevoa (6)
+ 62 125  90	b0_floresta
+ 83 166 168	b0_agua
+109 180 232	b1_ceu
+107  75 130	b2_roxo
+235 139  84	b2_laranja
+154 176 201	nevoa_brilho
