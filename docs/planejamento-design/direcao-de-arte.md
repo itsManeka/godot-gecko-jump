@@ -1,29 +1,64 @@
 # Direção de Arte e Áudio — Gecko Jump (E6)
 
-Especificação visual, sonora e de licenciamento definitiva do **Gecko Jump** para o marco **E6** (issue `#18`), consolidando identidade visual **16-bit SNES/GBA luminosa e carismática** (referência de estilo em `assets/src/ref-estilo-dono.jpg` e provas visuais aprovadas em `assets/src/refs/`), paleta de 32 cores únicas com contraste WCAG AA (`>= 4.5:1`), acessibilidade sem cor (issue `#41`), sprites de gameplay, 4 biomas luminosos com parallax e névoa reativa, tipografia comercial livre, kit UI em pixel art, remodelagem completa do menu com reserva de espaço para **Ranking (E5)** e **Remover anúncios (E8)**, direção de SFX (issues `#13`, `#43`), arquitetura de música dinâmica persistente (`ADR 0015`) e política de licenças comerciais (E7/E8).
+Especificação visual, sonora e de licenciamento definitiva do **Gecko Jump** para o marco **E6** (issue `#18`), consolidando identidade visual **16-bit SNES/GBA luminosa e carismática** (referência de estilo em `assets/src/ref-estilo-dono.jpg` e provas visuais aprovadas em `assets/src/refs/`), paleta de trabalho por rampas de material com contraste WCAG AA (`>= 4.5:1`) nos tokens de UI, acessibilidade sem cor (issue `#41`), sprites de gameplay, 4 biomas luminosos com parallax e névoa reativa, tipografia comercial livre, kit UI em pixel art, remodelagem completa do menu com reserva de espaço para **Ranking (E5)** e **Remover anúncios (E8)**, direção de SFX (issues `#13`, `#43`), arquitetura de música dinâmica persistente (`ADR 0015`) e política de licenças comerciais (E7/E8).
 
 Base técnica evoluída (`ADR 0015` sobre `ADR 0002`): largura lógica fixa de **`360 px`** (fator exato `2×` sobre `180×320`), altura visível mínima `640 px` expandida em aparelhos altos (`360×800` em 1080×2400, `360×924+`), `keep_width`, pixel quadrado, filtro `Nearest` (`default_texture_filter = 0`) e escala inteira exata nos celulares-alvo (`720p = 2×`, `1080p = 3×`, `1440p = 4×`). Fontes editáveis em Aseprite vivem isoladas em `assets/src/` (`ADR 0004`).
 
 ---
 
-## 1. Identidade visual e paleta (32 cores)
+## 1. Identidade visual e paleta de trabalho
 
 ### 1.1 Estética, resolução `360×640` e regras de leitura
 
 - **Resolução lógica `360×640` (`2×` sobre `180×320`):** para acomodar o nível de detalhe 16-bit SNES/GBA aprovado (olhos expressivos, cauda espiral, ilhotas orgânicas com micro-ornamentos, biomas detalhados e logo arcade) sem perda nem borrão, a resolução lógica passa de `180×320` para **`360×640`** (`stretch/aspect = "keep_width"`, `scale_mode = "integer"`, filtro `Nearest`). A escala inteira exata fica preservada em todos os alvos mobile: `720 / 360 = 2×` (`720×1280` → `360×640`), `1080 / 360 = 3×` (`1080×2400` → `360×800`) e `1440 / 360 = 4×`. A migração de código, física, câmera e UI para `360×640` ocorre em entrega própria antes da integração dos sprites finais (`ADR 0015`).
-- **Estilo:** Pixel art **16-bit SNES/GBA luminosa e carismática**, guiada pelas referências oficiais aprovadas em `assets/src/ref-estilo-dono.jpg` e `assets/src/refs/`, com silhuetas arredondadas e expressivas legíveis sem zoom, contorno escuro limpo (`#161822`, índigo-carvão em vez de preto chapado puro) e sombreado quente em 3 tons por cor de gameplay (luz / base / sombra), além de 3 tons próprios de terra/rocha orgânica para a base das ilhotas flutuantes.
+- **Estilo:** Pixel art **16-bit SNES/GBA luminosa e carismática**, guiada pelas referências oficiais aprovadas em `assets/src/ref-estilo-dono.jpg` e `assets/src/refs/`, com silhuetas arredondadas e expressivas legíveis sem zoom, contorno escuro limpo (`#052018`, verde-carvão em vez de preto chapado puro) e sombreado em rampa de 4–5 tons por material com variação de matiz (seção 1.2 e guia da seção 1.5), além de 3 tons próprios de terra/rocha orgânica para a base das ilhotas flutuantes.
 - **Hierarquia visual obrigatória (preservando contraste sobre biomas luminosos):**
-  1. **Primeiro plano (gameplay — Gecko, ilhotas flutuantes, power-ups):** alta saturação, brilhos especulares claros (`*_luz`), base orgânica de terra/rocha (`terra_luz`/`terra_base`/`terra_sombra`) e **contorno escuro nítido `1 px` (`#161822`)** ao redor de toda a silhueta.
-  2. **Interface (HUD, botões, cards):** cores próprias de UI (`#3d6b35`, `#9c521b`, `#1f2738`) que nunca dependem das 4 cores das plataformas, com texto em `#fffdf5` / `#d4e0e6`. Sobre fundos claros dos biomas luminosos (`e1` Céu Azul e Nuvens, `e2` Pôr do Sol e trechos claros de `e0` água/cachoeira), o HUD usa obrigatoriamente **contorno `#161822`** e **faixa translúcida `#161822` a `70%`** para garantir contraste `>= 4.5:1`.
-  3. **Fundo (4 biomas luminosos e partículas ambientais):** paleta luminosa estilo SNES/GBA com contraste interno suave entre camadas de parallax (`<= 2.2:1`) e **ausência de contorno escuro `#161822`** nos elementos de cenário, permitindo que o primeiro plano contornado salte visualmente mesmo contra céu claro ou pôr do sol.
+  1. **Primeiro plano (gameplay — Gecko, ilhotas flutuantes, power-ups):** alta saturação, brilhos especulares claros (`*_luz`), base orgânica de terra/rocha (`terra_luz`/`terra_base`/`terra_sombra`) e **contorno escuro nítido `1 px` (`#052018`)** ao redor de toda a silhueta.
+  2. **Interface (HUD, botões, cards):** cores próprias de UI (`#3d6b35`, `#9c521b`, `#1f2738`) que nunca dependem das 4 cores das plataformas, com texto em `#fffdf5` / `#d4e0e6`. Sobre fundos claros dos biomas luminosos (`e1` Céu Azul e Nuvens, `e2` Pôr do Sol e trechos claros de `e0` água/cachoeira), o HUD usa obrigatoriamente **contorno `#052018`** e **faixa translúcida `#052018` a `70%`** para garantir contraste `>= 4.5:1`.
+  3. **Fundo (4 biomas luminosos e partículas ambientais):** paleta luminosa estilo SNES/GBA com contraste interno suave entre camadas de parallax (`<= 2.2:1`) e **ausência de contorno escuro `#052018`** nos elementos de cenário, permitindo que o primeiro plano contornado salte visualmente mesmo contra céu claro ou pôr do sol.
 
-### 1.2 Tabela completa da paleta (32 cores)
+### 1.2 Paleta de trabalho
 
-As 4 cores base de `scripts/Enums.gd` (`#f6db61`, `#79cf5a`, `#5987e9`, `#ec4848`) são mantidas como âncoras exatas. A paleta soma **exatamente 32 cores hexadecimais únicas**, incluindo os 3 tons de terra/rocha orgânica da base das ilhotas flutuantes e as cores dos 4 biomas luminosos e névoa. A cor histórica de botão `#5b8a4a` (`ressources/Button.tres`) é preservada como chanfro superior/preenchimento de slider (`ui_btn_luz`), enquanto o corpo dos botões evolui para `#3d6b35` (`ui_btn_base`) para atingir contraste WCAG AA `>= 4.5:1` (com `#ffffff`, `#5b8a4a` entregava apenas `4.05:1`).
+A paleta é **aberta e organizada por rampas de material**, não por uma contagem fixa de cores: cada material (pele do gecko, barriga, olho, cobertura de cada variante, terra) tem uma rampa de **4–5 tons** em que o matiz muda junto com a luminosidade (sombras puxam para o frio/saturado, luzes para o quente/amarelado), em vez de só clarear e escurecer a mesma cor. O arquivo `assets/src/palette.gpl` (formato GIMP Palette) é a fonte das cores aceitas na quantização; rampa nova entra nele quando o material correspondente é pintado e aprovado.
+
+#### Rampa aprovada: gecko (pele, barriga, olho, rubor)
+
+Medida na ref mestra (o contorno `#052018` vem dela) `assets/src/refs/gecko-idle-mestre.aseprite` (export `gecko-idle-mestre.png`, `64×64`). O matiz da pele vai de `162°` (sombra, teal) a `72°` (brilho, amarelo-limão), passando por `133°`, `103°` e `86°`.
+
+| Material | Tom | Hex | Uso |
+|---|---|---|---|
+| Contorno | `contorno` | `#052018` | Silhueta externa, `1 px` (ver contorno seletivo na seção 1.5) |
+| Pele | `verde 0 linha` | `#1f5c4a` | Linhas internas (braço, mão, espiral, seam da cauda) e menor tom da pele |
+| Pele | `verde 1 sombra` | `#4aae5f` | Sombra projetada (lado oposto à luz, base do corpo, pés) |
+| Pele | `verde 2 base` | `#7fdb5a` | Cor de preenchimento dominante |
+| Pele | `verde 3 luz` | `#b2ee62` | Topo da cabeça e lado voltado à luz |
+| Pele | `verde 4 brilho` | `#e2f88a` | Brilho especular no topo da cabeça e da cauda |
+| Barriga | `barriga sombra` | `#b4dc8a` | Sombra da barriga, base do peito |
+| Barriga | `barriga` | `#e3f5b0` | Preenchimento da barriga |
+| Olho | `olho sombra` | `#bccbd9` | Sombra do branco do olho (borda inferior) |
+| Olho | `olho branco` | `#fbfbef` | Esclera |
+| Rubor | `rubor` | `#f07f86` | Bochecha e interior da boca (acento único, não usar em outro material) |
+
+#### Âncoras de cor das variantes (`scripts/Enums.gd`)
+
+As 4 cores de gameplay seguem como âncoras exatas: são a identidade de cada variante de plataforma e de gecko, lidas do código no seguinte ponto:
+
+| Variante (`Enums.COLOR`) | Âncora | Linha em `scripts/Enums.gd` |
+|---|---|---|
+| `AMARELO` | `#f6db61` | `Enums.gd:26` |
+| `VERDE` | `#79cf5a` | `Enums.gd:28` |
+| `AZUL` | `#5987e9` | `Enums.gd:30` |
+| `VERMELHO` | `#ec4848` | `Enums.gd:32` |
+
+A rampa de 4–5 tons de cada variante (cobertura da plataforma e pele do gecko) parte da âncora acima como tom de base e é derivada seguindo a regra de matiz acima; o `palette.gpl` recebe os tons assim que a variante é pintada e aprovada. O verde do gecko (`#7fdb5a`) é a rampa aprovada da tabela anterior e não precisa coincidir com a âncora `#79cf5a` da plataforma verde.
+
+#### Tokens de UI, cenário e rampas legadas de 3 tons
+
+Os tokens abaixo continuam válidos e são os usados na prova de contraste da seção 1.3 (o único token alterado é `ink_contorno`, agora `#052018`; as razões da seção 1.3 que o envolvem foram recalculadas e seguem acima de `4.5:1`). Os tokens de neutros, UI e biomas estão no `palette.gpl`. As rampas legadas de 3 tons de gameplay (`*_luz` / `*_base` / `*_sombra`) e de terra seguem referenciadas nas seções 2 e 3 e ficam apenas nesta tabela, fora do `palette.gpl`, até a rampa nova do material correspondente ser pintada. A cor histórica de botão `#5b8a4a` (`ressources/Button.tres`) é preservada como chanfro superior/preenchimento de slider (`ui_btn_luz`), enquanto o corpo dos botões evolui para `#3d6b35` (`ui_btn_base`) para atingir contraste WCAG AA `>= 4.5:1` (com `#ffffff`, `#5b8a4a` entregava apenas `4.05:1`).
 
 | Grupo | Token | Hex | Luminância relativa (`L`) | Luma BT.709 (0–255) | Uso principal |
 |---|---|---|---:|---:|---|
-| **Neutros e Contorno (5)** | `ink_contorno` | `#161822` | `0.0094` | `24` | Contorno de sprites/texto/logo, fissuras, faixa/overlay translúcido (`70%`) |
+| **Neutros e Contorno (5)** | `ink_contorno` | `#052018` | `0.0113` | `26` | Contorno de sprites/texto/logo, fissuras, faixa/overlay translúcido (`70%`) |
 | | `painel_escuro` | `#1f2738` | `0.0203` | `39` | Fundo de cards/placar/modais, barras laterais (`default_clear_color`) e céu noturno `e3` |
 | | `ui_desabilitado` | `#3b4654` | `0.0595` | `69` | Fundo de botão desabilitado (`"Ja jogado hoje"`) e ranhura de cursor |
 | | `ui_texto_sec` | `#d4e0e6` | `0.7302` | `222` | Texto secundário, rótulo desabilitado, nuvens iluminadas e estrelas |
@@ -72,44 +107,82 @@ Cálculo pela fórmula oficial WCAG 2.1 de luminância relativa `L = 0.2126·R_l
 | Texto primário sobre CTA `Play` (`normal`) | `#fffdf5` (`branco_texto`) | `#9c521b` (`ui_cta_base`) | **5.67:1** | PASS (AA) |
 | Texto primário sobre CTA `Play` (`pressed`) | `#fffdf5` (`branco_texto`) | `#6e3611` (`ui_cta_sombra`) | **9.38:1** | PASS (AAA) |
 | Texto desabilitado sobre botão desabilitado (`"Ja jogado hoje"`) | `#d4e0e6` (`ui_texto_sec`) | `#3b4654` (`ui_desabilitado`) | **7.13:1** | PASS (AAA) |
-| Texto HUD com contorno escuro (`Pontos`, `PowerUpHud`, `TouchHint`) | `#fffdf5` (`branco_texto`) | `#161822` (`ink_contorno`) | **17.36:1** | PASS (AAA) |
+| Texto HUD com contorno escuro (`Pontos`, `PowerUpHud`, `TouchHint`) | `#fffdf5` (`branco_texto`) | `#052018` (`ink_contorno`) | **16.82:1** | PASS (AAA) |
 | Texto HUD direto sobre Bioma `e0` (*Floresta e Cachoeira* — copas) | `#fffdf5` (`branco_texto`) | `#3e7d5a` (`b0_floresta`) | **4.81:1** | PASS (AA) |
 | Texto HUD direto sobre Bioma `e2` (*Pôr do Sol* — topo roxo) | `#fffdf5` (`branco_texto`) | `#6b4b82` (`b2_roxo`) | **6.98:1** | PASS (AA) |
 | Texto HUD direto sobre Bioma `e3` (*Noite Estrelada e Aurora*) | `#fffdf5` (`branco_texto`) | `#1f2738` (`painel_escuro`) | **14.67:1** | PASS (AAA) |
 
-#### Prova de composição alfa da faixa/overlay (`#161822` a `70%`) sobre plataformas e fundos claros
+#### Prova de composição alfa da faixa/overlay (`#052018` a `70%`) sobre plataformas e fundos claros
 
-Para superfícies translúcidas (`COR_FUNDO_OVERLAY = #161822` a `70%` de opacidade, usado em `PauseOverlay`, `TouchHint`, faixa de HUD sobre fundos claros e overlays sobre o jogo), cada cor composta resulta da mistura sRGB 8-bit `round(0.70 · fg + 0.30 · bg)` (arredondamento half-up; em empates `.5`, como `#f6db61` e `#eb8b54`, o half-to-even varia no máximo `0.1` na razão, mantendo folga ampla acima de `4.5:1`). Sobre fundos claros dos biomas luminosos (`e1` céu azul/nuvens, `e2` horizonte laranja do pôr do sol, `e0` água/cachoeira) — onde o contraste direto de `#fffdf5` cairia para `2.21:1`–`2.79:1` — a combinação de **contorno `#161822`** com a **faixa `#161822` a `70%`** garante folga acima de `4.5:1` inclusive sobre nuvem branca:
+Para superfícies translúcidas (`COR_FUNDO_OVERLAY = #052018` a `70%` de opacidade, usado em `PauseOverlay`, `TouchHint`, faixa de HUD sobre fundos claros e overlays sobre o jogo), cada cor composta resulta da mistura sRGB 8-bit `round(0.70 · fg + 0.30 · bg)` (arredondamento half-up; em empates `.5`, como `#f6db61` e `#eb8b54`, o half-to-even varia no máximo `0.1` na razão, mantendo folga ampla acima de `4.5:1`). Sobre fundos claros dos biomas luminosos (`e1` céu azul/nuvens, `e2` horizonte laranja do pôr do sol, `e0` água/cachoeira) — onde o contraste direto de `#fffdf5` cairia para `2.21:1`–`2.79:1` — a combinação de **contorno `#052018`** com a **faixa `#052018` a `70%`** garante folga acima de `4.5:1` inclusive sobre nuvem branca:
 
-| Superfície atrás da faixa / overlay | Cor composta (`#161822` a `70%`) | Contraste com `#fffdf5` | Contraste com `#d4e0e6` | Status (`>= 4.5:1`) |
+| Superfície atrás da faixa / overlay | Cor composta (`#052018` a `70%`) | Contraste com `#fffdf5` | Contraste com `#d4e0e6` | Status (`>= 4.5:1`) |
 |---|---|---:|---:|---|
-| Plataforma Amarelo (`#f6db61`, pior caso de plataforma) | `#595335` | **7.60:1** | **5.75:1** | PASS |
-| Plataforma Verde (`#79cf5a`) | `#344f33` | **8.92:1** | **6.75:1** | PASS |
-| Plataforma Azul (`#5987e9`) | `#2a395e` | **11.17:1** | **8.46:1** | PASS |
-| Plataforma Vermelho (`#ec4848`) | `#56262d` | **12.05:1** | **9.12:1** | PASS |
-| Bioma `e0` água/cachoeira (`#53a6a8`) | `#28434a` | **10.35:1** | **7.83:1** | PASS |
-| Bioma `e1` céu azul (`#6db4e8`) | `#30475d` | **9.44:1** | **7.14:1** | PASS |
-| Bioma `e1` nuvem branca (`#fffdf5`, pior caso absoluto) | `#5c5d61` | **6.46:1** | **4.89:1** | PASS |
-| Bioma `e2` pôr do sol laranja (`#eb8b54`) | `#563b31` | **9.98:1** | **7.55:1** | PASS |
-| *Referência legada (`#161822` a `60%` sobre Amarelo)* | *`#70663b`* | ***5.65:1*** | — | *PASS* |
+| Plataforma Amarelo (`#f6db61`, pior caso de plataforma) | `#4d582e` | **7.50:1** | **5.67:1** | PASS |
+| Plataforma Verde (`#79cf5a`) | `#28552c` | **8.50:1** | **6.43:1** | PASS |
+| Plataforma Azul (`#5987e9`) | `#1e3f57` | **10.83:1** | **8.20:1** | PASS |
+| Plataforma Vermelho (`#ec4848`) | `#4a2c26` | **12.28:1** | **9.29:1** | PASS |
+| Bioma `e0` água/cachoeira (`#53a6a8`) | `#1c4843` | **10.02:1** | **7.58:1** | PASS |
+| Bioma `e1` céu azul (`#6db4e8`) | `#244c56` | **9.19:1** | **6.96:1** | PASS |
+| Bioma `e1` nuvem branca (`#fffdf5`, pior caso absoluto) | `#50625a` | **6.37:1** | **4.82:1** | PASS |
+| Bioma `e2` pôr do sol laranja (`#eb8b54`) | `#4a402a` | **10.02:1** | **7.58:1** | PASS |
+| *Referência legada (`#052018` a `60%` sobre Amarelo)* | *`#656b35`* | ***5.56:1*** | — | *PASS* |
 
-No menu remodelado, o cartão do placar `Last`/`Best` usa painel sólido `#1f2738` (ou `92%` sobre `#161822`, contraste mínimo `>= 13.0:1`), mantendo folga ainda maior sobre qualquer plataforma animada ou bioma luminoso ao fundo.
+No menu remodelado, o cartão do placar `Last`/`Best` usa painel sólido `#1f2738` (ou `92%` sobre `#052018`, contraste mínimo `>= 13.0:1`), mantendo folga ainda maior sobre qualquer plataforma animada ou bioma luminoso ao fundo.
 
 ### 1.4 Pipeline oficial de produção de arte (2 etapas) e catálogo de referências aprovadas
 
 Conforme `ADR 0004`, o fluxo de rascunho assistido por IA opera em **2 etapas** antes do acabamento manual do dono no Aseprite local (`assets/src/` permanece fora do `.pck` via `assets/src/.gdignore`):
 
 1. **Etapa 1 — Geração visual guiada por referências:** geração de folhas de sprites, ilhotas, power-ups, ui e biomas sobre **fundo neutro sólido**, ancorada diretamente nas provas visuais aprovadas pelo dono em `assets/src/` e `assets/src/refs/`.
-2. **Etapa 2 — Processamento e montagem editável no Aseprite local:** recorte dos quadros, remoção de fundo sólido, alinhamento estrito na grade/pivô de destino (`64×64`, `96×40`, `32×32`, `128×128`, `360×480`), limpeza de contorno `#161822` e quantização para a paleta oficial de 32 cores (`assets/src/palette.gpl`), montagem dos arquivos editáveis **`.aseprite`** com camadas/tags e exportação **PNG + JSON** sem interpolação (`Nearest`).
+2. **Etapa 2 — Processamento e montagem editável no Aseprite local:** recorte dos quadros, remoção de fundo sólido, alinhamento estrito na grade/pivô de destino (`64×64`, `96×40`, `32×32`, `128×128`, `360×480`), limpeza de contorno `#052018` e quantização para a paleta de trabalho (`assets/src/palette.gpl`), montagem dos arquivos editáveis **`.aseprite`** com camadas/tags e exportação **PNG + JSON** sem interpolação (`Nearest`).
 3. **Acabamento manual do dono:** revisão final quadro a quadro, ajuste fino de expressões/silhuetas e aprovação no jogo antes do embarque no `.pck`.
 
 | Referência aprovada | Caminho no repositório | Escopo ancorado |
 |---|---|---|
-| Estilo geral 16-bit | `assets/src/ref-estilo-dono.jpg` | Identidade luminosa SNES/GBA, contorno `#161822` e sombreado quente |
+| Estilo geral 16-bit | `assets/src/ref-estilo-dono.jpg` | Identidade luminosa SNES/GBA, contorno `#052018` e sombreado quente |
 | Camaleão bípede chibi | `assets/src/refs/gecko-bipede-chibi-ref.jpg` | Proporção chibi `1:1`, postura bípede, olhões desalinhados, `lose` invertido, `color_change` estrelado e marcas `#41` |
 | Ilhotas e power-ups | `assets/src/refs/ilhotas-powerups-ref.jpg` | Base orgânica de terra/rocha, coberturas e micro-ornamentos das 4 cores e ícones dos 3 power-ups |
 | 4 Biomas | `assets/src/refs/biomas-4-estagios-ref.jpg` | Paleta luminosa e composição dos estágios `e0` Floresta/Cachoeira, `e1` Céu Azul/Nuvens, `e2` Pôr do Sol e `e3` Noite/Aurora |
 | Mockup do menu | `assets/src/refs/menu-mockup-ref.jpg` | Logo arcade `"GECKO JUMP"`, hierarquia visual do menu remodelado, cards e botões 9-slice |
+
+### 1.5 Guia de estilo: luz, rampas, contorno e proporções
+
+A ref mestra do estilo é **`assets/src/refs/gecko-idle-mestre.aseprite`** (idle `64×64` acabado pelo dono, export `gecko-idle-mestre.png` na mesma pasta). Toda variante, pose e peça nova é medida contra ela, não contra a rodada anterior.
+
+**Luz.** Uma fonte só, **vinda do alto à esquerda**: o brilho (`verde 4`) e a luz (`verde 3`) ficam no topo e no lado esquerdo da cabeça e da cauda; a sombra (`verde 1`) cai na base do corpo, no lado direito e nos pés; o meio-tom (`verde 2`) preenche o resto. Nenhum tom isolado: cada transição passa pelo tom vizinho da rampa, sem pular tons e sem dither dentro do gecko.
+
+**Rampas.** 4–5 tons por material, com o matiz acompanhando a luminosidade (seção 1.2): sombra mais fria e saturada, luz mais quente e clara. Um material não empresta tons de outro (a barriga tem rampa própria; o rubor é acento de `1` cor). O gecko usa só as cores da rampa aprovada; variante nova de cor parte da âncora de `scripts/Enums.gd` (`Enums.gd:26`, `:28`, `:30`, `:32`).
+
+**Contorno seletivo.** O contorno escuro `#052018` (verde-carvão da ref mestra, ver seção 1.1) tem `1 px` e fecha **só a silhueta externa**. Linhas internas (braço, mão, dobra da cauda, espiral) usam o **menor tom da própria rampa do material** (`#1f5c4a` no gecko), nunca `#052018`, para não retalhar a forma. O olho tem anel escuro próprio ao redor do branco. Fundo, cenário e névoa não levam contorno (seção 1.1).
+
+**Proporções do gecko (ref mestra, px no frame `64×64`).** Medidas por script sobre o export da mestra; pés na última linha de pixel `y = 59`, silhueta ocupa `x = 10..52` e `y = 9..59`.
+
+| Medida | Valor (px) | Observação |
+|---|---:|---|
+| Altura total | `51` | `y = 9..59` |
+| Largura total | `43` | `x = 10..52` (cauda incluída) |
+| Cabeça: altura | `27` | do topo ao queixo (`y = 35`) |
+| Cabeça: largura | `31` | maior linha acima do queixo |
+| Corpo: altura | `18` | do queixo ao topo das pernas |
+| Corpo: largura | `25` | `x >= 25`, sem a cauda |
+| Pernas: comprimento | `6` | linhas com dois segmentos separados, até os pés |
+| Braço: comprimento | `12` | do ombro (`y = 37`) à linha da mão (`y = 48`) |
+| Olho grande: diâmetro | `11` | com o anel escuro |
+| Olho de trás: altura × largura visíveis | `11 × 6` | centro em `(48.5, 22.0)` |
+| Espiral da cauda: diâmetro | `9` | pela linha interna `#1f5c4a`, `x = 13..21`, `y = 40..48` |
+| Cauda: largura × altura | `15 × 19` | `x = 10..24`, `y = 36..54` |
+
+A cabeça ocupa cerca de `53%` da altura total (`27` de `51`) e a razão cabeça/corpo em altura é `27:18`; é essa a leitura chibi a preservar nas outras poses e variantes.
+
+**Nomes de arquivo de arte** (fixados para as entregas seguintes; `<cor>` é `amarelo`, `verde`, `azul` ou `vermelho`):
+
+| Arquivo | Conteúdo |
+|---|---|
+| `gecko-<cor>.png` | Folha do gecko da variante, grade `64×64` |
+| `plataforma-<cor>.png` | Peça mestre da ilhota da variante, `96×40` |
+| `prova-cinza-41.png` | Prancha de leitura em escala de cinza das 4 variantes (acessibilidade sem cor, seção 2) |
+| `menu-rascunho.png` | Rascunho do menu remodelado (seção 5) |
 
 ---
 
@@ -126,7 +199,7 @@ Nenhuma informação essencial de gameplay depende exclusivamente de matiz. Cada
 
 ### Regras de preservação do `#41`
 
-1. **Fim do tingimento chapado (`modulate`):** tanto o Gecko quanto as ilhotas abandonam o tingimento de sprite branco por `Enums.get_cor(...)`. Cada variante é desenhada diretamente com sua rampa de 3 cores + contorno `ink_contorno` (`#161822`), preservando olhos grandes (`#fffdf5` + pupila/espiral `#161822`), base de terra (`terra_luz/base/sombra`), brilhos quentes e marcas táteis sem lavagem de cor.
+1. **Fim do tingimento chapado (`modulate`):** tanto o Gecko quanto as ilhotas abandonam o tingimento de sprite branco por `Enums.get_cor(...)`. Cada variante é desenhada diretamente com sua rampa de 3 cores + contorno `ink_contorno` (`#052018`), preservando olhos grandes (`#fffdf5` + pupila/espiral `#052018`), base de terra (`terra_luz/base/sombra`), brilhos quentes e marcas táteis sem lavagem de cor.
 2. **Validação obrigatória em escala de cinza:** a prancha de referência em escala de cinza (`assets/src/direcao-arte-cinza-4x.png`) comprova que todas as 4 ilhotas (`120 px` e `88 px`) e os 4 camaleões bípedes chibi são diferenciáveis mesmo sem saturação cromática.
 3. **Tutorial bilíngue cor + padrão:** em `scenes/TutorialCard.gd`, os retângulos chapados das amostras (`=` igual / `X` diferente) e dos 4 quadrados da legenda passam a exibir mini-sprites das ilhotas e do gecko com suas marcas reais acompanhados dos nomes (`amarelo`, `verde`, `azul`, `vermelho`).
 
@@ -134,11 +207,11 @@ Nenhuma informação essencial de gameplay depende exclusivamente de matiz. Cada
 
 ## 3. Especificação de sprites e animações
 
-Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (`seção 1.4`, `ADR 0004`) ancorado nas referências oficiais de `assets/src/refs/` e na paleta de 32 cores (`assets/src/palette.gpl`).
+Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (`seção 1.4`, `ADR 0004`) ancorado nas referências oficiais de `assets/src/refs/` e na paleta de trabalho (`assets/src/palette.gpl`).
 
 ### 3.1 Gecko (`scenes/Player.tscn`, `scenes/Player.gd`)
 
-- **Design do personagem (`assets/src/refs/gecko-bipede-chibi-ref.jpg` e `assets/src/ref-estilo-dono.jpg`):** camaleão **bípede (em pé sobre as duas patas traseiras) em todas as poses**, com proporção **chibi `1:1` cabeça/corpo**, **olhões grandes esbugalhados com pupilas levemente desalinhadas** (`#fffdf5` + `#161822`) para uma expressão fofa e confusa, **cauda enrolada em espiral**, contorno limpo `#161822` e sombreado quente em 3 tons. As marcas `#41` sutis por cor (manchas solares no amarelo, brotinho de 2 folhas na cabeça no verde, cristais de gelo no dorso/cabeça no azul e espinhos dorsais fofos no vermelho) preservam intacta a silhueta chibi bípede.
+- **Design do personagem (`assets/src/refs/gecko-bipede-chibi-ref.jpg` e `assets/src/ref-estilo-dono.jpg`):** camaleão **bípede (em pé sobre as duas patas traseiras) em todas as poses**, com proporção **chibi `1:1` cabeça/corpo**, **olhões grandes esbugalhados com pupilas levemente desalinhadas** (`#fffdf5` + `#052018`) para uma expressão fofa e confusa, **cauda enrolada em espiral**, contorno limpo `#052018` e sombreado quente em 3 tons. As marcas `#41` sutis por cor (manchas solares no amarelo, brotinho de 2 folhas na cabeça no verde, cristais de gelo no dorso/cabeça no azul e espinhos dorsais fofos no vermelho) preservam intacta a silhueta chibi bípede.
 - **Tamanho do frame:** **`64×64 px`** exatos (`2×` sobre `32×32 px`), pivô no centro `(32, 32)`. Prepara e preserva proporcionalmente na migração `360×640`:
   - **`GHOST_HALF_WIDTH = 32.0`** (`2×` de `16.0`) para wrap horizontal contínuo nas bordas de `PlayArea.LARGURA = 360`;
   - `CollisionShape2D` do corpo e `DetectorPlataforma` escalados `2×` na entrega de migração para `360×640`, mantendo a base do pé alinhada ao mesmo ponto de contato em todas as poses (`y = 60` do frame `64×64`, `y = +28 px` a partir do pivô).
@@ -160,7 +233,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
 ### 3.2 Plataformas (`scenes/Platform.tscn`, `scenes/Platform.gd`)
 
 - **Visual de ilhotas flutuantes (`assets/src/refs/ilhotas-powerups-ref.jpg` e `assets/src/ref-estilo-dono.jpg`):**
-  - Cada plataforma é uma **ilhota flutuante de terra/rocha orgânica** (`terra_luz`, `terra_base`, `terra_sombra`) com **base arredondada pendurada** (incluindo 1–2 micro-pedrinhas soltas sob a base, puramente visuais) e **cobertura colorida grossa derramando pela borda** da terra com contorno `#161822`.
+  - Cada plataforma é uma **ilhota flutuante de terra/rocha orgânica** (`terra_luz`, `terra_base`, `terra_sombra`) com **base arredondada pendurada** (incluindo 1–2 micro-pedrinhas soltas sob a base, puramente visuais) e **cobertura colorida grossa derramando pela borda** da terra com contorno `#052018`.
   - **Micro-ornamentos no topo (discretos, `4–8 px`, sem nunca parecer obstáculo nem invadir o espaço de power-up):**
     - **Verde:** grama verde + folhinhas e vinhas curtas pendentes na terra.
     - **Vermelho:** cobertura vermelha + micro-cogumelos vermelhos com pintas brancas.
@@ -174,7 +247,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
     - **Miolo repetível:** **`56 px`** de largura no mestre (`axis_stretch_horizontal = TILE`), renderizado com largura útil de **`80 px` (`120`), `72 px` (`112`), `60 px` (`100`) e `48 px` (`88`)** — todos múltiplos pares que repetem cobertura, micro-ornamentos e base de terra sem distorção nem corte de borda.
     - **Ponta direita (endcap):** **`20 px`** de largura fixa (`patch_margin_right = 20`), fechando simetricamente a borda da ilhota.
 - **Desmoronamento em 3 estágios de rachadura e ilhota partida (`AVISO_TREMOR_S = 0.3`):**
-  - Sobreposição por um nó filho dedicado **`OverlayRachadura`** (`9-slice` horizontal com os mesmos `20 px` de margem lateral, desenhado em `ink_contorno` `#161822` + destaque `1–2 px` `terra_sombra`/`branco_texto` para leitura imediata na cobertura e na terra):
+  - Sobreposição por um nó filho dedicado **`OverlayRachadura`** (`9-slice` horizontal com os mesmos `20 px` de margem lateral, desenhado em `ink_contorno` `#052018` + destaque `1–2 px` `terra_sombra`/`branco_texto` para leitura imediata na cobertura e na terra):
     - **Estágio 0 (intacta):** `OverlayRachadura.visible = false`.
     - **Estágio 1 (início do desmoronamento, `_tempo_restante > AVISO_TREMOR_S`):** fissura capilar inicial descendo da cobertura para a terra, sinalizando imediatamente após o pouso que a ilhota vai ceder.
     - **Estágio 2 (janela de tremor, `0.10 s < _tempo_restante <= AVISO_TREMOR_S = 0.30 s`):** rachaduras ramificadas atravessando cobertura e terra + tremor horizontal `Visual.position.x = ±2.0 px` (`TREMOR_AMPLITUDE` proporcional `2×`, 20 ciclos/s).
@@ -191,17 +264,17 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
 
 ### 3.3 Power-ups (`PowerUpIcone`, `PowerUpHud`), Modos (`ModosScreen`) e Ícone (`icon.png`)
 
-- **Ícones `32×32` de power-up (`ADR 0014`, `assets/src/refs/ilhotas-powerups-ref.jpg`):** usados de forma idêntica sobre a plataforma (`base 4 px acima do topo`) e no `PowerUpHud` (`y = s_top + 60..92`). Todos possuem **contorno `#161822`** e silhueta imediatamente distinguível em qualquer fundo ou escala de cinza:
-  - **`camaleao` (`32×32`):** **estrela arco-íris** de 5 pontas com contorno `#161822`, núcleo brilhante `branco_texto`/`amarelo_luz` e faixas das 4 cores da paleta (`vermelho_base`, `amarelo_base`, `verde_base`, `azul_base`).
-  - **`segunda_chance` (`32×32`):** **coração vermelho** (`vermelho_base` com brilho `vermelho_luz` e sombra `vermelho_sombra`) com o **rostinho verde do gecko** (`verde_base` + olhos `branco_texto`/`ink_contorno`) no centro e contorno `#161822`.
-  - **`desacelera` (`32×32`):** **cronômetro com asinhas** (corpo redondo em `azul_luz`/`branco_texto`, ponteiros e botão superior em `ink_contorno`, duas asinhas brancas laterais em `branco_texto`/`nevoa_brilho`) e contorno `#161822`.
-  - **Fallback para tipos de teste:** mantém geração determinística em `#fffdf5` sobre `#161822` (compatível com `PowerUpDesenho`).
+- **Ícones `32×32` de power-up (`ADR 0014`, `assets/src/refs/ilhotas-powerups-ref.jpg`):** usados de forma idêntica sobre a plataforma (`base 4 px acima do topo`) e no `PowerUpHud` (`y = s_top + 60..92`). Todos possuem **contorno `#052018`** e silhueta imediatamente distinguível em qualquer fundo ou escala de cinza:
+  - **`camaleao` (`32×32`):** **estrela arco-íris** de 5 pontas com contorno `#052018`, núcleo brilhante `branco_texto`/`amarelo_luz` e faixas das 4 cores da paleta (`vermelho_base`, `amarelo_base`, `verde_base`, `azul_base`).
+  - **`segunda_chance` (`32×32`):** **coração vermelho** (`vermelho_base` com brilho `vermelho_luz` e sombra `vermelho_sombra`) com o **rostinho verde do gecko** (`verde_base` + olhos `branco_texto`/`ink_contorno`) no centro e contorno `#052018`.
+  - **`desacelera` (`32×32`):** **cronômetro com asinhas** (corpo redondo em `azul_luz`/`branco_texto`, ponteiros e botão superior em `ink_contorno`, duas asinhas brancas laterais em `branco_texto`/`nevoa_brilho`) e contorno `#052018`.
+  - **Fallback para tipos de teste:** mantém geração determinística em `#fffdf5` sobre `#052018` (compatível com `PowerUpDesenho`).
 - **Estilo do `PowerUpHud` (`y = s_top + 60..92`):**
-  - Barra de duração `80×8 px` (`x = 44..124`, `y = s_top + 72..80`): moldura `1–2 px` `ink_contorno` `#161822`, trilho vazio `painel_escuro` `#1f2738`, preenchimento `branco_texto` `#fffdf5` com sombra inferior `2 px` `ui_texto_sec` esvaziando estritamente da direita para a esquerda (leitura por extensão).
-  - Segundos restantes (`x = 132..164`) e relógio `m:ss` do modo Contra o tempo (`x = 276..356`): fonte `32 px`, `branco_texto` `#fffdf5` com contorno `ink_contorno` `#161822` (e faixa `#161822` a `70%` quando sobre fundo claro).
+  - Barra de duração `80×8 px` (`x = 44..124`, `y = s_top + 72..80`): moldura `1–2 px` `ink_contorno` `#052018`, trilho vazio `painel_escuro` `#1f2738`, preenchimento `branco_texto` `#fffdf5` com sombra inferior `2 px` `ui_texto_sec` esvaziando estritamente da direita para a esquerda (leitura por extensão).
+  - Segundos restantes (`x = 132..164`) e relógio `m:ss` do modo Contra o tempo (`x = 276..356`): fonte `32 px`, `branco_texto` `#fffdf5` com contorno `ink_contorno` `#052018` (e faixa `#052018` a `70%` quando sobre fundo claro).
   - Carga de `segunda_chance` (`x = 180..212`): mesmo sprite `32×32` do coração com rostinho do gecko, oculto sem carga.
 - **5 ilustrações `128×128` dos modos (`ModosScreen`, `x = 116..244` do bloco):**
-  - Todas emolduradas por borda `2 px` `ink_contorno` + filete interno `2 px` `ui_texto_sec`, usando apenas a paleta oficial de 32 cores:
+  - Todas emolduradas por borda `2 px` `ink_contorno` + filete interno `2 px` `ui_texto_sec`, usando apenas a paleta de trabalho:
     1. **`classico` (`128×128`):** gecko bípede em pleno salto sobre ilhotas flutuantes coloridas, fundo *Floresta e Cachoeira* (`b0_floresta`/`b0_agua`) e pequena estrela arco-íris brilhando.
     2. **`puro` (`128×128`):** gecko bípede focado sobre ilhota limpa sob céu estrelado noturno (`painel_escuro`), sem ícones extras (comunica imediatamente "sem power-ups").
     3. **`tempo` (`128×128`):** gecko bípede escalando em diagonal diante do **cronômetro com asinhas** em destaque (`azul_luz`/`branco_texto`/`amarelo_base`).
@@ -220,7 +293,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
 
 ### 4.1 Mapeamento dos 4 biomas aos estágios (`ressources/curva_dificuldade.tres`)
 
-Todos os 4 biomas (`assets/src/refs/biomas-4-estagios-ref.jpg`) adotam paleta luminosa 16-bit SNES/GBA com **contraste interno suave (`<= 2.2:1`)** e **sem contorno `#161822`**, mantendo separação imediata em relação às ilhotas, power-ups e gecko contornados em `#161822`.
+Todos os 4 biomas (`assets/src/refs/biomas-4-estagios-ref.jpg`) adotam paleta luminosa 16-bit SNES/GBA com **contraste interno suave (`<= 2.2:1`)** e **sem contorno `#052018`**, mantendo separação imediata em relação às ilhotas, power-ups e gecko contornados em `#052018`.
 
 | Estágio | `progresso_inicio` | Bioma luminoso | Cores da paleta usadas no fundo | Camada 1 (longe, `0.15×`) | Camada 2 (média, `0.30×`) | Camada 3 (partículas ambientais) |
 |---|---:|---|---|---|---|---|
@@ -287,7 +360,7 @@ Todos os controles (`assets/src/refs/menu-mockup-ref.jpg`) migram de `StyleBoxFl
 | **Botão padrão** (`Modo`, `Opcoes`, `Pausa`, `Modos`, `Options`, `Ranking` E5, `Remover anuncios` E8) | Peça mestre `48×48 px`, `patch_margin = 8 px` nos 4 lados. Borda externa `2 px` `ink_contorno`, chanfro superior `2 px` `ui_btn_luz`, corpo `ui_btn_base`, sombra inferior `4 px` `ui_btn_sombra` | **`normal`:** rótulo centrado (`branco_texto`, contorno `ink_contorno`). **`pressed`:** borda `4 px` `ink_contorno`, corpo `ui_btn_sombra`, chanfro invertido, rótulo `+2 px` em Y. **`disabled`:** corpo `ui_desabilitado`, texto `ui_texto_sec`, sem brilho superior. **`focus`:** moldura externa `4 px` `amarelo_base` + `2 px` `ink_contorno` (`2 px` fora do botão) + prefixo `"> "` no rótulo |
 | **Botão CTA `Play`** | Peça mestre `48×48 px`, `patch_margin = 8 px`. Mesma geometria biselada, usando rampa quente `ui_cta_luz` / `ui_cta_base` / `ui_cta_sombra` | Mesmos 4 estados acima; no estado bloqueado do Desafio Diário (`"Ja jogado hoje"`), troca para o estilo `disabled` (`ui_desabilitado` + `ui_texto_sec`) e fonte `32 px` |
 | **Ativos prontos para E5 e E8** | **`Ranking` (E5):** botão padrão + mini-ícone troféu `24×24 px` (`amarelo_base` + `ink_contorno`). **`Remover anuncios` (E8):** botão padrão + mini-ícone "AD" riscado `24×24 px` (`ui_texto_sec` + `vermelho_base` + `ink_contorno`) | Entregues prontos no kit UI para ativação imediata no E5 e no E8 sem alterar coordenadas; **não são exibidos como botões mortos antes de seus respectivos marcos** (ver seção 5.3) |
-| **Painéis e cards** (`CardPlacar`, `TutorialCard`, telas `Modos` e `Opcoes`) | Peça mestre `48×48 px`, `patch_margin = 8 px`. Borda externa `2 px` `ink_contorno`, filete interno `2 px` `nevoa_brilho`, fundo `painel_escuro` `#1f2738` | `CardPlacar` no menu usa `painel_escuro` sólido (contraste `14.67:1`); fundo de tela cheia dos overlays usa `ink_contorno` `#161822` a `70%` |
+| **Painéis e cards** (`CardPlacar`, `TutorialCard`, telas `Modos` e `Opcoes`) | Peça mestre `48×48 px`, `patch_margin = 8 px`. Borda externa `2 px` `ink_contorno`, filete interno `2 px` `nevoa_brilho`, fundo `painel_escuro` `#1f2738` | `CardPlacar` no menu usa `painel_escuro` sólido (contraste `14.67:1`); fundo de tela cheia dos overlays usa `ink_contorno` `#052018` a `70%` |
 | **Sliders (`OptionsScreen`)** | Trilho `296×12 px` em `ink_contorno` com borda `2 px` `ui_texto_sec`; preenchimento pixel art em `ui_btn_luz` `#5b8a4a`; cursor `24×32 px` (`28×40 px` ao arrastar) em `branco_texto` com 2 ranhuras verticais `ui_desabilitado` e contorno `ink_contorno` | Mantém proporção `2×` das medidas de `scenes/OptionsScreen.gd`, rótulo `"mudo"` em `0`, cursor alargado ao arrastar e moldura + `"> "` no foco |
 | **`PauseBotao` (`48×48`)** | 9-slice do botão padrão (`48×48`) em `x[s_left + 4, s_left + 52]`, `y[s_top + 4, s_top + 52]` | Glifo pixel art de 2 barras `6×24 px` em `branco_texto` com contorno `ink_contorno` (`+2 px` em Y no `pressed`); oculto fora de partida ativa |
 | **`LevelUpFrame`** | Vinheta de borda (`PROFUNDIDADE = 40 px` dentro da `safe_area`) + cantoneiras pixel art sutis `16×16 px` nos 4 cantos | Pulsa `N` vezes (`N = estagio novo`) em `amarelo_luz` / `branco_texto` (`ALPHA_PICO = 0.5`), sem texto, `MOUSE_FILTER_IGNORE` e congelado na pausa (`ADR 0008`) |
@@ -323,13 +396,13 @@ Valores horizontais com `s_left = s_right = 0`. A coluna `360×640` assume `s_to
 
 | Elemento | Tamanho (`w×h`) | `y_rel` no bloco | Folga abaixo | `360×640` (`y0 = 42`) | `360×800` (`y0 = 122`) | Estado / Regra |
 |---|---|---|---:|---|---|---|
-| **Logo `"GECKO JUMP"`** | `312×96` | `[0, 96]` | `20 px` | `x[24, 336] y[42, 138]` | `x[24, 336] y[122, 218]` | Sprite pixel art (não interativo, `assets/src/refs/menu-mockup-ref.jpg`): letras gordinhas arcade com contorno escuro `#161822`, `"GECKO"` verde-amarelo com `G` em cauda espiral, `"JUMP"` em gradiente quente e gecko chibi empoleirado |
+| **Logo `"GECKO JUMP"`** | `312×96` | `[0, 96]` | `20 px` | `x[24, 336] y[42, 138]` | `x[24, 336] y[122, 218]` | Sprite pixel art (não interativo, `assets/src/refs/menu-mockup-ref.jpg`): letras gordinhas arcade com contorno escuro `#052018`, `"GECKO"` verde-amarelo com `G` em cauda espiral, `"JUMP"` em gradiente quente e gecko chibi empoleirado |
 | **Botão `Play` (normal)** | `248×72` | `[116, 188]` | `16 px` | `x[56, 304] y[158, 230]` | `x[56, 304] y[238, 310]` | CTA `ui_cta_base`, fonte `64 px`; alvo `>= 48×48` |
 | **Botão `Play` (estendido Diário)** | `296×72` | `[116, 188]` | `16 px` | `x[32, 328] y[158, 230]` | `x[32, 328] y[238, 310]` | Texto `"Ja jogado hoje"` em `32 px`, estado `disabled`; mesma altura/faixa `y` do normal |
 | **Botão `Modo: <nome>`** | `296×52` | `[204, 256]` | `16 px` | `x[32, 328] y[246, 298]` | `x[32, 328] y[326, 378]` | Botão padrão `ui_btn_base`, fonte `32 px`; comporta todos os rótulos de `GameModes.gd` |
 | **Card Placar (`FaixaPlacar`)** | `328×84` | `[272, 356]` | `20 px` | `x[16, 344] y[314, 398]` | `x[16, 344] y[394, 478]` | Painel `painel_escuro` (`MOUSE_FILTER_IGNORE`); envolve `Last` e `Best` |
-| └─ **Linha `Last`** *(filho do card)* | `312×34` | `[278, 312]` | `4 px` | `x[24, 336] y[320, 354]` | `x[24, 336] y[400, 434]` | Fonte `32 px`, contorno `#161822`; comporta 4 dígitos (`9999`) |
-| └─ **Linha `Best`** *(filho do card)* | `312×34` | `[316, 350]` | `6 px` *(pad)* | `x[24, 336] y[358, 392]` | `x[24, 336] y[438, 472]` | Fonte `32 px`, contorno `#161822`; oculta no modo Zen sem mover o card |
+| └─ **Linha `Last`** *(filho do card)* | `312×34` | `[278, 312]` | `4 px` | `x[24, 336] y[320, 354]` | `x[24, 336] y[400, 434]` | Fonte `32 px`, contorno `#052018`; comporta 4 dígitos (`9999`) |
+| └─ **Linha `Best`** *(filho do card)* | `312×34` | `[316, 350]` | `6 px` *(pad)* | `x[24, 336] y[358, 392]` | `x[24, 336] y[438, 472]` | Fonte `32 px`, contorno `#052018`; oculta no modo Zen sem mover o card |
 | **Botão `Opcoes`** | `264×52` | `[376, 428]` | `12 px` | `x[48, 312] y[418, 470]` | `x[48, 312] y[498, 550]` | Botão padrão `ui_btn_base`, fonte `32 px`; ativo em E6/E7/E5/E8 |
 | **Slot `Ranking` (E5)** | `264×52` | `[440, 492]` | `12 px` | `x[48, 312] y[482, 534]` | `x[48, 312] y[562, 614]` | **Reservado vazio antes do E5**; ativo no E5 no mesmo retângulo |
 | **Slot `Remover anuncios` (E8)** | `296×52` | `[504, 556]` | — | `x[32, 328] y[546, 598]` | `x[32, 328] y[626, 678]` | **Opção A: reservado vazio antes do E8 + ativo pronto no kit UI**; ativo no E8 |

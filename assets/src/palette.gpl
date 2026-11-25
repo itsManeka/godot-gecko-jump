@@ -1,41 +1,36 @@
 GIMP Palette
-Name: Gecko Jump E6 (32 cores)
+Name: Gecko Jump E6 (paleta de trabalho)
 Columns: 8
-# Paleta oficial de 32 cores do Gecko Jump (docs/planejamento-design/direcao-de-arte.md)
-# Neutros e Contorno (5)
- 22  24  34	ink_contorno
+# Paleta de trabalho do Gecko Jump (docs/planejamento-design/direcao-de-arte.md, secoes 1.2 e 1.5)
+# Rampa aprovada do gecko (pele, barriga, olho, rubor)
+  5  32  24	ink_contorno
+ 31  92  74	gecko_verde_0_linha
+ 74 174  95	gecko_verde_1_sombra
+127 219  90	gecko_verde_2_base
+178 238  98	gecko_verde_3_luz
+226 248 138	gecko_verde_4_brilho
+180 220 138	gecko_barriga_sombra
+227 245 176	gecko_barriga
+188 203 217	gecko_olho_sombra
+251 251 239	gecko_olho_branco
+240 127 134	gecko_rubor
+# Ancoras das variantes (scripts/Enums.gd)
+246 219  97	ancora_amarelo (Enums.gd:26)
+121 207  90	ancora_verde (Enums.gd:28)
+ 89 135 233	ancora_azul (Enums.gd:30)
+236  72  72	ancora_vermelho (Enums.gd:32)
+# Neutros e UI (contraste WCAG AA da secao 1.3)
  31  39  56	painel_escuro
  59  70  84	ui_desabilitado
 212 224 230	ui_texto_sec
 255 253 245	branco_texto
-# Gameplay Amarelo (3)
-255 244 184	amarelo_luz
-246 219  97	amarelo_base
-196 143  41	amarelo_sombra
-# Gameplay Verde (3)
-190 242 151	verde_luz
-121 207  90	verde_base
- 63 143  66	verde_sombra
-# Gameplay Azul (3)
-166 200 255	azul_luz
- 89 135 233	azul_base
- 48  80 168	azul_sombra
-# Gameplay Vermelho (3)
-255 155 144	vermelho_luz
-236  72  72	vermelho_base
-158  36  51	vermelho_sombra
-# Terra / Rocha Organica (3)
-168 115  73	terra_luz
-120  75  46	terra_base
- 71  43  27	terra_sombra
-# UI e Destaque (6)
  91 138  74	ui_btn_luz
  61 107  53	ui_btn_base
  39  74  36	ui_btn_sombra
 201 119  46	ui_cta_luz
 156  82  27	ui_cta_base
 110  54  17	ui_cta_sombra
-# Biomas Luminosos e Nevoa (6)
+# Biomas luminosos e nevoa
  62 125  90	b0_floresta
  83 166 168	b0_agua
 109 180 232	b1_ceu
