@@ -28,7 +28,8 @@ var can_change_color = false       # Se pode mudar de cor na próxima plataforma
 var actual_platform : Platform = null  # Plataforma atual em que o jogador está
 var jumping = true                 # Se o jogador está pulando
 var end = false                    # Se o jogo terminou para este jogador
-var _guarda_reaparecimento := false  # f526 T4: o reaparecimento (Segunda chance) nao e pouso (Q2); segura o bloco de pouso mesmo com can_change_color rearmando, ate o proximo pulo
+var _color_change_ativa := false     # f557 T9: a animacao color_change esta tocando; idle espera o fim, run/jump/fall e lose interrompem (D5)
+var _guarda_reaparecimento := false # f526 T4: o reaparecimento (Segunda chance) nao e pouso (Q2); segura o bloco de pouso mesmo com can_change_color rearmando, ate o proximo pulo
 var rng: RandomNumberGenerator = null  # Sorteio da cor no pouso; null usa o global (so teste fixa semente)
 var dificuldade: DifficultyState = null  # Injetada pela Stage (scroll vigente para a previsao); null = cena isolada
 var power_up_estado: PowerUpState = null  # Injetado pela Stage (fator do scroll efetivo na previsao, f522 T4); null = neutro
@@ -41,7 +42,8 @@ func _ready():
 	up_direction = Vector2.UP
 	motion_mode = MOTION_MODE_GROUNDED
 	floor_snap_length = 0.0
-	sprite.modulate = Enums.get_cor(color)
+	sprite.animation_finished.connect(_on_sprite_animation_finished)
+	_aplicar_visual_da_cor()
 
 # Partida acabou (Stage liberada): a cor guardada em Global volta ao inicio antes da Stage seguinte gerar plataformas.
 # O _ready do Player chegaria tarde: ScrollLevel/RunningPlatforms (antes dele na Stage) ja geram no proprio _ready.
@@ -54,6 +56,7 @@ func _process(_delta):
 
 # Copia animacao, frame, flip e cor do sprite real; o fantasma so aparece do outro lado da borda (sem colisao)
 func _sync_ghost() -> void:
+	ghost.sprite_frames = sprite.sprite_frames
 	if ghost.animation != sprite.animation:
 		ghost.animation = sprite.animation
 	ghost.frame = sprite.frame
@@ -94,16 +97,16 @@ func _physics_process(_delta):
 		velocity.x = SPEED
 		sprite.flip_h = false
 		if on_ground:
-			sprite.play("run")
+			_tocar(&"run")
 	elif Input.is_action_pressed("ui_left"):
 		velocity.x = -SPEED
 		sprite.flip_h = true
 		if on_ground:
-			sprite.play("run")
+			_tocar(&"run")
 	else:
 		velocity.x = 0
 		if on_ground:
-			sprite.play("idle")
+			_tocar(&"idle")
 	
 	# Processa o pulo
 	if Input.is_action_pressed("jump"):
@@ -122,7 +125,7 @@ func _physics_process(_delta):
 	else:
 		on_ground = false
 		if velocity.y < 0:
-			sprite.play("jump")
+			_tocar(&"jump")
 			jumping = true
 			actual_platform = null
 			Global.player_color_changed(color, actual_platform)
@@ -130,7 +133,7 @@ func _physics_process(_delta):
 			_guarda_reaparecimento = false
 		else:
 			jumping = false
-			sprite.play("fall")
+			_tocar(&"fall")
 	
 	# Aplica o movimento
 	move_and_slide()
@@ -147,9 +150,61 @@ func _on_DetectorPlataforma_body_entered(_body):
 # Define uma nova cor para o jogador e atualiza a visualização
 func set_color(new_color):
 	color = new_color
-	sprite.modulate = Enums.get_cor(color)
+	_aplicar_visual_da_cor()
 	_descartar_plataforma_liberada()
 	Global.player_color_changed(color, actual_platform)
+
+# f557 T9: a cor esta na arte (um SpriteFrames por cor em ressources/gecko_<cor>.tres), nao no modulate: sprite e
+# fantasma trocam de frames mantendo animation/frame correntes e o modulate fica branco (sem tingir)
+func _aplicar_visual_da_cor() -> void:
+	var frames := _frames_da_cor(color)
+	if frames == null:
+		push_warning("Player: SpriteFrames da cor %s ausente" % str(color))
+		return
+	_trocar_frames(sprite, frames, true)
+	_trocar_frames(ghost, frames, false)
+	sprite.modulate = Color.WHITE
+	ghost.modulate = Color.WHITE
+
+func _frames_da_cor(cor_id) -> SpriteFrames:
+	var nome: String = str(Enums.COLOR.find_key(int(cor_id))).to_lower()
+	return load("res://ressources/gecko_%s.tres" % nome) as SpriteFrames
+
+# Troca o SpriteFrames sem perder a animacao, o quadro e o progresso; o fantasma nunca toca sozinho
+func _trocar_frames(no: AnimatedSprite2D, frames: SpriteFrames, manter_tocando: bool) -> void:
+	if no.sprite_frames == frames:
+		return
+	var anim: StringName = no.animation
+	var quadro: int = no.frame
+	var progresso: float = no.frame_progress
+	var tocava: bool = no.is_playing()
+	no.sprite_frames = frames
+	if no.animation != anim and frames.has_animation(anim):
+		no.animation = anim
+	if manter_tocando and tocava and not no.is_playing():
+		no.play(anim)
+	no.set_frame_and_progress(quadro, progresso)
+
+# Toca a animacao de movimento respeitando a color_change em curso: idle espera o fim (D5); run, jump e fall
+# interrompem e limpam a flag. A fisica nao passa por aqui: so a animacao
+func _tocar(anim: StringName) -> void:
+	if _color_change_ativa:
+		if anim == &"idle":
+			return
+		_color_change_ativa = false
+	sprite.play(anim)
+
+# Pouso com troca de cor: color_change toca uma vez e a flag segura o idle ate o fim. Reaparecimento (resgate) nao chama
+func _iniciar_color_change() -> void:
+	_color_change_ativa = true
+	sprite.play(&"color_change")
+
+# So o fim de uma color_change volta ao idle; sinal tardio de animacao ja interrompida (run/jump/fall) nao mexe em nada
+func _on_sprite_animation_finished() -> void:
+	if sprite.animation != &"color_change":
+		return
+	_color_change_ativa = false
+	sprite.play(&"idle")
 
 # Plataforma liberada (saiu da tela) vira null: parametro tipado recusa objeto liberado antes de qualquer checagem
 func _descartar_plataforma_liberada() -> void:
@@ -162,6 +217,7 @@ func change_color_random():
 	if Global.sem_derrota:
 		# Modo sem derrota (smoke debug): sem sorteio, a cor fica COR_INICIAL
 		set_color(Enums.COR_INICIAL)
+		_iniciar_color_change()
 		return
 	# Janela de chegada: do pulo (dt_chegada, pelo scroll vigente) ate a espera maxima apos o pouso na linha de cima.
 	# Sem dificuldade injetada (Player isolado) = dt 0 e sem espera: cor do instante do pouso, como antes.
@@ -173,6 +229,7 @@ func change_color_random():
 	set_color(
 		ReachableColors.cor_no_pouso(Global.platforms, actual_platform, PlayArea.LARGURA, rng, dt_chegada, espera)
 	)
+	_iniciar_color_change()
 
 # f526 T4: reposiciona o gecko sobre a plataforma alvo da Segunda chance - teleporte de resgate, nao pouso (Q2).
 # Base do corpo no topo do shape dela (sem interpenetrar; o x e o dela no instante do teleporte - a fisica cuida
@@ -230,7 +287,8 @@ func lose_game():
 	end = true
 	collision.call_deferred("set_disabled", true)
 	detector.call_deferred("set_disabled", true)
-	sprite.play("lose")
+	_color_change_ativa = false
+	sprite.play(&"lose")
 
 # Wrap horizontal puro: x > width volta por width; x < 0 entra por width; x em [0, width] nao muda
 static func wrap_x(x: float, width: float) -> float:

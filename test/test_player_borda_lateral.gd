@@ -117,11 +117,12 @@ func test_fantasma_espelha_sprite_real() -> void:
 	assert_eq(g.frame, 1, "fantasma parado: nao avanca frames sozinho")
 	var cores: Array = Enums.COLOR.values()
 	var nova: int = cores[0] if cores[0] != Enums.COR_INICIAL else cores[1]
-	var cor_antes := g.modulate
+	var frames_antes := g.sprite_frames
 	_p.set_color(nova)
 	_p._process(0.0)
 	assert_eq(g.modulate, _p.sprite.modulate, "cor trocada por set_color espelhada")
-	assert_ne(g.modulate, cor_antes, "a cor do fantasma mudou junto")
+	assert_ne(g.sprite_frames, frames_antes, "o fantasma trocou de sprite_frames junto (a cor esta na arte, modulate fica WHITE)")
+	assert_eq(g.sprite_frames, _p.sprite.sprite_frames, "o fantasma usa o mesmo sprite_frames do sprite real")
 	_p.lose_game()
 	_p._process(0.0)
 	assert_eq(g.animation, "lose", "animacao lose espelhada")
