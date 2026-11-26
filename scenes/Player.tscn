@@ -1,60 +1,8 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://assets/Gecko.png" type="Texture2D" id=1]
+[ext_resource path="res://ressources/gecko_amarelo.tres" type="SpriteFrames" id=1]
 [ext_resource path="res://scenes/Player.gd" type="Script" id=2]
 [ext_resource path="res://sounds/jump.wav" type="AudioStream" id=3]
-
-[sub_resource type="AtlasTexture" id=1]
-atlas = ExtResource( 1 )
-region = Rect2( 0, 0, 32, 32 )
-
-[sub_resource type="AtlasTexture" id=2]
-atlas = ExtResource( 1 )
-region = Rect2( 32, 32, 32, 32 )
-
-[sub_resource type="AtlasTexture" id=3]
-atlas = ExtResource( 1 )
-region = Rect2( 32, 0, 32, 32 )
-
-[sub_resource type="AtlasTexture" id=4]
-atlas = ExtResource( 1 )
-region = Rect2( 0, 32, 32, 32 )
-
-[sub_resource type="AtlasTexture" id=5]
-atlas = ExtResource( 1 )
-region = Rect2( 0, 64, 32, 32 )
-
-[sub_resource type="AtlasTexture" id=6]
-atlas = ExtResource( 1 )
-region = Rect2( 32, 64, 32, 32 )
-
-[sub_resource type="SpriteFrames" id=7]
-animations = [ {
-"frames": [ SubResource( 1 ) ],
-"loop": true,
-"name": "idle",
-"speed": 5.0
-}, {
-"frames": [ SubResource( 2 ) ],
-"loop": true,
-"name": "jump",
-"speed": 5.0
-}, {
-"frames": [ SubResource( 3 ), SubResource( 4 ) ],
-"loop": true,
-"name": "run",
-"speed": 5.0
-}, {
-"frames": [ SubResource( 5 ) ],
-"loop": true,
-"name": "fall",
-"speed": 5.0
-}, {
-"frames": [ SubResource( 6 ) ],
-"loop": true,
-"name": "lose",
-"speed": 5.0
-} ]
 
 [sub_resource type="RectangleShape2D" id=8]
 size = Vector2( 20.55088, 57.0372 )
@@ -67,16 +15,13 @@ collision_mask = 2
 script = ExtResource( 2 )
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-scale = Vector2( 2, 2 )
-sprite_frames = SubResource( 7 )
-animation = "idle"
-playing = true
+sprite_frames = ExtResource( 1 )
+animation = &"idle"
 
 [node name="Ghost" type="AnimatedSprite2D" parent="."]
 visible = false
-scale = Vector2( 2, 2 )
-sprite_frames = SubResource( 7 )
-animation = "idle"
+sprite_frames = ExtResource( 1 )
+animation = &"idle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2( 0.841858, -1.122468 )
