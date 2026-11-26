@@ -185,8 +185,12 @@ release (o publicado) ignora os parametros abaixo e nao publica nada. No Godot n
 - `?seed=<numero>` no `path` do roteiro fixa o sorteio de cores e plataformas. Todo roteiro leva uma seed.
 - `?semderrota=1` liga o modo sem derrota (plataformas na cor inicial e paradas, sem desmoronar; a largura do estagio
   vale; a queda pela borda ainda encerra a partida), usado pelos roteiros `retrato-pontua-1080x2772.smoke.json` (conferir que o gecko pontua),
-  `estagio.smoke.json` (conferir que a dificuldade sobe) e pelos roteiros longos (`gecko` e os `retrato-*` de cada
-  tamanho), para o gecko nao morrer por cor errada entre os pulos (#39).
+  `estagio.smoke.json` (conferir que a dificuldade sobe), pelos roteiros longos (`gecko` e os `retrato-*` de cada
+  tamanho) e pelos de gesto (`toque`, `toque-modo-{a,b}`, `pausa-foco`), para o gecko nao morrer por cor errada entre
+  os pulos (#39) nem por scroll quando a CPU esta disputada.
+- `toque.smoke.json` joga a partida so por toque (`tap` no Play, `tap` e `hold` na metade direita, cada um conferido
+  por `player.y`); `pausa-foco.smoke.json` esconde a aba (`hidden`) e tira o foco da janela (`blur`), confere com
+  rajadas `"still": true` que o jogo pausa e continua pausado com o foco de volta, e so retoma com Continuar.
 - `?progresso=<0 a 1>` comeca a partida no ponto da curva de dificuldade indicado (valor invalido vale 0), usado pelos
   roteiros `estagio.smoke.json` e `estagio-alto.smoke.json` (estagio 3, plataformas estreitas e que trocam de cor; o
   roteiro tira um print antes e outro depois de uma troca e aceita o fim da partida por queda, que o modo sem derrota
