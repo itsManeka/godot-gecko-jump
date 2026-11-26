@@ -1,8 +1,8 @@
 {
-  "path": "index.html?seed=461&tutorial=visto",
+  "path": "index.html?seed=461&semderrota=1&tutorial=visto",
   "viewport": [720, 1280],
   "boot_ms": 6000,
-  "notes": "Play por toque (tap no centro logico 180,320). Metade direita (x >= 360 fisico = 180 logico) e o pulo do esquema B padrao: tap e hold provam um pulo cada um (player.y sobe). O pulo tem forca fixa (Player.gd JUMP_POWER), entao a altura de tap x hold nao e comparada. Medido no export debug (HEAD, seed 461): pousado em player.y 375-377; no ar apos o tap o y cai para 304 ao subir; limite de pulo lt 340 (mesmo estilo de toque-modo-b).",
+  "notes": "Com semderrota=1 (sem ele o gecko morre por scroll sob CPU disputada e o jogo volta ao menu). Play por toque (tap no centro logico 180,320). Metade direita (x >= 360 fisico = 180 logico) e o pulo do esquema B padrao: tap e hold provam um pulo cada um (player.y sobe). O pulo tem forca fixa (Player.gd JUMP_POWER), entao a altura de tap x hold nao e comparada. Medido no export debug (HEAD, seed 461): pousado em player.y 375-377; no ar apos o tap o y cai para 304 ao subir; limite de pulo lt 340 (mesmo estilo de toque-modo-b).",
   "steps": [
     { "expect": { "state": "menu" }, "timeout_ms": 3000 },
     { "shots": 2, "every": 300, "name": "menu", "moving": false },

@@ -46,6 +46,7 @@ const ROTEIROS_SEMDERROTA: Array[String] = [
 	"estagio-alto",
 	"gecko",
 	"power-up",
+	"toque",
 	"toque-modo-a",
 	"toque-modo-b",
 	"pausa-foco",
