@@ -55,3 +55,22 @@ Columns: 8
 166 200 255	azul_luz
 226 238 250	azul barriga
 178 200 234	azul barriga sombra
+# Plataformas (secao 3.2), aprovadas pelo dono; amarela e azul usam tons ja listados acima
+# Cobertura de grama da plataforma verde (base = ancora_verde)
+ 34  96  74	grama 0 linha
+ 82 186  86	grama 1 sombra
+162 236  92	grama 3 luz
+224 245 146	grama 4 brilho
+# Terra/rocha organica das 4 plataformas
+201 154  94	terra_brilho
+168 115  73	terra_luz
+120  75  46	terra_base
+ 71  43  27	terra_sombra
+# Cobertura e cogumelos da plataforma vermelha (rampa do gecko vermelho, provas r11b)
+124  24  47	vermelho 0 linha
+205  41  76	vermelho 1 sombra
+255  68  62	vermelho 2 base
+255 122  98	vermelho 3 luz
+244 156 137	vermelho 4 brilho
+255 233 214	vermelho talo
+243 195 165	vermelho talo sombra
