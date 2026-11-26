@@ -52,9 +52,34 @@ As 4 cores de gameplay seguem como âncoras exatas: são a identidade de cada va
 
 A rampa de 4–5 tons de cada variante (cobertura da plataforma e pele do gecko) parte da âncora acima como tom de base e é derivada seguindo a regra de matiz acima; o `palette.gpl` recebe os tons assim que a variante é pintada e aprovada. O verde do gecko (`#7fdb5a`) é a rampa aprovada da tabela anterior e não precisa coincidir com a âncora `#79cf5a` da plataforma verde.
 
+#### Rampas aprovadas: variantes do gecko, terra e plataformas
+
+Entraram no `palette.gpl` conforme cada peça foi desenhada e aprovada pelo dono (valores lidos do arquivo):
+
+| Material | Tons (escuro para claro) | Observação |
+|---|---|---|
+| Gecko amarelo | `#b17834` (linha), `#f5be3c`, `#fce65e` (base), `#fffa92`, `#fffcd8` (brilho); sombra `#c48f29`; barriga `#f0d898` / `#fff4d0` | A plataforma amarela reusa esses tons, sem cor nova |
+| Gecko azul | `#353880` (linha), `#5c5fc8`, `#5991ff` (base), `#61aff9`, `#9ec1ed` (brilho); luz `#a6c8ff`; barriga `#b2c8ea` / `#e2eefa` | A plataforma azul reusa esses tons mais `#3a5ad6` (sombra do gelo, mais fria que `#5c5fc8`) |
+| Grama da plataforma verde | `#22604a` (linha), `#52ba56`, base = âncora `#79cf5a`, `#a2ec5c`, `#e0f592` (brilho) | Cobertura derramando na borda da terra |
+| Terra / rocha orgânica (4 plataformas) | `#472b1b` (sombra), `#784b2e` (base), `#a87349` (luz), `#c99a5e` (brilho) | Os 3 primeiros tons são `terra_sombra` / `terra_base` / `terra_luz` da tabela abaixo; `terra_brilho` é o tom novo |
+| Cobertura e cogumelos da plataforma vermelha | `#7c182f` (linha), `#cd294c`, `#ff443e` (base), `#ff7a62`, `#f49c89` (brilho); talo `#f3c3a5` / `#ffe9d6` | Rampa a reconferir quando o gecko vermelho final chegar (pendente do dono) |
+
+#### Rampas aprovadas: menu (seção 5.3)
+
+Céu, nuvens e folhagem de fundo não levam contorno (seção 1.1). Os botões e o card usam rampas suavizadas a partir dos matizes de `ui_cta_*`, `ui_btn_*` e `painel_escuro`.
+
+| Material | Tons (escuro para claro) |
+|---|---|
+| Céu | `menu ceu` `#70a2d4` |
+| Nuvens | `#aab6c4` (funda), `#c5b8cc` (sombra), `#e0e0e8` (corpo), `#f7ffe8` (luz) |
+| Folhagem | `#3d6e70` (sombra), `#3ca370` (corpo), `#8fde5d` (luz), `#cfff70` (brilho) |
+| Botão CTA `Play` | `#8a4f2a` (linha), `#c47f4c`, `#eeb07a` (corpo), `#f8cfa2`, `#fff0d8` (brilho) |
+| Botão padrão | `#4a7040` (linha), `#74a364`, `#9cc886` (corpo), `#c2e2ac`, `#eaf6dc` (brilho) |
+| Card | `#2a3450` (linha), `#3a4766`, `#4a5878` (corpo), `#6a7a9c`, `#9aa8c6` (brilho) |
+
 #### Tokens de UI, cenário e rampas legadas de 3 tons
 
-Os tokens abaixo continuam válidos e são os usados na prova de contraste da seção 1.3 (o único token alterado é `ink_contorno`, agora `#052018`; as razões da seção 1.3 que o envolvem foram recalculadas e seguem acima de `4.5:1`). Os tokens de neutros, UI e biomas estão no `palette.gpl`. As rampas legadas de 3 tons de gameplay (`*_luz` / `*_base` / `*_sombra`) e de terra seguem referenciadas nas seções 2 e 3 e ficam apenas nesta tabela, fora do `palette.gpl`, até a rampa nova do material correspondente ser pintada. A cor histórica de botão `#5b8a4a` (`ressources/Button.tres`) é preservada como chanfro superior/preenchimento de slider (`ui_btn_luz`), enquanto o corpo dos botões evolui para `#3d6b35` (`ui_btn_base`) para atingir contraste WCAG AA `>= 4.5:1` (com `#ffffff`, `#5b8a4a` entregava apenas `4.05:1`).
+Os tokens abaixo continuam válidos e são os usados na prova de contraste da seção 1.3 (o único token alterado é `ink_contorno`, agora `#052018`; as razões da seção 1.3 que o envolvem foram recalculadas e seguem acima de `4.5:1`). Os tokens de neutros, UI e biomas estão no `palette.gpl`. As rampas legadas de 3 tons de gameplay (`*_luz` / `*_base` / `*_sombra`) seguem referenciadas nas seções 2 e 3 e ficam apenas nesta tabela, fora do `palette.gpl`, até a rampa nova do material correspondente ser pintada; as de terra já estão no `palette.gpl` (rampa acima). A cor histórica de botão `#5b8a4a` (`ressources/Button.tres`) é preservada como chanfro superior/preenchimento de slider (`ui_btn_luz`), enquanto o corpo dos botões evolui para `#3d6b35` (`ui_btn_base`) para atingir contraste WCAG AA `>= 4.5:1` (com `#ffffff`, `#5b8a4a` entregava apenas `4.05:1`).
 
 | Grupo | Token | Hex | Luminância relativa (`L`) | Luma BT.709 (0–255) | Uso principal |
 |---|---|---|---:|---:|---|
@@ -130,21 +155,32 @@ Para superfícies translúcidas (`COR_FUNDO_OVERLAY = #052018` a `70%` de opacid
 
 No menu remodelado, o cartão do placar `Last`/`Best` usa painel sólido `#1f2738` (ou `92%` sobre `#052018`, contraste mínimo `>= 13.0:1`), mantendo folga ainda maior sobre qualquer plataforma animada ou bioma luminoso ao fundo.
 
-### 1.4 Pipeline oficial de produção de arte (2 etapas) e catálogo de referências aprovadas
+### 1.4 Pipeline oficial de produção de arte e catálogo de referências
 
-Conforme `ADR 0004`, o fluxo de rascunho assistido por IA opera em **2 etapas** antes do acabamento manual do dono no Aseprite local (`assets/src/` permanece fora do `.pck` via `assets/src/.gdignore`):
+Conforme `ADR 0004`, a arte é pixel art desenhada de verdade, na grade e na paleta de trabalho, e o acabamento final é do dono no Aseprite local (`assets/src/` permanece fora do `.pck` via `assets/src/.gdignore`):
 
-1. **Etapa 1 — Geração visual guiada por referências:** geração de folhas de sprites, ilhotas, power-ups, ui e biomas sobre **fundo neutro sólido**, ancorada diretamente nas provas visuais aprovadas pelo dono em `assets/src/` e `assets/src/refs/`.
-2. **Etapa 2 — Processamento e montagem editável no Aseprite local:** recorte dos quadros, remoção de fundo sólido, alinhamento estrito na grade/pivô de destino (`64×64`, `96×40`, `32×32`, `128×128`, `360×480`), limpeza de contorno `#052018` e quantização para a paleta de trabalho (`assets/src/palette.gpl`), montagem dos arquivos editáveis **`.aseprite`** com camadas/tags e exportação **PNG + JSON** sem interpolação (`Nearest`).
-3. **Acabamento manual do dono:** revisão final quadro a quadro, ajuste fino de expressões/silhuetas e aprovação no jogo antes do embarque no `.pck`.
+1. **Desenho no Aseprite (agente `pixel-artist`, modelo opus):** o agente desenha cada peça pixel a pixel na grade de destino (`64×64`, `96×40`, `32×32`, `128×128`, `360×480`), com a paleta de trabalho (`assets/src/palette.gpl`), contorno `#052018` e rampas por material, medindo a estrutura contra a ref do dono e não contra a rodada anterior. Entrega os arquivos editáveis **`.aseprite`** com camadas/tags e a exportação **PNG** sem interpolação (`Nearest`).
+2. **Ref do dono como âncora:** a ref mestra `assets/src/refs/gecko-idle-mestre.aseprite` (idle `64×64` acabado pelo dono) e o estilo de `assets/src/ref-estilo-dono.jpg` mandam em toda peça nova (seção 1.5).
+3. **Acabamento manual do dono:** revisão final quadro a quadro, ajuste fino de expressões/silhuetas e aprovação no jogo antes do embarque no `.pck`. Peça cuja rodada não converge pode ser acabada pelo dono a partir da melhor prova.
 
-| Referência aprovada | Caminho no repositório | Escopo ancorado |
+Imagem gerada por IA entra **só como inspiração** (`assets/src/refs/_inspiracao-ia/`): ajuda a pensar composição e clima, mas **não é etapa obrigatória** do pipeline nem fonte de pixel do jogo. As imagens de `assets/src/refs/_inspiracao/` (`pixel-cozy.png`, `pixel-bg.png`) também são só referência de clima e leitura: origem e licença desconhecidas, **não entram no jogo** e nenhum pixel delas é copiado.
+
+**Catálogo de `assets/src/refs/`** (cada arquivo existe no repositório; o que ainda não foi desenhado fica marcado "ref na feature de execução"):
+
+| Referência | Caminho no repositório | Escopo ancorado |
 |---|---|---|
 | Estilo geral 16-bit | `assets/src/ref-estilo-dono.jpg` | Identidade luminosa SNES/GBA, contorno `#052018` e sombreado quente |
-| Camaleão bípede chibi | `assets/src/refs/gecko-bipede-chibi-ref.jpg` | Proporção chibi `1:1`, postura bípede, olhões desalinhados, `lose` invertido, `color_change` estrelado e marcas `#41` |
-| Ilhotas e power-ups | `assets/src/refs/ilhotas-powerups-ref.jpg` | Base orgânica de terra/rocha, coberturas e micro-ornamentos das 4 cores e ícones dos 3 power-ups |
-| 4 Biomas | `assets/src/refs/biomas-4-estagios-ref.jpg` | Paleta luminosa e composição dos estágios `e0` Floresta/Cachoeira, `e1` Céu Azul/Nuvens, `e2` Pôr do Sol e `e3` Noite/Aurora |
-| Mockup do menu | `assets/src/refs/menu-mockup-ref.jpg` | Logo arcade `"GECKO JUMP"`, hierarquia visual do menu remodelado, cards e botões 9-slice |
+| Gecko mestre (idle) | `assets/src/refs/gecko-idle-mestre.aseprite` / `.png` | Ref mestra `64×64` acabada pelo dono: rampa, contorno, luz e proporções (seções 1.2 e 1.5) |
+| Gecko verde, amarelo e azul | `assets/src/refs/gecko-verde.*`, `gecko-amarelo.*`, `gecko-azul.*` (`.aseprite` + `.png`) | Variantes aprovadas pelo dono com marca `#41` própria (brotinho, manchas solares, cristais de gelo) |
+| Gecko vermelho | (sem arquivo em `assets/src/refs/` ainda) | **Pendente do acabamento do dono no Aseprite**; chega com rampa no `palette.gpl` e nova rodada da prova cinza |
+| Plataformas | `assets/src/refs/plataforma-amarelo.*`, `plataforma-verde.*`, `plataforma-azul.*`, `plataforma-vermelho.*` (`.aseprite` + `.png`) | 4 ilhotas aprovadas; a azul é a versão com gelo clareado (original preservado em `assets/src/_orig/plataforma-azul-r15.*`) |
+| Prova cinza `#41` | `assets/src/refs/prova-cinza-41.png` (gerada por `assets/src/prova_cinza_41.py`) | Prancha em escala de cinza aprovada pelo dono, com o gecko vermelho marcado **pendente** |
+| Rascunho do menu | `assets/src/refs/menu-rascunho.aseprite` / `.png` | Rascunho aprovado do menu (seção 5.3); o dono faz o acabamento |
+| Inspiração de clima | `assets/src/refs/_inspiracao/pixel-cozy.png`, `pixel-bg.png` | Só referência (origem/licença desconhecida); não entra no jogo |
+| Inspiração de IA | `assets/src/refs/_inspiracao-ia/` | `gecko-bipede-chibi-ref.jpg` (+ `_stand.png`), `ilhotas-powerups-ref.jpg`, `biomas-4-estagios-ref.jpg`, `menu-mockup-ref.jpg`: composição e clima, não pixel art de produção |
+| Power-ups, tiles de bioma e kit UI | (ainda sem arte) | Ref na feature de execução |
+
+O arquivo `assets/src/direcao-arte.aseprite` foi removido: os arquivos de `assets/src/refs/` o substituem.
 
 ### 1.5 Guia de estilo: luz, rampas, contorno e proporções
 
@@ -200,7 +236,7 @@ Nenhuma informação essencial de gameplay depende exclusivamente de matiz. Cada
 ### Regras de preservação do `#41`
 
 1. **Fim do tingimento chapado (`modulate`):** tanto o Gecko quanto as ilhotas abandonam o tingimento de sprite branco por `Enums.get_cor(...)`. Cada variante é desenhada diretamente com sua rampa de 3 cores + contorno `ink_contorno` (`#052018`), preservando olhos grandes (`#fffdf5` + pupila/espiral `#052018`), base de terra (`terra_luz/base/sombra`), brilhos quentes e marcas táteis sem lavagem de cor.
-2. **Validação obrigatória em escala de cinza:** a prancha de referência em escala de cinza (`assets/src/direcao-arte-cinza-4x.png`) comprova que todas as 4 ilhotas (`120 px` e `88 px`) e os 4 camaleões bípedes chibi são diferenciáveis mesmo sem saturação cromática.
+2. **Validação obrigatória em escala de cinza:** a prancha em escala de cinza `assets/src/refs/prova-cinza-41.png` (gerada por `assets/src/prova_cinza_41.py`, luma Rec.601; critério: diferença média absoluta `>= 10` ou `XOR >= 5%` entre cada par) comprova que as 4 ilhotas e os camaleões bípedes chibi são diferenciáveis mesmo sem saturação cromática. O dono aprovou a prancha com o gecko vermelho marcado **pendente**: o script roda de novo quando o gecko vermelho final chegar. A plataforma azul teve o gelo clareado para separar do vermelho em cinza (original em `assets/src/_orig/plataforma-azul-r15.*`).
 3. **Tutorial bilíngue cor + padrão:** em `scenes/TutorialCard.gd`, os retângulos chapados das amostras (`=` igual / `X` diferente) e dos 4 quadrados da legenda passam a exibir mini-sprites das ilhotas e do gecko com suas marcas reais acompanhados dos nomes (`amarelo`, `verde`, `azul`, `vermelho`).
 
 ---
@@ -211,7 +247,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
 
 ### 3.1 Gecko (`scenes/Player.tscn`, `scenes/Player.gd`)
 
-- **Design do personagem (`assets/src/refs/gecko-bipede-chibi-ref.jpg` e `assets/src/ref-estilo-dono.jpg`):** camaleão **bípede (em pé sobre as duas patas traseiras) em todas as poses**, com proporção **chibi `1:1` cabeça/corpo**, **olhões grandes esbugalhados com pupilas levemente desalinhadas** (`#fffdf5` + `#052018`) para uma expressão fofa e confusa, **cauda enrolada em espiral**, contorno limpo `#052018` e sombreado quente em 3 tons. As marcas `#41` sutis por cor (manchas solares no amarelo, brotinho de 2 folhas na cabeça no verde, cristais de gelo no dorso/cabeça no azul e espinhos dorsais fofos no vermelho) preservam intacta a silhueta chibi bípede.
+- **Design do personagem (`assets/src/refs/_inspiracao-ia/gecko-bipede-chibi-ref.jpg` e `assets/src/ref-estilo-dono.jpg`):** camaleão **bípede (em pé sobre as duas patas traseiras) em todas as poses**, com proporção **chibi `1:1` cabeça/corpo**, **olhões grandes esbugalhados com pupilas levemente desalinhadas** (`#fffdf5` + `#052018`) para uma expressão fofa e confusa, **cauda enrolada em espiral**, contorno limpo `#052018` e sombreado quente em 3 tons. As marcas `#41` sutis por cor (manchas solares no amarelo, brotinho de 2 folhas na cabeça no verde, cristais de gelo no dorso/cabeça no azul e espinhos dorsais fofos no vermelho) preservam intacta a silhueta chibi bípede.
 - **Tamanho do frame:** **`64×64 px`** exatos (`2×` sobre `32×32 px`), pivô no centro `(32, 32)`. Prepara e preserva proporcionalmente na migração `360×640`:
   - **`GHOST_HALF_WIDTH = 32.0`** (`2×` de `16.0`) para wrap horizontal contínuo nas bordas de `PlayArea.LARGURA = 360`;
   - `CollisionShape2D` do corpo e `DetectorPlataforma` escalados `2×` na entrega de migração para `360×640`, mantendo a base do pé alinhada ao mesmo ponto de contato em todas as poses (`y = 60` do frame `64×64`, `y = +28 px` a partir do pivô).
@@ -232,7 +268,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
 
 ### 3.2 Plataformas (`scenes/Platform.tscn`, `scenes/Platform.gd`)
 
-- **Visual de ilhotas flutuantes (`assets/src/refs/ilhotas-powerups-ref.jpg` e `assets/src/ref-estilo-dono.jpg`):**
+- **Visual de ilhotas flutuantes (`assets/src/refs/_inspiracao-ia/ilhotas-powerups-ref.jpg` e `assets/src/ref-estilo-dono.jpg`):**
   - Cada plataforma é uma **ilhota flutuante de terra/rocha orgânica** (`terra_luz`, `terra_base`, `terra_sombra`) com **base arredondada pendurada** (incluindo 1–2 micro-pedrinhas soltas sob a base, puramente visuais) e **cobertura colorida grossa derramando pela borda** da terra com contorno `#052018`.
   - **Micro-ornamentos no topo (discretos, `4–8 px`, sem nunca parecer obstáculo nem invadir o espaço de power-up):**
     - **Verde:** grama verde + folhinhas e vinhas curtas pendentes na terra.
@@ -264,7 +300,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
 
 ### 3.3 Power-ups (`PowerUpIcone`, `PowerUpHud`), Modos (`ModosScreen`) e Ícone (`icon.png`)
 
-- **Ícones `32×32` de power-up (`ADR 0014`, `assets/src/refs/ilhotas-powerups-ref.jpg`):** usados de forma idêntica sobre a plataforma (`base 4 px acima do topo`) e no `PowerUpHud` (`y = s_top + 60..92`). Todos possuem **contorno `#052018`** e silhueta imediatamente distinguível em qualquer fundo ou escala de cinza:
+- **Ícones `32×32` de power-up (`ADR 0014`, `assets/src/refs/_inspiracao-ia/ilhotas-powerups-ref.jpg`):** usados de forma idêntica sobre a plataforma (`base 4 px acima do topo`) e no `PowerUpHud` (`y = s_top + 60..92`). Todos possuem **contorno `#052018`** e silhueta imediatamente distinguível em qualquer fundo ou escala de cinza:
   - **`camaleao` (`32×32`):** **estrela arco-íris** de 5 pontas com contorno `#052018`, núcleo brilhante `branco_texto`/`amarelo_luz` e faixas das 4 cores da paleta (`vermelho_base`, `amarelo_base`, `verde_base`, `azul_base`).
   - **`segunda_chance` (`32×32`):** **coração vermelho** (`vermelho_base` com brilho `vermelho_luz` e sombra `vermelho_sombra`) com o **rostinho verde do gecko** (`verde_base` + olhos `branco_texto`/`ink_contorno`) no centro e contorno `#052018`.
   - **`desacelera` (`32×32`):** **cronômetro com asinhas** (corpo redondo em `azul_luz`/`branco_texto`, ponteiros e botão superior em `ink_contorno`, duas asinhas brancas laterais em `branco_texto`/`nevoa_brilho`) e contorno `#052018`.
@@ -282,7 +318,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
     5. **`diario` (`128×128`):** página de calendário pixel art destacada com estrela dourada (`amarelo_base`) no topo e silhueta do gecko saltando na base.
   - **Fallback para `teste` (flag debug):** moldura `painel_escuro` `#1f2738` com ícone geométrico de engrenagem/grade `32×32` em `ui_texto_sec` centrado, preservando o carrossel debug sem exigir ilustração dedicada.
 - **Ícone do jogo (`icon.png` e variantes de export):**
-  - Arte mestre **`128×128 px`** em pixel art seguindo `assets/src/refs/gecko-bipede-chibi-ref.jpg` e `assets/src/ref-estilo-dono.jpg`: rosto expressivo do camaleão verde (`verde_base`/`verde_luz`/`verde_sombra`) com olhos grandes (`branco_texto` + pupila `ink_contorno`), sorriso simpático e pequeno brilho `amarelo_base` no canto, sobre fundo `b0_floresta` `#3e7d5a` com moldura arredondada `painel_escuro` e contorno `ink_contorno`.
+  - Arte mestre **`128×128 px`** em pixel art seguindo `assets/src/refs/_inspiracao-ia/gecko-bipede-chibi-ref.jpg` e `assets/src/ref-estilo-dono.jpg`: rosto expressivo do camaleão verde (`verde_base`/`verde_luz`/`verde_sombra`) com olhos grandes (`branco_texto` + pupila `ink_contorno`), sorriso simpático e pequeno brilho `amarelo_base` no canto, sobre fundo `b0_floresta` `#3e7d5a` com moldura arredondada `painel_escuro` e contorno `ink_contorno`.
   - **Exportação sem interpolação (`Nearest`):**
     - `icon.png` (raiz, `project.godot:16`): **`128×128 px`** (substituindo o `32×32` provisório).
     - Variantes Web/PWA (`export_presets.cfg:34-36`, preenchidas na entrega de polimento/publicação E7) e loja (itch.io E7 / Play Store E8): **`144×144 px`** (`128×128` centrado com `8 px` de borda de fundo `b0_floresta`), **`180×180 px`** (`128×128` com margem segura `26 px`) e **`512×512 px`** (`4×` inteiro exato de `128×128`, com zona segura central de `66%` para recorte adaptativo Android).
@@ -293,7 +329,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
 
 ### 4.1 Mapeamento dos 4 biomas aos estágios (`ressources/curva_dificuldade.tres`)
 
-Todos os 4 biomas (`assets/src/refs/biomas-4-estagios-ref.jpg`) adotam paleta luminosa 16-bit SNES/GBA com **contraste interno suave (`<= 2.2:1`)** e **sem contorno `#052018`**, mantendo separação imediata em relação às ilhotas, power-ups e gecko contornados em `#052018`.
+Todos os 4 biomas (`assets/src/refs/_inspiracao-ia/biomas-4-estagios-ref.jpg`) adotam paleta luminosa 16-bit SNES/GBA com **contraste interno suave (`<= 2.2:1`)** e **sem contorno `#052018`**, mantendo separação imediata em relação às ilhotas, power-ups e gecko contornados em `#052018`.
 
 | Estágio | `progresso_inicio` | Bioma luminoso | Cores da paleta usadas no fundo | Camada 1 (longe, `0.15×`) | Camada 2 (média, `0.30×`) | Camada 3 (partículas ambientais) |
 |---|---:|---|---|---|---|---|
@@ -353,7 +389,9 @@ A fonte atual (`fonts/alterebro-pixel-font.ttf`) possui licença **CC BY-NC** (n
 
 ### 5.2 Kit UI em pixel art (reutilizável em E6, E5 e E8)
 
-Todos os controles (`assets/src/refs/menu-mockup-ref.jpg`) migram de `StyleBoxFlat` liso para `StyleBoxTexture` 9-slice em pixel art (`filter = Nearest`, sem antialiasing), garantindo alvos interativos `>= 48×48 px` em `360×640` (`2×` sobre `24×24` da base anterior) e pistas não-cor em todos os estados:
+Todos os controles (`assets/src/refs/_inspiracao-ia/menu-mockup-ref.jpg`) migram de `StyleBoxFlat` liso para `StyleBoxTexture` 9-slice em pixel art (`filter = Nearest`, sem antialiasing), garantindo alvos interativos `>= 48×48 px` em `360×640` (`2×` sobre `24×24` da base anterior) e pistas não-cor em todos os estados:
+
+> **Divergência aprovada pelo dono (rascunho do menu, `assets/src/refs/menu-rascunho.png`):** os botões do menu são **pílulas** (cantos totalmente arredondados) cujo contorno tem **`1 px` na própria família de cor do botão** (`menu cta linha`, `menu btn linha`, `menu card linha` da seção 1.2), e não `2 px` de `ink_contorno` `#052018` como na linha de botões abaixo. As demais pistas (corpo, chanfro, sombra, estados e alvo `>= 48×48 px`) valem como especificado. Esse acabamento é o que o dono refina no Aseprite; a tabela abaixo permanece como contrato de estados e dimensões.
 
 | Componente | Construção 9-slice / Sprite | Estados e pistas não-cor |
 |---|---|---|
@@ -396,7 +434,7 @@ Valores horizontais com `s_left = s_right = 0`. A coluna `360×640` assume `s_to
 
 | Elemento | Tamanho (`w×h`) | `y_rel` no bloco | Folga abaixo | `360×640` (`y0 = 42`) | `360×800` (`y0 = 122`) | Estado / Regra |
 |---|---|---|---:|---|---|---|
-| **Logo `"GECKO JUMP"`** | `312×96` | `[0, 96]` | `20 px` | `x[24, 336] y[42, 138]` | `x[24, 336] y[122, 218]` | Sprite pixel art (não interativo, `assets/src/refs/menu-mockup-ref.jpg`): letras gordinhas arcade com contorno escuro `#052018`, `"GECKO"` verde-amarelo com `G` em cauda espiral, `"JUMP"` em gradiente quente e gecko chibi empoleirado |
+| **Logo `"GECKO JUMP"`** | `312×96` | `[0, 96]` | `20 px` | `x[24, 336] y[42, 138]` | `x[24, 336] y[122, 218]` | Sprite pixel art (não interativo, `assets/src/refs/_inspiracao-ia/menu-mockup-ref.jpg`): letras gordinhas arcade com contorno escuro `#052018`, `"GECKO"` verde-amarelo com `G` em cauda espiral, `"JUMP"` em gradiente quente e gecko chibi empoleirado |
 | **Botão `Play` (normal)** | `248×72` | `[116, 188]` | `16 px` | `x[56, 304] y[158, 230]` | `x[56, 304] y[238, 310]` | CTA `ui_cta_base`, fonte `64 px`; alvo `>= 48×48` |
 | **Botão `Play` (estendido Diário)** | `296×72` | `[116, 188]` | `16 px` | `x[32, 328] y[158, 230]` | `x[32, 328] y[238, 310]` | Texto `"Ja jogado hoje"` em `32 px`, estado `disabled`; mesma altura/faixa `y` do normal |
 | **Botão `Modo: <nome>`** | `296×52` | `[204, 256]` | `16 px` | `x[32, 328] y[246, 298]` | `x[32, 328] y[326, 378]` | Botão padrão `ui_btn_base`, fonte `32 px`; comporta todos os rótulos de `GameModes.gd` |
