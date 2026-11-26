@@ -14,6 +14,7 @@ const ROTEIROS: Array[String] = [
 	"estagio-alto",
 	"gecko",
 	"janela-larga-1280x720",
+	"pausa-foco",
 	"power-up",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
@@ -22,6 +23,7 @@ const ROTEIROS: Array[String] = [
 	"retrato-pontua-1080x2772",
 	"retrato-queda-720x1280",
 	"toque",
+	"toque-modo-a",
 	"toque-modo-b",
 ]
 const ROTEIROS_LONGOS: Array[String] = [
@@ -44,7 +46,9 @@ const ROTEIROS_SEMDERROTA: Array[String] = [
 	"estagio-alto",
 	"gecko",
 	"power-up",
+	"toque-modo-a",
 	"toque-modo-b",
+	"pausa-foco",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
 	"retrato-1170x2532",
@@ -206,9 +210,9 @@ func test_expect_usa_so_chaves_e_operadores_do_contrato() -> void:
 						assert_true(OPERADORES.has(str(operador)), "o operador deve ser eq/ne/gt/gte/lt/lte")
 
 
-# Um `down Space` ou um `click` (toque no Play) inicia a partida quando, depois dele, so `wait`/`up` precedem um `expect` com state eq "playing".
+# Um `down Space`, um `click` ou um `tap` (toque no Play) inicia a partida quando, depois dele, so `wait`/`up` precedem um `expect` com state eq "playing".
 func _inicia_partida(passos: Array, i: int) -> bool:
-	if passos[i].get("down", "") != "Space" and not passos[i].has("click"):
+	if passos[i].get("down", "") != "Space" and not passos[i].has("click") and not passos[i].has("tap"):
 		return false
 	var j: int = i + 1
 	while j < passos.size() and (passos[j].has("wait") or passos[j].has("up")):
@@ -718,13 +722,7 @@ func test_roteiro_diario_valida_passos_e_seletor_com_6_entradas() -> void:
 	assert_gte(i_reload, i_primeiro_jump, "o reload vem depois do 1o jump bloqueado")
 	assert_lt(i_reload, i_ultimo_jump, "o ultimo jump bloqueado acontece depois do reload (dia jogado lido do disco)")
 	# passos validos (contrato do game-smoke): cada passo declara exatamente uma acao do runner
-	var acoes: Array[String] = ["down", "up", "press", "click", "tap", "hold", "drag", "touches", "wait", "shots", "expect", "reload", "blur", "hidden"]
-	for i in passos.size():
-		var declaradas: int = 0
-		for acao in acoes:
-			if passos[i].has(acao):
-				declaradas += 1
-		assert_eq(declaradas, 1, "o passo %d declara exatamente uma acao do runner" % i)
+	assert_eq(_erros_do_roteiro(nome), [], "todo passo do Diario e valido no contrato do runner")
 
 
 func test_nome_de_powerup_invalido_reprova() -> void:
@@ -857,3 +855,204 @@ func test_C840_drags_dos_roteiros_720x1280_respeitam_zona_morta_e_flick_2x() -> 
 				if dy > dx:
 					assert_gte(dy, FLICK_LOGICO, "C840: %s flick vertical de %.1f px logicos abaixo do flick 48" % [nome, dy])
 		assert_gt(total_movimentos, 0, "C840: %s sem nenhum arrasto" % nome)
+
+
+# --- f568 T5: passos de toque/foco (tap, hold, hidden, blur, still) e roteiros toque/toque-modo-*/pausa-foco ---
+
+# Acoes do runner (game-smoke.mjs validateSpec): cada passo declara exatamente uma.
+const ACOES_RUNNER: Array[String] = ["down", "up", "press", "click", "tap", "hold", "drag", "touches", "wait", "shots", "expect", "reload", "blur", "hidden"]
+const ROTEIROS_DE_TOQUE_E_FOCO: Array[String] = ["toque", "toque-modo-a", "toque-modo-b", "pausa-foco"]
+const SEED_PAUSA_FOCO: int = 568
+# Limite de pulo do toque.smoke.json: medido no export debug (pousado em 375-377, no ar apos o pulo y cai para 304).
+const LIMITE_Y_PULO_TOQUE: float = 340.0
+
+
+func _numero(valor: Variant) -> bool:
+	return typeof(valor) == TYPE_FLOAT or typeof(valor) == TYPE_INT
+
+
+func _coordenadas_ok(valor: Variant, tamanho: int) -> bool:
+	if typeof(valor) != TYPE_ARRAY or (valor as Array).size() != tamanho:
+		return false
+	for item in valor:
+		if not _numero(item):
+			return false
+	return true
+
+
+# Erros de um passo no contrato do runner (uma mensagem por violacao); vazio = passo valido.
+func _erros_do_passo(passo: Dictionary) -> Array[String]:
+	var erros: Array[String] = []
+	var declaradas: int = 0
+	for acao in ACOES_RUNNER:
+		if passo.has(acao):
+			declaradas += 1
+	if declaradas != 1:
+		erros.append("o passo deve declarar exatamente uma acao do runner (declara %d)" % declaradas)
+	if passo.has("tap") and not _coordenadas_ok(passo["tap"], 2):
+		erros.append("tap exige [x, y] numericos")
+	if passo.has("hold") and not (_coordenadas_ok(passo["hold"], 3) and float(passo["hold"][2]) >= 0.0):
+		erros.append("hold exige [x, y, ms] numericos com ms >= 0")
+	for chave in ["hidden", "blur"]:
+		if passo.has(chave) and typeof(passo[chave]) != TYPE_BOOL:
+			erros.append("%s exige booleano" % chave)
+	if passo.has("still") and not (passo.has("shots") and _numero(passo["shots"]) and float(passo["shots"]) >= 2.0):
+		erros.append("still exige shots >= 2")
+	return erros
+
+
+func _erros_do_roteiro(nome: String) -> Array[String]:
+	var erros: Array[String] = []
+	var passos := _passos(nome)
+	if passos.is_empty():
+		erros.append("%s: roteiro sem passos" % nome)
+	for i in passos.size():
+		for erro in _erros_do_passo(passos[i]):
+			erros.append("%s steps[%d]: %s" % [nome, i, erro])
+	return erros
+
+
+func test_C841_passo_invalido_reprova_com_a_mensagem_do_caso() -> void:
+	var casos: Array = [
+		[{"tap": []}, "tap exige [x, y] numericos"],
+		[{"tap": [10]}, "tap exige [x, y] numericos"],
+		[{"hold": [10, 20]}, "hold exige [x, y, ms] numericos com ms >= 0"],
+		[{"hold": [10, 20, -1]}, "hold exige [x, y, ms] numericos com ms >= 0"],
+		[{"hidden": "true"}, "hidden exige booleano"],
+		[{"hidden": 1}, "hidden exige booleano"],
+		[{"blur": "true"}, "blur exige booleano"],
+		[{"blur": 1}, "blur exige booleano"],
+		[{"shots": 1, "still": true}, "still exige shots >= 2"],
+		[{"tap": [10, 20], "wait": 100}, "o passo deve declarar exatamente uma acao do runner (declara 2)"],
+	]
+	for caso in casos:
+		assert_eq(_erros_do_passo(caso[0]), [caso[1]], "C841: %s deve reprovar com '%s'" % [str(caso[0]), caso[1]])
+
+
+func test_C842_passo_valido_de_cada_tipo_e_aceito() -> void:
+	var validos: Array = [
+		{"tap": [10, 20]},
+		{"hold": [10, 20, 0]},
+		{"hidden": true},
+		{"blur": false},
+		{"shots": 2, "every": 100, "name": "rajada", "still": true},
+	]
+	for passo in validos:
+		assert_eq(_erros_do_passo(passo), [], "C842: %s e um passo valido" % str(passo))
+
+
+func test_C843_roteiros_de_toque_e_foco_passam_no_validador_de_uma_acao_por_passo() -> void:
+	for nome in ROTEIROS_DE_TOQUE_E_FOCO:
+		assert_gt(_passos(nome).size(), 0, "C843: %s existe e tem passos" % nome)
+		assert_eq(_erros_do_roteiro(nome), [], "C843: todo passo de %s e valido no contrato do runner" % nome)
+
+
+func test_C844_toque_usa_tap_e_hold_sem_click_e_confere_player_y() -> void:
+	var nome: String = "toque"
+	var passos := _passos(nome)
+	var i_tap_play: int = -1
+	var taps_de_jogo: int = 0
+	var holds_de_jogo: int = 0
+	for i in passos.size():
+		assert_false(passos[i].has("click"), "C844: %s nao tem click (passo %d)" % [nome, i])
+		var e_tap: bool = passos[i].has("tap")
+		if not e_tap and not passos[i].has("hold"):
+			continue
+		if e_tap and i_tap_play < 0:
+			i_tap_play = i
+			assert_eq(_estado_do_proximo_expect(passos, i), "playing", "C844: o tap no Play e seguido de expect state playing")
+			continue
+		if e_tap:
+			taps_de_jogo += 1
+		else:
+			holds_de_jogo += 1
+		var seguinte: Dictionary = passos[i + 1] if i + 1 < passos.size() else {}
+		var exigencia: Dictionary = seguinte.get("expect", {})
+		assert_eq(exigencia.get("player.y", null), {"lt": LIMITE_Y_PULO_TOQUE}, "C844: o passo %d e seguido de expect player.y lt %.0f (medido no export)" % [i, LIMITE_Y_PULO_TOQUE])
+	assert_gte(i_tap_play, 0, "C844: o Play e por tap")
+	assert_gte(taps_de_jogo, 1, "C844: ao menos 1 tap de jogo")
+	assert_gte(holds_de_jogo, 1, "C844: ao menos 1 hold de jogo")
+
+
+func test_C845_inicia_partida_reconhece_tap_e_reinicia_o_orcamento_da_rajada() -> void:
+	var curta: Dictionary = {"shots": 4, "every": 400, "name": "apos-tap", "moving": true}
+	var spec_tap: Dictionary = {"steps": [{"wait": 2000}, {"tap": [360, 640]}, {"expect": {"state": "playing"}}, curta]}
+	assert_eq(_estouros_do_spec("s", spec_tap).size(), 0, "C845: o tap no Play reinicia o orcamento (1200 ms desde o tap, nao 3200 desde o inicio)")
+	var longa: Dictionary = {"shots": 4, "every": 600, "name": "apos-tap-longa", "moving": true}
+	var spec_longa: Dictionary = {"steps": [{"tap": [360, 640]}, {"expect": {"state": "playing"}}, longa]}
+	var estouros := _estouros_do_spec("s", spec_longa)
+	assert_eq(estouros.size(), 1, "C845: rajada moving de 1800 ms depois do tap estoura o orcamento de 1500 ms")
+	assert_true(estouros.size() == 1 and (estouros[0] as String).begins_with("s/apos-tap-longa:"), "C845: a falha cita roteiro e rajada")
+
+
+# Indice do 1o passo depois de `desde` com `chave` igual a `valor`; -1 quando nao ha.
+func _indice_passo_com(passos: Array, desde: int, chave: String, valor: Variant) -> int:
+	for i in range(desde + 1, passos.size()):
+		if passos[i].has(chave) and passos[i][chave] == valor:
+			return i
+	return -1
+
+
+# Indice da 1a rajada (`shots`) depois de `desde` com `marca` (`still`/`moving`) true; -1 quando nao ha.
+func _indice_rajada(passos: Array, desde: int, marca: String) -> int:
+	for i in range(desde + 1, passos.size()):
+		if passos[i].has("shots") and passos[i].get(marca, false) == true:
+			return i
+	return -1
+
+
+func test_C846_pausa_foco_pausa_em_hidden_e_blur_e_so_continuar_retoma() -> void:
+	var nome: String = "pausa-foco"
+	var passos := _passos(nome)
+	var inicio: int = -1
+	var rajadas_moving: Array[int] = []
+	for chave in ["hidden", "blur"]:
+		var i_on: int = _indice_passo_com(passos, inicio, chave, true)
+		assert_gte(i_on, 0, "C846: %s tem {%s: true}" % [nome, chave])
+		var i_off: int = _indice_passo_com(passos, i_on, chave, false)
+		assert_gt(i_off, i_on, "C846: %s: {%s: false} vem depois do true" % [nome, chave])
+		if i_on < 0 or i_off <= i_on:
+			return
+		var i_still_pausa: int = _indice_rajada(passos, i_on, "still")
+		assert_gt(i_still_pausa, i_on, "C846: %s: a rajada still vem depois de %s true" % [nome, chave])
+		assert_lt(i_still_pausa, i_off, "C846: %s: a rajada still de pausa vem antes de %s false" % [nome, chave])
+		var i_still_volta: int = _indice_rajada(passos, i_off, "still")
+		assert_gt(i_still_volta, i_off, "C846: %s: o foco de volta (%s false) segue pausado (rajada still depois)" % [nome, chave])
+		var i_click: int = _indice_passo_com(passos, maxi(i_still_volta, i_off), "click", [180.0, 326.0])
+		assert_gt(i_click, i_still_volta, "C846: %s: Continuar (click 180,326) vem depois do still do foco de volta" % nome)
+		var i_moving: int = _indice_rajada(passos, i_click, "moving")
+		assert_gt(i_moving, i_click, "C846: %s: a rajada moving vem depois de Continuar (%s)" % [nome, chave])
+		inicio = i_moving
+		rajadas_moving.append(i_moving)
+	assert_eq(passos[passos.size() - 1].get("moving", null), true, "C846: o roteiro fecha com rajada moving")
+	assert_eq(rajadas_moving[1], passos.size() - 1, "C846: a rajada moving do ultimo par e o passo final")
+
+
+func test_C847_pausa_foco_esta_registrado_com_seed_568_unica() -> void:
+	var nome: String = "pausa-foco"
+	assert_true(ROTEIROS.has(nome), "C847: pausa-foco esta em ROTEIROS")
+	_checar_roteiro_com_seed(nome)
+	var caminho: String = str(_carregar(nome).get("path", ""))
+	assert_eq(_valor_query_int(caminho, "seed"), SEED_PAUSA_FOCO, "C847: seed 568")
+	assert_true("tutorial=visto" in caminho, "C847: pula o tutorial")
+	assert_eq("semderrota=1" in caminho, ROTEIROS_SEMDERROTA.has(nome), "C847: semderrota=1 so se esta na lista explicita")
+	var dono_da_seed: Array[String] = []
+	var pasta := DirAccess.open(PASTA)
+	assert_not_null(pasta, "C847: a pasta de roteiros abre")
+	if pasta == null:
+		return
+	for arquivo in pasta.get_files():
+		if not arquivo.ends_with(".smoke.json"):
+			continue
+		var outro: String = arquivo.trim_suffix(".smoke.json")
+		if _valor_query_int(str(_carregar(outro).get("path", "")), "seed") == SEED_PAUSA_FOCO:
+			dono_da_seed.append(outro)
+	assert_eq(dono_da_seed, ["pausa-foco"], "C847: a seed 568 e so do pausa-foco")
+
+
+func test_C848_toque_modo_a_com_semderrota_esta_nas_duas_listas() -> void:
+	var nome: String = "toque-modo-a"
+	_checar_roteiro_com_seed(nome)
+	var tem_semderrota: bool = "semderrota=1" in str(_carregar(nome).get("path", ""))
+	assert_eq(ROTEIROS.has(nome), tem_semderrota, "C848: toque-modo-a esta em ROTEIROS quando mantem semderrota=1")
+	assert_eq(ROTEIROS_SEMDERROTA.has(nome), tem_semderrota, "C848: toque-modo-a esta em ROTEIROS_SEMDERROTA quando mantem semderrota=1")
