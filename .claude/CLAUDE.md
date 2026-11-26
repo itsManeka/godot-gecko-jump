@@ -5,16 +5,12 @@ pouso troca de cor e ganha 1 ponto. Prototipo da game jam #1JAM Chroma rumo a ve
 
 ## Contexto obrigatorio
 
-Antes de tocar codigo: [`docs/planejamento-implementacao.md`](../docs/planejamento-implementacao.md) (roadmap, epic
-atual, regras de trabalho) e [`docs/adr/`](../docs/adr/README.md). Backlog e bugs conhecidos: issues do GitHub.
-Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
+Antes de tocar codigo: [`docs/planejamento-implementacao.md`](../docs/planejamento-implementacao.md) (roadmap, epic atual, regras de trabalho) e [`docs/adr/`](../docs/adr/README.md). Backlog e bugs conhecidos: issues do GitHub. Todo problema encontrado vira issue (sintoma, causa, criterio de aceite).
 
 ## Stack
 
-- **Godot 4.7.2** (`config_version=5`, `CharacterBody2D`). GDScript 4 (`@onready`, `@export`, tipagem).
-- GDScript. Autoload `Global` (`scripts/Global.gd`). Addon GUT v9.7.1 vendorizado em `addons/gut/` (plugin habilitado no `project.godot`).
-- Executavel fora do PATH: `workspace-config.json` → `ecosystems.game-gecko.tools` (dev-workspace) ou env
-  `GODOT_PATH`.
+- **Godot 4.7.2** (`config_version=5`, `CharacterBody2D`). GDScript 4 (`@onready`, `@export`, tipagem). Autoload `Global` (`scripts/Global.gd`). Addon GUT v9.7.1 vendorizado em `addons/gut/` (plugin habilitado no `project.godot`).
+- Executavel fora do PATH: `workspace-config.json` → `ecosystems.game-gecko.tools` (dev-workspace) ou env `GODOT_PATH`.
 - CI: `.github/workflows/ci.yml` (jobs `verify`, `export-web` e agregador `CI`); Godot 4.7.2 vem da action `.github/actions/setup-godot` (trocar versao = atualizar la `GODOT_VERSION` e as duas somas SHA-512; o resto deriva delas).
 
 ## Comandos
@@ -80,6 +76,4 @@ Trunk: branch a partir de `main`, PR para `main`, merge pelo dono. Commits peque
 
 ## Indice
 
-(sem indice)
-
-Agentes e memorias sao globais do workspace.
+(sem indice). Agentes e memorias sao globais do workspace.

@@ -66,12 +66,12 @@ Os demais ADRs seguintes **permanecem aceitos integralmente**:
   apenas cores da paleta, exibido no mesmo tamanho fisico de `720x1280`. A versao `64x64` tem 6 cores e a `32x32` tem
   5; nas duas, 0 pixels ficam fora da paleta. A migracao de codigo para `360x640` segue em entrega propria.
 - **Identidade, paleta e pipeline:** adotar estetica pixel art **16-bit SNES/GBA luminosa e carismatica**, com contorno
-  escuro limpo `#161822`, sombreado quente e acabamento manual do dono. A referencia de cada personagem e uma ref mestra
+  escuro limpo `#052018`, sombreado quente e acabamento manual do dono. A referencia de cada personagem e uma ref mestra
   aprovada pelo dono (o gecko bipede chibi), e a estrutura de todas as rodadas e medida contra ela. A paleta de trabalho
   (`assets/src/palette.gpl`) e um conjunto de rampas aprovadas por material, **sem teto fixo de cores**: a paleta de
   32 cores da fase anterior vira base, nao limite. Obrigatorios: as 4 ancoras de `scripts/Enums.gd` (`#f6db61`,
   `#79cf5a`, `#5987e9`, `#ec4848`) como cor media de cada variante; contraste do padrao `#41` em escala de cinza; e
-  contraste **WCAG AA >= 4.5:1** em todos os pares de texto/UI (com contorno `#161822` e faixa `#161822` a `70%` no HUD
+  contraste **WCAG AA >= 4.5:1** em todos os pares de texto/UI (com contorno `#052018` e faixa `#052018` a `70%` no HUD
   sobre fundos claros). Ilhotas flutuantes usam 3 tons de terra/rocha organica.
 - **Pipeline de arte:** o agente `pixel-artist` (modelo `opus`) desenha na grade e na paleta de trabalho no Aseprite,
   uma pose por rodada. Cada rodada ancora a estrutura na ref mestra: mede mascara, IoU e medidas em px, e gera um

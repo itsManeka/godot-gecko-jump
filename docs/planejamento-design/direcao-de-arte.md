@@ -88,18 +88,18 @@ Os tokens abaixo continuam válidos e são os usados na prova de contraste da se
 | | `ui_desabilitado` | `#3b4654` | `0.0595` | `69` | Fundo de botão desabilitado (`"Ja jogado hoje"`) e ranhura de cursor |
 | | `ui_texto_sec` | `#d4e0e6` | `0.7302` | `222` | Texto secundário, rótulo desabilitado, nuvens iluminadas e estrelas |
 | | `branco_texto` | `#fffdf5` | `0.9810` | `253` | Texto primário, olhos do gecko, brilho de nuvem, ícones HUD, cursor do slider |
-| **Gameplay Amarelo (3)** | `amarelo_luz` | `#fff4b8` | `0.8942` | `242` | Brilho superior do mel/gecko amarelo, brilhos dourados em `color_change`, pulso `LevelUpFrame` |
+| **Gameplay Amarelo (3)** | `amarelo_luz` | `#fff4b8` | `0.8942` | `242` | Token legado fora da paleta de trabalho. Brilho superior do mel/gecko amarelo, brilhos dourados em `color_change`, pulso `LevelUpFrame` |
 | | `amarelo_base` | `#f6db61` | `0.7112` | `216` | Âncora `Enums.COLOR.AMARELO`, moldura de foco, destaque de recorde |
 | | `amarelo_sombra` | `#c48f29` | `0.3154` | `147` | Sombra quente do mel pingando, relevo da cobertura e do gecko amarelo |
-| **Gameplay Verde (3)** | `verde_luz` | `#bef297` | `0.7669` | `224` | Brilho da grama/folhas e topo do gecko verde |
+| **Gameplay Verde (3)** | `verde_luz` | `#bef297` | `0.7669` | `224` | Token legado fora da paleta de trabalho. Brilho da grama/folhas e topo do gecko verde |
 | | `verde_base` | `#79cf5a` | `0.4943` | `180` | Âncora `Enums.COLOR.VERDE`, cobertura de grama e rostinho de `segunda_chance` |
-| | `verde_sombra` | `#3f8f42` | `0.2110` | `120` | Sombra das vinhas/folhinhas e do gecko verde |
+| | `verde_sombra` | `#3f8f42` | `0.2110` | `120` | Token legado fora da paleta de trabalho. Sombra das vinhas/folhinhas e do gecko verde |
 | **Gameplay Azul (3)** | `azul_luz` | `#a6c8ff` | `0.5664` | `197` | Faceta iluminada dos micro-cristais/gelo e brilho do gecko azul |
 | | `azul_base` | `#5987e9` | `0.2533` | `132` | Âncora `Enums.COLOR.AZUL` |
-| | `azul_sombra` | `#3050a8` | `0.0919` | `80` | Sombra prismática do gelo/cristal e do gecko azul |
-| **Gameplay Vermelho (3)** | `vermelho_luz` | `#ff9b90` | `0.4672` | `175` | Brilho quente da cobertura vermelha, coração e gecko vermelho |
+| | `azul_sombra` | `#3050a8` | `0.0919` | `80` | Token legado fora da paleta de trabalho. Sombra prismática do gelo/cristal e do gecko azul |
+| **Gameplay Vermelho (3)** | `vermelho_luz` | `#ff9b90` | `0.4672` | `175` | Token legado fora da paleta de trabalho. Brilho quente da cobertura vermelha, coração e gecko vermelho |
 | | `vermelho_base` | `#ec4848` | `0.2294` | `107` | Âncora `Enums.COLOR.VERMELHO`, cobertura/cogumelos e coração de `segunda_chance` |
-| | `vermelho_sombra` | `#9e2433` | `0.0877` | `63` | Sombra quente da cobertura vermelha, coração e gecko vermelho |
+| | `vermelho_sombra` | `#9e2433` | `0.0877` | `63` | Token legado fora da paleta de trabalho. Sombra quente da cobertura vermelha, coração e gecko vermelho |
 | **Terra / Rocha Orgânica (3)** | `terra_luz` | `#a87349` | `0.2107` | `123` | Relevo iluminado da terra/rocha na base das ilhotas flutuantes |
 | | `terra_base` | `#784b2e` | `0.0922` | `82` | Corpo orgânico da terra/rocha das ilhotas e fragmentos de desmoronamento |
 | | `terra_sombra` | `#472b1b` | `0.0315` | `48` | Sombra profunda sob a cobertura derramando e rachaduras da ilhota |
@@ -173,12 +173,14 @@ Imagem gerada por IA entra **só como inspiração** (`assets/src/refs/_inspirac
 | Gecko mestre (idle) | `assets/src/refs/gecko-idle-mestre.aseprite` / `.png` | Ref mestra `64×64` acabada pelo dono: rampa, contorno, luz e proporções (seções 1.2 e 1.5) |
 | Gecko verde, amarelo e azul | `assets/src/refs/gecko-verde.*`, `gecko-amarelo.*`, `gecko-azul.*` (`.aseprite` + `.png`) | Variantes aprovadas pelo dono com marca `#41` própria (brotinho, manchas solares, cristais de gelo) |
 | Gecko vermelho | (sem arquivo em `assets/src/refs/` ainda) | **Pendente do acabamento do dono no Aseprite**; chega com rampa no `palette.gpl` e nova rodada da prova cinza |
-| Plataformas | `assets/src/refs/plataforma-amarelo.*`, `plataforma-verde.*`, `plataforma-azul.*`, `plataforma-vermelho.*` (`.aseprite` + `.png`) | 4 ilhotas aprovadas; a azul é a versão com gelo clareado (original preservado em `assets/src/_orig/plataforma-azul-r15.*`) |
+| Plataformas | `assets/src/refs/plataforma-amarelo.*`, `plataforma-verde.*`, `plataforma-azul.*`, `plataforma-vermelho.*` (`.aseprite` + `.png`) | 4 ilhotas aprovadas; a azul é a versão com gelo clareado (a versão anterior da plataforma azul fica preservada em `assets/src/_orig/plataforma-azul-r15.*`) |
 | Prova cinza `#41` | `assets/src/refs/prova-cinza-41.png` (gerada por `assets/src/prova_cinza_41.py`) | Prancha em escala de cinza aprovada pelo dono, com o gecko vermelho marcado **pendente** |
 | Rascunho do menu | `assets/src/refs/menu-rascunho.aseprite` / `.png` | Rascunho aprovado do menu (seção 5.3); o dono faz o acabamento |
 | Inspiração de clima | `assets/src/refs/_inspiracao/pixel-cozy.png`, `pixel-bg.png` | Só referência (origem/licença desconhecida); não entra no jogo |
 | Inspiração de IA | `assets/src/refs/_inspiracao-ia/` | `gecko-bipede-chibi-ref.jpg` (+ `_stand.png`), `ilhotas-powerups-ref.jpg`, `biomas-4-estagios-ref.jpg`, `menu-mockup-ref.jpg`: composição e clima, não pixel art de produção |
 | Power-ups, tiles de bioma e kit UI | (ainda sem arte) | Ref na feature de execução |
+
+O catálogo, a prova cinza e a rampa da plataforma vermelha fecham juntos quando o gecko vermelho do dono chegar.
 
 O arquivo `assets/src/direcao-arte.aseprite` foi removido: os arquivos de `assets/src/refs/` o substituem.
 
@@ -616,6 +618,7 @@ Todo ativo embarcado no `.pck` (sprites, fontes, SFX, músicas) deve ser 100% co
 | `sounds/jump.wav` | SFX | **Sem licença registrada** no repositório (provisório de game jam) | **BLOQUEADO** — ausência de licença impede distribuição comercial segura | Cópia histórica mantida em `assets/src/_orig/jump.wav` (isolada por `.gdignore`); substituir por síntese própria (`jsfxr`) + `jump.sfx.json` na entrega de SFX e registrar em `sounds/LICENSES.md` |
 | `sounds/lose.wav` | SFX | **Sem licença registrada** no repositório (provisório de game jam) | **BLOQUEADO** — ausência de licença impede distribuição comercial segura | Cópia histórica mantida em `assets/src/_orig/lose.wav` (isolada por `.gdignore`); substituir por síntese própria (`jsfxr`) + `lose.sfx.json` na entrega de SFX e registrar em `sounds/LICENSES.md` |
 | `assets/Gecko.png`, `assets/GeckoPlataforma.png`, `icon.png` | Sprites | Autoral do projeto (provisórios de game jam) | Elegível (substituídos pela arte final E6) | Cópias históricas mantidas em `assets/src/_orig/`; arte final produzida no Aseprite (`ADR 0004`) |
+| `assets/src/refs/_inspiracao/pixel-cozy.png`, `pixel-bg.png` | Imagens de referência | Origem e licença desconhecidas | Só referência visual: fora do `.pck` por `assets/src/.gdignore`, não entra no jogo nem em export | Manter isoladas em `assets/src/`; nenhum pixel é copiado para ativo do jogo |
 
 ### 7.3 Formato obrigatório de registro (`fonts/LICENSES.md` e `sounds/LICENSES.md`)
 
