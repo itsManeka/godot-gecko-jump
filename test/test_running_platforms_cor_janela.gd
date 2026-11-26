@@ -6,6 +6,8 @@ extends GutTest
 const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
 const SEMENTES := 50
 const NOVAS_PLATAFORMAS := 30
+# Troca de cor: 2 geradores moveis por semente na arvore (o custo domina o arquivo); menos sementes bastam para provar a troca
+const SEMENTES_TROCA := 10
 
 var _cor_original: Enums.COLOR
 
@@ -94,17 +96,19 @@ func test_cor_vem_de_global_e_acompanha_a_mudanca() -> void:
 	var cor_y: Enums.COLOR = Enums.COLOR.VERMELHO
 	var sem_x := 0
 	var sem_y := 0
-	for semente in SEMENTES:
+	for semente in SEMENTES_TROCA:
 		Global.cor_gecko = cor_x
 		var gerador_x := _gerador_movel(_rng(semente))
 		for i in NOVAS_PLATAFORMAS:
 			gerador_x.new_platform()
 		sem_x += _janelas_sem_a_cor(_cores(gerador_x), cor_x)
+		gerador_x.queue_free()
 		Global.cor_gecko = cor_y
 		var gerador_y := _gerador_movel(_rng(semente))
 		for i in NOVAS_PLATAFORMAS:
 			gerador_y.new_platform()
 		sem_y += _janelas_sem_a_cor(_cores(gerador_y), cor_y)
+		gerador_y.queue_free()
 	assert_eq(sem_x, 0, "com Global.cor_gecko = X a janela garante X")
 	assert_eq(sem_y, 0, "com Global.cor_gecko = Y a janela passa a garantir Y")
 
