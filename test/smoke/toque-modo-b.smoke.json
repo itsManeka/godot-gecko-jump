@@ -2,7 +2,7 @@
   "path": "index.html?seed=472&semderrota=1&tutorial=visto&toque=b",
   "viewport": [720, 1280],
   "boot_ms": 6000,
-  "notes": "Modo B (dois polegares), viewport 720x1280 = 2x o logico 360x640 (metade esquerda x < 360 fisico = 180 logico, direita x >= 360 fisico). player.x/y em px logicos pela ponte; o sinal de cada limite vem da regra do modo: dedo direito sozinho = pulo reto (y menor, x na margem); dedo esquerdo sozinho (deslocado) = anda sem pular; os dois = diagonal para o lado do esquerdo. Limites de 180x320 dobrados para 360x640 (x inicial 190; verificado no T10: expect verde no smoke web 40/40 (verify-wave final da f565). Detalhe deterministico segue no GUT.",
+  "notes": "Modo B (dois polegares), viewport 720x1280 = 2x o logico 360x640 (metade esquerda x < 360 fisico = 180 logico, direita x >= 360 fisico). player.x/y em px logicos pela ponte; o sinal de cada limite vem da regra do modo: dedo direito sozinho = pulo reto (y menor, x na margem); dedo esquerdo sozinho (deslocado) = anda sem pular; os dois = diagonal para o lado do esquerdo. Limites de 180x320 dobrados para 360x640 (x inicial 190; verificado no T10: expect verde no smoke web 40/40 (verify-wave final da f565). Detalhe deterministico segue no GUT. f568 T3: removidos os `wait` de 300 e 500 ms entre gesto e `expect` (player.x lt 180 e on_floor); os `expect` ja pollam ate timeout_ms 3000, entao a leitura espera a pose sem tempo fixo. Mantidos os `wait` de 400 (inicio da partida) e 900 (assentar antes do proximo gesto) e os `touches` (2 dedos e rajada final).",
   "steps": [
     { "expect": { "state": "menu" }, "timeout_ms": 3000 },
     { "tap": [360, 640] },
@@ -14,10 +14,8 @@
     { "expect": { "player.x": { "lt": 200 } }, "timeout_ms": 3000 },
     { "wait": 900 },
     { "touches": [{ "from": [200, 1000], "to": [160, 1000], "ms": 80 }] },
-    { "wait": 300 },
     { "expect": { "player.x": { "lt": 180 } }, "timeout_ms": 3000 },
     { "expect": { "player.y": { "gt": 380 } }, "timeout_ms": 3000 },
-    { "wait": 500 },
     { "expect": { "player.on_floor": true }, "timeout_ms": 3000 },
     {
       "touches": [
