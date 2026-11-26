@@ -33,15 +33,20 @@ function errorsIn(out) {
 
 // Saida do GUT vermelho: o que falhou (linhas [Failed]/Failing/Parse Error/SCRIPT ERROR, com 1 linha de contexto, ate
 // 3000 caracteres) vem antes do rabo, porque push_warning do jogo enche o fim do log e esconde a causa.
+// Erro de script/parse vem antes dos [Failed], para o corte dos 3000 nao esconde-lo atras de muitas falhas de assert.
 // O rabo ignora as linhas WARNING.
 function gutFailureReport(plain, tailChars) {
   const lines = plain.split(/\r?\n/);
-  const hit = /\[Failed\]|Failing|Parse Error|SCRIPT ERROR/;
-  const keep = new Set();
-  lines.forEach((l, i) => {
-    if (hit.test(l)) for (let k = Math.max(0, i - 1); k <= Math.min(lines.length - 1, i + 1); k++) keep.add(k);
-  });
-  const summary = [...keep].sort((a, b) => a - b).map((i) => lines[i]).join('\n').slice(0, 3000);
+  const block = (re) => {
+    const keep = new Set();
+    lines.forEach((l, i) => {
+      if (re.test(l)) for (let k = Math.max(0, i - 1); k <= Math.min(lines.length - 1, i + 1); k++) keep.add(k);
+    });
+    return [...keep].sort((a, b) => a - b).map((i) => lines[i]);
+  };
+  const scriptErrors = block(/Parse Error|SCRIPT ERROR/);
+  const failed = block(/\[Failed\]|Failing/).filter((l) => !scriptErrors.includes(l));
+  const summary = [...scriptErrors, ...failed].join('\n').slice(0, 3000);
   const tail = lines.filter((l) => !l.startsWith('WARNING:')).join('\n').slice(-tailChars);
   return `${summary ? `--- falhas ---\n${summary}\n` : ''}--- rabo ---\n${tail}`;
 }
