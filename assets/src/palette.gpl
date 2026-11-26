@@ -55,7 +55,9 @@ Columns: 8
 166 200 255	azul_luz
 226 238 250	azul barriga
 178 200 234	azul barriga sombra
-# Plataformas (secao 3.2), aprovadas pelo dono; amarela e azul usam tons ja listados acima
+# Plataformas (secao 3.2), aprovadas pelo dono; a amarela usa tons ja listados acima
+# Sombra do gelo da plataforma azul (mais fria que azul 1 sombra; demais tons do gelo ja listados acima)
+ 58  90 214	gelo 1 sombra
 # Cobertura de grama da plataforma verde (base = ancora_verde)
  34  96  74	grama 0 linha
  82 186  86	grama 1 sombra
@@ -74,3 +76,29 @@ Columns: 8
 244 156 137	vermelho 4 brilho
 255 233 214	vermelho talo
 243 195 165	vermelho talo sombra
+# Menu (secao 5.3), aprovado pelo dono; ceu/nuvens/folhagem de fundo sem contorno (secao 1.1)
+112 162 212	menu ceu
+247 255 232	menu nuvem luz
+224 224 232	menu nuvem
+197 184 204	menu nuvem sombra
+170 182 196	menu nuvem funda
+ 60 163 112	menu folha
+143 222  93	menu folha luz
+207 255 112	menu folha brilho
+ 61 110 112	menu folha sombra
+# Botoes do menu: matizes de ui_cta_*, ui_btn_* e painel_escuro suavizadas
+138  79  42	menu cta linha
+196 127  76	menu cta sombra
+238 176 122	menu cta corpo
+248 207 162	menu cta luz
+255 240 216	menu cta brilho
+ 74 112  64	menu btn linha
+116 163 100	menu btn sombra
+156 200 134	menu btn corpo
+194 226 172	menu btn luz
+234 246 220	menu btn brilho
+ 42  52  80	menu card linha
+ 58  71 102	menu card sombra
+ 74  88 120	menu card corpo
+106 122 156	menu card luz
+154 168 198	menu card brilho
