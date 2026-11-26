@@ -1,6 +1,6 @@
 # 0002 — Tela mobile: largura logica 180 px, altura expandida, escala inteira
 
-- **Status:** aceito
+- **Status:** aceito; evoluido por [0015](0015-direcao-de-arte-fonte-comercial-e-audio-dinamico.md) (`360x640`)
 - **Data:** 2026-11-08 (corrigido em 2026-11-10: `aspect` e `keep_width`, o jogo e so retrato)
 - **Decisores:** itsManeka + Claude
 

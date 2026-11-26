@@ -1,6 +1,6 @@
 # 0004 — Arte no Aseprite compilado do fork pessoal, rascunho por IA
 
-- **Status:** aceito
+- **Status:** aceito; rascunho por IA evoluido por [0015](0015-direcao-de-arte-fonte-comercial-e-audio-dinamico.md) (pixel-artist na grade; IA so inspiracao)
 - **Data:** 2026-11-08
 - **Decisores:** itsManeka + Claude
 

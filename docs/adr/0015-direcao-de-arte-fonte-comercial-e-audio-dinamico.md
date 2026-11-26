@@ -42,10 +42,9 @@ A especificacao visual, de acessibilidade, de geometria do menu, de audio e de l
 Os demais ADRs seguintes **permanecem aceitos integralmente**:
 
 - [ADR 0004](0004-arte-no-aseprite-com-rascunho-por-ia.md) (`aceito`): arte produzida no Aseprite local com fontes
-  editaveis isoladas em `assets/src/` (fora do `.pck` via `assets/src/.gdignore`), operando o fluxo de rascunho em
-  **2 etapas** (geracao visual sobre fundo neutro solido ancorada nas referencias aprovadas em `assets/src/refs/`,
-  seguida de recorte, remocao de fundo, alinhamento de grade/pivo, limpeza de contorno/paleta e montagem editavel
-  `.aseprite` + exportacao PNG/JSON no Aseprite local) antes do acabamento manual do dono.
+  editaveis isoladas em `assets/src/` (fora do `.pck` via `assets/src/.gdignore`) e exportacao PNG/JSON. Com esta
+  decisao, o rascunho deixa de vir de geracao de imagem por IA: o rascunho e desenhado na grade pelo agente
+  `pixel-artist` (ver secao 1), seguido do acabamento manual do dono. As imagens de IA ficam so como inspiracao.
 - [ADR 0006](0006-oraculo-de-jogo-em-3-camadas.md) (`aceito`): oraculo em 3 camadas mantido; alteracoes de resolucao e
   layout de menu atualizam explicitamente os testes GUT de `Rect2` e roteiros `test/smoke/*.smoke.json`.
 - [ADR 0008](0008-pausa-por-tree-paused.md) (`aceito`): pausa governada por `get_tree().paused`, com
@@ -63,13 +62,23 @@ Os demais ADRs seguintes **permanecem aceitos integralmente**:
   (olhos expressivos, cauda espiral, ilhotas organicas com cogumelos/cristais/flores, biomas detalhados e logo arcade)
   sem perda nem borrao, a resolucao logica passa para **`360x640`** (`keep_width`, `Nearest`,
   `scale_mode = "integer"`), garantindo escala inteira exata em `720p` (`2x`), `1080p` (`3x`) e `1440p` (`4x`).
-- **Identidade, paleta e pipeline:** adotar estetica pixel art **16-bit SNES/GBA luminosa e carismatica** ancorada nas
-  referencias visuais aprovadas em `assets/src/ref-estilo-dono.jpg` e `assets/src/refs/`
-  (`gecko-bipede-chibi-ref.jpg`, `biomas-4-estagios-ref.jpg`, `ilhotas-powerups-ref.jpg`, `menu-mockup-ref.jpg`),
-  produzida no fluxo de 2 etapas + acabamento manual (`ADR 0004`), com contorno escuro limpo `#161822`, sombreado
-  quente e paleta de **32 cores unicas** ancorada nos 4 matizes de `scripts/Enums.gd` (`#f6db61`, `#79cf5a`, `#5987e9`,
-  `#ec4848`) mais 3 tons de terra/rocha organica para ilhotas flutuantes, garantindo contraste **WCAG AA >= 4.5:1** em
-  todos os pares de texto/UI (com contorno `#161822` e faixa `#161822` a `70%` no HUD sobre fundos claros).
+  A escolha foi confirmada por uma prova lado a lado: o mesmo gecko desenhado na grade em `32x32` e em `64x64`, usando
+  apenas cores da paleta, exibido no mesmo tamanho fisico de `720x1280`. A versao `64x64` tem 6 cores e a `32x32` tem
+  5; nas duas, 0 pixels ficam fora da paleta. A migracao de codigo para `360x640` segue em entrega propria.
+- **Identidade, paleta e pipeline:** adotar estetica pixel art **16-bit SNES/GBA luminosa e carismatica**, com contorno
+  escuro limpo `#161822`, sombreado quente e acabamento manual do dono. A referencia de cada personagem e uma ref mestra
+  aprovada pelo dono (o gecko bipede chibi), e a estrutura de todas as rodadas e medida contra ela. A paleta de trabalho
+  (`assets/src/palette.gpl`) e um conjunto de rampas aprovadas por material, **sem teto fixo de cores**: a paleta de
+  32 cores da fase anterior vira base, nao limite. Obrigatorios: as 4 ancoras de `scripts/Enums.gd` (`#f6db61`,
+  `#79cf5a`, `#5987e9`, `#ec4848`) como cor media de cada variante; contraste do padrao `#41` em escala de cinza; e
+  contraste **WCAG AA >= 4.5:1** em todos os pares de texto/UI (com contorno `#161822` e faixa `#161822` a `70%` no HUD
+  sobre fundos claros). Ilhotas flutuantes usam 3 tons de terra/rocha organica.
+- **Pipeline de arte:** o agente `pixel-artist` (modelo `opus`) desenha na grade e na paleta de trabalho no Aseprite,
+  uma pose por rodada. Cada rodada ancora a estrutura na ref mestra: mede mascara, IoU e medidas em px, e gera um
+  comparativo ref x rodada. A rodada anterior fornece so acabamento (rampa, contorno), nunca a forma. Autocritica com
+  checklist e obrigatoria. O dono faz o acabamento manual e aprova cada ref; nenhuma ref e dada como pronta sem
+  aprovacao explicita do dono. Imagens geradas por IA nao sao etapa obrigatoria: ficam em
+  `assets/src/refs/_inspiracao-ia/` como mood board, sem copia de pixel.
 - **Acessibilidade sem cor (`#41`) e Gecko bipede chibi em `360x640`:** implementar acessibilidade sem cor (issue #41)
   em quatro frentes sincronizadas e distinguiveis em escala de cinza a `360 px`:
   - plataformas como **ilhotas flutuantes de terra/rocha** (`36-44 px` de altura visual, 9-slice `120/112/100/88 px` —
@@ -77,8 +86,9 @@ Os demais ADRs seguintes **permanecem aceitos integralmente**:
     colorida derramando na borda, micro-ornamentos no topo (grama/folhas, mel/florzinhas, gelo/cristais,
     vermelho/cogumelos), 3 estagios de rachadura e faixa arco-iris na ciclagem (canais isolados de `PlatformBlink`);
   - gecko **`64x64 px`** (`GHOST_HALF_WIDTH = 32.0`), **bipede (em pe sobre as duas patas traseiras) em todas as
-    poses** (`idle`, `run`, `jump`, `fall`, `lose`, `color_change`) com proporcao **chibi `1:1` cabeca/corpo**, olhoes
-    grandes esbugalhados com pupilas levemente desalinhadas (expressao fofa e confusa), cauda enrolada em espiral,
+    poses** (`idle`, `run`, `jump`, `fall`, `lose`, `color_change`), em **perfil 3/4 lateral**, com proporcao **chibi
+    `1:1` cabeca/corpo**, crista na cabeca, olhos grandes saltados na lateral com pupilas levemente desalinhadas
+    (expressao fofa e confusa), cauda enrolada em espiral,
     **`lose`** de cabeca para baixo com olhos em espiral e linguinha, **`color_change`** arco-iris com olhos
     estrelados e brilhos dourados, e as **4 marcas `#41` sutis** aprovadas (amarelo: manchas solares; verde: brotinho
     de 2 folhas na cabeca; azul: cristais de gelo no dorso/cabeca; vermelho: espinhos dorsais fofos);
@@ -172,7 +182,8 @@ Os demais ADRs seguintes **permanecem aceitos integralmente**:
   camaleao bipede chibi aprovados; congela geometria unica do menu para E6, E5 e E8 sem retrabalho de coordenadas;
   garante continuidade musical entre partidas e feedback imediato do slider `Music` na pausa; formaliza plano B
   (`AudioStreamSynchronized`) contra riscos de Web/WASM.
-- **Negativas / trade-offs:** a evolucao para `360x640` exige uma entrega dedicada de migracao de codigo, fisica,
+- **Negativas / trade-offs:** o escopo visual completo (13 poses por cor em `64x64`, 4 biomas com parallax) pesa no
+  acabamento manual das entregas seguintes; o dono aceitou esse custo. A evolucao para `360x640` exige uma entrega dedicada de migracao de codigo, fisica,
   camera e UI antes da integracao dos sprites finais; a remodelagem completa do menu exige atualizar os testes GUT de
   `Rect2` (`test/test_stage_hud.gd`, `test/test_stage_faixa_placar.gd`, `test/test_modo_botao.gd`,
   `test/test_opcoes_botao.gd`), `test/test_ui_tamanhos.gd` (`TAMANHOS_UI = [32, 64]` ou `[16, 32, 64]`) e os roteiros
