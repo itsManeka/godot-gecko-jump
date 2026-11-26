@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Prova em cinza do #41 (acessibilidade sem cor). Uso: python prova_cinza_41.py
+"""Prova em cinza do #41 (acessibilidade sem cor). Uso: python prova_cinza_41.py [--folhas]
+
+Com --folhas le assets/gecko-<cor>.png (256x384, uma linha por animacao) e compara as 4 cores
+quadro a quadro (mesma animacao e indice), com os mesmos limiares; nao grava prancha.
 
 Le assets/src/refs/gecko-<cor>.png (64x64) e plataforma-<cor>.png (96x40), converte
 para cinza e grava assets/src/refs/prova-cinza-41.png (deterministico, sem metadado).
@@ -132,7 +135,63 @@ def celula(dados, size, escala):
     return la
 
 
+ANIMACOES = [("idle", 4), ("run", 4), ("jump", 2), ("fall", 2), ("lose", 3), ("color_change", 3)]
+QUADRO = 64
+CORPO = ("idle", "run", "jump", "fall", "lose")
+
+
+def recortar(dados, size, linha, col):
+    """Dados (luma, alfa) do quadro (linha, col) de uma folha com quadros QUADRO x QUADRO."""
+    px, _ = dados
+    larg = size[0]
+    x0, y0 = col * QUADRO, linha * QUADRO
+    out = []
+    for y in range(y0, y0 + QUADRO):
+        base = y * larg
+        out.extend(px[base + x0 : base + x0 + QUADRO])
+    return out, (QUADRO, QUADRO)
+
+
+def folhas():
+    """Modo --folhas: compara as 4 cores quadro a quadro (mesma animacao e indice), mesmos limiares."""
+    print("formula: L = (299*R + 587*G + 114*B + 500) // 1000 (Rec.601, inteiro); alfa opaco >= %d" % ALFA_MIN)
+    print("[folhas] assets/gecko-<cor>.png (MAD>=%.0f OU XOR>=%.0f%%), par por quadro" % (LIMIAR_MAD, LIMIAR_XOR))
+    sheets = {}
+    for cor in ORDEM:
+        caminho = os.path.join(AQUI, "..", "gecko-%s.png" % cor)
+        if not os.path.exists(caminho):
+            print("folha %s: PENDENTE" % cor)
+            continue
+        im = Image.open(caminho).convert("RGBA")
+        sheets[cor] = (carregar_im(im), im.size)
+    total = falhas = falhas_corpo = 0
+    for linha, (nome, n) in enumerate(ANIMACOES):
+        for col in range(n):
+            quadros = {c: recortar(d, size, linha, col) for c, (d, size) in sheets.items()}
+            for ca, cb in combinations(quadros, 2):
+                mad, xor = par(quadros[ca], quadros[cb])
+                ok = mad >= LIMIAR_MAD or xor >= LIMIAR_XOR
+                total += 1
+                if not ok:
+                    falhas += 1
+                    falhas_corpo += 1 if nome in CORPO else 0
+                print("  %s[%d] %s x %s: MAD=%.2f XOR=%.2f%% -> %s" % (
+                    nome, col, ca, cb, mad, xor, "PASS" if ok else "FAIL"))
+    print("pares=%d falhas=%d (corpo idle/run/jump/fall/lose=%d, color_change=%d)" % (
+        total, falhas, falhas_corpo, falhas - falhas_corpo))
+    return 1 if falhas else 0
+
+
+def carregar_im(im):
+    return [(luma(r, g, b), a) for (r, g, b, a) in im.getdata()], im.size
+
+
 def main():
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--folhas":
+            return folhas()
+        print("uso: python prova_cinza_41.py [--folhas]")
+        return 2
     print("formula: L = (299*R + 587*G + 114*B + 500) // 1000 (Rec.601, inteiro); alfa opaco >= %d" % ALFA_MIN)
     geckos, f1 = grupo("plataformas", "plataforma", False)  # placeholder; reatribuido abaixo
     plats = geckos
