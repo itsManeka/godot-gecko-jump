@@ -2,7 +2,7 @@ extends GutTest
 
 # O Player usa a largura jogavel fixa (PlayArea.LARGURA = 360) no wrap e no fantasma, qualquer que seja a largura
 # do viewport (janela larga ganha barras laterais, nao area de jogo). O Player vive num SubViewport de largura
-# conhecida (360 ou 480), sem janela real. Meia largura visual do gecko = 32 (frame 32x32 a escala 2).
+# conhecida (360 ou 480), sem janela real. Meia largura visual do gecko = 32 (frame 64x64 a escala 1).
 const PLAYER := "res://scenes/Player.tscn"
 const TICK := 1.0 / 60.0
 var _sv: SubViewport
@@ -47,7 +47,7 @@ func test_largura_360_mantem_wrap_da_f412() -> void:
 # C140/C824: viewport de 480: a borda (GHOST_HALF_WIDTH = 32) e o offset do fantasma sao de 360, nao de 480.
 func test_fantasma_com_viewport_de_480_usa_borda_de_360() -> void:
 	_spawn(480, 20.0)
-	assert_eq(_p.GHOST_HALF_WIDTH, 32.0, "meia largura visual do gecko a escala 2")
+	assert_eq(_p.GHOST_HALF_WIDTH, 32.0, "meia largura visual do gecko: frame 64 a escala 1")
 	_p._process(0.0)
 	var g := _p.get_node("Ghost") as AnimatedSprite2D
 	assert_true(g.visible, "x=20: fantasma visivel")
@@ -74,6 +74,9 @@ func test_player_2x_constantes_sprites_e_colisoes() -> void:
 	assert_eq(_p.GRAVITY, 20, "GRAVITY 2x")
 	assert_eq(_p.JUMP_POWER, -500, "JUMP_POWER 2x")
 	var quadro: Vector2 = _p.sprite.sprite_frames.get_frame_texture("idle", 0).get_size()
+	assert_eq(quadro, Vector2(64, 64), "frame idle 0 nativo e 64x64")
+	assert_eq(_p.sprite.scale, Vector2.ONE, "AnimatedSprite2D sem escala extra (scale ONE)")
+	assert_eq(_p.ghost.scale, Vector2.ONE, "Ghost sem escala extra (scale ONE)")
 	assert_eq(quadro * _p.sprite.scale, Vector2(64, 64), "AnimatedSprite2D exibe 64x64")
 	assert_eq(quadro * _p.ghost.scale, Vector2(64, 64), "Ghost exibe 64x64")
 	assert_almost_eq(_p.collision.shape.size.x, 20.55088, 0.001, "colisao do corpo: largura 2x")
