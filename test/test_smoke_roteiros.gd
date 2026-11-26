@@ -45,11 +45,11 @@ const ROTEIROS_SEMDERROTA: Array[String] = [
 	"estagio",
 	"estagio-alto",
 	"gecko",
+	"pausa-foco",
 	"power-up",
 	"toque",
 	"toque-modo-a",
 	"toque-modo-b",
-	"pausa-foco",
 	"retrato-1080x2400",
 	"retrato-1080x2772",
 	"retrato-1170x2532",
@@ -897,8 +897,15 @@ func _erros_do_passo(passo: Dictionary) -> Array[String]:
 	for chave in ["hidden", "blur"]:
 		if passo.has(chave) and typeof(passo[chave]) != TYPE_BOOL:
 			erros.append("%s exige booleano" % chave)
-	if passo.has("still") and not (passo.has("shots") and _numero(passo["shots"]) and float(passo["shots"]) >= 2.0):
-		erros.append("still exige shots >= 2")
+	if passo.has("still"):
+		if typeof(passo["still"]) != TYPE_BOOL:
+			erros.append("still exige booleano")
+		elif not passo.has("shots"):
+			erros.append("still so vale em passo shots")
+		elif passo["still"] == true and passo.get("moving", null) == true:
+			erros.append("still nao combina com moving true")
+		elif passo["still"] and not (_numero(passo["shots"]) and float(passo["shots"]) == floorf(float(passo["shots"])) and float(passo["shots"]) >= 2.0):
+			erros.append("still exige shots >= 2")
 	return erros
 
 
@@ -924,6 +931,10 @@ func test_C841_passo_invalido_reprova_com_a_mensagem_do_caso() -> void:
 		[{"blur": "true"}, "blur exige booleano"],
 		[{"blur": 1}, "blur exige booleano"],
 		[{"shots": 1, "still": true}, "still exige shots >= 2"],
+		[{"shots": 2.5, "still": true}, "still exige shots >= 2"],
+		[{"shots": 2, "still": "true"}, "still exige booleano"],
+		[{"wait": 100, "still": true}, "still so vale em passo shots"],
+		[{"shots": 2, "still": true, "moving": true}, "still nao combina com moving true"],
 		[{"tap": [10, 20], "wait": 100}, "o passo deve declarar exatamente uma acao do runner (declara 2)"],
 	]
 	for caso in casos:
@@ -1002,6 +1013,17 @@ func _indice_rajada(passos: Array, desde: int, marca: String) -> int:
 	return -1
 
 
+# Indice do 1o passo depois de `desde` cujo `click` tem as coordenadas inteiras (x, y); -1 quando nao ha.
+func _indice_click_inteiro(passos: Array, desde: int, alvo: Vector2i) -> int:
+	for i in range(desde + 1, passos.size()):
+		if not passos[i].has("click"):
+			continue
+		var c: Array = passos[i]["click"]
+		if c.size() == 2 and Vector2i(int(c[0]), int(c[1])) == alvo:
+			return i
+	return -1
+
+
 func test_C846_pausa_foco_pausa_em_hidden_e_blur_e_so_continuar_retoma() -> void:
 	var nome: String = "pausa-foco"
 	var passos := _passos(nome)
@@ -1019,7 +1041,7 @@ func test_C846_pausa_foco_pausa_em_hidden_e_blur_e_so_continuar_retoma() -> void
 		assert_lt(i_still_pausa, i_off, "C846: %s: a rajada still de pausa vem antes de %s false" % [nome, chave])
 		var i_still_volta: int = _indice_rajada(passos, i_off, "still")
 		assert_gt(i_still_volta, i_off, "C846: %s: o foco de volta (%s false) segue pausado (rajada still depois)" % [nome, chave])
-		var i_click: int = _indice_passo_com(passos, maxi(i_still_volta, i_off), "click", [180.0, 326.0])
+		var i_click: int = _indice_click_inteiro(passos, maxi(i_still_volta, i_off), Vector2i(180, 326))
 		assert_gt(i_click, i_still_volta, "C846: %s: Continuar (click 180,326) vem depois do still do foco de volta" % nome)
 		var i_moving: int = _indice_rajada(passos, i_click, "moving")
 		assert_gt(i_moving, i_click, "C846: %s: a rajada moving vem depois de Continuar (%s)" % [nome, chave])
