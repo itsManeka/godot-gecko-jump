@@ -31,6 +31,21 @@ function errorsIn(out) {
   return out.split(/\r?\n/).filter((l) => /(SCRIPT ERROR|^ERROR:|Parse Error)/.test(l));
 }
 
+// Saida do GUT vermelho: o que falhou (linhas [Failed]/Failing/Parse Error/SCRIPT ERROR, com 1 linha de contexto, ate
+// 3000 caracteres) vem antes do rabo, porque push_warning do jogo enche o fim do log e esconde a causa.
+// O rabo ignora as linhas WARNING.
+function gutFailureReport(plain, tailChars) {
+  const lines = plain.split(/\r?\n/);
+  const hit = /\[Failed\]|Failing|Parse Error|SCRIPT ERROR/;
+  const keep = new Set();
+  lines.forEach((l, i) => {
+    if (hit.test(l)) for (let k = Math.max(0, i - 1); k <= Math.min(lines.length - 1, i + 1); k++) keep.add(k);
+  });
+  const summary = [...keep].sort((a, b) => a - b).map((i) => lines[i]).join('\n').slice(0, 3000);
+  const tail = lines.filter((l) => !l.startsWith('WARNING:')).join('\n').slice(-tailChars);
+  return `${summary ? `--- falhas ---\n${summary}\n` : ''}--- rabo ---\n${tail}`;
+}
+
 const project = fs.readFileSync(path.join(root, 'project.godot'), 'utf8');
 if (!/config_version=5/.test(project)) {
   console.error('.verify.mjs: project.godot sem config_version=5 (Godot 4). O ramo Godot 3 foi removido; migre o projeto antes.');
@@ -54,7 +69,8 @@ const step = (name, res) => {
 step('import', run(bin, ['--headless', '--path', '.', '--import']));
 step('compile all .gd', run(bin, ['--headless', '--path', '.', '-s', 'res://.verify-compile.gd']));
 if (fs.existsSync(path.join(root, 'addons', 'gut'))) {
-  const gut = run(bin, ['--headless', '--path', '.', '-s', 'addons/gut/gut_cmdln.gd', '-gdir=res://test', '-gexit'], 600_000);
+  // --fixed-fps 600: wait_frames/wait_seconds deixam de esperar em tempo real a 60 Hz (so no GUT; import, compile e run ficam sem).
+  const gut = run(bin, ['--headless', '--fixed-fps', '600', '--path', '.', '-s', 'addons/gut/gut_cmdln.gd', '-gdir=res://test', '-gexit'], 600_000);
   // Resumo do GUT 9.x: bloco "Totals" impresso por addons/gut/summary.gd (linhas "Tests   <N>" e, so se > 0,
   // "Risky/Pending   <M>"), com codigos ANSI no meio. Pending/risky nao reprovam (o teste de cena e pending de
   // proposito ate a F4): so entram na mensagem. Reprovam exit != 0, erro de script ou N = 0.
@@ -66,9 +82,9 @@ if (fs.existsSync(path.join(root, 'addons', 'gut'))) {
   const gutPendingMatch = /^Risky\/Pending\s+(\d+)\s*$/m.exec(gutPlain);
   const gutPending = gutPendingMatch ? Number(gutPendingMatch[1]) : 0;
   if (gut.error) failures.push(`gut: ${gut.error.message}`);
-  else if (gut.status !== 0) failures.push(`gut: exit ${gut.status}\n${gutPlain.slice(-2000)}`);
+  else if (gut.status !== 0) failures.push(`gut: exit ${gut.status}\n${gutFailureReport(gutPlain, 2000)}`);
   else if (errorsIn(gutPlain).length) step('gut', { ...gut, out: gutPlain });
-  else if (!gutCount) failures.push(`gut: nenhum teste executado (total ${gutCount ?? 'nao encontrado na saida'})\n${gutPlain.slice(-1000)}`);
+  else if (!gutCount) failures.push(`gut: nenhum teste executado (total ${gutCount ?? 'nao encontrado na saida'})\n${gutFailureReport(gutPlain, 1000)}`);
   else step(`gut (${gutCount} tests${gutPending ? `, ${gutPending} risky/pending` : ''})`, { ...gut, out: gutPlain });
 }
 step(`run ${RUN_SECONDS}s`, run(bin, ['--headless', '--path', '.', '--quit-after', String(RUN_SECONDS * 60)]));
