@@ -20,7 +20,7 @@ const OUTLINE_SIZE: int = 2
 
 # Textos por modo de toque (issue #47). Cada bloco tem 2 linhas e precisa caber em 152 px (lateral) / 332 px (centro).
 # A (Flick): sem zonas, um bloco central: 1a linha = `TouchMode.rotulo(A)`, 2a = TEXTO_A_LINHA2.
-# B (Joy invisivel): linha em x = 90 e um bloco por lado, sem o nome (nao cabe em 76 px).
+# B (Joy invisivel): linha em x = 180 e um bloco por lado, sem o nome (nao cabe em 152 px).
 const TEXTO_A_LINHA2: String = "arraste anda, flick pula"
 const TEXTOS_B_ESQ: Array[String] = ["anda", "segura aqui"]
 const TEXTOS_B_DIR: Array[String] = ["pula", "toque aqui"]

@@ -1,6 +1,6 @@
 # Gecko Jump
 
-Plataforma vertical infinita, so retrato (tambem no desktop/itch.io): resolucao logica alvo 360x640 (ADR 0015); codigo em 180 ate a migracao. O gecko so pisa nas plataformas da cor dele (4 cores); a cada
+Plataforma vertical infinita, so retrato (tambem no desktop/itch.io): resolucao logica 360x640 (ADR 0015). O gecko so pisa nas plataformas da cor dele (4 cores); a cada
 pouso troca de cor e ganha 1 ponto. Prototipo da game jam #1JAM Chroma rumo a versao final (web/itch.io + Android).
 
 ## Contexto obrigatorio
@@ -39,7 +39,7 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            InitialRows.gd (ys das linhas iniciais pela altura visivel, sem cena),
            MovingRowFill.gd (x pre-colocados das linhas moveis a partir do ponto de nascimento, sem cena),
            ReachableColors.gd (cor do gecko alcancavel no pouso e nas plataformas moveis, sem cena),
-           PlayArea.gd (largura jogavel 180, fonte unica de wrap, fantasma, cor do pouso e gerador),
+           PlayArea.gd (largura jogavel 360, fonte unica de wrap, fantasma, cor do pouso e gerador),
            TouchClassifier.gd (lado do toque para o esquema B, sem cena),
            TouchMode.gd (modos de toque A/B, nomes Flick e Joy invisivel: enum, padrao B e validacao do valor salvo, sem cena),
            TouchTuning.gd (valores de sensacao do toque — zona morta, flick, janela, rearme e sensibilidade do A — um simbolo cada),
@@ -53,7 +53,7 @@ scripts/   Global.gd (autoload: plataformas, estado), Enums.gd (cores, tipos de 
            UiHelpers.gd (estilo de caixa, label e chave do mouse das telas de UI, sem cena), GameMode.gd / GameModes.gd / GameModeRule.gd / ClassicoRule.gd / PuroRule.gd / TempoRule.gd (relogio da partida na Stage, regra sem estado) / GameModeTeste.gd (modos de jogo, sem cena: id estavel e chave do recorde, registro com instancias reusadas e ciclo do seletor, hook de regra da Stage; Classico e o padrao, teste so com a flag de debug), TempoConfig.gd (duracao do Contra o tempo de `ressources/tempo.tres`, fallback 60 quando ausente/invalido), GameModesDebug.gd (decide `?modos=teste`, so debug)
 test/      testes GUT (`test_*.gd`, `extends GutTest`); `test_landing_restart.gd` regressao do pouso/reinicio (issue #3), sem skip
 test/smoke/ roteiros do game-smoke (export web): `gecko.smoke.json` (fluxo), `retrato-*` (telas de celular) e
-           `janela-larga-1280x720` (coluna logica de 180 ate a migracao, com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os.
+           `janela-larga-1280x720` (coluna logica de 360 em escala 1x, com barras laterais); mudou input, fluxo de inicio/derrota ou tempos? ajuste-os.
            Todos usam `?tutorial=visto`, menos `tutorial.smoke.json` (1a partida com `user://` limpo); `estagio.smoke.json` (`?progresso=`) prova a subida de `dificuldade.estagio`; `power-up.smoke.json` (`?powerup=`) prova `powerup.ativo|restante|carga` da ponte; `camaleao.smoke.json` e `desacelera.smoke.json` (`?powerup=camaleao|desacelera`) provam ativar, duracao e expirar dos power-ups reais; `toque-modo-{a,b}.smoke.json` (`?toque=a|b`) prova a direcao/diagonal/flick do modo de toque por `player.x/y`; `camera-cruza-limite.smoke.json` (regra real, sem `semderrota`) toca so quando `alvo.alinhado` da ponte e true (`alvo.dx` = distancia em x ate a plataforma da cor do gecko na linha de cima) e prova o cruzamento do limite da camera (`player.y` em repouso abaixo de 160); `?semderrota=1` em pontua, estagio e nos roteiros longos (queda pela borda segue); roteiros longos esperam `playing` antes de cada rajada; `modos.smoke.json` (`?modos=teste`) prova o seletor de modo (abrir, trocar, OK; ciclo classico -> puro -> tempo -> zen -> teste) e o campo `modo` da ponte; `modo-puro.smoke.json` prova o Puro sem power-up e `modo-tempo.smoke.json` (`?tempo=<s>`) prova o Contra o tempo: relogio na ponte e `lost` ao zerar; `modo-zen.smoke.json` prova o Zen: sem power-up, queda sem derrota e saida pela pausa (`Sair`) ao menu
 addons/    GUT v9.7.1 (vendorizado; nao editar)
 assets/    Gecko.png 64×96, GeckoPlataforma.png 64×16 (cor via modulate); fonts/, sounds/ (jump, lose)

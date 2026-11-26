@@ -318,7 +318,7 @@ func _on_viewport_size_changed() -> void:
 
 # Posiciona a faixa de derrota logo abaixo da borda inferior visivel (topo em y = altura, espessura 20)
 # e com a largura visivel. Tamanho injetado: testavel sem janela. Chamavel de novo (resize em runtime).
-# Sobrescreve a shape e a posicao literais da CollisionShape2D do Stage.tscn (a cena guarda so o valor de 180x320).
+# Sobrescreve a shape e a posicao literais da CollisionShape2D do Stage.tscn (a cena guarda so o valor de 360x640).
 func apply_layout(visible_size: Vector2, safe: Rect2) -> void:
 	safe_area = safe
 	_tamanho_visivel = visible_size
@@ -363,7 +363,7 @@ func _atualizar_zonas_mortas() -> void:
 		mortas.append(tutorial_card.rect_pular())
 	touch_controls.zonas_mortas = mortas
 
-# HUD no topo da safe area: Pontos junto a borda direita visivel, menu com o y de 180x320 deslocado por safe.position.y
+# HUD no topo da safe area: Pontos junto a borda direita visivel, menu com o y de 360x640 deslocado por safe.position.y
 # e centrado na largura visivel. Posicao calculada do tamanho injetado (o pai Control so reflete o viewport real).
 func _layout_hud(visible_size: Vector2, safe: Rect2) -> void:
 	var top := safe.position.y

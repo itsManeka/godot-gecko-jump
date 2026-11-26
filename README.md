@@ -118,7 +118,7 @@ Para gerar a versão web (sem threads):
 
 - **Engine:** Godot Engine 4.7.2
 - **Linguagem:** GDScript
-- **Resolução:** retrato, 180 px de largura e altura que acompanha a tela do aparelho (mínimo 320), com escala inteira para manter o pixel quadrado; em janela mais larga (desktop, navegador), a área de jogo fica centralizada com barras laterais
+- **Resolução:** retrato, 360 px de largura e altura que acompanha a tela do aparelho (mínimo 640), com escala inteira para manter o pixel quadrado; em janela mais larga (desktop, navegador), a área de jogo fica centralizada com barras laterais
 - **Áudio:** Efeitos sonoros integrados
 
 ## 📁 Estrutura do Projeto
@@ -137,7 +137,7 @@ godot-gecko-jump/
 
 ## 📱 Compatibilidade
 
-A tela é pensada para celular (retrato, 180 px de largura) e o jogo aceita toque (dois modos), além de teclado.
+A tela é pensada para celular (retrato, 360 px de largura) e o jogo aceita toque (dois modos), além de teclado.
 
 **Requisitos:**
 
@@ -410,7 +410,7 @@ more, 4 by default) must end within 1500 ms of Play (`wait` + `(shots-1)*every`)
 
 ### 📱 Compatibility
 
-The screen is designed for phones (portrait, 180 px wide) and the game accepts touch (two modes) as well as a keyboard.
+The screen is designed for phones (portrait, 360 px wide) and the game accepts touch (two modes) as well as a keyboard.
 
 **Requirements:**
 

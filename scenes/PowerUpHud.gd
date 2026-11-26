@@ -2,7 +2,7 @@ class_name PowerUpHud
 extends CanvasLayer
 
 # Faixa de HUD da duracao do power-up (handoff de design, secao 3): classe topo, y0 = s_top + 30, mesma medida em
-# 180x320 e 180x400. Icone do temporizado ativo, barra que esvazia pela direita, segundos (teto do restante) e o
+# 360x640 e 360x800. Icone do temporizado ativo, barra que esvazia pela direita, segundos (teto do restante) e o
 # slot da carga guardada. Cada elemento some quando o seu estado some; com o card do tutorial aberto a faixa inteira
 # fica oculta. Desenho so em branco/preto (cor nunca e a unica pista; nunca a cor de plataforma).
 

@@ -836,6 +836,7 @@ func test_C840_drags_dos_roteiros_720x1280_respeitam_zona_morta_e_flick_2x() -> 
 		if vp.size() != 2:
 			continue
 		var escala: float = float(vp[0]) / LARGURA_LOGICA
+		var total_movimentos: int = 0
 		assert_eq(escala, 2.0, "C840: %s usa viewport 720 = 2x o logico 360" % nome)
 		var passos: Array = spec.get("steps", [])
 		for passo in passos:
@@ -847,6 +848,7 @@ func test_C840_drags_dos_roteiros_720x1280_respeitam_zona_morta_e_flick_2x() -> 
 				for toque in passo["touches"]:
 					if toque.has("from") and toque.has("to"):
 						movimentos.append([toque["from"][0], toque["from"][1], toque["to"][0], toque["to"][1]])
+			total_movimentos += movimentos.size()
 			for m in movimentos:
 				var dx: float = absf(float(m[2]) - float(m[0])) / escala
 				var dy: float = absf(float(m[3]) - float(m[1])) / escala
@@ -854,3 +856,4 @@ func test_C840_drags_dos_roteiros_720x1280_respeitam_zona_morta_e_flick_2x() -> 
 				assert_gte(dist, ZONA_MORTA_LOGICA, "C840: %s arrasto de %.1f px logicos abaixo da zona morta 12" % [nome, dist])
 				if dy > dx:
 					assert_gte(dy, FLICK_LOGICO, "C840: %s flick vertical de %.1f px logicos abaixo do flick 48" % [nome, dy])
+		assert_gt(total_movimentos, 0, "C840: %s sem nenhum arrasto" % nome)

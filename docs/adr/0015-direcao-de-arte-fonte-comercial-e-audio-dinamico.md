@@ -36,8 +36,9 @@ A especificacao visual, de acessibilidade, de geometria do menu, de audio e de l
   todos os principios do `ADR 0002`: largura logica fixa em modo retrato (`keep_width`), filtro `Nearest`,
   `scale_mode = "integer"`, altura expandida em aparelhos altos e **escala inteira exata** em todos os celulares-alvo
   (`720 / 360 = 2x` em `720x1280` -> `360x640`; `1080 / 360 = 3x` em `1080x2400` -> `360x800`; `1440 / 360 = 4x`). A
-  migracao de codigo, fisica, camera e UI para `360x640` sera executada em entrega propria antes da integracao dos
-  sprites finais.
+  migracao de codigo, fisica, camera e UI para `360x640` foi executada em entrega propria (2026-11-26), antes da
+  integracao dos sprites finais: os sprites atuais aparecem em escala visual `2x` so nos nos filhos visuais, e o corpo
+  fisico da plataforma segue com `scale == Vector2.ONE` (ADR 0009).
 
 Os demais ADRs seguintes **permanecem aceitos integralmente**:
 

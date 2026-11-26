@@ -70,7 +70,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-# Posiciona o botao: x centrado na largura visivel, y de 180x320 deslocado por safe.position.y.
+# Posiciona o botao: x centrado na largura visivel, y de 360x640 deslocado por safe.position.y.
 func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 	_rect = Rect2((visible_size.x - LARGURA) / 2.0, safe.position.y + TOPO, LARGURA, ALTURA)
 	if _painel != null:
