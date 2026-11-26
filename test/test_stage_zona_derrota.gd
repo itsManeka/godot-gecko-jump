@@ -1,9 +1,9 @@
 extends GutTest
 
 # T3 (f410): a zona de derrota (CheckPlayer) acompanha a borda inferior visivel injetada por apply_layout.
-# Faixa com topo em y = altura visivel, espessura 20, largura = largura visivel. Fisica real, sem janela.
+# Faixa com topo em y = altura visivel, espessura 40 (centro em 660 com altura 640), largura = largura visivel. Fisica real, sem janela.
 const STAGE := "res://scenes/Stage.tscn"
-const THICKNESS := 20.0
+const THICKNESS := 40.0
 var _stage: Node
 var _p: Node
 
@@ -53,65 +53,66 @@ func _fall_until_end(n: int) -> float:
 			break
 	return maior
 
-# C66: topo da faixa >= altura visivel (320 e 400), espessura 20.
+# C66: topo da faixa >= altura visivel (640 e 800), espessura 40 (centro em altura + 20: 660 com 640).
 func test_topo_da_faixa_fica_na_altura_visivel() -> void:
-	for altura in [320.0, 400.0]:
-		_spawn_stage(Vector2(180.0, altura))
+	for altura in [640.0, 800.0]:
+		_spawn_stage(Vector2(360.0, altura))
 		assert_almost_eq(_top_of_check(), altura, 0.001, "topo da faixa na altura %s" % altura)
 		assert_gte(_top_of_check(), altura, "faixa fora da area visivel (altura %s)" % altura)
-		assert_almost_eq((_check_shape().shape as RectangleShape2D).size.y, THICKNESS, 0.001, "espessura 20")
+		assert_almost_eq((_check_shape().shape as RectangleShape2D).size.y, THICKNESS, 0.001, "espessura 40")
+		assert_almost_eq(_check_shape().position.y, altura + 20.0, 0.001, "centro da faixa em altura + 20 (660 com 640)")
 		_stage.queue_free()
 		await wait_frames(1)
 
 # C67: largura da faixa == largura visivel passada.
 func test_largura_da_faixa_e_a_largura_visivel() -> void:
-	for largura in [180.0, 240.0]:
-		_spawn_stage(Vector2(largura, 320.0))
+	for largura in [360.0, 480.0]:
+		_spawn_stage(Vector2(largura, 640.0))
 		var shape := _check_shape().shape as RectangleShape2D
 		assert_almost_eq(shape.size.x, largura, 0.001, "largura da faixa %s" % largura)
 		assert_almost_eq(_check_shape().position.x, largura / 2.0, 0.001, "faixa centrada em %s" % largura)
 		_stage.queue_free()
 		await wait_frames(1)
 
-# C68: gecko que cai por baixo da borda de altura 400 atravessa a faixa; derrota dispara uma vez.
-func test_queda_pela_borda_de_altura_400_dispara_derrota_uma_vez() -> void:
-	_spawn_stage(Vector2(180.0, 400.0))
+# C68: gecko que cai por baixo da borda de altura 800 atravessa a faixa; derrota dispara uma vez.
+func test_queda_pela_borda_de_altura_800_dispara_derrota_uma_vez() -> void:
+	_spawn_stage(Vector2(360.0, 800.0))
 	var check: Area2D = _stage.get_node("CheckPlayer")
 	watch_signals(check)
-	_p.position = Vector2(90.0, 380.0)
+	_p.position = Vector2(180.0, 760.0)
 	_p.velocity = Vector2.ZERO
 	await wait_physics_frames(2)
 	_p.set_physics_process(true)
 	await _fall_until_end(120)
-	assert_true(_p.is_end(), "caiu pela borda inferior de 400 sem pular: partida perdida")
+	assert_true(_p.is_end(), "caiu pela borda inferior de 800 sem pular: partida perdida")
 	assert_signal_emit_count(check, "body_exited", 1, "derrota dispara uma vez")
 
 # C69: sem tunelamento, mesmo na velocidade maxima observada a queda por frame e menor que a espessura.
 func test_sem_tunelamento_na_velocidade_maxima() -> void:
-	_spawn_stage(Vector2(180.0, 320.0))
+	_spawn_stage(Vector2(360.0, 640.0))
 	var check: Area2D = _stage.get_node("CheckPlayer")
 	watch_signals(check)
-	_p.position = Vector2(90.0, 280.0)
-	_p.velocity = Vector2(0.0, 1100.0)
+	_p.position = Vector2(180.0, 560.0)
+	_p.velocity = Vector2(0.0, 2200.0)
 	_p.set_physics_process(true)
 	var maior := await _fall_until_end(120)
 	assert_lt(maior, THICKNESS, "queda por frame (%s) menor que a espessura da faixa" % maior)
-	assert_gt(maior, 10.0, "o teste exercitou uma queda rapida")
+	assert_gt(maior, 20.0, "o teste exercitou uma queda rapida")
 	assert_true(_p.is_end(), "body_exited disparou na velocidade maxima")
 	assert_signal_emit_count(check, "body_exited", 1, "derrota dispara uma vez")
 
-# C70: dentro da area visivel nunca perde; apply_layout de novo reposiciona a faixa (resize 320 -> 400).
+# C70: dentro da area visivel nunca perde; apply_layout de novo reposiciona a faixa (resize 640 -> 800).
 func test_dentro_da_area_visivel_nao_perde_e_resize_reposiciona() -> void:
-	_spawn_stage(Vector2(180.0, 320.0))
+	_spawn_stage(Vector2(360.0, 640.0))
 	var check: Area2D = _stage.get_node("CheckPlayer")
 	watch_signals(check)
-	_p.position = Vector2(90.0, 200.0)
+	_p.position = Vector2(180.0, 400.0)
 	_p.velocity = Vector2.ZERO
 	await wait_physics_frames(5)
 	assert_false(_p.is_end(), "y < altura nao perde")
 	assert_signal_not_emitted(check, "body_exited", "sem saida da faixa dentro da area visivel")
-	assert_almost_eq(_top_of_check(), 320.0, 0.001, "faixa em 320")
-	_stage.apply_layout(Vector2(180.0, 400.0), Rect2(0.0, 0.0, 180.0, 400.0))
-	assert_almost_eq(_top_of_check(), 400.0, 0.001, "resize reposiciona a faixa em 400")
+	assert_almost_eq(_top_of_check(), 640.0, 0.001, "faixa em 640")
+	_stage.apply_layout(Vector2(360.0, 800.0), Rect2(0.0, 0.0, 360.0, 800.0))
+	assert_almost_eq(_top_of_check(), 800.0, 0.001, "resize reposiciona a faixa em 800")
 	await wait_physics_frames(5)
 	assert_false(_p.is_end(), "resize nao gera derrota com o gecko na area visivel")

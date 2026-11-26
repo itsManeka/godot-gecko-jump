@@ -3,8 +3,8 @@ extends GutTest
 # Card do tutorial (TutorialCard): medidas do handoff 12.2 (valores literais da tabela, nao da formula do codigo),
 # texto dentro de 148 px medido com a fonte real, variantes toque x teclado, amostras e legenda (12.3), botao Pular
 # (aciona ao soltar dentro; 12.4) e reabertura modal com Voltar (12.5).
-const PEQUENA := Vector2(180.0, 320.0)
-const GRANDE := Vector2(180.0, 400.0)
+const PEQUENA := Vector2(360.0, 640.0)
+const GRANDE := Vector2(360.0, 800.0)
 
 var _pulou: int = 0
 var _voltou: int = 0
@@ -91,41 +91,50 @@ func _fundo_cor(c: TutorialCard, nome: String) -> Color:
 	return (p.get_theme_stylebox("panel") as StyleBoxFlat).bg_color
 
 
-func test_c195_fundo_do_card_164x172_termina_em_y_210_nas_duas_alturas() -> void:
-	# Teclado: 1 linha de controle (medida original do handoff)
+func test_c195_fundo_do_card_328x344_termina_em_y_420_nas_duas_alturas() -> void:
+	# Teclado: 1 linha de controle (medida original do handoff, 2x)
 	for tamanho in [PEQUENA, GRANDE]:
 		var c := _novo(TutorialCard.Variante.TECLADO, TutorialCard.Modo.PARTIDA, tamanho)
 		var r := c.rect_fundo()
-		assert_eq(r, Rect2(8, 38, 164, 172), "fundo x[8,172] y[38,210] em %s" % [tamanho])
-		assert_eq(r.end.y, 210.0, "termina em y = 210")
+		assert_eq(r, Rect2(16, 76, 328, 344), "fundo x[16,344] y[76,420] em %s" % [tamanho])
+		assert_eq(r.end.y, 420.0, "termina em y = 420")
 
 
-func test_c195_toque_cresce_17_px_por_linha_de_controle_extra() -> void:
+func test_c195_toque_cresce_34_px_por_linha_de_controle_extra() -> void:
 	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		Global.set_touch_mode(modo, false)
 		var c := _novo(TutorialCard.Variante.TOQUE)
-		assert_eq(c.rect_fundo(), Rect2(8, 38, 164, 206), "3 linhas de controle: termina em y = 244")
+		assert_eq(c.rect_fundo(), Rect2(16, 76, 328, 412), "3 linhas de controle: termina em y = 488")
 	Global.set_touch_mode(TouchMode.padrao(), false)
 
 
 func test_c195_s_top_soma_ao_y_do_card_e_do_botao() -> void:
-	var c := _novo(TutorialCard.Variante.TECLADO, TutorialCard.Modo.PARTIDA, PEQUENA, 20.0)
-	assert_eq(c.rect_fundo(), Rect2(8, 58, 164, 172), "fundo desce s_top")
-	assert_eq(c.rect_pular(), Rect2(108, 64, 56, 24), "Pular desce s_top")
+	var c := _novo(TutorialCard.Variante.TECLADO, TutorialCard.Modo.PARTIDA, PEQUENA, 40.0)
+	assert_eq(c.rect_fundo(), Rect2(16, 116, 328, 344), "fundo desce s_top")
+	assert_eq(c.rect_pular(), Rect2(216, 128, 112, 48), "Pular desce s_top")
 	var fundo := c.find_child("Fundo", true, false) as Control
-	assert_eq(fundo.global_position.y, 58.0, "o no desenhado desce s_top")
+	assert_eq(fundo.global_position.y, 116.0, "o no desenhado desce s_top")
 
 
 func test_c196_rect_pular_bate_com_o_handoff() -> void:
 	var c := _novo()
 	var r := c.rect_pular()
-	assert_eq(r.position.x, 108.0, "x inicial")
-	assert_eq(r.end.x, 164.0, "x final")
-	assert_eq(r.position.y, 44.0, "y inicial")
-	assert_eq(r.end.y, 68.0, "y final")
+	assert_eq(r.position.x, 216.0, "x inicial")
+	assert_eq(r.end.x, 328.0, "x final")
+	assert_eq(r.position.y, 88.0, "y inicial")
+	assert_eq(r.end.y, 136.0, "y final")
 
 
-func test_c197_nenhuma_linha_de_texto_estoura_148_px_nas_duas_variantes() -> void:
+func test_c835_zona_do_botao_pular_e_216_88_112_48_e_card_dentro_de_360x640() -> void:
+	var c := _novo(TutorialCard.Variante.TOQUE)
+	assert_eq(c.rect_pular(), Rect2(216, 88, 112, 48), "zona do Pular em 360x640")
+	assert_true(Rect2(Vector2.ZERO, PEQUENA).encloses(c.rect_fundo()), "fundo %s dentro de 360x640" % c.rect_fundo())
+	var s := _novo(TutorialCard.Variante.TOQUE, TutorialCard.Modo.PARTIDA, PEQUENA, 48.0)
+	assert_eq(s.rect_pular().position.y, 88.0 + 48.0, "Pular respeita safe.position.y")
+	assert_eq(s.rect_fundo().position.y, 76.0 + 48.0, "fundo respeita safe.position.y")
+
+
+func test_c197_nenhuma_linha_de_texto_estoura_296_px_nas_duas_variantes() -> void:
 	for variante in [TutorialCard.Variante.TOQUE, TutorialCard.Variante.TECLADO]:
 		var c := _novo(variante)
 		var textos := _labels(c)
@@ -133,8 +142,8 @@ func test_c197_nenhuma_linha_de_texto_estoura_148_px_nas_duas_variantes() -> voi
 		for l in textos:
 			var largura := TutorialCard.largura_texto(l.text)
 			assert_lte(largura, l.size.x, "'%s' cabe na caixa de %s px" % [l.text, l.size.x])
-			assert_lte(l.size.x, 148.0, "caixa de '%s' dentro da area de 148" % l.text)
-			assert_lte(l.position.x + l.size.x, 164.0, "caixa de '%s' (texto %s px, pos %s, size %s) termina em x <= 164" % [l.text, largura, l.position, l.size])
+			assert_lte(l.size.x, 296.0, "caixa de '%s' dentro da area de 296" % l.text)
+			assert_lte(l.position.x + l.size.x, 328.0, "caixa de '%s' (texto %s px, pos %s, size %s) termina em x <= 328" % [l.text, largura, l.position, l.size])
 
 
 func test_c198_variante_teclado_mostra_setas_e_espaco() -> void:
@@ -181,10 +190,10 @@ func test_c476_texto_de_controle_de_a_difere_do_de_b_e_nenhum_e_vazio() -> void:
 		assert_ne(linha.strip_edges(), "", "linha de controle nao vazia")
 
 
-func test_c477_cada_linha_de_controle_cabe_em_148_px_nos_dois_modos() -> void:
+func test_c477_cada_linha_de_controle_cabe_em_296_px_nos_dois_modos() -> void:
 	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		for linha in TutorialCard.linhas_controle_toque(modo):
-			assert_lte(TutorialCard.largura_texto(linha), TutorialCard.LARGURA_CONTEUDO, "'%s' cabe em 148 px" % linha)
+			assert_lte(TutorialCard.largura_texto(linha), TutorialCard.LARGURA_CONTEUDO, "'%s' cabe em 296 px" % linha)
 
 
 func test_c520_primeira_linha_do_card_e_o_rotulo_do_modo() -> void:
@@ -210,13 +219,13 @@ func test_c521_card_tem_no_maximo_3_linhas_e_renderiza_exatamente_elas() -> void
 	Global.set_touch_mode(TouchMode.padrao(), false)
 
 
-func test_c522_toda_linha_com_o_nome_cabe_em_148_px_e_o_fundo_segue_em_180x320() -> void:
+func test_c522_toda_linha_com_o_nome_cabe_em_296_px_e_o_fundo_segue_em_360x640() -> void:
 	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		for linha in TutorialCard.linhas_controle_toque(modo):
-			assert_lte(TutorialCard.largura_texto(linha), 148.0, "'%s' cabe em 148 px" % linha)
+			assert_lte(TutorialCard.largura_texto(linha), 296.0, "'%s' cabe em 296 px" % linha)
 		Global.set_touch_mode(modo, false)
 		var c := _novo(TutorialCard.Variante.TOQUE)
-		assert_true(Rect2(0.0, 0.0, 180.0, 320.0).encloses(c.rect_fundo()), "fundo %s dentro de 180x320 com 3 linhas" % c.rect_fundo())
+		assert_true(Rect2(0.0, 0.0, 360.0, 640.0).encloses(c.rect_fundo()), "fundo %s dentro de 360x640 com 3 linhas" % c.rect_fundo())
 	Global.set_touch_mode(TouchMode.padrao(), false)
 
 
@@ -234,11 +243,11 @@ func test_c528_modo_fora_da_faixa_cai_no_rotulo_do_padrao_no_card() -> void:
 	assert_eq(TutorialCard.linhas_controle_toque(99)[0], TouchMode.rotulo(TouchMode.padrao()), "valor 99 cai no padrao")
 
 
-func test_c478_fundo_dentro_de_180_x_altura_util_com_safe_area_topo() -> void:
+func test_c478_fundo_dentro_de_360_x_altura_util_com_safe_area_topo() -> void:
 	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		Global.set_touch_mode(modo, false)
 		for tamanho in [PEQUENA, GRANDE]:
-			var c := _novo(TutorialCard.Variante.TOQUE, TutorialCard.Modo.PARTIDA, tamanho, 24.0)
+			var c := _novo(TutorialCard.Variante.TOQUE, TutorialCard.Modo.PARTIDA, tamanho, 48.0)
 			var util := Rect2(0.0, 0.0, tamanho.x, tamanho.y)
 			assert_true(util.encloses(c.rect_fundo()), "fundo %s dentro de %s no modo %s" % [c.rect_fundo(), util, TouchMode.nome(modo)])
 	Global.set_touch_mode(TouchMode.padrao(), false)
@@ -261,7 +270,7 @@ func test_c480_pular_nao_intersecta_as_linhas_de_controle() -> void:
 		var c := _novo()
 		for nome in ["Controle", "Controle1", "Controle2"]:
 			var l := c.find_child(nome, true, false) as Label
-			var r := Rect2(l.position + Vector2(0.0, c.rect_fundo().position.y - 38.0), l.size)
+			var r := Rect2(l.position + Vector2(0.0, c.rect_fundo().position.y - 76.0), l.size)
 			assert_false(c.rect_pular().intersects(r), "Pular fora da linha %s no modo %s" % [nome, TouchMode.nome(modo)])
 	Global.set_touch_mode(TouchMode.padrao(), false)
 
@@ -280,31 +289,31 @@ func test_c199_amostras_diferem_por_marca_e_rotulo_nao_so_por_cor() -> void:
 	assert_eq(_fundo_cor(c, "Amostra1Plataforma"), Enums.get_cor(Enums.COLOR.AZUL), "plataforma diferente azul")
 	var g := c.find_child("Amostra0Gecko", true, false) as Control
 	var p := c.find_child("Amostra0Plataforma", true, false) as Control
-	assert_eq(g.size, Vector2(12, 16), "miniatura do gecko 12x16")
-	assert_eq(p.size, Vector2(32, 8), "plataforma 32x8")
+	assert_eq(g.size, Vector2(24, 32), "miniatura do gecko 24x32")
+	assert_eq(p.size, Vector2(64, 16), "plataforma 64x16")
 
 
-func test_c199_legenda_tem_4_nomes_e_quadrado_12x12_com_as_cores_do_jogo() -> void:
+func test_c199_legenda_tem_4_nomes_e_quadrado_24x24_com_as_cores_do_jogo() -> void:
 	var c := _novo()
 	var nomes := ["amarelo", "verde", "azul", "vermelho"]
 	var cores := [Color("#f6db61"), Color("#79cf5a"), Color("#5987e9"), Color("#ec4848")]
 	for i in 4:
 		assert_eq((c.find_child("Legenda%dNome" % i, true, false) as Label).text, nomes[i], "nome %d" % i)
 		var q := c.find_child("Legenda%dQuadro" % i, true, false) as Control
-		assert_eq(q.size, Vector2(12, 12), "quadrado %d de 12x12" % i)
+		assert_eq(q.size, Vector2(24, 24), "quadrado %d de 24x24" % i)
 		assert_eq(_fundo_cor(c, "Legenda%dQuadro" % i), cores[i], "cor do quadrado %d" % i)
 		var estilo := q.get_theme_stylebox("panel") as StyleBoxFlat
-		assert_eq(estilo.border_width_left, 1, "contorno de 1 px no quadrado %d" % i)
+		assert_eq(estilo.border_width_left, 2, "contorno de 2 px no quadrado %d" % i)
 		assert_eq(estilo.border_color, Color.BLACK, "contorno preto no quadrado %d" % i)
 	var q0 := c.find_child("Legenda0Quadro", true, false) as Control
 	var q3 := c.find_child("Legenda3Quadro", true, false) as Control
-	assert_eq(q0.position, Vector2(16, 151), "amarelo na 1a coluna, 1a linha")
-	assert_eq(q3.position, Vector2(90, 168), "vermelho na 2a coluna, 2a linha")
+	assert_eq(q0.position, Vector2(32, 302), "amarelo na 1a coluna, 1a linha")
+	assert_eq(q3.position, Vector2(180, 336), "vermelho na 2a coluna, 2a linha")
 
 
 func test_c200_pular_so_aciona_ao_soltar_dentro_do_retangulo() -> void:
 	var c := _novo()
-	var dentro := Vector2(130, 56)
+	var dentro := Vector2(260, 112)
 	assert_true(c.tratar_evento(_toque(dentro, true)), "pressionar dentro e do botao")
 	assert_eq(_pulou, 0, "pressionar nao aciona")
 	assert_true(c.tratar_evento(_toque(dentro, false)), "soltar dentro consome")
@@ -313,7 +322,7 @@ func test_c200_pular_so_aciona_ao_soltar_dentro_do_retangulo() -> void:
 
 func test_c200_soltar_fora_ou_arrastar_para_fora_nao_aciona() -> void:
 	var c := _novo()
-	var dentro := Vector2(130, 56)
+	var dentro := Vector2(260, 112)
 	var fora := Vector2(40, 150)
 	c.tratar_evento(_toque(dentro, true))
 	c.tratar_evento(_toque(fora, false))
@@ -329,10 +338,10 @@ func test_c200_soltar_fora_ou_arrastar_para_fora_nao_aciona() -> void:
 
 func test_c200_clique_de_mouse_tem_a_mesma_regra_do_toque() -> void:
 	var c := _novo()
-	c.tratar_evento(_clique(Vector2(130, 56), true))
-	c.tratar_evento(_clique(Vector2(130, 56), false))
+	c.tratar_evento(_clique(Vector2(260, 112), true))
+	c.tratar_evento(_clique(Vector2(260, 112), false))
 	assert_eq(_pulou, 1, "clique solto dentro aciona")
-	c.tratar_evento(_clique(Vector2(130, 56), true))
+	c.tratar_evento(_clique(Vector2(260, 112), true))
 	c.tratar_evento(_clique(Vector2(10, 300), false))
 	assert_eq(_pulou, 1, "clique solto fora nao aciona")
 
@@ -352,8 +361,8 @@ func test_c201_reabertura_consome_todo_toque_fora_do_botao() -> void:
 	assert_true(c.tratar_evento(_toque(fora, true)), "pressionar fora e consumido")
 	assert_true(c.tratar_evento(_toque(fora, false)), "soltar fora e consumido")
 	assert_eq(_voltou, 0, "toque fora nao aciona Voltar")
-	assert_true(c.tratar_evento(_toque(Vector2(130, 56), true)), "pressionar no botao e consumido")
-	assert_true(c.tratar_evento(_toque(Vector2(130, 56), false)), "soltar no botao e consumido")
+	assert_true(c.tratar_evento(_toque(Vector2(260, 112), true)), "pressionar no botao e consumido")
+	assert_true(c.tratar_evento(_toque(Vector2(260, 112), false)), "soltar no botao e consumido")
 	assert_eq(_voltou, 1, "soltar dentro aciona Voltar")
 	assert_eq(_pulou, 0, "reabertura nao emite pular")
 
@@ -370,8 +379,8 @@ func test_c202_reabertura_comeca_com_foco_em_voltar_marcado_com_seta() -> void:
 	var rotulo := (c.find_child("Pular", true, false) as Control).get_child(0) as Label
 	assert_eq(rotulo.text, "> Voltar", "marcador > antes do rotulo")
 	assert_true((c.find_child("Moldura", true, false) as Control).visible, "moldura de foco visivel")
-	assert_lte(TutorialCard.largura_texto(rotulo.text), 56.0, "'> Voltar' cabe no botao de 56 px")
-	assert_eq(c.rect_pular(), Rect2(108, 44, 56, 24), "Voltar tem a medida do Pular")
+	assert_lte(TutorialCard.largura_texto(rotulo.text), 112.0, "'> Voltar' cabe no botao de 112 px")
+	assert_eq(c.rect_pular(), Rect2(216, 88, 112, 48), "Voltar tem a medida do Pular")
 
 
 func test_c202_partida_mostra_pular_sem_marcador_nem_moldura() -> void:
@@ -401,7 +410,7 @@ func test_card_fechado_nao_consome_nada_e_fechar_emite_fechado_apos_o_fade() -> 
 	watch_signals(c)
 	c.fechar()
 	assert_false(c.esta_aberto(), "fechar marca como fechado")
-	assert_false(c.tratar_evento(_toque(Vector2(130, 56), true)), "fechado nao consome")
+	assert_false(c.tratar_evento(_toque(Vector2(260, 112), true)), "fechado nao consome")
 	await wait_seconds(TutorialCard.FADE_S + 0.2)
 	assert_false(c.visible, "oculto depois do fade")
 	assert_signal_emit_count(c, "fechado", 1)

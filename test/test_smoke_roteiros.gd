@@ -700,7 +700,7 @@ func test_roteiro_diario_valida_passos_e_seletor_com_6_entradas() -> void:
 			continue
 		cliques_no_play += 1
 		assert_eq(_estado_do_proximo_expect(passos, i), "menu", "clicar no Play desabilitado mantem state menu")
-	assert_gte(cliques_no_play, 1, "o roteiro clica no botao Play desabilitado (centro logico (90,162) da Stage)")
+	assert_gte(cliques_no_play, 1, "o roteiro clica no botao Play desabilitado (centro logico (180,324) da Stage)")
 	# o jump no menu bloqueado: um antes do reload e outro depois, ambos mantem state menu
 	var i_primeiro_jump: int = -1
 	var i_ultimo_jump: int = -1
@@ -763,8 +763,9 @@ func test_C1_expect_player_on_floor_e_aceito_pelo_validador() -> void:
 	assert_eq(_chaves_nao_publicadas(expect_pousado).size(), 0, "C1: expect player.on_floor passa pelo validador")
 
 
-# f530 T5: corte de player.y em repouso apos cruzar o limite (medido na T1: antes 169-180, depois 145-152).
-const CORTE_Y_CRUZOU: float = 160.0
+# f530 T5: corte de player.y em repouso apos cruzar o limite (medido na T1 em 180x320: antes 169-180, depois 145-152).
+# f565 T9: 2x do valor de 180x320 (160 -> 320) em 360x640; limite de topo da camera = 256.
+const CORTE_Y_CRUZOU: float = 320.0
 
 
 func test_C810_camera_cruza_limite_esta_registrado_com_seed_e_regra_real() -> void:
@@ -799,7 +800,7 @@ func test_C811_camera_cruza_limite_prova_alinhado_corte_e_termina_vivo() -> void
 	assert_gte(alinhados, 4, "C811: varios pousos alinhados antes de cruzar o limite")
 	var i_corte: int = _indice_expect(nome, "player.y", "lt")
 	assert_gte(i_corte, 0, "C811: ha expect player.y lt <corte>")
-	assert_eq(passos[i_corte]["expect"]["player.y"]["lt"], CORTE_Y_CRUZOU, "C811: o corte e o medido na T1 (repouso apos cruzar < 160)")
+	assert_eq(passos[i_corte]["expect"]["player.y"]["lt"], CORTE_Y_CRUZOU, "C811: o corte e 2x o medido na T1 (repouso apos cruzar < 320, de < 160 em 180x320)")
 	var ultimo_expect: Dictionary = {}
 	for i in range(passos.size() - 1, -1, -1):
 		if passos[i].has("expect"):
@@ -813,8 +814,43 @@ func test_C811_camera_cruza_limite_prova_alinhado_corte_e_termina_vivo() -> void
 func test_C812_camera_cruza_limite_usa_retrato_720x1280_e_tem_shots_do_cruzamento() -> void:
 	var nome: String = "camera-cruza-limite"
 	var spec := _carregar(nome)
-	assert_eq(spec.get("viewport", null), [720.0, 1280.0], "C812: viewport 720x1280 (altura logica 320, limite 128)")
+	assert_eq(spec.get("viewport", null), [720.0, 1280.0], "C812: viewport 720x1280 (altura logica 640, limite 256)")
 	var i_corte: int = _indice_expect(nome, "player.y", "lt")
 	var i_shots: int = _indice_shots(nome, "cruzou-limite")
 	assert_gt(i_shots, i_corte, "C812: o print do cruzamento vem depois do expect do corte")
 	assert_gt(_indice_shots(nome, "camera-cruza-fim"), i_shots, "C812: o print final vem depois do do cruzamento")
+
+
+# C840 (f565 T9): os roteiros de toque em viewport 720x1280 sao 2x o logico 360x640; cada arrasto convertido para px
+# logicos respeita a zona morta (12) e o flick vertical (48), os valores de TouchTuning dobrados (ajuste 1.0).
+const ZONA_MORTA_LOGICA: float = 12.0
+const FLICK_LOGICO: float = 48.0
+const LARGURA_LOGICA: float = 360.0
+
+
+func test_C840_drags_dos_roteiros_720x1280_respeitam_zona_morta_e_flick_2x() -> void:
+	for nome in ["dica-toque-a", "toque-modo-a", "toque-modo-b"]:
+		var spec := _carregar(nome)
+		var vp: Array = spec.get("viewport", [])
+		assert_eq(vp.size(), 2, "C840: %s declara viewport" % nome)
+		if vp.size() != 2:
+			continue
+		var escala: float = float(vp[0]) / LARGURA_LOGICA
+		assert_eq(escala, 2.0, "C840: %s usa viewport 720 = 2x o logico 360" % nome)
+		var passos: Array = spec.get("steps", [])
+		for passo in passos:
+			var movimentos: Array = []
+			if passo.has("drag"):
+				var d: Array = passo["drag"]
+				movimentos.append([d[0], d[1], d[2], d[3]])
+			if passo.has("touches"):
+				for toque in passo["touches"]:
+					if toque.has("from") and toque.has("to"):
+						movimentos.append([toque["from"][0], toque["from"][1], toque["to"][0], toque["to"][1]])
+			for m in movimentos:
+				var dx: float = absf(float(m[2]) - float(m[0])) / escala
+				var dy: float = absf(float(m[3]) - float(m[1])) / escala
+				var dist: float = maxf(dx, dy)
+				assert_gte(dist, ZONA_MORTA_LOGICA, "C840: %s arrasto de %.1f px logicos abaixo da zona morta 12" % [nome, dist])
+				if dy > dx:
+					assert_gte(dy, FLICK_LOGICO, "C840: %s flick vertical de %.1f px logicos abaixo do flick 48" % [nome, dy])

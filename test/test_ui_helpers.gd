@@ -17,14 +17,21 @@ func test_fonte_nativo_e_16_e_tamanhos_ui_sao_multiplos_inteiros() -> void:
 		assert_eq(t % 16, 0, "tamanho %d fora da grade nativa de 16" % t)
 
 
-func test_tamanhos_ui_so_16_e_32() -> void:
-	var esperado: Array[int] = [16, 32]
-	assert_eq(UiHelpers.TAMANHOS_UI, esperado)
-	for fora in [20, 26, 36]:
-		assert_false(UiHelpers.TAMANHOS_UI.has(fora), "tamanho %d nao e multiplo do nativo" % fora)
+func test_tamanhos_ui_so_32_e_64() -> void:
+	var esperado: Array[int] = [32, 64]
+	assert_eq(UiHelpers.TAMANHOS_UI, esperado, "TAMANHOS_UI deve ser [32, 64]")
+	for fora in [16, 20, 26, 36]:
+		assert_false(UiHelpers.TAMANHOS_UI.has(fora), "tamanho %d fora da escala 2x" % fora)
 
 
-func test_estilo_opcoes_botao_tem_raio_4_borda_e_cor() -> void:
+func test_papeis_da_escala_ui_em_2x() -> void:
+	assert_eq(UiHelpers.TAMANHO_TITULO, 64, "TAMANHO_TITULO")
+	assert_eq(UiHelpers.TAMANHO_BOTAO, 64, "TAMANHO_BOTAO")
+	assert_eq(UiHelpers.TAMANHO_TEXTO, 32, "TAMANHO_TEXTO")
+	assert_eq(UiHelpers.RAIO_BOTAO, 8, "RAIO_BOTAO")
+
+
+func test_estilo_opcoes_botao_tem_raio_8_borda_e_cor() -> void:
 	var s: StyleBoxFlat = UiHelpers.estilo_opcoes(COR_BOTAO, 2, PRETO, COR_BOTAO)
 	assert_eq(s.bg_color, COR_BOTAO)
 	assert_eq(s.border_color, PRETO)
@@ -32,14 +39,14 @@ func test_estilo_opcoes_botao_tem_raio_4_borda_e_cor() -> void:
 	assert_eq(s.border_width_top, 2)
 	assert_eq(s.border_width_right, 2)
 	assert_eq(s.border_width_bottom, 2)
-	assert_eq(s.corner_radius_top_left, 4)
-	assert_eq(s.corner_radius_bottom_right, 4)
+	assert_eq(s.corner_radius_top_left, 8)
+	assert_eq(s.corner_radius_bottom_right, 8)
 
 
-func test_estilo_opcoes_borda_1_do_botao_mantem_raio_4() -> void:
+func test_estilo_opcoes_borda_1_do_botao_mantem_raio_8() -> void:
 	var s: StyleBoxFlat = UiHelpers.estilo_opcoes(COR_BOTAO, 1, PRETO, COR_BOTAO)
 	assert_eq(s.border_width_left, 1)
-	assert_eq(s.corner_radius_top_right, 4)
+	assert_eq(s.corner_radius_top_right, 8)
 
 
 func test_estilo_opcoes_outros_fundos_ficam_retos() -> void:

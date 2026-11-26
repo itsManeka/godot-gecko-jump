@@ -1,11 +1,11 @@
 class_name InitialRows
 extends RefCounted
 
-# Regra pura das linhas iniciais do gerador: fonte unica do espacamento vertical (50 px) e do y do topo (-10).
+# Regra pura das linhas iniciais do gerador: fonte unica do espacamento vertical (100 px) e do y do topo (-20).
 # Sem arvore de cena: testavel direto. Linhas em Y_TOPO + ESPACAMENTO * i enquanto y < altura.
 
-const ESPACAMENTO := 50.0
-const Y_TOPO := -10.0
+const ESPACAMENTO := 100.0
+const Y_TOPO := -20.0
 
 
 # Devolve os y das linhas que cobrem a altura visivel: a primeira em Y_TOPO, passo ESPACAMENTO, limite estrito y < altura.

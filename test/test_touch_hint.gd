@@ -4,9 +4,9 @@ extends GutTest
 # sem entrada, geometria do handoff 8.2 e coexistencia com a classificacao do TouchControls.
 # O estado de dica vive no Global: before_each/after_each o devolvem ao padrao (nao vaza entre arquivos).
 const STAGE := "res://scenes/Stage.tscn"
-const GRANDE := Vector2(180.0, 400.0)
-const PEQUENA := Vector2(180.0, 320.0)
-const BLOCO_LARGURA_MAX := 76.0
+const GRANDE := Vector2(360.0, 800.0)
+const PEQUENA := Vector2(360.0, 640.0)
+const BLOCO_LARGURA_MAX := 152.0
 
 
 class FakePlayer:
@@ -51,7 +51,7 @@ func _nova_dica(touchscreen: bool = false) -> TouchHint:
 func _toque(pressionado: bool = true) -> InputEventScreenTouch:
 	var e := InputEventScreenTouch.new()
 	e.index = 0
-	e.position = Vector2(20.0, 200.0)
+	e.position = Vector2(40.0, 400.0)
 	e.pressed = pressionado
 	return e
 
@@ -181,23 +181,36 @@ func test_f472_faixa_de_fundo_atras_dos_textos_de_cada_bloco() -> void:
 			assert_true(faixa.get_global_rect().encloses((l as Label).get_global_rect()), "faixa cobre '%s'" % l.text)
 
 
-func test_c174_geometria_em_180x320() -> void:
+func test_c174_geometria_em_360x640() -> void:
 	var h := _nova_dica(false)
 	h.aplicar_layout(PEQUENA, Rect2(Vector2.ZERO, PEQUENA))
-	assert_eq(h.rect_bloco(TouchHint.Lado.ESQUERDA), Rect2(7.0, 220.0, 76.0, 60.0), "bloco esquerdo x[7,83] y[220,280]")
-	assert_eq(h.rect_bloco(TouchHint.Lado.DIREITA), Rect2(97.0, 220.0, 76.0, 60.0), "bloco direito x[97,173] y[220,280]")
-	assert_eq(h.rect_linha().position.x, 90.0, "linha divisoria em x = 90")
-	assert_eq(h.rect_linha().position.y, 32.0, "linha comeca em y = 32")
-	assert_eq(h.rect_linha().end.y, 320.0, "linha vai ate a base")
+	assert_eq(h.rect_bloco(TouchHint.Lado.ESQUERDA), Rect2(14.0, 440.0, 152.0, 120.0), "bloco esquerdo x[14,166] y[440,560]")
+	assert_eq(h.rect_bloco(TouchHint.Lado.DIREITA), Rect2(194.0, 440.0, 152.0, 120.0), "bloco direito x[194,346] y[440,560]")
+	assert_eq(h.rect_linha().position.x, 180.0, "linha divisoria em x = 180")
+	assert_eq(h.rect_linha().position.y, 64.0, "linha comeca em y = 64")
+	assert_eq(h.rect_linha().end.y, 640.0, "linha vai ate a base")
 
 
-func test_c174_geometria_em_180x400() -> void:
+func test_c174_geometria_em_360x800() -> void:
 	var h := _nova_dica(false)
 	h.aplicar_layout(GRANDE, Rect2(Vector2.ZERO, GRANDE))
-	assert_eq(h.rect_bloco(TouchHint.Lado.ESQUERDA), Rect2(7.0, 300.0, 76.0, 60.0), "bloco esquerdo x[7,83] y[300,360]")
-	assert_eq(h.rect_bloco(TouchHint.Lado.DIREITA), Rect2(97.0, 300.0, 76.0, 60.0), "bloco direito x[97,173] y[300,360]")
-	assert_eq(h.rect_linha().position.x, 90.0, "linha divisoria em x = 90")
-	assert_eq(h.rect_linha().end.y, 400.0, "linha vai ate a base")
+	assert_eq(h.rect_bloco(TouchHint.Lado.ESQUERDA), Rect2(14.0, 600.0, 152.0, 120.0), "bloco esquerdo x[14,166] y[600,720]")
+	assert_eq(h.rect_bloco(TouchHint.Lado.DIREITA), Rect2(194.0, 600.0, 152.0, 120.0), "bloco direito x[194,346] y[600,720]")
+	assert_eq(h.rect_linha().position.x, 180.0, "linha divisoria em x = 180")
+	assert_eq(h.rect_linha().end.y, 800.0, "linha vai ate a base")
+
+
+func test_c835_dica_respeita_safe_top_e_fica_dentro_de_360x640() -> void:
+	var h := _nova_dica(false)
+	var safe := Rect2(0.0, 48.0, 360.0, 592.0)
+	h.aplicar_layout(PEQUENA, safe)
+	assert_eq(h.rect_linha().position.y, safe.position.y + 64.0, "linha desce o s_top da safe area")
+	var tela := Rect2(Vector2.ZERO, PEQUENA)
+	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA, TouchHint.Lado.CENTRO]:
+		var r: Rect2 = h.rect_bloco(lado)
+		assert_true(tela.encloses(r), "bloco %s dentro de 360x640" % r)
+		assert_gte(r.position.y, safe.position.y, "bloco %s abaixo do topo da safe area" % r)
+	assert_false(h.rect_bloco(TouchHint.Lado.ESQUERDA).intersects(h.rect_bloco(TouchHint.Lado.DIREITA)), "blocos laterais nao se sobrepoem")
 
 
 func _rect_hud(c: Control) -> Rect2:
@@ -223,7 +236,7 @@ func test_c176_textos_de_cada_modo_cabem_no_bloco_com_a_fonte_real() -> void:
 	for modo in [TouchMode.Modo.B]:
 		for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
 			for t in TouchHint.textos_bloco(modo, lado):
-				assert_lte(TouchHint.largura_texto(t), BLOCO_LARGURA_MAX, "'%s' cabe em 76 px" % t)
+				assert_lte(TouchHint.largura_texto(t), BLOCO_LARGURA_MAX, "'%s' cabe em 152 px" % t)
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var h := _nova_dica(false)
 	var centro: float = h.rect_bloco(TouchHint.Lado.CENTRO).size.x
@@ -254,10 +267,10 @@ func test_c415_modo_a_mostra_o_texto_curto_e_nao_desenha_zonas() -> void:
 	assert_eq(h.rect_linha(), Rect2(), "modo A nao tem zona: retangulo da linha vazio")
 
 
-func test_c416_modo_b_mostra_linha_em_x_90_e_blocos_com_texto_do_modo_b() -> void:
+func test_c416_modo_b_mostra_linha_em_x_180_e_blocos_com_texto_do_modo_b() -> void:
 	Global.set_touch_mode(TouchMode.Modo.B, false)
 	var h := _nova_dica(true)
-	assert_eq(h.rect_linha().position.x, 90.0, "linha divisoria em x = 90")
+	assert_eq(h.rect_linha().position.x, 180.0, "linha divisoria em x = 180")
 	assert_true(h._linha.visible, "linha visivel")
 	assert_eq(h.textos_atuais(TouchHint.Lado.ESQUERDA), ["anda", "segura aqui"], "bloco esquerdo com o texto do modo B")
 	assert_eq(h.textos_atuais(TouchHint.Lado.DIREITA), ["pula", "toque aqui"], "bloco direito com o texto do modo B")
@@ -301,7 +314,7 @@ func test_c525_textos_do_centro_cabem_no_bloco_com_a_fonte_real() -> void:
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var h := _nova_dica(false)
 	var largura: float = h.rect_bloco(TouchHint.Lado.CENTRO).size.x
-	assert_eq(largura, 166.0, "bloco central tem 166 px")
+	assert_eq(largura, 332.0, "bloco central tem 332 px")
 	for t in TouchHint.textos_bloco(TouchMode.Modo.A, TouchHint.Lado.CENTRO):
 		assert_lte(TouchHint.largura_texto(t), largura, "'%s' cabe no bloco central" % t)
 	for filho in h._bloco_de(TouchHint.Lado.CENTRO).get_children():
@@ -309,13 +322,13 @@ func test_c525_textos_do_centro_cabem_no_bloco_com_a_fonte_real() -> void:
 			assert_lte((filho as Label).get_minimum_size().x, largura, "label '%s' cabe no bloco" % filho.text)
 
 
-func test_c526_dica_b_laterais_sem_nome_e_dentro_de_76_px() -> void:
+func test_c526_dica_b_laterais_sem_nome_e_dentro_de_152_px() -> void:
 	assert_eq(TouchHint.textos_bloco(TouchMode.Modo.B, TouchHint.Lado.ESQUERDA), ["anda", "segura aqui"] as Array[String], "esquerda do B")
 	assert_eq(TouchHint.textos_bloco(TouchMode.Modo.B, TouchHint.Lado.DIREITA), ["pula", "toque aqui"] as Array[String], "direita do B")
 	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
 		for t in TouchHint.textos_bloco(TouchMode.Modo.B, lado):
 			assert_false(t.contains("Toque:") or t.contains("Joy") or t.contains("Flick"), "'%s' sem nome de modo" % t)
-			assert_lte(TouchHint.largura_texto(t), BLOCO_LARGURA_MAX, "'%s' cabe em 76 px" % t)
+			assert_lte(TouchHint.largura_texto(t), BLOCO_LARGURA_MAX, "'%s' cabe em 152 px" % t)
 
 
 func test_c527_troca_a_b_a_reescreve_os_textos_e_rearma_a_dica() -> void:
@@ -344,7 +357,7 @@ func test_c481_b_mostra_dois_blocos_laterais_e_linha_sem_central() -> void:
 	assert_true(h.bloco_visivel(TouchHint.Lado.DIREITA), "bloco direito visivel no B")
 	assert_false(h.bloco_visivel(TouchHint.Lado.CENTRO), "sem bloco central no B")
 	assert_true(h._linha.visible, "linha divisoria visivel no B")
-	assert_eq(h.rect_linha().position.x, 90.0, "linha divisoria em x = 90 no B")
+	assert_eq(h.rect_linha().position.x, 180.0, "linha divisoria em x = 180 no B")
 
 
 func test_c482_a_mostra_so_o_central_e_rect_linha_vazio() -> void:
@@ -359,16 +372,16 @@ func test_c482_a_mostra_so_o_central_e_rect_linha_vazio() -> void:
 func test_c483_cada_texto_cabe_na_largura_do_seu_bloco() -> void:
 	Global.set_touch_mode(TouchMode.Modo.B, false)
 	var h := _nova_dica(false)
-	assert_eq(h.rect_bloco(TouchHint.Lado.ESQUERDA).size.x, 76.0, "bloco lateral esquerdo tem 76 px")
-	assert_eq(h.rect_bloco(TouchHint.Lado.DIREITA).size.x, 76.0, "bloco lateral direito tem 76 px")
+	assert_eq(h.rect_bloco(TouchHint.Lado.ESQUERDA).size.x, 152.0, "bloco lateral esquerdo tem 152 px")
+	assert_eq(h.rect_bloco(TouchHint.Lado.DIREITA).size.x, 152.0, "bloco lateral direito tem 152 px")
 	for lado in [TouchHint.Lado.ESQUERDA, TouchHint.Lado.DIREITA]:
 		for t in h.textos_atuais(lado):
-			assert_lte(TouchHint.largura_texto(t), 76.0, "'%s' cabe no bloco lateral" % t)
+			assert_lte(TouchHint.largura_texto(t), 152.0, "'%s' cabe no bloco lateral" % t)
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	h = _nova_dica(false)
-	assert_eq(h.rect_bloco(TouchHint.Lado.CENTRO).size.x, 166.0, "bloco central tem 166 px")
+	assert_eq(h.rect_bloco(TouchHint.Lado.CENTRO).size.x, 332.0, "bloco central tem 332 px")
 	for t in h.textos_atuais(TouchHint.Lado.CENTRO):
-		assert_lte(TouchHint.largura_texto(t), 166.0, "'%s' cabe no bloco central" % t)
+		assert_lte(TouchHint.largura_texto(t), 332.0, "'%s' cabe no bloco central" % t)
 
 
 func test_c484_padrao_mostra_layout_do_b_e_troca_de_modo_rearma_a_dica() -> void:
@@ -458,7 +471,7 @@ func _classificar_tap(com_dica: bool) -> Array:
 	var t: Array = [0]
 	var c := TouchControls.new()
 	c.relogio = func() -> int: return t[0]
-	c.largura_visivel_fixa = 180.0
+	c.largura_visivel_fixa = 360.0
 	var ator := FakePlayer.new()
 	c.player = ator
 	add_child_autofree(ator)
@@ -469,7 +482,7 @@ func _classificar_tap(com_dica: bool) -> Array:
 		await wait_process_frames(2)
 		assert_true(h.visible, "pre-condicao: dica visivel")
 	var e := _toque(true)
-	e.position = Vector2(160.0, 200.0)
+	e.position = Vector2(320.0, 400.0)
 	c._input(e)
 	var visto: Array = []
 	for acao in ["ui_left", "ui_right", "jump"]:

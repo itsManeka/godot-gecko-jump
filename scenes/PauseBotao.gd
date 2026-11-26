@@ -1,7 +1,7 @@
 class_name PauseBotao
 extends CanvasLayer
 
-# Botao de pausa por toque (handoff 7): 24x24 no canto superior esquerdo, glifo de duas barras.
+# Botao de pausa por toque (handoff 7, 2x): 48x48 no canto superior esquerdo, glifo de duas barras.
 # Montado por codigo; a Stage o instancia depois de touch_controls/touch_hint (ordem de `_input`), injeta `player`
 # e o layout (`aplicar_layout`) e liga `pausar_pedido` ao PauseState. Visivel so em partida ativa (7.2): oculto,
 # nao desabilitado. Fora da cadeia de foco. Aciona ao soltar com o dedo dentro do retangulo (7.3).
@@ -15,16 +15,16 @@ const COR_GLIFO: Color = Color(1.0, 1.0, 1.0, 1.0)
 
 # Acima da dica de toque (layer 0) e do HUD (layer 1); abaixo do overlay de pausa (7.4).
 const CAMADA: int = 2
-const TAMANHO: float = 24.0
-const OFFSET: float = 2.0
-const RAIO: int = 4
-const BORDA: int = 1
-const BORDA_PRESSED: int = 2
-const GLIFO_X: float = 7.0
-const GLIFO_Y: float = 6.0
-const BARRA_LARGURA: float = 3.0
-const BARRA_ALTURA: float = 12.0
-const GLIFO_LARGURA: float = 10.0
+const TAMANHO: float = 48.0
+const OFFSET: float = 4.0
+const RAIO: int = 8
+const BORDA: int = 2
+const BORDA_PRESSED: int = 4
+const GLIFO_X: float = 14.0
+const GLIFO_Y: float = 12.0
+const BARRA_LARGURA: float = 6.0
+const BARRA_ALTURA: float = 24.0
+const GLIFO_LARGURA: float = 20.0
 
 var player: Node = null
 
@@ -154,8 +154,8 @@ func _desenhar() -> void:
 	estilo.set_border_width_all(BORDA_PRESSED if _pressed else BORDA)
 	estilo.set_corner_radius_all(RAIO)
 	_desenho.draw_style_box(estilo, Rect2(Vector2.ZERO, _rect.size))
-	var deslocamento := 1.0 if _pressed else 0.0
+	var deslocamento := 2.0 if _pressed else 0.0
 	for x in [0.0, GLIFO_LARGURA - BARRA_LARGURA]:
 		var barra := Rect2(GLIFO_X + x, GLIFO_Y + deslocamento, BARRA_LARGURA, BARRA_ALTURA)
-		_desenho.draw_rect(barra.grow(1.0), COR_BORDA)
+		_desenho.draw_rect(barra.grow(2.0), COR_BORDA)
 		_desenho.draw_rect(barra, COR_GLIFO)

@@ -117,13 +117,13 @@ func _plataforma(cor: int, x: float, speed: int) -> Platform:
 func test_c794_wrap_gecko_perto_de_uma_borda_alvo_na_outra_devolve_o_caminho_curto() -> void:
 	var dt: float = ReachableColors.tempo_de_pulo(0.0)
 	var espera: float = PlayerFisica.ESPERA_MAXIMA_S
-	# Aritmetica do wrap do requirements: 10 - 170 = -160 pela borda; pelo caminho curto e -160 + LARGURA = +20
-	var a_direita: Dictionary = _alinhado([_entrada(10.0, AZUL)], AZUL, 170.0, dt, espera)
-	assert_eq(int(a_direita["dx"]), 20, "gecko em 170, alvo em 10: dx=+20 pelo wrap, nao -160")
-	assert_true(bool(a_direita["alinhado"]), "|+20| dentro do limiar: alinhado")
-	var a_esquerda: Dictionary = _alinhado([_entrada(170.0, AZUL)], AZUL, 10.0, dt, espera)
-	assert_eq(int(a_esquerda["dx"]), -20, "espelhado: gecko em 10, alvo em 170 -> dx=-20 (160 - LARGURA)")
-	assert_true(bool(a_esquerda["alinhado"]), "|-20| dentro do limiar: alinhado")
+	# Aritmetica do wrap (360 de largura): 20 - 340 = -320 pela borda; pelo caminho curto e -320 + LARGURA = +40
+	var a_direita: Dictionary = _alinhado([_entrada(20.0, AZUL)], AZUL, 340.0, dt, espera)
+	assert_eq(int(a_direita["dx"]), 40, "gecko em 340, alvo em 20: dx=+40 pelo wrap, nao -320")
+	assert_true(bool(a_direita["alinhado"]), "|+40| dentro do limiar: alinhado")
+	var a_esquerda: Dictionary = _alinhado([_entrada(340.0, AZUL)], AZUL, 20.0, dt, espera)
+	assert_eq(int(a_esquerda["dx"]), -40, "espelhado: gecko em 20, alvo em 340 -> dx=-40 (320 - LARGURA)")
+	assert_true(bool(a_esquerda["alinhado"]), "|-40| dentro do limiar: alinhado")
 
 
 # --- C795: da cor mas desalinhada -------------------------------------------------------------------------------
@@ -134,11 +134,11 @@ func test_c795_da_cor_mas_desalinhada_alinhado_false_e_dx_com_o_sinal_do_lado_do
 	var dt: float = ReachableColors.tempo_de_pulo(0.0)
 	var espera: float = PlayerFisica.ESPERA_MAXIMA_S
 	# Gecko no centro, longe das bordas (sem wrap no caminho): alvo alem do limiar para cada lado
-	var a_direita: Dictionary = _alinhado([_entrada(90.0 + limiar + 10.0, AZUL)], AZUL, 90.0, dt, espera)
+	var a_direita: Dictionary = _alinhado([_entrada(180.0 + limiar + 10.0, AZUL)], AZUL, 180.0, dt, espera)
 	assert_false(bool(a_direita["alinhado"]), "|dx| acima de SEMI_PLATAFORMA + meia-largura do corpo: nao alinhado")
 	assert_gt(int(a_direita["dx"]), 0, "alvo a direita: dx com sinal positivo")
 	assert_gt(int(a_direita["dx"]), int(roundi(limiar)), "modulo acima do limiar (distancia real, sem clamp)")
-	var a_esquerda: Dictionary = _alinhado([_entrada(90.0 - limiar - 10.0, AZUL)], AZUL, 90.0, dt, espera)
+	var a_esquerda: Dictionary = _alinhado([_entrada(180.0 - limiar - 10.0, AZUL)], AZUL, 180.0, dt, espera)
 	assert_false(bool(a_esquerda["alinhado"]), "desalinhado para o outro lado tambem")
 	assert_lt(int(a_esquerda["dx"]), 0, "alvo a esquerda: dx com sinal negativo")
 	assert_gt(-int(a_esquerda["dx"]), int(roundi(limiar)), "modulo acima do limiar para o lado negativo")
@@ -259,14 +259,14 @@ func test_c800_duas_elegiveis_alinhado_true_e_dx_da_elegivel_mais_proxima() -> v
 	var dt: float = ReachableColors.tempo_de_pulo(0.0)
 	var espera: float = PlayerFisica.ESPERA_MAXIMA_S
 	var limiar: float = float(SEMI_APOIO) + _meia_corpo
-	assert_gt(80.0, limiar, "fixture: |dx|=80 (alvo em 170) fica fora da faixa de alinhamento")
+	assert_gt(160.0, limiar, "fixture: |dx|=160 (alvo em 340) fica fora da faixa de alinhamento")
 	# A desalinhada vem PRIMEIRA na lista: o dx reportado e o da mais proxima (a alinhada), nao o da 1a da ordem
-	var res: Dictionary = _alinhado([_entrada(170.0, AZUL), _entrada(98.0, AZUL)], AZUL, 90.0, dt, espera)
+	var res: Dictionary = _alinhado([_entrada(340.0, AZUL), _entrada(196.0, AZUL)], AZUL, 180.0, dt, espera)
 	assert_true(bool(res["alinhado"]), "havendo uma alinhada entre as elegiveis: alinhado true")
-	assert_eq(int(res["dx"]), 8, "o dx e o da elegivel mais proxima (a alinhada), nao o da 1a da lista")
-	var espelhado: Dictionary = _alinhado([_entrada(170.0, AZUL), _entrada(82.0, AZUL)], AZUL, 90.0, dt, espera)
+	assert_eq(int(res["dx"]), 16, "o dx e o da elegivel mais proxima (a alinhada), nao o da 1a da lista")
+	var espelhado: Dictionary = _alinhado([_entrada(340.0, AZUL), _entrada(164.0, AZUL)], AZUL, 180.0, dt, espera)
 	assert_true(bool(espelhado["alinhado"]), "alinhada a esquerda tambem alinha")
-	assert_eq(int(espelhado["dx"]), -8, "sinal do lado da mais proxima")
+	assert_eq(int(espelhado["dx"]), -16, "sinal do lado da mais proxima")
 
 
 # --- C801: entradas_de_plataformas so ganha a chave vx ----------------------------------------------------------

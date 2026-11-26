@@ -3,14 +3,15 @@ extends GutTest
 # f413: linhas moveis nascem preenchidas. f452: o nome do enum casa com o movimento (Platform.gd: velocity = -speed).
 
 const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
-const SPAWN_MOVE_TO_RIGHT := -30.0 # MOVE_TO_RIGHT: nasce a esquerda, anda a direita
-const SPAWN_MOVE_TO_LEFT := 210.0 # MOVE_TO_LEFT: nasce a direita, anda a esquerda
+const SPAWN_MOVE_TO_RIGHT := -60.0 # MOVE_TO_RIGHT: nasce a esquerda, anda a direita
+const SPAWN_MOVE_TO_LEFT := 420.0 # MOVE_TO_LEFT: nasce a direita, anda a esquerda
 # Periodo do ciclo area_exited -> timer: ~61 ticks ate sair do CheckGenerate + 0.3 s (18 ticks) a 60 Hz
 const PERIODO_FRAMES := 79
 const TOLERANCIA_FRAMES := 2
-const TOLERANCIA_PX := 2.0
-const SPEED_INTERMEDIARIA := 86.0
-const SPEED_TETO := 100.0
+const TOLERANCIA_PX := 4.0 # 2x: 1 tick de fisica a 200 px/s = 3,33 px (em 1x cobria 1,67 px)
+const SPEED_BASE := 120.0
+const SPEED_INTERMEDIARIA := 172.0
+const SPEED_TETO := 200.0
 
 
 func before_each() -> void:
@@ -42,7 +43,7 @@ func _plataformas(gerador: Node) -> Array:
 func _xs_visiveis(gerador: Node) -> Array:
 	var xs: Array = []
 	for p in _plataformas(gerador):
-		if p.position.x > -30.0 and p.position.x < 210.0:
+		if p.position.x > -60.0 and p.position.x < 420.0:
 			xs.append(p.position.x)
 	xs.sort()
 	return xs
@@ -50,7 +51,7 @@ func _xs_visiveis(gerador: Node) -> Array:
 
 func _esperados(spawn_x: float, toward_left: bool) -> Array:
 	var xs: Array = []
-	var esp := MovingRowFill.espacamento(60.0)
+	var esp := MovingRowFill.espacamento(SPEED_BASE)
 	var passo: float = -esp if toward_left else esp
 	for k in range(1, 4):
 		xs.append(spawn_x + passo * k)
@@ -109,12 +110,12 @@ func test_plataforma_do_ponto_de_nascimento_existe_no_ready_sem_timer() -> void:
 			if is_equal_approx(p.position.x, spawn_x):
 				no_spawn.append(p)
 		assert_eq(no_spawn.size(), 1, "plataforma do ponto de nascimento deve existir no 1o frame, sem esperar o timer")
-		var vizinha_x: float = spawn_x + sentido * MovingRowFill.espacamento(60.0)
+		var vizinha_x: float = spawn_x + sentido * MovingRowFill.espacamento(SPEED_BASE)
 		var tem_vizinha := false
 		for p in _plataformas(gerador):
 			if is_equal_approx(p.position.x, vizinha_x):
 				tem_vizinha = true
-		assert_true(tem_vizinha, "lacuna entre a de nascimento e a vizinha pre-colocada deve ser espacamento(60)")
+		assert_true(tem_vizinha, "lacuna entre a de nascimento e a vizinha pre-colocada deve ser espacamento(120)")
 
 
 func test_ritmo_entre_nascimentos_novos_e_o_periodo_do_ciclo() -> void:
@@ -133,7 +134,7 @@ func test_ritmo_entre_nascimentos_novos_e_o_periodo_do_ciclo() -> void:
 
 
 # Um gerador por teste: dois geradores vivos no mesmo y se enxergam pela layer do CheckGenerate e disparam area_exited extra
-func _medir_espacamento(tipo: Enums.PLATFORM_TYPE, spawn_x: float, speed: float = 60.0) -> Array:
+func _medir_espacamento(tipo: Enums.PLATFORM_TYPE, spawn_x: float, speed: float = SPEED_BASE) -> Array:
 	var gerador := _criar_gerador(tipo)
 	var nascimentos: Array = []
 	var plataformas: Array = []
@@ -150,7 +151,7 @@ func _medir_espacamento(tipo: Enums.PLATFORM_TYPE, spawn_x: float, speed: float 
 	return distancias
 
 
-# O _ready do gerador fixa speed 60 (a T9 liga a speed da curva): aqui a speed e setada pela instancia apos o _ready,
+# O _ready do gerador le a speed do snapshot (120 no estagio 0): aqui a speed e setada pela instancia apos o _ready,
 # no gerador (plataformas novas) e nas ja criadas. Sinal de speed = sentido (Platform.gd: velocity = -speed).
 func _aplicar_speed(gerador: Node2D, speed: float) -> void:
 	var sinal: float = -1.0 if gerador.speed < 0 else 1.0
@@ -166,17 +167,17 @@ func _checar_espacamento_medido(tipo: Enums.PLATFORM_TYPE, spawn_x: float, speed
 		assert_almost_eq(float(d), MovingRowFill.espacamento(speed), TOLERANCIA_PX, "espacamento medido em jogo (speed %s) deve bater com MovingRowFill.espacamento(speed)" % speed)
 
 
-func test_espacamento_60_e_79() -> void:
-	assert_eq(MovingRowFill.espacamento(60.0), 79.0, "espacamento(60) = 79 px")
+func test_espacamento_120_e_158() -> void:
+	assert_eq(MovingRowFill.espacamento(SPEED_BASE), 158.0, "espacamento(120) = 158 px")
 
 
 # Um gerador por teste (ver acima): um teste por speed e por lado.
-func test_espacamento_medido_em_jogo_speed_60_nascendo_a_direita() -> void:
-	await _checar_espacamento_medido(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, SPAWN_MOVE_TO_LEFT, 60.0)
+func test_espacamento_medido_em_jogo_speed_120_nascendo_a_direita() -> void:
+	await _checar_espacamento_medido(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, SPAWN_MOVE_TO_LEFT, SPEED_BASE)
 
 
-func test_espacamento_medido_em_jogo_speed_60_nascendo_a_esquerda() -> void:
-	await _checar_espacamento_medido(Enums.PLATFORM_TYPE.MOVE_TO_RIGHT, SPAWN_MOVE_TO_RIGHT, 60.0)
+func test_espacamento_medido_em_jogo_speed_120_nascendo_a_esquerda() -> void:
+	await _checar_espacamento_medido(Enums.PLATFORM_TYPE.MOVE_TO_RIGHT, SPAWN_MOVE_TO_RIGHT, SPEED_BASE)
 
 
 func test_espacamento_medido_em_jogo_speed_intermediaria_nascendo_a_direita() -> void:
@@ -204,7 +205,47 @@ func test_gerador_static_nao_pre_preenche() -> void:
 	for p in _plataformas(gerador):
 		xs.append(p.position.x)
 	xs.sort()
-	assert_eq(xs, [5.0, 90.0, 175.0], "gerador STATIC deve manter as 3 estaticas de sempre, sem pre-preenchimento movel")
+	assert_eq(xs, [10.0, 180.0, 350.0], "gerador STATIC deve manter as 3 estaticas (2x), sem pre-preenchimento movel")
+
+
+func test_ponto_de_nascimento_do_check_generate_e_420_e_menos_60() -> void:
+	var gerador_esq := _criar_gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT)
+	add_child_autofree(gerador_esq)
+	assert_eq(gerador_esq.check_generate.position.x, 420.0, "linha que nasce a direita: CheckGenerate em x=420")
+	var gerador_dir := _criar_gerador(Enums.PLATFORM_TYPE.MOVE_TO_RIGHT)
+	add_child_autofree(gerador_dir)
+	assert_eq(gerador_dir.check_generate.position.x, -60.0, "linha que nasce a esquerda: CheckGenerate em x=-60")
+
+
+# Layout de uma linha com seed: [x, cor] de cada plataforma, ordenado por x
+func _layout(tipo: Enums.PLATFORM_TYPE, semente: int) -> Array:
+	var gerador := _criar_gerador(tipo)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = semente
+	gerador.rng = rng
+	add_child_autofree(gerador)
+	var layout: Array = []
+	for p in _plataformas(gerador):
+		layout.append([p.position.x, p.color])
+	layout.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	return layout
+
+
+func test_mesma_seed_gera_o_mesmo_layout_2x_nas_linhas_estatica_e_movel() -> void:
+	for tipo in [Enums.PLATFORM_TYPE.STATIC, Enums.PLATFORM_TYPE.MOVE_TO_LEFT, Enums.PLATFORM_TYPE.MOVE_TO_RIGHT]:
+		var a := _layout(tipo, 77)
+		var b := _layout(tipo, 77)
+		assert_eq(a.size(), 3 if tipo == Enums.PLATFORM_TYPE.STATIC else 4, "estatica 3 plataformas, movel 3 pre-colocadas + nascimento (tipo %s)" % tipo)
+		assert_eq(a, b, "mesma seed, mesmo layout duas vezes (tipo %s)" % tipo)
+	var xs_estatica: Array = []
+	for par in _layout(Enums.PLATFORM_TYPE.STATIC, 77):
+		xs_estatica.append(par[0])
+	assert_eq(xs_estatica, [10.0, 180.0, 350.0], "estaticas em 2x as de 180x320 (5, 90, 175 -> 10, 180, 350 com passo 170)")
+	var esp := MovingRowFill.espacamento(SPEED_BASE)
+	var xs_movel: Array = []
+	for par in _layout(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, 77):
+		xs_movel.append(par[0])
+	assert_eq(xs_movel, [SPAWN_MOVE_TO_LEFT - 3.0 * esp, SPAWN_MOVE_TO_LEFT - 2.0 * esp, SPAWN_MOVE_TO_LEFT - esp, SPAWN_MOVE_TO_LEFT], "movel: nascimento em 420 e 3 plataformas a passos de espacamento(120)")
 
 
 func test_gerador_random_all_movel_tambem_nasce_preenchido() -> void:

@@ -7,24 +7,24 @@ var points = -1
 # Estado se o jogo foi iniciado
 var started = false
 # Espessura da faixa de derrota (abaixo da borda inferior visivel)
-const CHECK_THICKNESS: float = 20.0
-# Medidas do HUD (as de 180x320 do Stage.tscn); y do menu relativo ao topo da safe area
-const HUD_RIGHT_MARGIN: float = 2.0
-const POINTS_WIDTH: float = 137.0
-const POINTS_HEIGHT: float = 30.0
-const PLAY_WIDTH: float = 56.0
-const PLAY_TOP: float = 147.0
-const PLAY_BOTTOM: float = 173.0
-const LAST_TOP: float = 230.0
-const LAST_BOTTOM: float = 247.0
-const BEST_TOP: float = 248.0
-const BEST_BOTTOM: float = 265.0
+const CHECK_THICKNESS: float = 40.0
+# Medidas do HUD (as de 360x640 do Stage.tscn); y do menu relativo ao topo da safe area
+const HUD_RIGHT_MARGIN: float = 4.0
+const POINTS_WIDTH: float = 274.0
+const POINTS_HEIGHT: float = 60.0
+const PLAY_WIDTH: float = 112.0
+const PLAY_TOP: float = 294.0
+const PLAY_BOTTOM: float = 346.0
+const LAST_TOP: float = 460.0
+const LAST_BOTTOM: float = 494.0
+const BEST_TOP: float = 496.0
+const BEST_BOTTOM: float = 530.0
 # f528 T6 (D3): Play desabilitado com o texto do dia ("Ja jogado hoje", sem contagem regressiva), no estilo
-# existente de Play desabilitado. O texto do dia usa a fonte 16 (TAMANHO_TEXTO de UiHelpers) e o botao alarga
-# para caber (o rotulo "Play" em 32 nao cabe nos 56 px do Play normal).
+# existente de Play desabilitado. O texto do dia usa a fonte 32 (TAMANHO_TEXTO de UiHelpers) e o botao alarga
+# para caber (o rotulo "Play" em 64 nao cabe nos 112 px do Play normal).
 const TEXTO_DIA_JA_JOGADO: String = "Ja jogado hoje"
-const TAMANHO_TEXTO_DIA: int = 16
-const PLAY_WIDTH_DIA: float = 132.0
+const TAMANHO_TEXTO_DIA: int = 32
+const PLAY_WIDTH_DIA: float = 264.0
 const COR_TEXTO_DIA: Color = Color(0.93, 0.96, 0.9)
 # Chaves do ctx do dia (f528 T6), citadas pela Stage e pela regra do Diario so via PartidaCtx
 const CTX_DIA: String = PartidaCtx.DIA
@@ -79,7 +79,7 @@ var _card_partida_escondido: bool = false
 # Safe area (coordenadas logicas) da ultima apply_layout; usada pelo HUD (T4)
 var safe_area: Rect2 = Rect2()
 # Tamanho visivel da ultima apply_layout (f526 T5): area de candidatura do reaparecimento da Segunda chance
-var _tamanho_visivel: Vector2 = Vector2(180.0, 320.0)
+var _tamanho_visivel: Vector2 = Vector2(360.0, 640.0)
 # Ultimo estado montado para a ponte do smoke (ver GameState); lido pelos testes sem JavaScriptBridge
 var ultimo_estado: Dictionary = {}
 # Dificuldade da partida (DifficultyState): nasce em _ready, zera a cada Stage nova (reload da cena). Consumidores leem o snapshot

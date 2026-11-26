@@ -2,19 +2,19 @@ class_name MovingRowFill
 extends RefCounted
 
 # Regra pura do preenchimento inicial de uma linha movel: fonte unica do espacamento (espacamento(speed)), da largura
-# padrao (180) e da semi-largura da plataforma (30). Sem arvore de cena: testavel direto.
-# espacamento(speed): area_exited do CheckGenerate dispara no 1o tick com distancia entre centros > 60.2995 px
+# padrao (PlayArea.LARGURA = 360) e da semi-largura da plataforma (60). Sem arvore de cena: testavel direto.
+# espacamento(speed): area_exited do CheckGenerate dispara no 1o tick com distancia entre centros > 120.599 px
 # (independe da speed; a speed/60 px por tick) + 0.3 s do timer (18 ticks), tudo andando a speed px/s:
-# (ceil(60.2995 / (speed / 60)) + 18) * speed / 60 ~ 60.2995 + 0.3 * speed + ate 1 tick. Em speed 60: 61 + 18 = 79 px
-# (valor medido). Medido em jogo por test/test_running_platforms_fill.gd (+/- 2 px) em 60, 86 e 100 (o timer tem
-# jitter de ~1 tick contra a fisica, ate 1,7 px a speed 100).
+# (ceil(120.599 / (speed / 60)) + 18) * speed / 60 ~ 120.599 + 0.3 * speed + ate 1 tick. Em speed 120: 61 + 18 = 79
+# ticks = 158 px; dobrar a speed mantem os 79 ticks e dobra o espacamento. Medido em jogo por
+# test/test_running_platforms_fill.gd (+/- 4 px) em 120, 172 e 200 (o timer tem jitter de ~1 tick contra a fisica).
 
-const DISTANCIA_SAIDA := 60.2995
+const DISTANCIA_SAIDA := 120.599
 const TEMPO_TIMER := 0.3
 const TAXA_FISICA := 60.0
 const SPEED_PADRAO: float = DifficultyStage.SPEED_PADRAO # speed do estagio 0 (ressources/curva_dificuldade.tres)
 const LARGURA_PADRAO := PlayArea.LARGURA
-const SEMI_PLATAFORMA := 30.0
+const SEMI_PLATAFORMA := 60.0
 
 
 # Distancia entre plataformas consecutivas de uma linha movel que anda a `speed` px/s.

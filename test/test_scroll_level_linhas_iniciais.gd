@@ -17,7 +17,7 @@ func after_each() -> void:
 
 func _spawn(altura: int, scroll_ligado: bool = true) -> void:
 	var sv := SubViewport.new()
-	sv.size = Vector2i(180, altura)
+	sv.size = Vector2i(360, altura)
 	add_child_autofree(sv)
 	_scroll = load(SCROLL).instantiate()
 	sv.add_child(_scroll)
@@ -54,29 +54,29 @@ func _ys_iguais(altura: int) -> bool:
 
 
 # C86
-func test_linhas_iniciais_em_320() -> void:
-	await _spawn(320, false)
-	assert_eq(_linhas().size(), 7, "altura 320: esperado 7 linhas filhas de running_platforms")
-	assert_true(_ys_iguais(320), "altura 320: y das linhas difere de initial_row_ys")
+func test_linhas_iniciais_em_640() -> void:
+	await _spawn(640, false)
+	assert_eq(_linhas().size(), 7, "altura 640: esperado 7 linhas filhas de running_platforms")
+	assert_true(_ys_iguais(640), "altura 640: y das linhas difere de initial_row_ys")
 
 
 # C87
-func test_linhas_iniciais_em_400() -> void:
-	await _spawn(400, false)
-	assert_eq(_linhas().size(), 9, "altura 400: esperado 9 linhas filhas de running_platforms")
-	assert_true(_ys_iguais(400), "altura 400: y das linhas difere de initial_row_ys")
+func test_linhas_iniciais_em_800() -> void:
+	await _spawn(800, false)
+	assert_eq(_linhas().size(), 9, "altura 800: esperado 9 linhas filhas de running_platforms")
+	assert_true(_ys_iguais(800), "altura 800: y das linhas difere de initial_row_ys")
 
 
 # C88
-func test_linhas_iniciais_em_462() -> void:
-	await _spawn(462, false)
-	assert_eq(_linhas().size(), 10, "altura 462: esperado 10 linhas filhas de running_platforms")
-	assert_true(_ys_iguais(462), "altura 462: y das linhas difere de initial_row_ys")
+func test_linhas_iniciais_em_924() -> void:
+	await _spawn(924, false)
+	assert_eq(_linhas().size(), 10, "altura 924: esperado 10 linhas filhas de running_platforms")
+	assert_true(_ys_iguais(924), "altura 924: y das linhas difere de initial_row_ys")
 
 
 # C89
-func test_sem_linha_duplicada_em_3s_de_scroll_em_400() -> void:
-	await _spawn(400)
+func test_sem_linha_duplicada_em_3s_de_scroll_em_800() -> void:
+	await _spawn(800)
 	Global.iniciado = true
 	var menor := 1000.0
 	for f in 190:
@@ -84,8 +84,8 @@ func test_sem_linha_duplicada_em_3s_de_scroll_em_400() -> void:
 		var ys := _ys_globais()
 		for i in range(1, ys.size()):
 			menor = minf(menor, ys[i] - ys[i - 1])
-	assert_gte(_scroll.position_scrolled, 50.0, "scroll de 3 s deveria passar de 50 px")
-	assert_gte(menor, 49.5, "linhas duplicadas: menor distancia vertical entre linhas abaixo de 49.5")
+	assert_gte(_scroll.position_scrolled, 100.0, "scroll de 3 s deveria passar de 100 px")
+	assert_gte(menor, 99.5, "linhas duplicadas: menor distancia vertical entre linhas abaixo de 99.5")
 
 
 func _novos(antes: Array) -> Array[float]:
@@ -106,45 +106,45 @@ func _scrollar_ate(valor: float) -> void:
 
 
 # C90
-func test_gatilho_aritmetico_49_9_50_e_salto_de_120() -> void:
-	await _spawn(400, false)
+func test_gatilho_aritmetico_99_9_100_e_salto_de_240() -> void:
+	await _spawn(800, false)
 	Global.iniciado = true
 	var antes := _linhas()
-	await _scrollar_ate(49.9)
-	assert_eq(_novos(antes).size(), 0, "position_scrolled 49.9 nao deveria gerar linha nova")
-	await _scrollar_ate(50.0)
+	await _scrollar_ate(99.9)
+	assert_eq(_novos(antes).size(), 0, "position_scrolled 99.9 nao deveria gerar linha nova")
+	await _scrollar_ate(100.0)
 	var novos := _novos(antes)
-	assert_eq(novos.size(), 1, "position_scrolled 50 deveria gerar exatamente 1 linha nova")
+	assert_eq(novos.size(), 1, "position_scrolled 100 deveria gerar exatamente 1 linha nova")
 	if novos.size() == 1:
-		assert_almost_eq(novos[0], -10.0, 0.001, "a linha nova em 50 deveria estar em y=-10")
-	# salto de frame: de um scroll novo direto para 120 px
+		assert_almost_eq(novos[0], -20.0, 0.001, "a linha nova em 100 deveria estar em y=-20")
+	# salto de frame: de um scroll novo direto para 240 px
 	_scroll.queue_free()
 	await wait_process_frames(1)
-	await _spawn(400, false)
+	await _spawn(800, false)
 	Global.iniciado = true
 	var antes2 := _linhas()
-	await _scrollar_ate(120.0)
+	await _scrollar_ate(240.0)
 	var novos2 := _novos(antes2)
-	assert_eq(novos2.size(), 2, "salto de 120 px deveria gerar 2 linhas")
+	assert_eq(novos2.size(), 2, "salto de 240 px deveria gerar 2 linhas")
 	if novos2.size() == 2:
-		assert_almost_eq(novos2[0], 60.0, 0.001, "1a linha do salto deveria estar em y global 60 (local -60)")
-		assert_almost_eq(novos2[1], 10.0, 0.001, "2a linha do salto deveria estar em y global 10 (local -110)")
+		assert_almost_eq(novos2[0], 120.0, 0.001, "1a linha do salto deveria estar em y global 120 (local -120)")
+		assert_almost_eq(novos2[1], 20.0, 0.001, "2a linha do salto deveria estar em y global 20 (local -220)")
 
 
 # C91
 func test_nomes_e_flag_das_linhas() -> void:
-	await _spawn(462, false)
+	await _spawn(924, false)
 	var com_flag := 0
 	for c in _linhas():
 		var y: float = c.position.y
-		if y > 190.0:
-			assert_eq(String(c.name), "Linha_%d" % int(y), "linha nova abaixo de 190 deveria se chamar Linha_<y>")
-			assert_false(c.garantir_cor_inicial, "linha nova abaixo de 190 nao pode ter garantir_cor_inicial")
+		if y > 380.0:
+			assert_eq(String(c.name), "Linha_%d" % int(y), "linha nova abaixo de 380 deveria se chamar Linha_<y>")
+			assert_false(c.garantir_cor_inicial, "linha nova abaixo de 380 nao pode ter garantir_cor_inicial")
 			assert_eq(c.get_parent(), _scroll.running_platforms, "linha nova filha de running_platforms")
 		if c.garantir_cor_inicial:
 			com_flag += 1
-			assert_almost_eq(y, 190.0, 0.001, "garantir_cor_inicial deve ficar em y=190")
-			assert_eq(String(c.name), "RunningPlatforms", "no do .tscn em y=190 mantem o nome RunningPlatforms")
+			assert_almost_eq(y, 380.0, 0.001, "garantir_cor_inicial deve ficar em y=380")
+			assert_eq(String(c.name), "RunningPlatforms", "no do .tscn em y=380 mantem o nome RunningPlatforms")
 	assert_eq(com_flag, 1, "exatamente 1 linha com garantir_cor_inicial")
 	var chamadas_rp := 0
 	for c in _linhas():

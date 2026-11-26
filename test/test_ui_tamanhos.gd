@@ -3,8 +3,8 @@ extends GutTest
 
 const FONTE_IMPORT: String = "res://fonts/alterebro-pixel-font.ttf.import"
 const STAGE: String = "res://scenes/Stage.tscn"
-const LARGURA_TELA: float = 180.0
-const ALTURA_TELA: float = 320.0
+const LARGURA_TELA: float = 360.0
+const ALTURA_TELA: float = 640.0
 
 var _re_tscn: RegEx
 var _re_override: RegEx
@@ -73,7 +73,7 @@ func test_c344_stage_tscn_tem_quatro_tamanhos_da_escala() -> void:
 	var valores: Array[int] = []
 	for m in _re_tscn.search_all(texto):
 		valores.append(int(m.get_string(1)))
-	assert_eq(valores, [32, 32, 16, 16] as Array[int], "Pontos, Play, Last, Best")
+	assert_eq(valores, [64, 64, 32, 32] as Array[int], "Pontos, Play, Last, Best")
 
 
 # C346: import da fonte com os valores provados (sem hinting nem subpixel, oversampling 1).
@@ -94,7 +94,7 @@ func test_c347_tutorial_e_dica_cabem_na_viewport_180x320() -> void:
 	for modo in [TouchMode.Modo.A, TouchMode.Modo.B]:
 		textos.append_array(TutorialCard.linhas_controle_toque(modo))
 	for t in textos:
-		assert_lte(TutorialCard.largura_texto(t), TutorialCard.LARGURA_CONTEUDO, "'%s' cabe em 148 px" % t)
+		assert_lte(TutorialCard.largura_texto(t), TutorialCard.LARGURA_CONTEUDO, "'%s' cabe em 296 px" % t)
 	var tela := Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA)
 	assert_true(tela.encloses(card.rect_fundo()), "card dentro de 180x320")
 	assert_true(tela.encloses(card.rect_pular()), "botao Pular dentro de 180x320")
@@ -135,7 +135,7 @@ func test_c348_play_e_botoes_de_menu_comportam_o_rotulo() -> void:
 		assert_lte(l, (par[1] as Rect2).size.x, "'%s' cabe no botao da pausa" % par[0])
 	# f527 T6 (D5): o terceiro botao do Zen no mesmo estilo dos atuais e o rotulo cabe nele
 	pausa.definir_permite_sair(true)
-	assert_eq(pausa.rect_sair().size, Vector2(112.0, 32.0), "Sair no estilo 112x32 dos botoes atuais")
+	assert_eq(pausa.rect_sair().size, Vector2(224.0, 64.0), "Sair no estilo 224x64 dos botoes atuais")
 	assert_eq(pausa.rect_sair().size, pausa.rect_opcoes().size, "Sair do mesmo tamanho que Opcoes")
 	var l_sair := UiHelpers.FONTE.get_string_size("> Sair", HORIZONTAL_ALIGNMENT_LEFT, -1, UiHelpers.TAMANHO_TEXTO).x
 	assert_lte(l_sair, pausa.rect_sair().size.x, "'> Sair' cabe no botao da pausa")
@@ -159,12 +159,12 @@ func test_c348_play_e_botoes_de_menu_comportam_o_rotulo() -> void:
 func test_c516_rotulo_do_toque_de_cada_nome_cabe_no_botao_e_na_tela() -> void:
 	var opcoes: OptionsScreen = add_child_autofree(OptionsScreen.new())
 	opcoes.aplicar_layout(Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA))
-	assert_eq(opcoes.rect_toque().size.x, 112.0, "botao Toque tem 112 px de largura")
+	assert_eq(opcoes.rect_toque().size.x, 224.0, "botao Toque tem 224 px de largura")
 	assert_gt(TouchMode.NOMES.size(), 0, "ha pelo menos um nome de modo de toque")
 	for nome in TouchMode.NOMES:
 		var largura := UiHelpers.FONTE.get_string_size("> Toque: %s" % nome, HORIZONTAL_ALIGNMENT_LEFT, -1, OptionsScreen.TAMANHO_TEXTO).x
-		assert_lte(largura, opcoes.rect_toque().size.x, "'> Toque: %s' cabe nos 112 px do botao" % nome)
-		assert_lte(largura, LARGURA_TELA, "'> Toque: %s' cabe nos 180 px da tela" % nome)
+		assert_lte(largura, opcoes.rect_toque().size.x, "'> Toque: %s' cabe nos 224 px do botao" % nome)
+		assert_lte(largura, LARGURA_TELA, "'> Toque: %s' cabe nos 360 px da tela" % nome)
 
 
 # T2 corr1: o Play da Stage usa o papel TAMANHO_BOTAO da escala.
@@ -186,7 +186,7 @@ func test_c349_ultima_e_melhor_pontuacao_de_4_digitos_cabem_em_180() -> void:
 func test_c474_bloco_das_opcoes_cabe_na_safe_area_com_e_sem_sensibilidade() -> void:
 	var casos: Array = [
 		[Vector2(LARGURA_TELA, ALTURA_TELA), Rect2(0.0, 0.0, LARGURA_TELA, ALTURA_TELA)],
-		[Vector2(LARGURA_TELA, 400.0), Rect2(0.0, 20.0, LARGURA_TELA, 374.0)],
+		[Vector2(LARGURA_TELA, 800.0), Rect2(0.0, 40.0, LARGURA_TELA, 748.0)],
 	]
 	for caso in casos:
 		for modo in [TouchMode.Modo.B, TouchMode.Modo.A]:
@@ -195,7 +195,7 @@ func test_c474_bloco_das_opcoes_cabe_na_safe_area_com_e_sem_sensibilidade() -> v
 			var tamanho: Vector2 = caso[0]
 			var safe: Rect2 = caso[1]
 			o.aplicar_layout(tamanho, safe)
-			var altura := 311.0 if modo == TouchMode.Modo.A else 260.0
+			var altura := 622.0 if modo == TouchMode.Modo.A else 520.0
 			assert_almost_eq(o.rect_bloco().size.y, altura, 0.0001, "%s modo %d: bloco de %s px" % [str(tamanho), modo, str(altura)])
 			assert_true(safe.encloses(o.rect_bloco()), "%s modo %d: bloco inteiro dentro da safe area" % [str(tamanho), modo])
 			var rets: Array[Rect2] = [

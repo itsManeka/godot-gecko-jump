@@ -9,18 +9,18 @@ const DEDO_MOUSE: int = 1000
 const FONTE: Font = preload("res://fonts/alterebro-pixel-font.ttf")
 const COR_TEXTO: Color = Color(1.0, 1.0, 1.0, 1.0)
 const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
-const RAIO_BOTAO: int = 4
+const RAIO_BOTAO: int = 8
 ## Fundo translucido compartilhado: overlay de pausa, faixa do placar e faixa da dica de toque.
 const COR_FUNDO_OVERLAY: Color = Color(0.0, 0.0, 0.0, 0.6)
 
 ## Tamanho nativo da fonte em px por em: unitsPerEm 1024, grade de 64 unidades = 1/16 em (docs/fonte-pixel-tamanho-nativo.md).
 const FONTE_NATIVO: int = 16
-## Escala de UI = multiplos inteiros do nativo: titulo/placar = 32, botao = 32 (ou 16), texto = 16.
-const TAMANHOS_UI: Array[int] = [16, 32]
-## Papeis da escala: titulo/placar e botao grande = 2x o nativo, texto e botoes de menu = 1x.
-const TAMANHO_TITULO: int = 32
-const TAMANHO_BOTAO: int = 32
-const TAMANHO_TEXTO: int = 16
+## Escala de UI = multiplos inteiros do nativo: titulo/placar = 64, botao = 64 (ou 32), texto = 32.
+const TAMANHOS_UI: Array[int] = [32, 64]
+## Papeis da escala: titulo/placar e botao grande = 4x o nativo, texto e botoes de menu = 2x.
+const TAMANHO_TITULO: int = 64
+const TAMANHO_BOTAO: int = 64
+const TAMANHO_TEXTO: int = 32
 
 
 ## Caixa com fundo, borda e raio explicitos.

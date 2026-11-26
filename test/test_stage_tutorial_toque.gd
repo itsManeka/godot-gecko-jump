@@ -77,7 +77,7 @@ func test_c210_toque_no_pular_com_card_aberto_nao_vira_gesto_nem_inicia_fade() -
 func test_c211_toque_no_resto_do_card_vira_tap_e_nao_apaga_a_dica() -> void:
 	var stage := await _stage_em_curso()
 	assert_true(stage.tutorial_card.esta_aberto(), "card aberto")
-	var pos: Vector2 = stage.tutorial_card.rect_fundo().position + Vector2(12.0, 100.0)
+	var pos: Vector2 = stage.tutorial_card.rect_fundo().position + Vector2(24.0, 200.0)
 	assert_false(stage.tutorial_card.rect_pular().has_point(pos), "ponto fora do Pular")
 	stage.touch_controls._input(_toque(pos))
 	stage.touch_hint._input(_toque(pos))
@@ -99,15 +99,15 @@ func test_c212_apos_fechar_o_card_o_1o_toque_inicia_o_fade_e_o_pular_volta_a_ser
 	assert_false(_fade_iniciado(stage.touch_hint), "fechar o card sozinho nao inicia o fade")
 	stage.touch_controls._input(_toque(pular.get_center()))
 	assert_true(stage.touch_controls.gesto_ativo(), "toque no antigo Pular agora e toque de jogo")
-	stage.touch_hint._input(_toque(Vector2(20.0, 200.0)))
+	stage.touch_hint._input(_toque(Vector2(40.0, 400.0)))
 	assert_true(_fade_iniciado(stage.touch_hint), "1o toque de jogo apos o fechamento inicia o fade")
 
 
 func test_c212_zona_morta_do_pular_acompanha_s_top_no_layout() -> void:
 	var stage := await _stage_em_curso()
-	stage.apply_layout(Vector2(180.0, 320.0), Rect2(Vector2(10.0, 24.0), Vector2(160.0, 280.0)))
+	stage.apply_layout(Vector2(360.0, 640.0), Rect2(Vector2(20.0, 48.0), Vector2(320.0, 560.0)))
 	var pular: Rect2 = stage.tutorial_card.rect_pular()
-	assert_eq(pular.position.y, 44.0 + 24.0, "Pular deslocado por s_top")
+	assert_eq(pular.position.y, 88.0 + 48.0, "Pular deslocado por s_top")
 	assert_true(stage.touch_controls.zonas_mortas.has(pular), "zona morta recalculada no layout")
 
 
@@ -150,7 +150,7 @@ func test_c214_tutorial_visto_e_dica_nao_mostrada_sem_card_e_dica_segue() -> voi
 	var stage := await _stage_em_curso()
 	assert_false(stage.tutorial_card.esta_aberto(), "tutorial visto: sem card")
 	assert_true(stage.touch_hint.esta_mostrando(), "dica nao mostrada: a dica aparece")
-	stage.touch_hint._input(_toque(Vector2(20.0, 200.0)))
+	stage.touch_hint._input(_toque(Vector2(40.0, 400.0)))
 	assert_true(_fade_iniciado(stage.touch_hint), "sem card o 1o toque inicia o fade (8.4)")
 
 

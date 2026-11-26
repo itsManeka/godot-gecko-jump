@@ -9,8 +9,8 @@ extends GutTest
 
 const SEED := 20261110
 const LINHAS := 200
-const LARGURA := 180.0
-const ALTURA_TELA := 320.0
+const LARGURA := 360.0
+const ALTURA_TELA := 640.0
 const Y_BASE := 10000.0
 # Quantos pousos depois do nascimento uma linha movel ainda cria plataformas no spawn. Valor de modelagem (nao medido no
 # jogo); os x criados nao andam depois de criados. C131/C135 medem a regra do pouso; so o C136 mede a janela K das moveis.
@@ -31,7 +31,7 @@ func _y_da_linha(indice: int) -> float:
 
 func _gerar_linha_estatica(y: float, rng: RandomNumberGenerator) -> Dictionary:
 	var cores: Array = StaticPlatformColors.sortear(Enums.COR_INICIAL, rng)
-	var xs: Array = [30.0, 90.0, 150.0]
+	var xs: Array = [10.0, 180.0, 350.0]
 	var plataformas: Array = []
 	for i in xs.size():
 		plataformas.append({"x": xs[i], "cor": cores[i]})
@@ -70,7 +70,7 @@ func _gerar_linha_do_snapshot(
 	var tipo: int = PlatformTypePicker.resolve(Enums.PLATFORM_TYPE.RANDOM_ALL, rng, snap.get_proporcao_estaticas())
 	if tipo == Enums.PLATFORM_TYPE.STATIC:
 		var plataformas: Array = []
-		for x in [30.0, 90.0, 150.0]:
+		for x in [10.0, 180.0, 350.0]:
 			plataformas.append({"x": x, "cor": Enums.get_random_color(rng)})
 		return {"y": y, "tipo": "estatica", "plataformas": plataformas, "historico": []}
 	var para_esquerda: bool = tipo == Enums.PLATFORM_TYPE.MOVE_TO_LEFT
@@ -360,7 +360,7 @@ const CURVA_PATH := "res://ressources/curva_dificuldade.tres"
 const EPS_PROGRESSO := 0.001
 const SEEDS_ESTAGIO := [20261110, 20261111, 20261112]
 const K_LIMITE := 6
-const SPEED_LIMITE := 100.0
+const SPEED_LIMITE := 200.0
 
 
 func _casos() -> Array:

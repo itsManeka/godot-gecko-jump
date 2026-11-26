@@ -12,7 +12,7 @@ extends GutTest
 const STAGE_SCENE := "res://scenes/Stage.tscn"
 const PLATFORM_SCENE := "res://scenes/Platform.tscn"
 # Altura do teleporte acima da plataforma de pouso (padrao de test_power_up_stage.gd)
-const ALTURA_QUEDA_PX := 30.0
+const ALTURA_QUEDA_PX := 60.0
 
 var _stage: Node = null
 var _sem_derrota_original := false

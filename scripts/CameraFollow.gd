@@ -6,7 +6,7 @@ extends RefCounted
 # uma parcela do que resta (easing, issue #49), ate o gecko convergir ao limite. Sem arvore de
 # cena (padrao de InitialRows.gd): testavel direto; aplicado na cena por ScrollLevel/Stage.
 
-# Fracao da altura visivel que define o limite de topo (0,40 -> y = 128 com altura 320).
+# Fracao da altura visivel que define o limite de topo (0,40 -> y = 256 com altura 640).
 # Valor de sensacao: o dono confere no playtest e ajusta a constante.
 const FRACAO_LIMITE := 0.40
 
@@ -15,12 +15,13 @@ const FRACAO_LIMITE := 0.40
 const DURACAO_FRAMES := 4
 
 # Piso da parcela por frame, em px logicos: so garante que a sequencia termina (sem cauda infinita).
-const PASSO_MINIMO_PX := 1.0
+# Dobrado com a base 360x640 (2x de 1.0): mantem o numero de frames de easing igual ao da base 180x320.
+const PASSO_MINIMO_PX := 2.0
 
 # Excesso abaixo disso e ruido de ponto flutuante, nao subida do gecko: o limite e double e global_position.y e float32,
-# entao o gecko parado no limite pode ficar ate meio ulp (float32 em y ~100-200: ate ~8e-6 px) acima do limite e a camera
-# acumularia esse residuo em position_scrolled a cada frame. Bem abaixo de 1 px, invisivel na tela de 180x320.
-const EXCESSO_MINIMO_PX := 0.001
+# entao o gecko parado no limite pode ficar ate meio ulp (float32 em y ~100-500: ate ~1,5e-5 px) acima do limite e a camera
+# acumularia esse residuo em position_scrolled a cada frame. Bem abaixo de 1 px, invisivel na tela de 360x640.
+const EXCESSO_MINIMO_PX := 0.002
 
 
 # y do limite de topo para a altura visivel dada; gecko com y menor que o limite (mais alto) aciona o avanco

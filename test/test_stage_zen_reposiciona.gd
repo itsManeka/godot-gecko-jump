@@ -3,13 +3,13 @@ extends GutTest
 # f527 T4: no Zen a queda reposiciona o gecko na ultima plataforma pisada (a do ultimo ponto), sem derrota, sem
 # ponto e sem carga; a cor assumida e a da plataforma-alvo (D4); sem pisada ou com a ultima liberada vale a escolha
 # da Segunda chance (D3). Cenarios C721-C729 do 05-test-plan. Molde de setup: test_stage_segunda_chance.gd (Stage
-# sem ScrollLevel, layout 180x320, queda pelo handler da linha de derrota).
+# sem ScrollLevel, layout 360x640, queda pelo handler da linha de derrota).
 
 const STAGE_SCENE := "res://scenes/Stage.tscn"
 const PLATFORM_SCENE := "res://scenes/Platform.tscn"
-const VISIVEL := Vector2(180.0, 320.0)
-const SAFE := Rect2(0.0, 0.0, 180.0, 320.0)
-const QUEDA := Vector2(20.0, 360.0)
+const VISIVEL := Vector2(360.0, 640.0)
+const SAFE := Rect2(0.0, 0.0, 360.0, 640.0)
+const QUEDA := Vector2(40.0, 720.0)
 
 var _stage: Node = null
 var _p: Node = null
@@ -109,9 +109,9 @@ func _no_topo(plat: Platform) -> void:
 # C721
 func test_C721_zen_queda_reposiciona_no_topo_da_ultima_plataforma() -> void:
 	await _novo_stage(ZenRule.new())
-	var plat := _plataforma(Global.cor_gecko, 90.0, 120.0)
+	var plat := _plataforma(Global.cor_gecko, 180.0, 240.0)
 	_pisar(plat)
-	_p.velocity = Vector2(30.0, 200.0)
+	_p.velocity = Vector2(60.0, 400.0)
 	_cair()
 	assert_false(_p.is_end(), "C721: o gecko nao encerrou")
 	assert_eq(_stage.ultimo_estado["state"], GameState.STATE_PLAYING, "C721: a partida segue playing")
@@ -122,7 +122,7 @@ func test_C721_zen_queda_reposiciona_no_topo_da_ultima_plataforma() -> void:
 # C722
 func test_C722_zen_reposicionar_nao_pontua_nem_grava_recorde() -> void:
 	await _novo_stage(ZenRule.new())
-	var plat := _plataforma(Global.cor_gecko, 90.0, 120.0)
+	var plat := _plataforma(Global.cor_gecko, 180.0, 240.0)
 	_pisar(plat)
 	_pisar(plat)
 	var pontos: int = _stage.points
@@ -138,8 +138,8 @@ func test_C722_zen_reposicionar_nao_pontua_nem_grava_recorde() -> void:
 # C723
 func test_C723_zen_reposiciona_na_ultima_pisada_nao_na_mais_proxima() -> void:
 	await _novo_stage(ZenRule.new())
-	var a := _plataforma(Global.cor_gecko, 40.0, 200.0)
-	var b := _plataforma(Global.cor_gecko, 140.0, 100.0)
+	var a := _plataforma(Global.cor_gecko, 80.0, 400.0)
+	var b := _plataforma(Global.cor_gecko, 280.0, 200.0)
 	_pisar(a)
 	_pisar(b)
 	_cair()
@@ -150,7 +150,7 @@ func test_C723_zen_reposiciona_na_ultima_pisada_nao_na_mais_proxima() -> void:
 # C724
 func test_C724_zen_queda_sem_pouso_cai_no_fallback_da_segunda_chance() -> void:
 	await _novo_stage(ZenRule.new())
-	var plat := _plataforma(_outra_cor(Global.cor_gecko), 90.0, 120.0)
+	var plat := _plataforma(_outra_cor(Global.cor_gecko), 180.0, 240.0)
 	var esperada: Dictionary = SegundaChanceAlvo.escolher(
 		ReachableColors.entradas_de_plataformas(Global.platforms),
 		QUEDA,
@@ -170,8 +170,8 @@ func test_C724_zen_queda_sem_pouso_cai_no_fallback_da_segunda_chance() -> void:
 # C725
 func test_C725_zen_ultima_plataforma_liberada_cai_no_fallback() -> void:
 	await _novo_stage(ZenRule.new())
-	var velha := _plataforma(Global.cor_gecko, 40.0, 200.0)
-	var viva := _plataforma(Global.cor_gecko, 140.0, 120.0)
+	var velha := _plataforma(Global.cor_gecko, 80.0, 400.0)
+	var viva := _plataforma(Global.cor_gecko, 280.0, 240.0)
 	_pisar(velha)
 	velha.free()
 	_cair()
@@ -183,11 +183,11 @@ func test_C725_zen_ultima_plataforma_liberada_cai_no_fallback() -> void:
 # C726
 func test_C726_zen_duas_quedas_seguidas_reposicionam_as_duas_vezes() -> void:
 	await _novo_stage(ZenRule.new())
-	var plat := _plataforma(Global.cor_gecko, 90.0, 120.0)
+	var plat := _plataforma(Global.cor_gecko, 180.0, 240.0)
 	_pisar(plat)
 	_cair()
 	_no_topo(plat)
-	_cair(Vector2(60.0, 380.0))
+	_cair(Vector2(120.0, 760.0))
 	assert_eq(_stage.ultimo_estado["state"], GameState.STATE_PLAYING, "C726: playing apos a 2a queda")
 	assert_false(_p.is_end(), "C726: o gecko segue vivo")
 	_no_topo(plat)
@@ -213,7 +213,7 @@ func test_C727_zen_gecko_assume_a_cor_da_plataforma_alvo_e_fica_sobre_ela() -> v
 # C728
 func test_C728_zen_queda_com_gecko_pulando_segue_ignorada() -> void:
 	await _novo_stage(ZenRule.new())
-	var plat := _plataforma(Global.cor_gecko, 90.0, 120.0)
+	var plat := _plataforma(Global.cor_gecko, 180.0, 240.0)
 	_pisar(plat)
 	_p.jumping = true
 	_cair()
@@ -225,8 +225,8 @@ func test_C728_zen_queda_com_gecko_pulando_segue_ignorada() -> void:
 # sobre a plataforma existente mais proxima (qualquer cor) em vez de seguir caindo com a partida presa.
 func test_zen_sem_candidata_visivel_reaparece_na_plataforma_mais_proxima() -> void:
 	await _novo_stage(ZenRule.new())
-	var longe := _solta(_outra_cor(Global.cor_gecko), 150.0, 100.0)
-	var perto := _solta(_outra_cor(Global.cor_gecko), 30.0, 300.0)
+	var longe := _solta(_outra_cor(Global.cor_gecko), 300.0, 200.0)
+	var perto := _solta(_outra_cor(Global.cor_gecko), 60.0, 600.0)
 	var escolha: Dictionary = SegundaChanceAlvo.escolher(
 		ReachableColors.entradas_de_plataformas(Global.platforms),
 		QUEDA,
@@ -256,7 +256,7 @@ func test_C729_classico_puro_e_tempo_seguem_encerrando_na_queda() -> void:
 	var regras: Array = [ClassicoRule.new(), PuroRule.new(), TempoRule.new()]
 	for regra in regras:
 		await _novo_stage(regra)
-		var plat := _plataforma(Global.cor_gecko, 90.0, 120.0)
+		var plat := _plataforma(Global.cor_gecko, 180.0, 240.0)
 		_pisar(plat)
 		_cair()
 		assert_true(_p.is_end(), "C729: %s encerra na queda" % regra.get_script().resource_path)

@@ -4,7 +4,7 @@ extends GutTest
 # Zen = 0.0 zera so a curva: o avanco da camera (gecko acima do limite) segue valendo (D6).
 
 const STAGE := "res://scenes/Stage.tscn"
-const ALTURA := 320
+const ALTURA := 640
 const EPS := 0.0001
 var _sv: SubViewport
 var _stage: Node
@@ -27,10 +27,10 @@ func after_each() -> void:
 	Global.iniciado = false
 
 
-# Stage real em SubViewport 180x320 com a regra injetada antes do add_child; o Player fica sem fisica (so o scroll e medido)
+# Stage real em SubViewport 360x640 com a regra injetada antes do add_child; o Player fica sem fisica (so o scroll e medido)
 func _spawn(regra: GameModeRule) -> void:
 	_sv = SubViewport.new()
-	_sv.size = Vector2i(180, ALTURA)
+	_sv.size = Vector2i(360, ALTURA)
 	add_child_autofree(_sv)
 	_stage = load(STAGE).instantiate()
 	_stage.regra = regra
@@ -117,7 +117,7 @@ func test_alcance_da_linha_usa_o_fator_forcado_do_modo() -> void:
 
 func test_scroll_level_repassa_o_fator_forcado_a_linha_nova() -> void:
 	await _spawn(ZenRule.new())
-	_scroll.create_new_running_platform(-500.0)
+	_scroll.create_new_running_platform(-1000.0)
 	await wait_process_frames(1)
 	var linha: Node = _scroll.running_platforms.get_child(_scroll.running_platforms.get_child_count() - 1)
 	assert_almost_eq(float(linha.fator_forcado), 0.0, EPS, "a linha nova nasce com o fator forcado do ScrollLevel")
@@ -128,7 +128,7 @@ func test_zen_avancar_camera_com_gecko_acima_do_limite_sobe_o_mundo_e_cria_linha
 	await _spawn(ZenRule.new())
 	_stage._on_Play_button_down()
 	var limite: float = CameraFollow.limite_y(float(ALTURA))
-	_p.global_position.y = limite - 160.0
+	_p.global_position.y = limite - 320.0
 	_p.velocity.y = 0.0
 	var plataformas_antes: float = _scroll.running_platforms.position.y
 	var linhas_antes: int = _scroll._rows_spawned
@@ -139,7 +139,7 @@ func test_zen_avancar_camera_com_gecko_acima_do_limite_sobe_o_mundo_e_cria_linha
 		await _frame()
 
 	assert_almost_eq(_scroll._fator_scroll(), 0.0, EPS, "C719: pre-condicao, a curva esta zerada")
-	assert_gt(_scroll.running_platforms.position.y - plataformas_antes, 100.0, "C719: Zen com scroll 0 ainda sobe o mundo")
+	assert_gt(_scroll.running_platforms.position.y - plataformas_antes, 200.0, "C719: Zen com scroll 0 ainda sobe o mundo")
 	assert_gt(_scroll._rows_spawned, linhas_antes, "C719: o avanco da camera cria linha nova no Zen")
 
 

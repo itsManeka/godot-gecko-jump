@@ -8,8 +8,8 @@ extends GutTest
 const PLAYER := "res://scenes/Player.tscn"
 const CONTROLS := preload("res://scenes/TouchControls.gd")
 const TICK := 1.0 / 60.0
-const ESQ := 20.0
-const DIR := 160.0
+const ESQ := 40.0
+const DIR := 320.0
 const ACOES := ["ui_left", "ui_right", "jump"]
 var _p: Node
 var _c: Node
@@ -79,7 +79,7 @@ func _criar_fake(_modo: int) -> TouchScheme:
 func _spawn() -> void:
 	_c = CONTROLS.new()
 	_c.relogio = func() -> int: return _t
-	_c.largura_visivel_fixa = 180.0
+	_c.largura_visivel_fixa = 360.0
 	_c.fabrica_esquema = _criar_fake
 	_p = load(PLAYER).instantiate()
 	_c.player = _p
@@ -87,7 +87,7 @@ func _spawn() -> void:
 	_p.set_physics_process(false)
 	add_child_autofree(_c)
 	add_child_autofree(_p)
-	_p.position = Vector2(90.0, 100.0)
+	_p.position = Vector2(180.0, 200.0)
 
 
 # 1 tick fisico: camada, depois Player.
@@ -99,7 +99,7 @@ func _tick() -> void:
 func _toque(x: float, pressed: bool, idx: int = 0, cancelado: bool = false) -> void:
 	var e := InputEventScreenTouch.new()
 	e.index = idx
-	e.position = Vector2(x, 200.0)
+	e.position = Vector2(x, 400.0)
 	e.pressed = pressed
 	e.canceled = cancelado
 	_c._input(e)
@@ -108,7 +108,7 @@ func _toque(x: float, pressed: bool, idx: int = 0, cancelado: bool = false) -> v
 func _mouse(x: float, pressed: bool, device: int) -> void:
 	var e := InputEventMouseButton.new()
 	e.button_index = MOUSE_BUTTON_LEFT
-	e.position = Vector2(x, 200.0)
+	e.position = Vector2(x, 400.0)
 	e.pressed = pressed
 	e.device = device
 	_c._input(e)
@@ -296,7 +296,7 @@ func test_c365_teclado_ja_pressionado_nao_e_assumido_nem_soltado() -> void:
 
 func test_zona_morta_ignora_o_dedo_e_lista_vazia_aceita_o_mesmo_ponto() -> void:
 	_spawn()
-	var mortas: Array[Rect2] = [Rect2(0.0, 150.0, 60.0, 100.0)]
+	var mortas: Array[Rect2] = [Rect2(0.0, 300.0, 120.0, 200.0)]
 	_c.zonas_mortas = mortas
 	_toque(ESQ, true)
 	assert_true(_nenhuma_pressionada(), "toque em zona morta nao vira acao")

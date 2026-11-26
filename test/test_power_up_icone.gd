@@ -55,7 +55,7 @@ func test_tipo_sem_forma_propria_tem_glifo_estavel_e_so_branco_e_preto() -> void
 			assert_true(cor == BRANCO or cor == PRETO, "so branco ou preto (%s): %s" % [nome, cor])
 
 
-# C616: camaleao = 4 quadrantes, desacelera = ampulheta (2 triangulos); icone 16x16 centrado na origem
+# C616: camaleao = 4 quadrantes, desacelera = ampulheta (2 triangulos); icone 32x32 centrado na origem
 func test_formas_do_camaleao_e_desacelera_e_icone_16x16_centrado() -> void:
 	var camaleao: Array = PowerUpDesenho.comandos(&"camaleao")
 	assert_eq(_brancos(camaleao, &"rect"), 4, "camaleao: 4 quadrantes brancos")
@@ -66,6 +66,6 @@ func test_formas_do_camaleao_e_desacelera_e_icone_16x16_centrado() -> void:
 		if c["forma"] == &"poly":
 			assert_eq(c["pontos"].size(), 3, "cada metade da ampulheta e um triangulo")
 	var icone := _icone(&"camaleao")
-	assert_eq(icone.tamanho, Vector2(16, 16), "icone 16x16")
+	assert_eq(icone.tamanho, Vector2(32, 32), "icone 32x32")
 	assert_eq(icone.retangulo_local().get_center(), Vector2.ZERO, "icone centrado na origem")
-	assert_eq(camaleao[0]["rect"], Rect2(0.0, 0.0, 16.0, 16.0), "o fundo cobre os 16x16 do icone")
+	assert_eq(camaleao[0]["rect"], Rect2(0.0, 0.0, 32.0, 32.0), "o fundo cobre os 32x32 do icone")

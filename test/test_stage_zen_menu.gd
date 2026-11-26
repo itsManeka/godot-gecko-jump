@@ -22,7 +22,7 @@ func after_each() -> void:
 
 func _spawn(regra: GameModeRule) -> void:
 	_sv = SubViewport.new()
-	_sv.size = Vector2i(180, 320)
+	_sv.size = Vector2i(360, 640)
 	add_child_autofree(_sv)
 	_stage = load(STAGE).instantiate()
 	_stage.regra = regra
@@ -65,7 +65,7 @@ func test_ponte_no_zen_publica_modo_zen_e_best_zero() -> void:
 
 
 # C733
-func test_botao_modo_zen_cabe_em_112_px_e_mostra_zen() -> void:
+func test_botao_modo_zen_cabe_em_224_px_e_mostra_zen() -> void:
 	var botao := ModoBotao.new()
 	add_child_autofree(botao)
 	botao.definir_modo(GameModes.de_id(GameModes.ID_ZEN))
@@ -74,4 +74,5 @@ func test_botao_modo_zen_cabe_em_112_px_e_mostra_zen() -> void:
 	var largura: float = ModoBotao.FONTE.get_string_size(
 		botao.texto(), HORIZONTAL_ALIGNMENT_LEFT, -1, ModoBotao.TAMANHO_TEXTO
 	).x
-	assert_lt(largura + 2.0 * ModoBotao.CONTORNO_TEXTO, ModoBotao.LARGURA, "C733: com foco cabe em 112 px")
+	assert_lt(largura + 2.0 * ModoBotao.CONTORNO_TEXTO, ModoBotao.LARGURA, "C733: com foco cabe em 224 px")
+	assert_eq(ModoBotao.LARGURA, 224.0, "C733: o botao tem 224 px de largura (fonte 32)")

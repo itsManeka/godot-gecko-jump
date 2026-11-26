@@ -31,7 +31,7 @@ func after_each() -> void:
 # Scroll desligado: as linhas do scroll nascem pelo gatilho manual do _scrollar_ate.
 func _spawn(altura: int, semente = null) -> void:
 	var sv := SubViewport.new()
-	sv.size = Vector2i(180, altura)
+	sv.size = Vector2i(360, altura)
 	add_child_autofree(sv)
 	_scroll = load(SCROLL).instantiate()
 	if semente != null:
@@ -79,11 +79,11 @@ func _sequencia(rng: RandomNumberGenerator, n: int) -> Array:
 
 # C485: sem `semente`, `rng` e `rng_cor_movel` null nas linhas do .tscn, extras de _ready e do scroll
 func test_sem_semente_nenhuma_linha_recebe_rng() -> void:
-	await _spawn(400, null)
+	await _spawn(800, null)
 	Global.iniciado = true
-	await _scrollar_ate(120.0)
+	await _scrollar_ate(240.0)
 	var linhas := _linhas()
-	assert_gt(linhas.size(), 9, "altura 400 + scroll de 120 deveria ter linhas alem das 9 iniciais")
+	assert_gt(linhas.size(), 9, "altura 800 + scroll de 240 deveria ter linhas alem das 9 iniciais")
 	for linha in linhas:
 		assert_null(linha.rng, "sem semente a linha %s nao deveria receber rng" % linha.name)
 		assert_null(linha.rng_cor_movel, "sem semente a linha %s nao deveria receber rng_cor_movel" % linha.name)
@@ -92,15 +92,15 @@ func test_sem_semente_nenhuma_linha_recebe_rng() -> void:
 # C486: com `semente`, toda linha (5 do .tscn via _enter_tree, extras de _ready, create_new_running_platform)
 # tem rng e rng_cor_movel nao-null ANTES do _ready, distintos por indice (seed do RowSeed do seu y local)
 func test_com_semente_toda_linha_tem_rng_e_rng_cor_movel_antes_do_ready() -> void:
-	await _spawn(400, SEMENTE)
+	await _spawn(800, SEMENTE)
 	Global.iniciado = true
-	await _scrollar_ate(120.0)
+	await _scrollar_ate(240.0)
 	assert_eq(_capturados_no_ready.size(), 5, "as 5 linhas do .tscn deveriam ter passado pelo _ready")
 	for captura in _capturados_no_ready:
 		assert_not_null(captura[1], "rng deveria existir antes do _ready da linha do .tscn (%s)" % captura[0].name)
 		assert_not_null(captura[2], "rng_cor_movel deveria existir antes do _ready da linha do .tscn (%s)" % captura[0].name)
 	var linhas := _linhas()
-	assert_gt(linhas.size(), 9, "altura 400 + scroll de 120 deveria ter linhas alem das 9 iniciais")
+	assert_gt(linhas.size(), 9, "altura 800 + scroll de 240 deveria ter linhas alem das 9 iniciais")
 	for linha in linhas:
 		var indice: int = RowSeed.indice_do_y(linha.position.y)
 		assert_not_null(linha.rng, "com semente a linha %s deveria ter rng" % linha.name)
@@ -133,15 +133,15 @@ func test_com_semente_toda_linha_tem_rng_e_rng_cor_movel_antes_do_ready() -> voi
 # C487: wiring — duas linhas com y local distintos carregam rngs de sequencias distintas (espiao no
 # RowSeed), e o ramo NAN de create_new_running_platform usa o indice do y local arredondado
 func test_duas_linhas_com_y_distintos_tem_rngs_distintos_e_ramo_nan_arredonda_indice() -> void:
-	await _spawn(320, SEMENTE)
+	await _spawn(640, SEMENTE)
 	var por_indice := {}
 	for linha in _linhas():
 		por_indice[RowSeed.indice_do_y(linha.position.y)] = linha
 	var topo = por_indice[0]
 	var segunda = por_indice[-1]
-	assert_ne(topo.rng.seed, segunda.rng.seed, "linhas de y -10 e 40 (indices 0 e -1) deveriam ter rngs distintos")
-	assert_eq(topo.rng.seed, RowSeed.rng_layout(SEMENTE, 0).seed, "linha y -10 deveria carregar o rng do canal layout do indice 0")
-	assert_eq(segunda.rng.seed, RowSeed.rng_layout(SEMENTE, -1).seed, "linha y 40 deveria carregar o rng do canal layout do indice -1")
+	assert_ne(topo.rng.seed, segunda.rng.seed, "linhas de y -20 e 80 (indices 0 e -1) deveriam ter rngs distintos")
+	assert_eq(topo.rng.seed, RowSeed.rng_layout(SEMENTE, 0).seed, "linha y -20 deveria carregar o rng do canal layout do indice 0")
+	assert_eq(segunda.rng.seed, RowSeed.rng_layout(SEMENTE, -1).seed, "linha y 80 deveria carregar o rng do canal layout do indice -1")
 	assert_ne(
 		_sequencia(RowSeed.rng_layout(SEMENTE, 0), N_SORTEIOS),
 		_sequencia(RowSeed.rng_layout(SEMENTE, -1), N_SORTEIOS),
@@ -152,11 +152,11 @@ func test_duas_linhas_com_y_distintos_tem_rngs_distintos_e_ramo_nan_arredonda_in
 		_sequencia(RowSeed.rng_cor_movel(SEMENTE, -1), N_SORTEIOS),
 		"indices 0 e -1 do canal cor_movel deveriam gerar sequencias distintas"
 	)
-	# ramo NAN: sem argumento a linha nasce em y local Y_TOPO - position_scrolled; com 125 px de
-	# scroll, y local -135 (global -10, dentro do viewport) e indice roundi(125/50) = 3 — 2.5
+	# ramo NAN: sem argumento a linha nasce em y local Y_TOPO - position_scrolled; com 250 px de
+	# scroll, y local -270 (global -20, dentro do viewport) e indice roundi(250/100) = 3 — 2.5
 	# arredonda para 3 (away from zero); truncar daria 2 e outra seed
 	Global.iniciado = true
-	await _scrollar_ate(125.0)
+	await _scrollar_ate(250.0)
 	var antes := _linhas()
 	_scroll.create_new_running_platform()
 	await wait_process_frames(1)
@@ -166,13 +166,13 @@ func test_duas_linhas_com_y_distintos_tem_rngs_distintos_e_ramo_nan_arredonda_in
 			novas.append(c)
 	assert_eq(novas.size(), 1, "create_new_running_platform sem argumento deveria criar exatamente 1 linha")
 	if novas.size() == 1:
-		assert_almost_eq(novas[0].position.y, -135.0, 0.001, "ramo NAN: y local deveria ser Y_TOPO - position_scrolled (-135)")
+		assert_almost_eq(novas[0].position.y, -270.0, 0.001, "ramo NAN: y local deveria ser Y_TOPO - position_scrolled (-270)")
 		assert_not_null(novas[0].rng, "linha do ramo NAN deveria receber rng")
 		assert_not_null(novas[0].rng_cor_movel, "linha do ramo NAN deveria receber rng_cor_movel")
 		assert_eq(
 			novas[0].rng.seed,
 			RowSeed.rng_layout(SEMENTE, 3).seed,
-			"ramo NAN com 125 px de scroll deveria usar o indice arredondado 3, nao o truncado 2"
+			"ramo NAN com 250 px de scroll deveria usar o indice arredondado 3, nao o truncado 2"
 		)
 		assert_eq(
 			(novas[0].rng_cor_movel.seed if novas[0].rng_cor_movel != null else null),

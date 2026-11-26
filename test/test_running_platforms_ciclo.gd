@@ -173,8 +173,8 @@ func test_cicladora_tem_a_cor_do_gecko_dentro_do_alcance_mesmo_com_ela_so_depois
 
 
 func test_c255_initial_xs_inalterado_e_sem_derrota_mantem_cor_inicial_com_ciclo() -> void:
-	var spawn_x := 210.0
-	var esperado: Array[float] = MovingRowFill.initial_xs(spawn_x, true, MovingRowFill.LARGURA_PADRAO, 60.0)
+	var spawn_x := 420.0
+	var esperado: Array[float] = MovingRowFill.initial_xs(spawn_x, true, MovingRowFill.LARGURA_PADRAO, 120.0)
 	var gerador := _gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, _estado(1.0, 1.0))
 	var xs: Array = []
 	for p in _plataformas(gerador):

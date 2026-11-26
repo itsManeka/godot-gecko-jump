@@ -2,7 +2,7 @@ extends GutTest
 
 # Tela de Opcoes (OptionsScreen): layout do handoff 10.2 (com "Ver tutorial" entre SFX e Voltar; valores literais da tabela,
 # nao da formula do codigo), arrasto dos sliders (10.3), Voltar, teclado e consumo de toque/mouse.
-const PEQUENA := Vector2(180.0, 320.0)
+const PEQUENA := Vector2(360.0, 640.0)
 const TEMP_PATH := "user://options_test_screen.cfg"
 
 var _store_original: OptionsStore
@@ -72,31 +72,49 @@ func _mudo(bus: String) -> bool:
 
 func test_c199_retangulos_batem_com_a_tabela_do_handoff_10_2_com_ver_tutorial() -> void:
 	var o := _nova()
-	assert_true(o.rect_music() == Rect2(8, 91, 164, 24), "180x320: Music x[8,172] y[91,115]")
-	assert_true(o.rect_sfx() == Rect2(8, 142, 164, 24), "180x320: SFX x[8,172] y[142,166]")
-	assert_true(o.rect_toque() == Rect2(34, 178, 112, 32), "180x320: Toque x[34,146] y[178,210]")
-	assert_true(o.rect_ver_tutorial() == Rect2(34, 218, 112, 32), "180x320: Ver tutorial x[34,146] y[218,250]")
-	assert_true(o.rect_voltar() == Rect2(34, 258, 112, 32), "180x320: Voltar x[34,146] y[258,290]")
+	assert_true(o.rect_music() == Rect2(16, 182, 328, 48), "360x640: Music x[16,344] y[182,230]")
+	assert_true(o.rect_sfx() == Rect2(16, 284, 328, 48), "360x640: SFX x[16,344] y[284,332]")
+	assert_true(o.rect_toque() == Rect2(68, 356, 224, 64), "360x640: Toque x[68,292] y[356,420]")
+	assert_true(o.rect_ver_tutorial() == Rect2(68, 436, 224, 64), "360x640: Ver tutorial x[68,292] y[436,500]")
+	assert_true(o.rect_voltar() == Rect2(68, 516, 224, 64), "360x640: Voltar x[68,292] y[516,580]")
 
 
-func test_c217_retangulos_de_ver_tutorial_e_voltar_em_320_e_em_400() -> void:
+func test_c217_retangulos_de_ver_tutorial_e_voltar_em_640_e_em_800() -> void:
 	var o := _nova()
-	assert_true(o.rect_ver_tutorial() == Rect2(34, 218, 112, 32), "180x320: Ver tutorial y[218,250]")
-	assert_true(o.rect_voltar() == Rect2(34, 258, 112, 32), "180x320: Voltar y[258,290]")
-	var alta := _nova(Vector2(180.0, 400.0))
-	assert_true(alta.rect_toque() == Rect2(34, 218, 112, 32), "180x400: Toque y[218,250]")
-	assert_true(alta.rect_ver_tutorial() == Rect2(34, 258, 112, 32), "180x400: Ver tutorial y[258,290]")
-	assert_true(alta.rect_voltar() == Rect2(34, 298, 112, 32), "180x400: Voltar y[298,330]")
+	assert_true(o.rect_ver_tutorial() == Rect2(68, 436, 224, 64), "360x640: Ver tutorial y[436,500]")
+	assert_true(o.rect_voltar() == Rect2(68, 516, 224, 64), "360x640: Voltar y[516,580]")
+	var alta := _nova(Vector2(360.0, 800.0))
+	assert_true(alta.rect_toque() == Rect2(68, 436, 224, 64), "360x800: Toque y[436,500]")
+	assert_true(alta.rect_ver_tutorial() == Rect2(68, 516, 224, 64), "360x800: Ver tutorial y[516,580]")
+	assert_true(alta.rect_voltar() == Rect2(68, 596, 224, 64), "360x800: Voltar y[596,660]")
+
+
+# C832: OptionsScreen cabe em 640 e na safe area nas duas alturas de bloco (520 sem Sensibilidade, 622 com ela)
+func test_c832_bloco_de_520_sem_toque_e_622_com_sensibilidade_cabe_em_640_e_na_safe_area() -> void:
+	var tela := Rect2(0.0, 0.0, 360.0, 640.0)
+	Global.set_touch_mode(TouchMode.Modo.B, false)
+	var b := _nova()
+	assert_eq(b.rect_bloco().size.y, 520.0, "C832: bloco sem Sensibilidade = 520")
+	assert_true(tela.encloses(b.rect_bloco()), "C832: bloco de 520 dentro de 360x640")
+	Global.set_touch_mode(TouchMode.Modo.A, false)
+	var a := _nova()
+	assert_eq(a.rect_bloco().size.y, 622.0, "C832: bloco com Sensibilidade = 622")
+	assert_true(tela.encloses(a.rect_bloco()), "C832: bloco de 622 dentro de 360x640")
+	assert_true(tela.encloses(a.rect_voltar()), "C832: Voltar com 622 dentro de 360x640")
+	var safe := Rect2(0, 9, 360, 622)
+	var com_safe := _nova(PEQUENA, safe)
+	assert_true(safe.encloses(com_safe.rect_bloco()), "C832: bloco de 622 dentro da safe area justa")
+	assert_true(safe.encloses(com_safe.rect_voltar()), "C832: Voltar com 622 dentro da safe area justa")
 
 
 func test_c200_com_safe_area_todos_os_retangulos_ficam_dentro() -> void:
-	var safe := Rect2(0, 20, 180, 294)
+	var safe := Rect2(0, 40, 360, 588)
 	var o := _nova(PEQUENA, safe)
-	assert_true(o.rect_music() == Rect2(8, 98, 164, 24), "s_top 20 / s_bottom 6: Music y[98,122]")
-	assert_true(o.rect_sfx() == Rect2(8, 149, 164, 24), "s_top 20 / s_bottom 6: SFX y[149,173]")
-	assert_true(o.rect_toque() == Rect2(34, 185, 112, 32), "s_top 20 / s_bottom 6: Toque y[185,217]")
-	assert_true(o.rect_ver_tutorial() == Rect2(34, 225, 112, 32), "s_top 20 / s_bottom 6: Ver tutorial y[225,257]")
-	assert_true(o.rect_voltar() == Rect2(34, 265, 112, 32), "s_top 20 / s_bottom 6: Voltar y[265,297]")
+	assert_true(o.rect_music() == Rect2(16, 196, 328, 48), "s_top 40 / s_bottom 12: Music y[196,244]")
+	assert_true(o.rect_sfx() == Rect2(16, 298, 328, 48), "s_top 40 / s_bottom 12: SFX y[298,346]")
+	assert_true(o.rect_toque() == Rect2(68, 370, 224, 64), "s_top 40 / s_bottom 12: Toque y[370,434]")
+	assert_true(o.rect_ver_tutorial() == Rect2(68, 450, 224, 64), "s_top 40 / s_bottom 12: Ver tutorial y[450,514]")
+	assert_true(o.rect_voltar() == Rect2(68, 530, 224, 64), "s_top 40 / s_bottom 12: Voltar y[530,594]")
 	for r in [o.rect_music(), o.rect_sfx(), o.rect_toque(), o.rect_ver_tutorial(), o.rect_voltar()]:
 		assert_true(safe.encloses(r), "retangulo %s dentro da safe area" % str(r))
 
@@ -104,13 +122,13 @@ func test_c200_com_safe_area_todos_os_retangulos_ficam_dentro() -> void:
 func test_c201_arrasto_fora_da_area_mantem_valor_limitado_e_nao_perde_o_ponteiro() -> void:
 	var o := _nova()
 	var cy := o.rect_music().get_center().y
-	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_toque(Vector2(180, cy), true))
 	assert_eq(o.valor_slider(0), 50, "pressionar na trilha leva o cursor ao ponto tocado")
 	o.tratar_evento(_arrasto(Vector2(500, 10)))
-	assert_eq(o.valor_slider(0), 100, "fora da area em y e alem de 164 em x: limitado em 100")
-	o.tratar_evento(_arrasto(Vector2(-40, 400)))
-	assert_eq(o.valor_slider(0), 0, "fora da area em y e antes de 16 em x: limitado em 0")
-	o.tratar_evento(_arrasto(Vector2(90, 5)))
+	assert_eq(o.valor_slider(0), 100, "fora da area em y e alem de 328 em x: limitado em 100")
+	o.tratar_evento(_arrasto(Vector2(-80, 800)))
+	assert_eq(o.valor_slider(0), 0, "fora da area em y e antes de 32 em x: limitado em 0")
+	o.tratar_evento(_arrasto(Vector2(180, 5)))
 	assert_eq(o.valor_slider(0), 50, "eixo vertical ignorado: so o x conta")
 	o.tratar_evento(_arrasto(Vector2(500, 10)))
 	o.tratar_evento(_toque(Vector2(500, 10), false))
@@ -210,15 +228,15 @@ func test_passo_de_teclado_ui_left_e_ui_right_limitados() -> void:
 func test_c205_arrasto_atualiza_bus_sfx_em_tempo_real_e_persiste() -> void:
 	var o := _nova()
 	var cy := o.rect_sfx().get_center().y
-	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_toque(Vector2(180, cy), true))
 	assert_almost_eq(_db("SFX"), -6.02, 0.01, "SFX em 50 vale ~ -6.02 dB durante o arrasto")
 	assert_false(_mudo("SFX"), "SFX em 50 nao fica mudo")
-	o.tratar_evento(_arrasto(Vector2(10, cy)))
+	o.tratar_evento(_arrasto(Vector2(20, cy)))
 	assert_true(_mudo("SFX"), "SFX em 0 deixa o bus mudo")
 	assert_eq(_db("SFX"), OptionsStore.MUTE_DB, "SFX em 0 vale o piso de dB")
-	o.tratar_evento(_arrasto(Vector2(90, cy)))
+	o.tratar_evento(_arrasto(Vector2(180, cy)))
 	assert_false(_mudo("SFX"), "SFX volta a soar ao sair de 0")
-	o.tratar_evento(_toque(Vector2(90, cy), false))
+	o.tratar_evento(_toque(Vector2(180, cy), false))
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.5, "novo store no mesmo caminho le 0.5")
 	assert_eq(Global.get_volume_music(), 1.0, "Music nao muda ao arrastar SFX")
 
@@ -226,13 +244,13 @@ func test_c205_arrasto_atualiza_bus_sfx_em_tempo_real_e_persiste() -> void:
 func test_arrasto_aplica_no_bus_mas_so_grava_ao_soltar() -> void:
 	var o := _nova()
 	var cy := o.rect_sfx().get_center().y
-	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_toque(Vector2(180, cy), true))
+	o.tratar_evento(_arrasto(Vector2(120, cy)))
+	o.tratar_evento(_arrasto(Vector2(80, cy)))
 	o.tratar_evento(_arrasto(Vector2(60, cy)))
-	o.tratar_evento(_arrasto(Vector2(40, cy)))
-	o.tratar_evento(_arrasto(Vector2(30, cy)))
 	assert_lt(_db("SFX"), -6.0, "o bus ja segue o arrasto")
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 1.0, "durante o arrasto o cfg ainda guarda o valor antigo")
-	o.tratar_evento(_toque(Vector2(30, cy), false))
+	o.tratar_evento(_toque(Vector2(60, cy), false))
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), Global.get_volume_sfx(), "ao soltar o cfg guarda o valor novo")
 	assert_lt(Global.get_volume_sfx(), 0.5, "o valor novo veio do arrasto")
 
@@ -240,8 +258,8 @@ func test_arrasto_aplica_no_bus_mas_so_grava_ao_soltar() -> void:
 func test_fechar_com_dedo_pressionado_grava_o_valor_arrastado() -> void:
 	var o := _nova()
 	var cy := o.rect_sfx().get_center().y
-	o.tratar_evento(_toque(Vector2(90, cy), true))
-	o.tratar_evento(_arrasto(Vector2(10, cy)))
+	o.tratar_evento(_toque(Vector2(180, cy), true))
+	o.tratar_evento(_arrasto(Vector2(20, cy)))
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 1.0, "antes de fechar o cfg ainda guarda o valor antigo")
 	o.fechar()
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.0, "fechar no meio do gesto grava o valor arrastado")
@@ -250,8 +268,8 @@ func test_fechar_com_dedo_pressionado_grava_o_valor_arrastado() -> void:
 func test_app_perde_foco_no_meio_do_arrasto_grava_o_valor_arrastado() -> void:
 	var o := _nova()
 	var cy := o.rect_sfx().get_center().y
-	o.tratar_evento(_toque(Vector2(90, cy), true))
-	o.tratar_evento(_arrasto(Vector2(10, cy)))
+	o.tratar_evento(_toque(Vector2(180, cy), true))
+	o.tratar_evento(_arrasto(Vector2(20, cy)))
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 1.0, "durante o arrasto o cfg ainda guarda o valor antigo")
 	o.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.0, "perder o foco no meio do gesto grava o valor arrastado")
@@ -260,8 +278,8 @@ func test_app_perde_foco_no_meio_do_arrasto_grava_o_valor_arrastado() -> void:
 func test_pedido_de_fechar_janela_no_meio_do_arrasto_grava_o_valor_arrastado() -> void:
 	var o := _nova()
 	var cy := o.rect_sfx().get_center().y
-	o.tratar_evento(_toque(Vector2(90, cy), true))
-	o.tratar_evento(_arrasto(Vector2(10, cy)))
+	o.tratar_evento(_toque(Vector2(180, cy), true))
+	o.tratar_evento(_arrasto(Vector2(20, cy)))
 	o.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.0, "fechar a janela no meio do gesto grava o valor arrastado")
 
@@ -345,15 +363,15 @@ func test_c411_ui_accept_cicla_e_reabrir_mostra_o_modo_salvo() -> void:
 	assert_eq(o.texto_toque(), "Toque: " + TouchMode.nome(TouchMode.Modo.B), "reabrir a tela mostra o modo salvo")
 
 
-func test_c412_bloco_de_5_itens_cabe_em_180x320_sem_sobrepor_voltar() -> void:
-	var tela := Rect2(0.0, 0.0, 180.0, 320.0)
+func test_c412_bloco_de_5_itens_cabe_em_360x640_sem_sobrepor_voltar() -> void:
+	var tela := Rect2(0.0, 0.0, 360.0, 640.0)
 	var o := _nova()
-	assert_true(tela.encloses(o.rect_toque()), "Toque dentro de 180x320")
-	assert_true(tela.encloses(o.rect_voltar()), "Voltar dentro de 180x320")
+	assert_true(tela.encloses(o.rect_toque()), "Toque dentro de 360x640")
+	assert_true(tela.encloses(o.rect_voltar()), "Voltar dentro de 360x640")
 	assert_false(o.rect_toque().intersects(o.rect_voltar()), "Toque nao sobrepoe Voltar")
 	assert_false(o.rect_toque().intersects(o.rect_ver_tutorial()), "Toque nao sobrepoe Ver tutorial")
 	assert_false(o.rect_toque().intersects(o.rect_sfx()), "Toque nao sobrepoe SFX")
-	var safe := Rect2(0, 20, 180, 294)
+	var safe := Rect2(0, 40, 360, 588)
 	var com_safe := _nova(PEQUENA, safe)
 	assert_true(safe.encloses(com_safe.rect_music()), "Music dentro da safe area")
 	assert_true(safe.encloses(com_safe.rect_toque()), "Toque dentro da safe area")
@@ -381,18 +399,18 @@ func test_c206_toque_no_fundo_consumido_e_mouse_emulado_nao_duplica() -> void:
 	var o := _nova()
 	assert_true(o.tratar_evento(_toque(Vector2(5, 5), true)), "toque no fundo e consumido")
 	assert_true(o.tratar_evento(_toque(Vector2(5, 5), false)), "soltar no fundo e consumido")
-	assert_true(o.tratar_evento(_arrasto(Vector2(90, 143))), "arrasto sem toque em slider e consumido")
+	assert_true(o.tratar_evento(_arrasto(Vector2(180, 286))), "arrasto sem toque em slider e consumido")
 	assert_eq(_voltou, 0, "fundo nao emite voltar")
 	assert_eq(o.valor_slider(0), 100, "fundo nao muda Music")
 	assert_eq(o.valor_slider(1), 100, "fundo nao muda SFX")
 	var cy := o.rect_music().get_center().y
 	var emulado := InputEvent.DEVICE_ID_EMULATION
-	assert_false(o.tratar_evento(_clique(Vector2(90, cy), true, emulado)), "mouse emulado nao e da tela")
-	assert_false(o.tratar_evento(_clique(Vector2(90, cy), false, emulado)), "soltar mouse emulado nao e da tela")
+	assert_false(o.tratar_evento(_clique(Vector2(180, cy), true, emulado)), "mouse emulado nao e da tela")
+	assert_false(o.tratar_evento(_clique(Vector2(180, cy), false, emulado)), "soltar mouse emulado nao e da tela")
 	assert_eq(o.valor_slider(0), 100, "mouse emulado nao muda o slider (um so efeito por toque)")
-	assert_true(o.tratar_evento(_clique(Vector2(90, cy), true)), "clique real de mouse e consumido")
+	assert_true(o.tratar_evento(_clique(Vector2(180, cy), true)), "clique real de mouse e consumido")
 	assert_eq(o.valor_slider(0), 50, "clique real de mouse move o slider")
-	o.tratar_evento(_clique(Vector2(90, cy), false))
+	o.tratar_evento(_clique(Vector2(180, cy), false))
 	assert_eq(_voltou, 0, "clique no slider nao emite voltar")
 
 
@@ -442,14 +460,14 @@ func test_c473_slider_de_sensibilidade_responde_a_toque_arrasto_e_teclado_e_pers
 	var o := _nova()
 	assert_eq(o.valor_slider(OptionsScreen.Item.SENSIBILIDADE), 50, "abre com o padrao 1,0x no meio da trilha")
 	var cy := o.rect_sensibilidade().get_center().y
-	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_toque(Vector2(20, cy), true))
 	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_MIN, 0.0001, "toque no minimo aplica na hora")
 	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_SEM_VALOR, 0.0001, "durante o arrasto o cfg ainda nao grava")
 	o.tratar_evento(_arrasto(Vector2(500, cy)))
 	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_MAX, 0.0001, "arrasto ao maximo aplica na hora")
-	o.tratar_evento(_arrasto(Vector2(90, cy)))
+	o.tratar_evento(_arrasto(Vector2(180, cy)))
 	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "arrasto ao meio volta ao padrao")
-	o.tratar_evento(_toque(Vector2(90, cy), false))
+	o.tratar_evento(_toque(Vector2(180, cy), false))
 	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "soltar grava o valor arrastado")
 	o.abrir(OptionsScreen.Item.SENSIBILIDADE)
 	o.tratar_evento(_acao("ui_right"))
@@ -458,7 +476,7 @@ func test_c473_slider_de_sensibilidade_responde_a_toque_arrasto_e_teclado_e_pers
 	o.tratar_evento(_acao("ui_left"))
 	assert_almost_eq(Global.get_touch_sensibilidade(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "ui_left desce de volta ao padrao")
 	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "ui_left tambem grava na hora")
-	o.tratar_evento(_toque(Vector2(90, cy), true))
+	o.tratar_evento(_toque(Vector2(180, cy), true))
 	o.tratar_evento(_arrasto(Vector2(500, cy)))
 	o.fechar()
 	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_MAX, 0.0001, "fechar no meio do gesto grava o valor arrastado")
@@ -474,8 +492,8 @@ func test_c475_troca_de_modo_mostra_e_oculta_o_slider_na_hora_e_valor_volta_ao_r
 	assert_true(o.item_visivel(OptionsScreen.Item.SENSIBILIDADE), "trocar para A mostra o slider na hora")
 	assert_ne(o.rect_sensibilidade(), Rect2(), "A: item ganhou area de toque sem reabrir a tela")
 	var cy := o.rect_sensibilidade().get_center().y
-	o.tratar_evento(_toque(Vector2(10, cy), true))
-	o.tratar_evento(_toque(Vector2(10, cy), false))
+	o.tratar_evento(_toque(Vector2(20, cy), true))
+	o.tratar_evento(_toque(Vector2(20, cy), false))
 	_tocar_seletor(o)
 	assert_eq(Global.get_touch_mode(), TouchMode.Modo.B, "o seletor voltou ao modo B")
 	assert_false(o.item_visivel(OptionsScreen.Item.SENSIBILIDADE), "trocar para B oculta o slider na hora")
@@ -495,9 +513,9 @@ func test_corr1_arrasto_so_de_volume_nao_grava_a_sensibilidade() -> void:
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var o := _nova()
 	var cy := o.rect_sfx().get_center().y
-	o.tratar_evento(_toque(Vector2(90, cy), true))
-	o.tratar_evento(_arrasto(Vector2(10, cy)))
-	o.tratar_evento(_toque(Vector2(10, cy), false))
+	o.tratar_evento(_toque(Vector2(180, cy), true))
+	o.tratar_evento(_arrasto(Vector2(20, cy)))
+	o.tratar_evento(_toque(Vector2(20, cy), false))
 	assert_eq(OptionsStore.new(TEMP_PATH).load_sfx(), 0.0, "o volume arrastado foi gravado")
 	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_SEM_VALOR, 0.0001, "sensibilidade nao gravada: chave ausente")
 
@@ -506,8 +524,8 @@ func test_corr1_arrasto_so_da_sensibilidade_grava_ao_soltar() -> void:
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var o := _nova()
 	var cy := o.rect_sensibilidade().get_center().y
-	o.tratar_evento(_toque(Vector2(10, cy), true))
-	o.tratar_evento(_toque(Vector2(10, cy), false))
+	o.tratar_evento(_toque(Vector2(20, cy), true))
+	o.tratar_evento(_toque(Vector2(20, cy), false))
 	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_MIN, 0.0001, "soltar grava o valor do slider")
 
 
@@ -515,7 +533,7 @@ func test_corr1_arrasto_da_sensibilidade_grava_ao_fechar_sem_soltar() -> void:
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var o := _nova()
 	var cy := o.rect_sensibilidade().get_center().y
-	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_toque(Vector2(20, cy), true))
 	o.tratar_evento(_arrasto(Vector2(500, cy)))
 	o.fechar()
 	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_MAX, 0.0001, "fechar sem soltar grava o valor arrastado")
@@ -525,7 +543,7 @@ func test_corr1_arrasto_da_sensibilidade_grava_ao_pausar_o_app() -> void:
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var o := _nova()
 	var cy := o.rect_sensibilidade().get_center().y
-	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_toque(Vector2(20, cy), true))
 	o.tratar_evento(_arrasto(Vector2(500, cy)))
 	o.notification(Node.NOTIFICATION_APPLICATION_PAUSED)
 	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_MAX, 0.0001, "app pausado no meio do gesto grava o valor arrastado")
@@ -554,7 +572,7 @@ func test_corr1_arrasto_da_sensibilidade_sobrevive_a_troca_para_b_antes_de_fecha
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var o := _nova()
 	var cy := o.rect_sensibilidade().get_center().y
-	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_toque(Vector2(20, cy), true))
 	o.tratar_evento(_arrasto(Vector2(500, cy)))
 	Global.set_touch_mode(TouchMode.Modo.B)
 	o.fechar()
@@ -566,8 +584,8 @@ func test_corr1_soltar_sensibilidade_grava_o_valor_saneado_quando_o_valor_em_mem
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	var o := _nova()
 	var cy := o.rect_sensibilidade().get_center().y
-	o.tratar_evento(_toque(Vector2(10, cy), true))
+	o.tratar_evento(_toque(Vector2(20, cy), true))
 	Global._touch_sensibilidade = NAN
-	o.tratar_evento(_toque(Vector2(10, cy), false))
+	o.tratar_evento(_toque(Vector2(20, cy), false))
 	assert_almost_eq(_sensibilidade_salva(), TouchTuning.SENSIBILIDADE_PADRAO, 0.0001, "NaN em memoria grava o padrao 1,0x")
 	Global.set_touch_sensibilidade(TouchTuning.SENSIBILIDADE_PADRAO, false)

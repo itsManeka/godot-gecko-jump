@@ -7,20 +7,20 @@ extends CanvasLayer
 # fica oculta. Desenho so em branco/preto (cor nunca e a unica pista; nunca a cor de plataforma).
 
 # Offset do topo da safe area e altura da faixa
-const OFFSET_Y: float = 30.0
-const ALTURA: float = 16.0
+const OFFSET_Y: float = 60.0
+const ALTURA: float = 32.0
 # Retangulos de cada elemento (x absoluto; y relativo ao topo da faixa)
-const ICONE_X: float = 2.0
-const ICONE_TAM: float = 16.0
-const BARRA_X: float = 22.0
-const BARRA_Y: float = 6.0
-const BARRA_W: float = 40.0
-const BARRA_H: float = 4.0
-const SEGUNDOS_X: float = 66.0
-const SEGUNDOS_W: float = 16.0
-const CARGA_X: float = 90.0
-const RELOGIO_X: float = 138.0
-const RELOGIO_W: float = 40.0
+const ICONE_X: float = 4.0
+const ICONE_TAM: float = 32.0
+const BARRA_X: float = 44.0
+const BARRA_Y: float = 12.0
+const BARRA_W: float = 80.0
+const BARRA_H: float = 8.0
+const SEGUNDOS_X: float = 132.0
+const SEGUNDOS_W: float = 32.0
+const CARGA_X: float = 180.0
+const RELOGIO_X: float = 276.0
+const RELOGIO_W: float = 80.0
 const SEGUNDOS_POR_MINUTO: int = 60
 const COR_BRANCO: Color = UiHelpers.COR_TEXTO
 const COR_PRETO: Color = UiHelpers.COR_CONTORNO
@@ -34,7 +34,7 @@ var fonte_relogio: Callable = Callable()
 
 var _relogio: Label = null
 var _y0: float = OFFSET_Y
-var _largura: float = 180.0
+var _largura: float = 360.0
 var _icone: _Desenho = null
 var _barra: _Desenho = null
 var _carga: _Desenho = null
@@ -73,14 +73,14 @@ func _init() -> void:
 	_icone = _Desenho.new()
 	_barra = _Desenho.new()
 	_carga = _Desenho.new()
-	_segundos = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 1)
-	_relogio = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 1)
+	_segundos = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 2)
+	_relogio = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 2)
 	_relogio.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	for no in [_icone, _barra, _carga, _segundos, _relogio]:
 		(no as Control).visible = false
 		add_child(no)
 	_carga.definir(comandos_do_tipo(&"segunda_chance"))
-	aplicar_layout(Vector2(_largura, 320.0), Rect2(0.0, 0.0, _largura, 320.0))
+	aplicar_layout(Vector2(_largura, 640.0), Rect2(0.0, 0.0, _largura, 640.0))
 
 
 func _process(_delta: float) -> void:
@@ -93,9 +93,9 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 	_largura = visible_size.x
 	_icone.position = rect_icone().position
 	_icone.size = rect_icone().size
-	# A moldura de 1 px fica por fora dos 40x4 da barra
-	_barra.position = rect_barra().grow(1.0).position
-	_barra.size = rect_barra().grow(1.0).size
+	# A moldura de 2 px fica por fora dos 80x8 da barra
+	_barra.position = rect_barra().grow(2.0).position
+	_barra.size = rect_barra().grow(2.0).size
 	_carga.position = rect_carga().position
 	_carga.size = rect_carga().size
 	_segundos.position = rect_segundos().position
@@ -218,7 +218,7 @@ func _atualizar_relogio(oculta: bool) -> void:
 	_relogio.visible = ativo and not oculta
 
 
-# Reconstroi os comandos da barra so quando a largura inteira (ceil, 0..40 px) muda: restantes que dao a mesma
+# Reconstroi os comandos da barra so quando a largura inteira (ceil, 0..80 px) muda: restantes que dao a mesma
 # largura reusam o array anterior, sem alocar a cada frame. O cache `_barra_px` assume que a barra depende SO da
 # largura: desenho com cor por tipo exige invalidar tambem pelo tipo.
 func _atualizar_barra() -> void:
@@ -230,10 +230,10 @@ func _atualizar_barra() -> void:
 
 
 func _montar_barra(px: int) -> Array:
-	# Coordenadas locais ao controle da barra (que ja inclui a moldura de 1 px)
+	# Coordenadas locais ao controle da barra (que ja inclui a moldura de 2 px)
 	return [
-		_rect(Rect2(0.0, 0.0, BARRA_W + 2.0, BARRA_H + 2.0), COR_PRETO),
-		_rect(Rect2(1.0, 1.0, float(px), BARRA_H), COR_BRANCO),
+		_rect(Rect2(0.0, 0.0, BARRA_W + 4.0, BARRA_H + 4.0), COR_PRETO),
+		_rect(Rect2(2.0, 2.0, float(px), BARRA_H), COR_BRANCO),
 	]
 
 

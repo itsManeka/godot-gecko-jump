@@ -3,19 +3,19 @@ extends GutTest
 # f526 T5: consumo da carga da Segunda chance na linha de derrota da Stage. Cenarios C655-C665 do
 # 05-test-plan. A queda entra pelo handler da linha (chamada direta, padrao de test_stage_estado.gd)
 # e, onde o cenario pede os frames seguintes reais, por fisica de verdade (C660/C662). A Stage nasce
-# sem ScrollLevel (as plataformas de candidatura sao as do teste) com layout fixo 180x320: a faixa de
-# derrota fica em y [320, 340] e a candidatura e deterministica. Teardown (C665): _p.end = true no
+# sem ScrollLevel (as plataformas de candidatura sao as do teste) com layout fixo 360x640: a faixa de
+# derrota fica em y [640, 680] e a candidatura e deterministica. Teardown (C665): _p.end = true no
 # after_each — liberar a Stage dispara body_exited (padrao do C554) e o handler sai cedo.
 
 const STAGE_SCENE := "res://scenes/Stage.tscn"
 const PLATFORM_SCENE := "res://scenes/Platform.tscn"
 const RegraDeTeste := preload("res://test/support/RegraDeTeste.gd")
-const VISIVEL := Vector2(180.0, 320.0)
-const SAFE := Rect2(0.0, 0.0, 180.0, 320.0)
+const VISIVEL := Vector2(360.0, 640.0)
+const SAFE := Rect2(0.0, 0.0, 360.0, 640.0)
 # Coluna livre de plataformas: a queda real cruza a faixa sem pousar em nada
-const X_QUEDA := 20.0
+const X_QUEDA := 40.0
 # Ponto da queda forcada (chamada direta do handler): abaixo da faixa de derrota
-const Y_QUEDA := 360.0
+const Y_QUEDA := 720.0
 
 var _stage: Node = null
 var _p: Node = null
@@ -66,7 +66,7 @@ func after_each() -> void:
 
 # Stage sem ScrollLevel (sem linhas auto-geradas: as candidatas sao as do teste), regra injetavel e
 # gancho de power-ups desligavel antes do add_child (padrao test_stage_regra_modo) e layout fixo
-# 180x320. Player parado (fisica desligada, nao pulando): so C660/C662 religam a fisica.
+# 360x640. Player parado (fisica desligada, nao pulando): so C660/C662 religam a fisica.
 func _novo_stage(regra: GameModeRule = null, power_ups_ligados: bool = true) -> Node:
 	_stage = load(STAGE_SCENE).instantiate()
 	if regra != null:
@@ -147,7 +147,7 @@ func _alvo_esperado(ponto: Vector2) -> Dictionary:
 # som de derrota e sem animacao de derrota
 func test_C655_carga_1_queda_mantem_playing_sem_derrota() -> void:
 	_stage = await _novo_stage()
-	var plat := _plataforma(Global.cor_gecko, 90.0, 60.0)
+	var plat := _plataforma(Global.cor_gecko, 180.0, 120.0)
 	_iniciar_partida()
 	_coletar_carga()
 	assert_eq(_estado().carga(), 1, "fixture: carga guardada")
@@ -170,8 +170,8 @@ func test_C656_reaparece_na_plataforma_do_predicado_de_t3() -> void:
 	_coletar_carga()
 	var cor_do_gecko: Enums.COLOR = Global.cor_gecko
 	# Da cor dele, mais longe; de outra cor, mais perto: a preferencia e pela cor
-	var da_cor := _plataforma(cor_do_gecko, 90.0, 60.0)
-	var outra := _plataforma(_outra_cor(cor_do_gecko), 90.0, 120.0)
+	var da_cor := _plataforma(cor_do_gecko, 180.0, 120.0)
+	var outra := _plataforma(_outra_cor(cor_do_gecko), 180.0, 240.0)
 	_p.global_position = Vector2(X_QUEDA, Y_QUEDA)
 	var esperada: Dictionary = _alvo_esperado(_p.global_position)
 	assert_true(int(esperada["indice"]) >= 0, "fixture: ha candidata")
@@ -187,7 +187,7 @@ func test_C656_reaparece_na_plataforma_do_predicado_de_t3() -> void:
 	_stage = await _novo_stage()
 	_iniciar_partida()
 	_coletar_carga()
-	var de_outra := _plataforma(_outra_cor(Global.cor_gecko), 110.0, 90.0)
+	var de_outra := _plataforma(_outra_cor(Global.cor_gecko), 220.0, 180.0)
 	_p.global_position = Vector2(X_QUEDA, Y_QUEDA)
 	var esperada_2: Dictionary = _alvo_esperado(_p.global_position)
 	assert_true(bool(esperada_2["fallback"]), "fixture: sem candidata da cor, T3 devolve fallback")
@@ -200,7 +200,7 @@ func test_C656_reaparece_na_plataforma_do_predicado_de_t3() -> void:
 # recorde como hoje
 func test_C657_sem_carga_derrota_padrao_inalterada() -> void:
 	_stage = await _novo_stage()
-	_plataforma(Global.cor_gecko, 90.0, 60.0)
+	_plataforma(Global.cor_gecko, 180.0, 120.0)
 	_iniciar_partida()
 	_stage.points = 5
 	assert_eq(_estado().carga(), 0, "fixture: partida sem carga guardada")
@@ -218,7 +218,7 @@ func test_C658_regra_ao_cair_false_nao_gasta_carga_nem_encerra() -> void:
 	regra.cair_encerra = false
 	regra.power_ups = true
 	_stage = await _novo_stage(regra)
-	_plataforma(Global.cor_gecko, 90.0, 60.0)
+	_plataforma(Global.cor_gecko, 180.0, 120.0)
 	_iniciar_partida()
 	_coletar_carga()
 	assert_eq(_estado().carga(), 1, "fixture: carga guardada")
@@ -237,7 +237,7 @@ func test_C659_sem_candidata_visivel_derrota_e_carga_fica() -> void:
 	_coletar_carga()
 	assert_eq(_estado().carga(), 1, "fixture: carga guardada")
 	# Plataforma existe, mas abaixo da borda visivel: nenhuma candidata
-	_plataforma(Global.cor_gecko, 90.0, 400.0)
+	_plataforma(Global.cor_gecko, 180.0, 800.0)
 	_p.global_position = Vector2(X_QUEDA, Y_QUEDA)
 	_stage._on_CheckPlayer_body_exited(_p)
 	assert_eq(_stage.ultimo_estado["state"], GameState.STATE_LOST, "C659: sem candidata vale a derrota padrao")
@@ -249,11 +249,11 @@ func test_C659_sem_candidata_visivel_derrota_e_carga_fica() -> void:
 # disparam body_exited de novo; a 2a queda real, sem carga, encerra
 func test_C660_reentrada_duas_quedas_reais_1a_salva_2a_perde() -> void:
 	_stage = await _novo_stage()
-	var plat := _plataforma(Global.cor_gecko, 90.0, 60.0)
+	var plat := _plataforma(Global.cor_gecko, 180.0, 120.0)
 	_iniciar_partida()
 	_coletar_carga()
 	_p.set_physics_process(true)
-	_p.global_position = Vector2(X_QUEDA, 280.0)
+	_p.global_position = Vector2(X_QUEDA, 560.0)
 	_p.velocity = Vector2.ZERO
 	await wait_until(func() -> bool: return _estado().carga() == 0, 3.0)
 	assert_eq(_estado().carga(), 0, "C660: a 1a queda real consumiu a carga (salvou)")
@@ -266,7 +266,7 @@ func test_C660_reentrada_duas_quedas_reais_1a_salva_2a_perde() -> void:
 	assert_eq(_estado().carga(), 0, "C660: carga segue 0 (nenhum consumo em dobro)")
 	assert_true(_p.is_on_floor(), "C660: o gecko ficou na plataforma de resgate")
 	assert_eq(_p.actual_platform, plat, "C660: plataforma de resgate")
-	_p.global_position = Vector2(X_QUEDA, 280.0)
+	_p.global_position = Vector2(X_QUEDA, 560.0)
 	_p.velocity = Vector2.ZERO
 	await wait_until(
 		func() -> bool: return _stage.ultimo_estado["state"] == GameState.STATE_LOST, 3.0
@@ -279,7 +279,7 @@ func test_C660_reentrada_duas_quedas_reais_1a_salva_2a_perde() -> void:
 # carga 0
 func test_C661_coletar_de_novo_recarrega_e_reload_nasce_zerado() -> void:
 	_stage = await _novo_stage()
-	_plataforma(Global.cor_gecko, 90.0, 60.0)
+	_plataforma(Global.cor_gecko, 180.0, 120.0)
 	_iniciar_partida()
 	_coletar_carga()
 	_p.global_position = Vector2(X_QUEDA, Y_QUEDA)
@@ -325,11 +325,11 @@ func test_reload_da_stage_nasce_com_carga_zerada_e_estado_proprio() -> void:
 # retomada, a queda completa e o resgate acontece
 func test_C662_pausa_nao_consome_carga_nem_reposiciona() -> void:
 	_stage = await _novo_stage()
-	_plataforma(Global.cor_gecko, 90.0, 60.0)
+	_plataforma(Global.cor_gecko, 180.0, 120.0)
 	_iniciar_partida()
 	_coletar_carga()
 	_p.set_physics_process(true)
-	_p.global_position = Vector2(X_QUEDA, 280.0)
+	_p.global_position = Vector2(X_QUEDA, 560.0)
 	_p.velocity = Vector2.ZERO
 	var ponto_pendente: Vector2 = _p.global_position
 	assert_true(_stage._pausar(), "fixture: arvore pausada pelo caminho de producao")
@@ -346,7 +346,7 @@ func test_C662_pausa_nao_consome_carga_nem_reposiciona() -> void:
 # C663: power_ups_habilitados = false — a coleta e ignorada (carga nunca existe) e a queda encerra
 func test_C663_power_ups_desligados_coleta_ignorada_queda_encerra() -> void:
 	_stage = await _novo_stage(null, false)
-	_plataforma(Global.cor_gecko, 90.0, 60.0)
+	_plataforma(Global.cor_gecko, 180.0, 120.0)
 	_iniciar_partida()
 	_coletar_carga()
 	assert_eq(_estado().carga(), 0, "C663: coleta ignorada com o gancho desligado")
@@ -360,7 +360,7 @@ func test_C663_power_ups_desligados_coleta_ignorada_queda_encerra() -> void:
 # e volta a 1 ao coletar de novo
 func test_C664_ponte_carga_0_no_mesmo_frame_e_1_ao_coletar_de_novo() -> void:
 	_stage = await _novo_stage()
-	_plataforma(Global.cor_gecko, 90.0, 60.0)
+	_plataforma(Global.cor_gecko, 180.0, 120.0)
 	_iniciar_partida()
 	_coletar_carga()
 	await _fisica(2)
@@ -384,11 +384,11 @@ func test_C664_ponte_carga_0_no_mesmo_frame_e_1_ao_coletar_de_novo() -> void:
 # handler sai cedo (gecko encerrado no after_each, corpo fora da arvore)
 func test_C665_liberar_stage_com_carga_guardada_nao_salva() -> void:
 	_stage = await _novo_stage()
-	_plataforma(Global.cor_gecko, 90.0, 60.0)
+	_plataforma(Global.cor_gecko, 180.0, 120.0)
 	_iniciar_partida()
 	_coletar_carga()
 	# Pior caso: gecko no meio da faixa de derrota na hora da liberacao
-	_p.global_position = Vector2(X_QUEDA, 330.0)
+	_p.global_position = Vector2(X_QUEDA, 660.0)
 	var estado_da_stage: PowerUpState = _estado()
 	assert_eq(estado_da_stage.carga(), 1, "fixture: carga guardada na liberacao")
 	_p.end = true

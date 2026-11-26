@@ -9,7 +9,7 @@ class_name Platform
 
 # Tremor horizontal do sprite nos ultimos segundos do atraso de desmoronamento
 const AVISO_TREMOR_S := 0.3
-const TREMOR_AMPLITUDE := 1.0
+const TREMOR_AMPLITUDE := 2.0
 # Aviso de troca de cor (nos ultimos segundos do ciclo): alterna cor atual/proxima a ~6 Hz e pulsa o alfa
 # (pista nao cromatica, legivel a daltonico). Sem icone fixo.
 const AVISO_FASES_POR_S := 12.0
@@ -43,7 +43,7 @@ var _tempo_aviso_pisca := 0.0
 var tipo_power_up: StringName = &""
 var icone_power_up: Node2D = null
 # Distancia (px) entre a base do icone e o topo da plataforma
-const ICONE_FOLGA := 2.0
+const ICONE_FOLGA := 4.0
 # Desvio horizontal (px/s, negativo = esquerda) somado a `speed` pelo modificador de movimento; 0 = sem efeito
 var desvio_vx: float = 0.0
 
@@ -88,7 +88,7 @@ func definir_power_up(tipo: StringName) -> void:
 func _posicionar_icone() -> void:
 	if icone_power_up == null:
 		return
-	var topo: float = sprite.position.y + sprite.offset.y - sprite.texture.get_height() / 2.0
+	var topo: float = sprite.position.y + sprite.offset.y - (sprite.texture.get_height() * sprite.scale.y) / 2.0
 	icone_power_up.position = Vector2(0.0, topo - ICONE_FOLGA - PowerUpIcone.TAMANHO_PX / 2.0)
 
 
@@ -125,7 +125,8 @@ func set_largura(largura: float) -> void:
 	shape.shape = forma
 	var tex_w: float = sprite.texture.get_width()
 	var tex_h: float = sprite.texture.get_height()
-	var visivel: float = minf(largura, tex_w)
+	# O sprite tem escala visual (2x provisorio): a largura pedida e em px logicos, a regiao e em px de textura
+	var visivel: float = minf(largura / sprite.scale.x, tex_w)
 	sprite.region_enabled = true
 	sprite.region_rect = Rect2((tex_w - visivel) / 2.0, 0.0, visivel, tex_h)
 

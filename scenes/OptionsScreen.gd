@@ -8,7 +8,7 @@ extends CanvasLayer
 # Voltar aciona ao soltar com o dedo dentro do retangulo. Esc/P (acao `pause`) = Voltar, nunca retoma a partida.
 # Layout por lista de itens (TIPOS/ESPACO_ANTES): acrescentar um item e inserir nas listas TIPOS/ESPACO_ANTES/NOMES,
 # no enum Item e em _valores; as contas de y seguem a lista visivel. Sliders: Music, SFX e Sensibilidade (este so no
-# modo A (Flick), decisao 2a do G1: em B (Joy invisivel) o bloco volta a 260 px e a ordem de foco pula o item). Botoes: Toque (alterna o modo
+# modo A (Flick), decisao 2a do G1: em B (Joy invisivel) o bloco volta a 520 px (622 com ele) e a ordem de foco pula o item). Botoes: Toque (alterna o modo
 # Flick <-> Joy invisivel pelo Global), Ver tutorial (sinal `ver_tutorial`) e Voltar.
 
 # Emitido por Voltar e pela acao `pause` com a tela aberta.
@@ -31,28 +31,28 @@ const CAMADA: int = 11
 
 # Itens na ordem de foco e de cima para baixo; espaco acima de cada item (handoff 10.2)
 const TIPOS: Array[int] = [Tipo.SLIDER, Tipo.SLIDER, Tipo.SLIDER, Tipo.BOTAO, Tipo.BOTAO, Tipo.BOTAO]
-const ESPACO_ANTES: Array[float] = [12.0, 8.0, 8.0, 12.0, 8.0, 8.0]
+const ESPACO_ANTES: Array[float] = [24.0, 16.0, 16.0, 24.0, 16.0, 16.0]
 const NOMES: Array[String] = ["Music", "SFX", "Sensibilidade", "Toque", "Ver tutorial", "Voltar"]
 
-# Medidas em px logicos (handoff 10.2)
-const LARGURA: float = 180.0
-const TITULO_ALTURA: float = 30.0
-const ROTULO_ALTURA: float = 17.0
-const ROTULO_ESPACO: float = 2.0
-const AREA_X: float = 8.0
-const AREA_LARGURA: float = 164.0
-const AREA_ALTURA: float = 24.0
-const SLIDER_ALTURA: float = 43.0
-const TRILHA_ALTURA: float = 6.0
-const BOTAO_X: float = 34.0
-const BOTAO_LARGURA: float = 112.0
-const BOTAO_ALTURA: float = 32.0
-const CURSOR_NORMAL: Vector2 = Vector2(12.0, 16.0)
-const CURSOR_ARRASTANDO: Vector2 = Vector2(14.0, 20.0)
+# Medidas em px logicos de 360x640 (2x do handoff 10.2)
+const LARGURA: float = 360.0
+const TITULO_ALTURA: float = 60.0
+const ROTULO_ALTURA: float = 34.0
+const ROTULO_ESPACO: float = 4.0
+const AREA_X: float = 16.0
+const AREA_LARGURA: float = 328.0
+const AREA_ALTURA: float = 48.0
+const SLIDER_ALTURA: float = 86.0
+const TRILHA_ALTURA: float = 12.0
+const BOTAO_X: float = 68.0
+const BOTAO_LARGURA: float = 224.0
+const BOTAO_ALTURA: float = 64.0
+const CURSOR_NORMAL: Vector2 = Vector2(24.0, 32.0)
+const CURSOR_ARRASTANDO: Vector2 = Vector2(28.0, 40.0)
 const TAMANHO_TITULO: int = UiHelpers.TAMANHO_TITULO
 const TAMANHO_TEXTO: int = UiHelpers.TAMANHO_TEXTO
-const CONTORNO_TITULO: int = 2
-const CONTORNO_TEXTO: int = 1
+const CONTORNO_TITULO: int = 4
+const CONTORNO_TEXTO: int = 2
 
 const TEXTO_TITULO: String = "Opcoes"
 
@@ -107,7 +107,7 @@ func _ready() -> void:
 	_titulo = UiHelpers.novo_label(TEXTO_TITULO, TAMANHO_TITULO, CONTORNO_TITULO, HORIZONTAL_ALIGNMENT_CENTER)
 	add_child(_titulo)
 	for i in TIPOS.size():
-		var moldura := _novo_panel(UiHelpers.estilo_opcoes(Color(0, 0, 0, 0), 2, COR_CONTORNO, COR_BOTAO))
+		var moldura := _novo_panel(UiHelpers.estilo_opcoes(Color(0, 0, 0, 0), 4, COR_CONTORNO, COR_BOTAO))
 		add_child(moldura)
 		_molduras.append(moldura)
 		_botao_paineis.append(null)
@@ -131,11 +131,11 @@ func _ready() -> void:
 			fill.focus_mode = Control.FOCUS_NONE
 			add_child(fill)
 			_preenchimentos.append(fill)
-			var cursor := _novo_panel(UiHelpers.estilo_opcoes(COR_CURSOR, 1, COR_CONTORNO, COR_BOTAO))
+			var cursor := _novo_panel(UiHelpers.estilo_opcoes(COR_CURSOR, 2, COR_CONTORNO, COR_BOTAO))
 			add_child(cursor)
 			_cursores.append(cursor)
 		else:
-			var painel := _novo_panel(UiHelpers.estilo_opcoes(COR_BOTAO, 1, COR_CONTORNO, COR_BOTAO))
+			var painel := _novo_panel(UiHelpers.estilo_opcoes(COR_BOTAO, 2, COR_CONTORNO, COR_BOTAO))
 			add_child(painel)
 			var rotulo := UiHelpers.novo_label(NOMES[i], TAMANHO_TEXTO, CONTORNO_TEXTO, HORIZONTAL_ALIGNMENT_CENTER)
 			painel.add_child(rotulo)
@@ -208,7 +208,7 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 	var y := y0 + TITULO_ALTURA
 	var topo_rotulos: Array[float] = []
 	for i in TIPOS.size():
-		# Item escondido nao ocupa linha nem espaco: o bloco dos 5 itens do B termina nos mesmos 260 px de antes.
+		# Item escondido nao ocupa linha nem espaco: o bloco dos 5 itens do B termina nos mesmos 520 px de antes.
 		if not _visivel(i):
 			_rects[i] = Rect2()
 			continue
@@ -229,8 +229,8 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 	var s := 0
 	for i in TIPOS.size():
 		var r: Rect2 = _rects[i]
-		_molduras[i].position = r.position - Vector2(1.0, 1.0)
-		_molduras[i].size = r.size + Vector2(2.0, 2.0)
+		_molduras[i].position = r.position - Vector2(2.0, 2.0)
+		_molduras[i].size = r.size + Vector2(4.0, 4.0)
 		if TIPOS[i] == Tipo.SLIDER:
 			# O indice s acompanha os sliders (inclusive o escondido); so o visivel tem topo para posicionar.
 			if _visivel(i):
@@ -240,8 +240,8 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 				_valores_lbl[s].position = linha.position
 				_valores_lbl[s].size = linha.size
 				var cy := r.position.y + r.size.y / 2.0
-				_trilhas_moldura[s].position = Vector2(SliderMath.X_MIN - 1.0, cy - TRILHA_ALTURA / 2.0 - 1.0)
-				_trilhas_moldura[s].size = Vector2(SliderMath.LARGURA_TRILHA + 2.0, TRILHA_ALTURA + 2.0)
+				_trilhas_moldura[s].position = Vector2(SliderMath.X_MIN - 2.0, cy - TRILHA_ALTURA / 2.0 - 2.0)
+				_trilhas_moldura[s].size = Vector2(SliderMath.LARGURA_TRILHA + 4.0, TRILHA_ALTURA + 4.0)
 				_trilhas[s].position = Vector2(SliderMath.X_MIN, cy - TRILHA_ALTURA / 2.0)
 				_trilhas[s].size = Vector2(SliderMath.LARGURA_TRILHA, TRILHA_ALTURA)
 			s += 1
@@ -348,7 +348,7 @@ func _altura_bloco() -> float:
 
 
 # Item aparece na tela: o slider de Sensibilidade so com o modo Flick (A) ativo (decisao 2a do G1). Em Joy invisivel (B) o bloco volta a
-# 260 px e a ordem de foco passa de SFX direto a Toque.
+# 520 px e a ordem de foco passa de SFX direto a Toque.
 func _visivel(item: int) -> bool:
 	return item != Item.SENSIBILIDADE or Global.get_touch_mode() == TouchMode.Modo.A
 
@@ -559,7 +559,7 @@ func _atualizar_visual() -> void:
 			var cx := SliderMath.x_do_valor(_valores[i])
 			var cy := r.position.y + r.size.y / 2.0
 			var tam := CURSOR_ARRASTANDO if arrastando else CURSOR_NORMAL
-			_cursores[s].add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_CURSOR, 2 if arrastando else 1, COR_CONTORNO, COR_BOTAO))
+			_cursores[s].add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_CURSOR, 4 if arrastando else 2, COR_CONTORNO, COR_BOTAO))
 			_cursores[s].size = tam
 			_cursores[s].position = Vector2(cx - tam.x / 2.0, cy - tam.y / 2.0)
 			_preenchimentos[s].position = Vector2(SliderMath.X_MIN, cy - TRILHA_ALTURA / 2.0)
@@ -568,9 +568,9 @@ func _atualizar_visual() -> void:
 		else:
 			var pressed: bool = _pressionado == i
 			_botao_paineis[i].visible = vis
-			_botao_paineis[i].add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO, COR_BOTAO))
+			_botao_paineis[i].add_theme_stylebox_override("panel", UiHelpers.estilo_opcoes(COR_BOTAO, 4 if pressed else 2, COR_CONTORNO, COR_BOTAO))
 			_botao_rotulos[i].text = ("> " if _foco == i else "") + _texto_item(i)
-			_botao_rotulos[i].position = Vector2(0.0, 1.0 if pressed else 0.0)
+			_botao_rotulos[i].position = Vector2(0.0, 2.0 if pressed else 0.0)
 
 
 func _novo_panel(estilo: StyleBoxFlat) -> Panel:

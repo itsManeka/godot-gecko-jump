@@ -1,7 +1,7 @@
 extends GutTest
 
 const PLATAFORMA_CENA := "res://scenes/Platform.tscn"
-const LARGURA_PREFAB := 59.474
+const LARGURA_PREFAB := 118.948
 
 var _sem_derrota_original := false
 

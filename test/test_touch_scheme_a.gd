@@ -1,7 +1,7 @@
 extends GutTest
 
 # T4 (f493): esquema A (arrastar + flick) dirigindo o Player real por ticks via TouchControls. Valores esperados vem
-# da regra do 01 (Q5: zona morta 6 px, flick dy >= 24 px em 150 ms, pulso de 2 ticks) e de Player.SPEED, nunca da saida.
+# da regra do 01 em 360x640 (zona morta 12 px, flick dy >= 48 px em 150 ms, pulso de 2 ticks) e de Player.SPEED, nunca da saida.
 # Relogio injetado (_t, ms); cada evento recebe o tempo explicito.
 
 const PLAYER := "res://scenes/Player.tscn"
@@ -9,8 +9,8 @@ const PLAYER_SCRIPT := preload("res://scenes/Player.gd")
 const CONTROLS := preload("res://scenes/TouchControls.gd")
 const TICK := 1.0 / 60.0
 const ACOES := ["ui_left", "ui_right", "jump"]
-const X0 := 90.0
-const Y0 := 200.0
+const X0 := 180.0
+const Y0 := 400.0
 const TICKS_VOO := 20
 
 var _p: Node
@@ -46,7 +46,7 @@ func _spawn() -> void:
 	Global.set_touch_mode(TouchMode.Modo.A, false)
 	_c = CONTROLS.new()
 	_c.relogio = func() -> int: return _t
-	_c.largura_visivel_fixa = 180.0
+	_c.largura_visivel_fixa = 360.0
 	_c.fabrica_esquema = func(_m: int) -> TouchScheme: return TouchSchemeA.new()
 	_p = load(PLAYER).instantiate()
 	_c.player = _p
@@ -114,11 +114,11 @@ func test_c384_dedo_parado_dentro_da_zona_morta_sem_lateral_e_sem_pulo() -> void
 	_spawn()
 	_toque(X0, Y0, true)
 	var pulou: bool = false
-	for deslocamento in [0.0, 3.0, -4.0, 5.0, -5.0]:
+	for deslocamento in [0.0, 6.0, -8.0, 10.0, -10.0]:
 		_arrasto(X0 + deslocamento, Y0, _t + 10)
 		_tick()
 		pulou = pulou or Input.is_action_pressed("jump")
-		assert_eq(_p.velocity.x, 0.0, "dedo a %+.0f px do contato (< 6): sem lateral" % deslocamento)
+		assert_eq(_p.velocity.x, 0.0, "dedo a %+.0f px do contato (< 12): sem lateral" % deslocamento)
 		assert_false(Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"), "dedo a %+.0f px: nenhuma acao lateral" % deslocamento)
 	_ticks(5)
 	assert_false(pulou, "dedo parado nao pede pulo")
@@ -133,7 +133,7 @@ func test_c385_arrasto_a_direita_anda_a_direita() -> void:
 	await _entrar_no_quadro_fisico()
 	_spawn()
 	_toque(X0, Y0, true)
-	_arrasto(X0 + 20.0, Y0, 10)
+	_arrasto(X0 + 40.0, Y0, 10)
 	_ticks(3)
 	assert_gt(_p.velocity.x, 0.0, "arrasto de 20 px (> 6) a direita: velocity.x > 0")
 	assert_eq(_p.velocity.x, float(PLAYER_SCRIPT.SPEED), "anda na velocidade do teclado (Player.SPEED)")
@@ -143,7 +143,7 @@ func test_c386_arrasto_a_esquerda_anda_a_esquerda() -> void:
 	await _entrar_no_quadro_fisico()
 	_spawn()
 	_toque(X0, Y0, true)
-	_arrasto(X0 - 20.0, Y0, 10)
+	_arrasto(X0 - 40.0, Y0, 10)
 	_ticks(3)
 	assert_lt(_p.velocity.x, 0.0, "arrasto de 20 px (> 6) a esquerda: velocity.x < 0")
 	assert_eq(_p.velocity.x, -float(PLAYER_SCRIPT.SPEED), "anda na velocidade do teclado (Player.SPEED)")
@@ -153,21 +153,21 @@ func test_c387_ancora_acompanha_o_dedo_e_a_volta_inverte_o_lado_sem_passar_pelo_
 	await _entrar_no_quadro_fisico()
 	_spawn()
 	_toque(X0, Y0, true)
-	_arrasto(X0 + 20.0, Y0, 10)
-	_arrasto(X0 + 40.0, Y0, 20)
+	_arrasto(X0 + 40.0, Y0, 10)
+	_arrasto(X0 + 80.0, Y0, 20)
 	_ticks(2)
-	assert_gt(_p.velocity.x, 0.0, "pre-condicao: 40 px a direita anda a direita")
-	_arrasto(X0 + 32.0, Y0, 30)
+	assert_gt(_p.velocity.x, 0.0, "pre-condicao: 80 px a direita anda a direita")
+	_arrasto(X0 + 64.0, Y0, 30)
 	_ticks(2)
-	assert_lt(_p.velocity.x, 0.0, "voltar 8 px (> 6) inverte para a esquerda, com o dedo ainda 32 px a direita do contato")
-	assert_gt(X0 + 32.0, X0, "o dedo nao passou pelo ponto inicial")
+	assert_lt(_p.velocity.x, 0.0, "voltar 16 px (> 12) inverte para a esquerda, com o dedo ainda 64 px a direita do contato")
+	assert_gt(X0 + 64.0, X0, "o dedo nao passou pelo ponto inicial")
 
 
 func test_c388_flick_com_dedo_na_zona_morta_pula_reto() -> void:
 	await _entrar_no_quadro_fisico()
 	_spawn()
 	_toque(X0, Y0, true)
-	_arrasto(X0, Y0 - 30.0, 100)  # dy = 30 >= 24 em 100 ms <= 150
+	_arrasto(X0, Y0 - 60.0, 100)  # dy = 60 >= 48 em 100 ms <= 150
 	var voo: Dictionary = _voo(TICKS_VOO)
 	assert_gt(voo["impulsos"], 0, "o flick pediu o pulo")
 	for i in voo["vxs"].size():
@@ -178,8 +178,8 @@ func test_c389_flick_com_dedo_deslocado_pula_na_diagonal_do_lado_do_dedo() -> vo
 	await _entrar_no_quadro_fisico()
 	_spawn()
 	_toque(X0, Y0, true)
-	_arrasto(X0 + 20.0, Y0, 10)
-	_arrasto(X0 + 20.0, Y0 - 30.0, 100)
+	_arrasto(X0 + 40.0, Y0, 10)
+	_arrasto(X0 + 40.0, Y0 - 60.0, 100)
 	var direita: Dictionary = _voo(TICKS_VOO)
 	assert_gt(direita["impulsos"], 0, "flick a direita pediu o pulo")
 	for i in direita["vxs"].size():
@@ -188,8 +188,8 @@ func test_c389_flick_com_dedo_deslocado_pula_na_diagonal_do_lado_do_dedo() -> vo
 	_limpar_voo()
 	_t = 1000
 	_toque(X0, Y0, true)
-	_arrasto(X0 - 20.0, Y0, 1010)
-	_arrasto(X0 - 20.0, Y0 - 30.0, 1100)
+	_arrasto(X0 - 40.0, Y0, 1010)
+	_arrasto(X0 - 40.0, Y0 - 60.0, 1100)
 	var esquerda: Dictionary = _voo(TICKS_VOO)
 	assert_gt(esquerda["impulsos"], 0, "flick a esquerda pediu o pulo")
 	for i in esquerda["vxs"].size():
@@ -211,21 +211,21 @@ func test_c390_arrasto_vertical_lento_nao_pula() -> void:
 	await _entrar_no_quadro_fisico()
 	_spawn()
 	_toque(X0, Y0, true)
-	_arrasto(X0, Y0 - 20.0, 100)  # dy = 20 < 24 mesmo dentro da janela
+	_arrasto(X0, Y0 - 40.0, 100)  # dy = 40 < 48 mesmo dentro da janela
 	var curto: Dictionary = _voo(5)
-	assert_eq(curto["impulsos"], 0, "dy < 24 px nao pula")
-	assert_false(Input.is_action_pressed("jump"), "dy < 24 px: jump livre")
+	assert_eq(curto["impulsos"], 0, "dy < 48 px nao pula")
+	assert_false(Input.is_action_pressed("jump"), "dy < 48 px: jump livre")
 	_toque(X0, Y0, false)
 	_toque(X0, Y0, true)
 	var y: float = Y0
 	var t: int = 1000
 	_t = t
-	for i in 8:  # dy total 32 >= 24, mas 4 px a cada 100 ms: nunca 24 px dentro de 150 ms
-		y -= 4.0
+	for i in 8:  # dy total 64 >= 48, mas 8 px a cada 100 ms: nunca 48 px dentro de 150 ms
+		y -= 8.0
 		t += 100
 		_arrasto(X0, y, t)
 	var lento: Dictionary = _voo(5)
-	assert_eq(lento["impulsos"], 0, "dy >= 24 px em > 150 ms nao pula")
+	assert_eq(lento["impulsos"], 0, "dy >= 48 px em > 150 ms nao pula")
 	assert_false(Input.is_action_pressed("jump"), "arrasto lento: jump livre")
 
 
@@ -233,13 +233,13 @@ func test_c391_segundo_flick_repula_so_apos_novo_pulso() -> void:
 	await _entrar_no_quadro_fisico()
 	_spawn()
 	_toque(X0, Y0, true)
-	_arrasto(X0, Y0 - 30.0, 100)
+	_arrasto(X0, Y0 - 60.0, 100)
 	assert_true(Input.is_action_pressed("jump"), "1o flick: pulso de jump")
 	_ticks(2)
 	_ticks(1)
 	assert_false(Input.is_action_pressed("jump"), "jump solto entre os dois flicks (nao fica preso)")
-	_arrasto(X0, Y0 - 30.0, 160)  # dedo parado 60 ms (>= REARME_PARADO_MS): rearma o flick
-	_arrasto(X0, Y0 - 60.0, 200)  # novo dy = 30 em 100 ms
+	_arrasto(X0, Y0 - 60.0, 160)  # dedo parado 60 ms (>= REARME_PARADO_MS): rearma o flick
+	_arrasto(X0, Y0 - 120.0, 200)  # novo dy = 30 em 100 ms
 	assert_true(Input.is_action_pressed("jump"), "2o flick no mesmo toque: novo pulso")
 	_ticks(3)
 	assert_false(Input.is_action_pressed("jump"), "e o 2o pulso tambem solta")
@@ -257,106 +257,106 @@ func _mover_y(e: TouchSchemeA, y: float, t_ms: int, x: float = X0) -> bool:
 	return e.intencao(t_ms)["pulo"]
 
 
-func test_c453_arrasto_vertical_continuo_de_200_px_gera_um_pulso() -> void:
+func test_c453_arrasto_vertical_continuo_de_400_px_gera_um_pulso() -> void:
 	var e := _novo_esquema()
 	var pulsos: int = 0
-	for i in range(1, 38):  # 37 passos de 16 ms = 592 ms, 200 px em 600 ms
+	for i in range(1, 38):  # 37 passos de 16 ms = 592 ms, 400 px em 600 ms
 		var t: int = i * 16
-		if _mover_y(e, Y0 - minf(200.0, 200.0 * float(t) / 600.0), t):
+		if _mover_y(e, Y0 - minf(400.0, 400.0 * float(t) / 600.0), t):
 			pulsos += 1
-	assert_eq(pulsos, 1, "arrasto continuo de 200 px: 1 pulso, nao 1 a cada 24 px")
+	assert_eq(pulsos, 1, "arrasto continuo de 400 px: 1 pulso, nao 1 a cada 48 px")
 
 
 func test_c454_apos_dedo_parado_o_segundo_flick_gera_o_segundo_pulso() -> void:
 	var e := _novo_esquema()
-	assert_true(_mover_y(e, Y0 - 30.0, 100), "1o flick: pulso")
+	assert_true(_mover_y(e, Y0 - 60.0, 100), "1o flick: pulso")
 	for t in [116, 132, 148, 164]:  # dedo parado 64 ms: velocidade 0, abaixo do limiar
-		assert_false(_mover_y(e, Y0 - 30.0, t), "dedo parado em t=%d: sem pulso" % t)
-	assert_true(_mover_y(e, Y0 - 60.0, 200), "2o flick apos o rearme por dedo parado: pulso")
+		assert_false(_mover_y(e, Y0 - 60.0, t), "dedo parado em t=%d: sem pulso" % t)
+	assert_true(_mover_y(e, Y0 - 120.0, 200), "2o flick apos o rearme por dedo parado: pulso")
 
 
 func test_c455_apos_recuo_de_n_px_o_segundo_flick_gera_o_segundo_pulso_e_n_menos_1_nao_rearma() -> void:
 	var n: float = TouchTuning.REARME_RECUO_PX
-	var topo: float = Y0 - 30.0
+	var topo: float = Y0 - 60.0
 	var e := _novo_esquema()
 	assert_true(_mover_y(e, topo, 100), "1o flick: pulso")
 	_mover_y(e, topo + n / 2.0, 116)
 	_mover_y(e, topo + n, 132)  # recuo de N px para baixo
-	assert_true(_mover_y(e, topo + n - 30.0, 180), "recuo de N px rearma: 2o flick pula")
+	assert_true(_mover_y(e, topo + n - 60.0, 180), "recuo de N px rearma: 2o flick pula")
 	var curto := _novo_esquema()
 	assert_true(_mover_y(curto, topo, 100), "1o flick (recuo curto): pulso")
 	_mover_y(curto, topo + (n - 1.0) / 2.0, 116)
 	_mover_y(curto, topo + n - 1.0, 132)  # recuo de N-1 px
-	assert_false(_mover_y(curto, topo + n - 1.0 - 30.0, 180), "recuo de N-1 px nao rearma: sem 2o pulso")
+	assert_false(_mover_y(curto, topo + n - 1.0 - 60.0, 180), "recuo de N-1 px nao rearma: sem 2o pulso")
 
 
 func test_c456_soltar_e_cancelar_rearmam_flick_unico_e_lateral_seguem() -> void:
 	var soltar := _novo_esquema()
-	assert_true(_mover_y(soltar, Y0 - 30.0, 100), "1o flick antes de soltar")
+	assert_true(_mover_y(soltar, Y0 - 60.0, 100), "1o flick antes de soltar")
 	soltar.release(0, 110)
 	soltar.press(0, 1000, Vector2(X0, Y0))
-	assert_true(_mover_y(soltar, Y0 - 30.0, 1100), "apos soltar, novo toque com flick = pulso")
+	assert_true(_mover_y(soltar, Y0 - 60.0, 1100), "apos soltar, novo toque com flick = pulso")
 	var cancelar := _novo_esquema()
-	assert_true(_mover_y(cancelar, Y0 - 30.0, 100), "1o flick antes de cancelar")
+	assert_true(_mover_y(cancelar, Y0 - 60.0, 100), "1o flick antes de cancelar")
 	cancelar.cancelar(0)
 	cancelar.press(0, 1000, Vector2(X0, Y0))
-	assert_true(_mover_y(cancelar, Y0 - 30.0, 1100), "apos cancelar, novo toque com flick = pulso")
+	assert_true(_mover_y(cancelar, Y0 - 60.0, 1100), "apos cancelar, novo toque com flick = pulso")
 	var unico := _novo_esquema()
-	assert_true(_mover_y(unico, Y0 - 24.0, 150), "flick unico de 24 px em 150 ms: 1 pulso")
+	assert_true(_mover_y(unico, Y0 - 48.0, 150), "flick unico de 48 px em 150 ms: 1 pulso")
 	var reto := _novo_esquema()
-	reto.mover(0, Vector2(X0, Y0 - 30.0), 100)
+	reto.mover(0, Vector2(X0, Y0 - 60.0), 100)
 	var r: Dictionary = reto.intencao(100)
 	assert_true(r["pulo"], "flick reto: pulo")
 	assert_false(r["esquerda"] or r["direita"], "flick reto: sem lateral")
 	var diag := _novo_esquema()
-	diag.mover(0, Vector2(X0 + 20.0, Y0), 10)
+	diag.mover(0, Vector2(X0 + 40.0, Y0), 10)
 	diag.intencao(10)
-	diag.mover(0, Vector2(X0 + 20.0, Y0 - 30.0), 100)
+	diag.mover(0, Vector2(X0 + 40.0, Y0 - 60.0), 100)
 	var d: Dictionary = diag.intencao(100)
 	assert_true(d["pulo"] and d["direita"], "flick diagonal: pulo com lateral a direita")
 
 
 func test_c458_flick_curto_com_eventos_a_200_ms_gera_um_pulso() -> void:
 	var e := _novo_esquema()
-	assert_true(_mover_y(e, Y0 - 30.0, 200), "FPS 5: dy 30 >= 24 entre dois eventos de 200 ms: 1 pulso")
-	var parado: bool = _mover_y(e, Y0 - 30.0, 400)
+	assert_true(_mover_y(e, Y0 - 60.0, 200), "FPS 5: dy 60 >= 48 entre dois eventos de 200 ms: 1 pulso")
+	var parado: bool = _mover_y(e, Y0 - 60.0, 400)
 	assert_false(parado, "sem novo pulso com o dedo parado")
 
 
 func test_c459_flick_curto_com_eventos_a_400_ms_gera_um_pulso() -> void:
 	var e := _novo_esquema()
-	assert_true(_mover_y(e, Y0 - 30.0, 400), "FPS 2,5: dy 30 >= 24 entre dois eventos de 400 ms: 1 pulso")
+	assert_true(_mover_y(e, Y0 - 60.0, 400), "FPS 2,5: dy 60 >= 48 entre dois eventos de 400 ms: 1 pulso")
 
 
-func test_c460_dy_menor_que_24_com_eventos_espacados_nao_pula() -> void:
+func test_c460_dy_menor_que_48_com_eventos_espacados_nao_pula() -> void:
 	var a := _novo_esquema()
-	assert_false(_mover_y(a, Y0 - 20.0, 200), "200 ms, dy 20 < 24: sem pulso")
+	assert_false(_mover_y(a, Y0 - 40.0, 200), "200 ms, dy 40 < 48: sem pulso")
 	var b := _novo_esquema()
-	assert_false(_mover_y(b, Y0 - 20.0, 400), "400 ms, dy 20 < 24: sem pulso")
+	assert_false(_mover_y(b, Y0 - 40.0, 400), "400 ms, dy 40 < 48: sem pulso")
 
 
 func test_c461_regressao_60_fps_eventos_de_16_ms() -> void:
 	var e := _novo_esquema()
 	var pulsos: int = 0
-	for i in range(1, 7):  # 6 passos de 16 ms = 96 ms, 5 px cada: dy 30 dentro de 150 ms
-		if _mover_y(e, Y0 - 5.0 * float(i), i * 16):
+	for i in range(1, 7):  # 6 passos de 16 ms = 96 ms, 10 px cada: dy 60 dentro de 150 ms
+		if _mover_y(e, Y0 - 10.0 * float(i), i * 16):
 			pulsos += 1
-	assert_eq(pulsos, 1, "60 FPS: flick de 30 px em 96 ms gera 1 pulso")
+	assert_eq(pulsos, 1, "60 FPS: flick de 60 px em 96 ms gera 1 pulso")
 	var curto := _novo_esquema()
 	var curtos: int = 0
-	for i in range(1, 5):  # dy 20 em 64 ms
-		if _mover_y(curto, Y0 - 5.0 * float(i), i * 16):
+	for i in range(1, 5):  # dy 40 em 64 ms
+		if _mover_y(curto, Y0 - 10.0 * float(i), i * 16):
 			curtos += 1
-	assert_eq(curtos, 0, "60 FPS: dy 20 < 24 nao pula")
+	assert_eq(curtos, 0, "60 FPS: dy 40 < 48 nao pula")
 
 
 func test_c462_gesto_lento_nao_e_flick_e_tap_seco_nao_pula() -> void:
 	var lento := _novo_esquema()
 	var pulsos: int = 0
-	for i in range(1, 21):  # 24 px em 2 s, evento a cada 100 ms
-		if _mover_y(lento, Y0 - 1.2 * float(i), i * 100):
+	for i in range(1, 21):  # 48 px em 2 s, evento a cada 100 ms
+		if _mover_y(lento, Y0 - 2.4 * float(i), i * 100):
 			pulsos += 1
-	assert_eq(pulsos, 0, "24 px em 2 s nao conta como flick")
+	assert_eq(pulsos, 0, "48 px em 2 s nao conta como flick")
 	var tap := _novo_esquema()
 	var tap_pulsos: int = 0
 	for t in [200, 400, 600]:
@@ -369,12 +369,12 @@ func test_c392_correcao_de_direcao_no_ar_muda_velocity_x() -> void:
 	await _entrar_no_quadro_fisico()
 	_spawn()
 	_toque(X0, Y0, true)
-	_arrasto(X0 + 20.0, Y0, 10)
-	_arrasto(X0 + 20.0, Y0 - 30.0, 100)
+	_arrasto(X0 + 40.0, Y0, 10)
+	_arrasto(X0 + 40.0, Y0 - 60.0, 100)
 	_ticks(8)
 	assert_lt(_p.velocity.y, 0.0, "pre-condicao: no ar, subindo")
 	assert_eq(_p.velocity.x, float(PLAYER_SCRIPT.SPEED), "pre-condicao: diagonal a direita")
-	_arrasto(X0 + 8.0, Y0 - 30.0, 200)  # volta 12 px (> 6) para a esquerda
+	_arrasto(X0 + 16.0, Y0 - 60.0, 200)  # volta 24 px (> 12) para a esquerda
 	_ticks(2)
 	assert_eq(_p.velocity.x, -float(PLAYER_SCRIPT.SPEED), "arrastar para o lado oposto no voo inverte velocity.x")
 
@@ -382,7 +382,7 @@ func test_c392_correcao_de_direcao_no_ar_muda_velocity_x() -> void:
 func test_corr_a_segundo_dedo_recusado_nao_fica_ativo() -> void:
 	var esquema := TouchSchemeA.new()
 	esquema.press(0, 0, Vector2(X0, Y0))
-	esquema.press(1, 10, Vector2(X0 + 20.0, Y0))
+	esquema.press(1, 10, Vector2(X0 + 40.0, Y0))
 	esquema.release(0, 20)
 	assert_false(esquema.tem_dedo(1), "o 2o dedo recusado pelo modo A nao fica registrado")
 	assert_false(esquema.ativo(), "soltar o dedo principal deixa o esquema inativo")
@@ -392,11 +392,11 @@ func test_c393_soltar_o_dedo_ou_canceled_para_o_lateral_e_solta_jump() -> void:
 	await _entrar_no_quadro_fisico()
 	_spawn()
 	_toque(X0, Y0, true)
-	_arrasto(X0 + 20.0, Y0, 10)
-	_arrasto(X0 + 20.0, Y0 - 30.0, 100)
+	_arrasto(X0 + 40.0, Y0, 10)
+	_arrasto(X0 + 40.0, Y0 - 60.0, 100)
 	assert_true(Input.is_action_pressed("ui_right"), "pre-condicao (soltar): lateral ativo")
 	assert_true(Input.is_action_pressed("jump"), "pre-condicao (soltar): jump no pulso")
-	_toque(X0 + 20.0, Y0 - 30.0, false)
+	_toque(X0 + 40.0, Y0 - 60.0, false)
 	assert_false(Input.is_action_pressed("ui_right"), "soltar o dedo solta o lateral na hora")
 	_ticks(2)  # o pulso de jump dura TICKS_MINIMOS (2) e termina sozinho
 	assert_false(Input.is_action_pressed("jump"), "soltar o dedo: jump solto ao fim do pulso, sem repulso")
@@ -404,11 +404,11 @@ func test_c393_soltar_o_dedo_ou_canceled_para_o_lateral_e_solta_jump() -> void:
 	assert_true(_nenhuma_pressionada(), "sem residual depois de soltar")
 	_t = 1000
 	_toque(X0, Y0, true)
-	_arrasto(X0 - 20.0, Y0, 1010)
-	_arrasto(X0 - 20.0, Y0 - 30.0, 1100)
+	_arrasto(X0 - 40.0, Y0, 1010)
+	_arrasto(X0 - 40.0, Y0 - 60.0, 1100)
 	assert_true(Input.is_action_pressed("ui_left"), "pre-condicao (canceled): lateral ativo")
 	assert_true(Input.is_action_pressed("jump"), "pre-condicao (canceled): jump no pulso")
-	_toque(X0 - 20.0, Y0 - 30.0, false, 0, true)
+	_toque(X0 - 40.0, Y0 - 60.0, false, 0, true)
 	assert_false(Input.is_action_pressed("ui_left"), "canceled solta o lateral na hora")
 	_ticks(2)
 	assert_false(Input.is_action_pressed("jump"), "canceled: jump solto ao fim do pulso, sem repulso")
@@ -416,30 +416,30 @@ func test_c393_soltar_o_dedo_ou_canceled_para_o_lateral_e_solta_jump() -> void:
 	assert_true(_nenhuma_pressionada(), "sem residual depois do canceled")
 
 
-# T4 (f495): sensibilidade do modo A. Valor esperado vem da decisao do G1 (maxima 2,0x -> zona morta 3 px e flick
-# 12 px; minima 0,5x -> 12 px e 48 px), nunca da saida da implementacao.
+# T4 (f495): sensibilidade do modo A. Valor esperado vem da decisao do G1 em 360x640 (maxima 2,0x -> zona morta 6 px
+# e flick 24 px; minima 0,5x -> 24 px e 96 px), nunca da saida da implementacao.
 
 
 func test_c468_sensibilidade_maxima_e_minima_exigem_gestos_diferentes() -> void:
 	var maximo := TouchSchemeA.new()
 	maximo.sensibilidade = TouchTuning.SENSIBILIDADE_MAX
 	maximo.press(0, 0, Vector2(X0, Y0))
-	maximo.mover(0, Vector2(X0 + 3.5, Y0), 10)
+	maximo.mover(0, Vector2(X0 + 7.0, Y0), 10)
 	var anda: Dictionary = maximo.intencao(10)
-	assert_true(anda["direita"], "arrasto de 3,5 px (> zona morta de 3 px no maximo) anda")
-	maximo.mover(0, Vector2(X0 + 3.5, Y0 - 13.0), 100)
+	assert_true(anda["direita"], "arrasto de 7 px (> zona morta de 6 px no maximo) anda")
+	maximo.mover(0, Vector2(X0 + 7.0, Y0 - 26.0), 100)
 	var pula: Dictionary = maximo.intencao(100)
-	assert_true(pula["pulo"], "flick de 13 px (> dy minimo de 12 px no maximo) pula")
+	assert_true(pula["pulo"], "flick de 26 px (> dy minimo de 24 px no maximo) pula")
 
 	var minimo := TouchSchemeA.new()
 	minimo.sensibilidade = TouchTuning.SENSIBILIDADE_MIN
 	minimo.press(0, 0, Vector2(X0, Y0))
-	minimo.mover(0, Vector2(X0 + 3.5, Y0), 10)
+	minimo.mover(0, Vector2(X0 + 7.0, Y0), 10)
 	var para: Dictionary = minimo.intencao(10)
-	assert_false(para["direita"], "o mesmo arrasto de 3,5 px nao anda na minima (zona morta de 12 px)")
-	minimo.mover(0, Vector2(X0 + 3.5, Y0 - 13.0), 100)
+	assert_false(para["direita"], "o mesmo arrasto de 7 px nao anda na minima (zona morta de 24 px)")
+	minimo.mover(0, Vector2(X0 + 7.0, Y0 - 26.0), 100)
 	var nao_pula: Dictionary = minimo.intencao(100)
-	assert_false(nao_pula["pulo"], "o mesmo flick de 13 px nao pula na minima (dy minimo de 48 px)")
+	assert_false(nao_pula["pulo"], "o mesmo flick de 26 px nao pula na minima (dy minimo de 96 px)")
 
 
 func test_sensibilidade_invalida_no_esquema_cai_no_padrao() -> void:

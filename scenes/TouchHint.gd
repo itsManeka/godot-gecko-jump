@@ -1,7 +1,7 @@
 class_name TouchHint
 extends CanvasLayer
 
-# Dica visual das zonas de toque (handoff 8): linha divisoria tracejada em x = 90 e, na base, um bloco por lado
+# Dica visual das zonas de toque (handoff 8): linha divisoria tracejada em x = 180 e, na base, um bloco por lado
 # com seta, "pula" e texto de segurar. So desenho: nenhum no recebe entrada (mouse_filter IGNORE, sem foco).
 # Montada por codigo; a Stage a instancia e injeta `player` e o layout (`aplicar_layout`).
 # Visivel so em partida em curso, na 1a partida, em dispositivo de toque; some com fade-out no 1o toque de jogo.
@@ -16,9 +16,9 @@ const COR_CONTORNO: Color = Color(0.0, 0.0, 0.0, 1.0)
 const COR_LINHA: Color = Color(1.0, 1.0, 1.0, 0.6)
 # Faixa atras dos textos de cada bloco (legibilidade sobre as plataformas): mesma cor da faixa do placar
 const COR_FAIXA: Color = UiHelpers.COR_FUNDO_OVERLAY
-const OUTLINE_SIZE: int = 1
+const OUTLINE_SIZE: int = 2
 
-# Textos por modo de toque (issue #47). Cada bloco tem 2 linhas e precisa caber em 76 px (lateral) / 166 px (centro).
+# Textos por modo de toque (issue #47). Cada bloco tem 2 linhas e precisa caber em 152 px (lateral) / 332 px (centro).
 # A (Flick): sem zonas, um bloco central: 1a linha = `TouchMode.rotulo(A)`, 2a = TEXTO_A_LINHA2.
 # B (Joy invisivel): linha em x = 90 e um bloco por lado, sem o nome (nao cabe em 76 px).
 const TEXTO_A_LINHA2: String = "arraste anda, flick pula"
@@ -26,19 +26,20 @@ const TEXTOS_B_ESQ: Array[String] = ["anda", "segura aqui"]
 const TEXTOS_B_DIR: Array[String] = ["pula", "toque aqui"]
 
 # Medidas em px logicos (handoff 8.2)
-const DIVISAO_X: float = 90.0
-const LINHA_TOPO: float = 32.0
-const TRACO: float = 2.0
-const BLOCO_ALTURA: float = 60.0
-const BLOCO_MARGEM_BASE: float = 40.0
-const ESQ_X_MIN: float = 7.0
-const ESQ_X_FIM: float = 83.0
-const DIR_X_INI: float = 97.0
-const DIR_X_MAX: float = 173.0
-const MARGEM_SAFE: float = 2.0
-const SETA: float = 24.0
-const SETA_ESPACO: float = 2.0
-const TEXTO_ALTURA: float = 17.0
+const DIVISAO_X: float = 180.0
+const LINHA_TOPO: float = 64.0
+const LINHA_LARGURA: float = 2.0
+const TRACO: float = 4.0
+const BLOCO_ALTURA: float = 120.0
+const BLOCO_MARGEM_BASE: float = 80.0
+const ESQ_X_MIN: float = 14.0
+const ESQ_X_FIM: float = 166.0
+const DIR_X_INI: float = 194.0
+const DIR_X_MAX: float = 346.0
+const MARGEM_SAFE: float = 4.0
+const SETA: float = 48.0
+const SETA_ESPACO: float = 4.0
+const TEXTO_ALTURA: float = 34.0
 # Abaixo do HUD (CanvasLayer da Stage, layer 1)
 const CAMADA: int = 0
 # Fade-out ao 1o toque de jogo: proposta provisoria (handoff 8.4)
@@ -129,7 +130,7 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 	var y0 := base - BLOCO_MARGEM_BASE - BLOCO_ALTURA
 	_raiz.position = Vector2.ZERO
 	_raiz.size = visible_size
-	_linha_rect = Rect2(DIVISAO_X, s_top + LINHA_TOPO, 1.0, base - (s_top + LINHA_TOPO))
+	_linha_rect = Rect2(DIVISAO_X, s_top + LINHA_TOPO, LINHA_LARGURA, base - (s_top + LINHA_TOPO))
 	_linha.position = Vector2.ZERO
 	_linha.size = visible_size
 	_linha.queue_redraw()
@@ -179,7 +180,7 @@ func bloco_visivel(lado: int) -> bool:
 	return _bloco_de(lado).visible
 
 
-# Retangulo da linha divisoria (largura 1; x = 90); vazio no modo A (sem zonas).
+# Retangulo da linha divisoria (largura 2; x = 180); vazio no modo A (sem zonas).
 func rect_linha() -> Rect2:
 	return _linha_rect if _modo != TouchMode.Modo.A else Rect2()
 
@@ -303,16 +304,16 @@ func _posicionar_bloco(bloco: Control, r: Rect2) -> void:
 
 
 func _desenhar_seta(seta: Control, lado: int) -> void:
-	var pontos := PackedVector2Array([Vector2(16.0, 4.0), Vector2(8.0, 12.0), Vector2(16.0, 20.0)])
+	var pontos := PackedVector2Array([Vector2(32.0, 8.0), Vector2(16.0, 24.0), Vector2(32.0, 40.0)])
 	if lado == Lado.DIREITA:
-		pontos = PackedVector2Array([Vector2(8.0, 4.0), Vector2(16.0, 12.0), Vector2(8.0, 20.0)])
-	seta.draw_polyline(pontos, COR_CONTORNO, 5.0)
-	seta.draw_polyline(pontos, COR, 3.0)
+		pontos = PackedVector2Array([Vector2(16.0, 8.0), Vector2(32.0, 24.0), Vector2(16.0, 40.0)])
+	seta.draw_polyline(pontos, COR_CONTORNO, 10.0)
+	seta.draw_polyline(pontos, COR, 6.0)
 
 
 func _desenhar_linha() -> void:
 	var y := _linha_rect.position.y
 	var fim := _linha_rect.end.y
 	while y < fim:
-		_linha.draw_rect(Rect2(_linha_rect.position.x, y, 1.0, minf(TRACO, fim - y)), COR_LINHA)
+		_linha.draw_rect(Rect2(_linha_rect.position.x, y, LINHA_LARGURA, minf(TRACO, fim - y)), COR_LINHA)
 		y += TRACO * 2.0

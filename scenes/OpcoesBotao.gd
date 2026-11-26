@@ -18,13 +18,13 @@ const COR_FUNDO: Color = Color("#5b8a4a")
 const CAMADA: int = 1
 
 # Medidas em px logicos (handoff 11.1)
-const LARGURA: float = 88.0
-const ALTURA: float = 24.0
-const TOPO: float = 189.0
-const LARGURA_TELA: float = 180.0
+const LARGURA: float = 176.0
+const ALTURA: float = 48.0
+const TOPO: float = 378.0
+const LARGURA_TELA: float = 360.0
 const TAMANHO_TEXTO: int = UiHelpers.TAMANHO_TEXTO
-const CONTORNO_TEXTO: int = 1
-const RAIO: int = 4
+const CONTORNO_TEXTO: int = 2
+const RAIO: int = 8
 const TEXTO: String = "Opcoes"
 
 var _rect: Rect2 = Rect2((LARGURA_TELA - LARGURA) / 2.0, TOPO, LARGURA, ALTURA)
@@ -41,7 +41,7 @@ func _ready() -> void:
 	_moldura = Panel.new()
 	_moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_moldura.focus_mode = Control.FOCUS_NONE
-	_moldura.add_theme_stylebox_override("panel", UiHelpers.estilo(Color(0, 0, 0, 0), 2, COR_CONTORNO, 0))
+	_moldura.add_theme_stylebox_override("panel", UiHelpers.estilo(Color(0, 0, 0, 0), 4, COR_CONTORNO, 0))
 	add_child(_moldura)
 	_painel = Panel.new()
 	_painel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -181,8 +181,8 @@ func _ponteiro(dedo: int, pressionado: bool, pos: Vector2) -> bool:
 func _aplicar_rect() -> void:
 	_painel.position = _rect.position
 	_painel.size = _rect.size
-	_moldura.position = _rect.position - Vector2(1.0, 1.0)
-	_moldura.size = _rect.size + Vector2(2.0, 2.0)
+	_moldura.position = _rect.position - Vector2(2.0, 2.0)
+	_moldura.size = _rect.size + Vector2(4.0, 4.0)
 	_rotulo.size = _rect.size
 	_atualizar_visual()
 
@@ -190,7 +190,7 @@ func _aplicar_rect() -> void:
 func _atualizar_visual() -> void:
 	if _painel == null:
 		return
-	_painel.add_theme_stylebox_override("panel", UiHelpers.estilo(COR_FUNDO, 2 if _pressed else 1, COR_CONTORNO, RAIO))
+	_painel.add_theme_stylebox_override("panel", UiHelpers.estilo(COR_FUNDO, 4 if _pressed else 2, COR_CONTORNO, RAIO))
 	_moldura.visible = _foco
 	_rotulo.text = ("> " if _foco else "") + TEXTO
-	_rotulo.position = Vector2(0.0, 1.0 if _pressed else 0.0)
+	_rotulo.position = Vector2(0.0, 2.0 if _pressed else 0.0)

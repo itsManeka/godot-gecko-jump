@@ -3,8 +3,8 @@ extends GutTest
 # f524 T4: relogio do Contra o tempo na linha de duracao do HUD (handoff de design, secao 3: x 138-178, y 30-46).
 # Formato e retangulo sao testados no HUD solto; visibilidade e texto, na Stage real (o HUD le o estado publicado dela).
 const STAGE_SCENE := "res://scenes/Stage.tscn"
-const VISIVEL := Vector2(180.0, 320.0)
-const SAFE := Rect2(0.0, 0.0, 180.0, 320.0)
+const VISIVEL := Vector2(360.0, 640.0)
+const SAFE := Rect2(0.0, 0.0, 360.0, 640.0)
 
 var _stage: Node = null
 var _modo_original: StringName = GameModes.ID_CLASSICO
@@ -145,10 +145,10 @@ func test_c698_card_do_tutorial_oculta_o_relogio_e_fechar_mostra_sem_zerar_o_tex
 func test_c699_rect_relogio_nas_medidas_do_handoff_nas_duas_alturas() -> void:
 	var hud: PowerUpHud = PowerUpHud.new()
 	add_child_autofree(hud)
-	for altura in [320.0, 400.0]:
-		hud.aplicar_layout(Vector2(180.0, altura), Rect2(0.0, 0.0, 180.0, altura))
+	for altura in [640.0, 800.0]:
+		hud.aplicar_layout(Vector2(360.0, altura), Rect2(0.0, 0.0, 360.0, altura))
 		var r: Rect2 = hud.rect_relogio()
-		assert_eq(r.position, Vector2(138.0, 30.0), "C699: origem x 138, y 30 em 180x%d" % int(altura))
-		assert_eq(r.end, Vector2(178.0, 46.0), "C699: fim x 178, y 46 em 180x%d" % int(altura))
-		assert_false(r.intersects(hud.rect_segundos()), "C699: relogio nao cobre os segundos (x 66-82)")
-		assert_false(r.intersects(hud.rect_carga()), "C699: relogio nao cobre a carga (x 90-106)")
+		assert_eq(r.position, Vector2(276.0, 60.0), "C699: origem x 276, y 60 em 360x%d" % int(altura))
+		assert_eq(r.end, Vector2(356.0, 92.0), "C699: fim x 356, y 92 em 360x%d" % int(altura))
+		assert_false(r.intersects(hud.rect_segundos()), "C699: relogio nao cobre os segundos (x 132-164)")
+		assert_false(r.intersects(hud.rect_carga()), "C699: relogio nao cobre a carga (x 180-212)")

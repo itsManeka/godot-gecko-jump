@@ -4,8 +4,8 @@ extends GutTest
 # flag `tutorial/visto` intacta, card da 1a partida escondido enquanto o reaberto esta na tela.
 const STAGE_SCENE := "res://scenes/Stage.tscn"
 const TEST_PATH := "user://test_stage_tutorial_revisao.cfg"
-const VISIVEL := Vector2(180.0, 320.0)
-const SAFE_TOTAL := Rect2(0.0, 0.0, 180.0, 320.0)
+const VISIVEL := Vector2(360.0, 640.0)
+const SAFE_TOTAL := Rect2(0.0, 0.0, 360.0, 640.0)
 
 var _opcoes_anteriores: OptionsStore = null
 
@@ -151,7 +151,7 @@ func test_c222_reabertura_consome_todo_toque_fora_do_botao_e_a_dica_nao_aparece(
 	var stage := await _stage_no_menu()
 	stage._abrir_opcoes_do_menu()
 	stage.options_screen.ver_tutorial.emit()
-	var fora := Vector2(20.0, 100.0)
+	var fora := Vector2(40.0, 200.0)
 	assert_false(stage.tutorial_revisao.rect_pular().has_point(fora), "ponto fora do botao")
 	assert_true(stage.tutorial_revisao.tratar_evento(_toque(fora, true)), "toque fora do botao e consumido")
 	assert_true(stage.tutorial_revisao.tratar_evento(_toque(fora, false)), "soltar fora do botao e consumido")

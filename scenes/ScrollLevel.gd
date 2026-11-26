@@ -47,7 +47,7 @@ var _rows_spawned: int = 0
 # Último y dos nós de linha do .tscn; abaixo dele nascem as linhas iniciais extras.
 # Espelha o position.y do último RunningPlatforms em scenes/ScrollLevel.tscn: mover o nó exige mudar aqui
 # (test_scroll_level_linhas_iniciais.gd acusa duplicata ou buraco pela contagem 7/9/10).
-const ULTIMA_LINHA_TSCN := 190.0
+const ULTIMA_LINHA_TSCN := 380.0
 const EPSILON := 0.0001
 
 # D1 (02-impact): as 5 linhas do .tscn entram na seed. _enter_tree roda antes do _ready de qualquer

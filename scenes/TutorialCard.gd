@@ -30,26 +30,30 @@ const CAMADA_REABERTURA: int = 12
 const FADE_S: float = 0.3
 
 # Medidas em px logicos (handoff 12.2/12.3); `y` sem o `s_top`
-const FUNDO: Rect2 = Rect2(8.0, 38.0, 164.0, 172.0)
-const BOTAO: Rect2 = Rect2(108.0, 44.0, 56.0, 24.0)
-const TITULO: Rect2 = Rect2(16.0, 44.0, 90.0, 24.0)
-const LARGURA_CONTEUDO: float = 148.0
-const CONTEUDO_X: float = 16.0
-const LINHA_ALTURA: float = 17.0
-const REGRA_Y: float = 72.0
-const AMOSTRAS_Y: float = 110.0
-const LEGENDA_Y: float = 149.0
-const CONTROLE_Y: float = 187.0
-const CELULA_LARGURA: float = 74.0
-const CELULAS_X: Array[float] = [16.0, 90.0]
+const FUNDO: Rect2 = Rect2(16.0, 76.0, 328.0, 344.0)
+const BOTAO: Rect2 = Rect2(216.0, 88.0, 112.0, 48.0)
+const TITULO: Rect2 = Rect2(32.0, 88.0, 180.0, 48.0)
+const LARGURA_CONTEUDO: float = 296.0
+const CONTEUDO_X: float = 32.0
+const LINHA_ALTURA: float = 34.0
+const REGRA_Y: float = 144.0
+const AMOSTRAS_Y: float = 220.0
+const LEGENDA_Y: float = 298.0
+const CONTROLE_Y: float = 374.0
+const CELULA_LARGURA: float = 148.0
+const CELULAS_X: Array[float] = [32.0, 180.0]
 const TAMANHO_TEXTO: int = UiHelpers.TAMANHO_TEXTO
-const CONTORNO_TEXTO: int = 1
+const CONTORNO_TEXTO: int = 2
+# Bordas (px logicos): amostras e botao 2 (4 pressionado), moldura de foco 4
+const BORDA: int = 2
+const BORDA_PRESSIONADO: int = 4
+const BORDA_MOLDURA: int = 4
 
 const TEXTO_TITULO: String = "Como jogar"
 const TEXTO_PULAR: String = "Pular"
 const TEXTO_VOLTAR: String = "Voltar"
 const TEXTO_REGRA: Array[String] = ["Pise na cor dele.", "Pouso troca a cor."]
-# Linhas de controle do toque por modo (coerentes com a dica da TouchHint); cada linha cabe em 148 px.
+# Linhas de controle do toque por modo (coerentes com a dica da TouchHint); cada linha cabe em 296 px.
 # Sem a 1a linha: ela e sempre `TouchMode.rotulo(modo)` ("Toque: <nome>"), montada em `linhas_controle_toque`.
 const TEXTO_CONTROLE_TOQUE_A: Array[String] = ["Arraste anda, flick pula", "Sensibilidade: Opcoes"]
 const TEXTO_CONTROLE_TOQUE_B: Array[String] = ["Esquerda segura: anda", "Direita toca: pula"]
@@ -73,7 +77,7 @@ var _n_linhas: int = 1
 var _variante: int = Variante.TOQUE
 var _modo: int = Modo.PARTIDA
 var _s_top: float = 0.0
-var _tamanho_tela: Vector2 = Vector2(180.0, 320.0)
+var _tamanho_tela: Vector2 = Vector2(360.0, 640.0)
 var _aberto: bool = false
 # index do dedo que comecou o toque dentro do botao
 var _toques: Dictionary = {}
@@ -348,18 +352,18 @@ func _atualizar_botao() -> void:
 	var reabertura := _modo == Modo.REABERTURA
 	_moldura.visible = reabertura
 	_botao_painel.add_theme_stylebox_override(
-		"panel", UiHelpers.estilo_opcoes(COR_BOTAO, 2 if _pressionado else 1, COR_CONTORNO, COR_BOTAO)
+		"panel", UiHelpers.estilo_opcoes(COR_BOTAO, BORDA_PRESSIONADO if _pressionado else BORDA, COR_CONTORNO, COR_BOTAO)
 	)
 	_botao_rotulo.text = ("> " + TEXTO_VOLTAR) if reabertura else TEXTO_PULAR
-	_botao_rotulo.position = Vector2(0.0, 1.0 if _pressionado else 0.0)
+	_botao_rotulo.position = Vector2(0.0, 2.0 if _pressionado else 0.0)
 
 
 func _montar_botao() -> void:
-	_moldura = _novo_panel("Moldura", UiHelpers.estilo(COR_SEM_FUNDO, 2, COR_CONTORNO, 0))
-	_moldura.position = BOTAO.position - Vector2(1.0, 1.0)
-	_moldura.size = BOTAO.size + Vector2(2.0, 2.0)
+	_moldura = _novo_panel("Moldura", UiHelpers.estilo(COR_SEM_FUNDO, BORDA_MOLDURA, COR_CONTORNO, 0))
+	_moldura.position = BOTAO.position - Vector2(2.0, 2.0)
+	_moldura.size = BOTAO.size + Vector2(4.0, 4.0)
 	_raiz.add_child(_moldura)
-	_botao_painel = _novo_panel("Pular", UiHelpers.estilo_opcoes(COR_BOTAO, 1, COR_CONTORNO, COR_BOTAO))
+	_botao_painel = _novo_panel("Pular", UiHelpers.estilo_opcoes(COR_BOTAO, BORDA, COR_CONTORNO, COR_BOTAO))
 	_botao_painel.position = BOTAO.position
 	_botao_painel.size = BOTAO.size
 	_raiz.add_child(_botao_painel)
@@ -368,35 +372,35 @@ func _montar_botao() -> void:
 	_botao_painel.add_child(_botao_rotulo)
 
 
-# Celula de amostra 74x35: gecko 12x16, marca (10 de largura), plataforma 32x8 e rotulo (handoff 12.3).
+# Celula de amostra 148x70: gecko 24x32, marca (20 de largura), plataforma 64x16 e rotulo (handoff 12.3, 2x).
 func _montar_amostra(i: int, marca: String, rotulo: String, cor_plataforma: int) -> void:
 	var cx: float = CELULAS_X[i]
-	var gecko := _novo_panel("Amostra%dGecko" % i, UiHelpers.estilo(Enums.get_cor(Enums.COLOR.AMARELO), 1, COR_CONTORNO, 0))
-	gecko.position = Vector2(cx, AMOSTRAS_Y + 1.0)
-	gecko.size = Vector2(12.0, 16.0)
+	var gecko := _novo_panel("Amostra%dGecko" % i, UiHelpers.estilo(Enums.get_cor(Enums.COLOR.AMARELO), BORDA, COR_CONTORNO, 0))
+	gecko.position = Vector2(cx, AMOSTRAS_Y + 2.0)
+	gecko.size = Vector2(24.0, 32.0)
 	_raiz.add_child(gecko)
-	_texto("Amostra%dMarca" % i, marca, Rect2(cx + 16.0, AMOSTRAS_Y, 10.0, 18.0), HORIZONTAL_ALIGNMENT_CENTER)
-	var plataforma := _novo_panel("Amostra%dPlataforma" % i, UiHelpers.estilo(Enums.get_cor(cor_plataforma), 1, COR_CONTORNO, 0))
-	plataforma.position = Vector2(cx + 30.0, AMOSTRAS_Y + 9.0)
-	plataforma.size = Vector2(32.0, 8.0)
+	_texto("Amostra%dMarca" % i, marca, Rect2(cx + 32.0, AMOSTRAS_Y, 20.0, 36.0), HORIZONTAL_ALIGNMENT_CENTER)
+	var plataforma := _novo_panel("Amostra%dPlataforma" % i, UiHelpers.estilo(Enums.get_cor(cor_plataforma), BORDA, COR_CONTORNO, 0))
+	plataforma.position = Vector2(cx + 60.0, AMOSTRAS_Y + 18.0)
+	plataforma.size = Vector2(64.0, 16.0)
 	_raiz.add_child(plataforma)
 	_texto(
 		"Amostra%dRotulo" % i,
 		rotulo,
-		Rect2(cx, AMOSTRAS_Y + 18.0, CELULA_LARGURA, LINHA_ALTURA),
+		Rect2(cx, AMOSTRAS_Y + 36.0, CELULA_LARGURA, LINHA_ALTURA),
 		HORIZONTAL_ALIGNMENT_LEFT
 	)
 
 
-# Legenda 2 colunas x 2 linhas: quadrado 12x12 com contorno de 1 px e o nome por escrito em x = 16 da celula.
+# Legenda 2 colunas x 2 linhas: quadrado 24x24 com contorno de 2 px e o nome por escrito em x = 32 da celula.
 func _montar_legenda(i: int) -> void:
 	var cx: float = CELULAS_X[i % 2]
 	var cy: float = LEGENDA_Y + LINHA_ALTURA * floori(i / 2.0)
-	var quadro := _novo_panel("Legenda%dQuadro" % i, UiHelpers.estilo(Enums.get_cor(CORES_LEGENDA[i]), 1, COR_CONTORNO, 0))
-	quadro.position = Vector2(cx, cy + 2.0)
-	quadro.size = Vector2(12.0, 12.0)
+	var quadro := _novo_panel("Legenda%dQuadro" % i, UiHelpers.estilo(Enums.get_cor(CORES_LEGENDA[i]), BORDA, COR_CONTORNO, 0))
+	quadro.position = Vector2(cx, cy + 4.0)
+	quadro.size = Vector2(24.0, 24.0)
 	_raiz.add_child(quadro)
-	_texto("Legenda%dNome" % i, NOMES_LEGENDA[i], Rect2(cx + 16.0, cy, CELULA_LARGURA - 16.0, LINHA_ALTURA), HORIZONTAL_ALIGNMENT_LEFT)
+	_texto("Legenda%dNome" % i, NOMES_LEGENDA[i], Rect2(cx + 32.0, cy, CELULA_LARGURA - 32.0, LINHA_ALTURA), HORIZONTAL_ALIGNMENT_LEFT)
 
 
 func _texto(nome: String, texto: String, r: Rect2, alinhamento: HorizontalAlignment) -> Label:

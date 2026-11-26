@@ -17,7 +17,7 @@ func before_each() -> void:
 	var scroll: Node = _stage.get_node("ScrollLevel")
 	_stage.remove_child(scroll)
 	scroll.free()
-	_stage.apply_layout(Vector2(180.0, 320.0), Rect2(0.0, 0.0, 180.0, 320.0))
+	_stage.apply_layout(Vector2(360.0, 640.0), Rect2(0.0, 0.0, 360.0, 640.0))
 
 
 func after_each() -> void:
@@ -75,12 +75,12 @@ func test_c351_contraste_do_texto_sobre_a_faixa_em_cada_plataforma() -> void:
 		assert_gte(razao, LIMIAR_AA, "contraste %s (razao %.2f)" % [hex, razao])
 
 
-# C352: contorno do texto continua em 1 px, a 16 px.
-func test_c352_contorno_do_placar_permanece_1px_a_16px() -> void:
+# C352: contorno do texto proporcional (2 px) a 32 px.
+func test_c352_contorno_do_placar_permanece_2px_a_32px() -> void:
 	for nome in ["Last", "Best"]:
 		var l := _no(nome)
-		assert_eq(l.get_theme_constant("outline_size"), 1, "%s outline 1 px" % nome)
-		assert_eq(l.get_theme_font_size("font_size"), 16, "%s fonte 16 px" % nome)
+		assert_eq(l.get_theme_constant("outline_size"), 2, "%s outline 2 px" % nome)
+		assert_eq(l.get_theme_font_size("font_size"), 32, "%s fonte 32 px" % nome)
 
 
 # C353: a faixa nao intercepta toque e nao encosta no Play nem no botao Opcoes.

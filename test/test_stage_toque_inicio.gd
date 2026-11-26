@@ -40,11 +40,11 @@ func _novo_stage() -> Node:
 	return stage
 
 
-func _toque(pressionado: bool, x: float = 45.0) -> void:
+func _toque(pressionado: bool, x: float = 90.0) -> void:
 	var ev := InputEventScreenTouch.new()
 	ev.index = 0
 	ev.pressed = pressionado
-	ev.position = Vector2(x, 100.0)
+	ev.position = Vector2(x, 200.0)
 	Input.parse_input_event(ev)
 	Input.flush_buffered_events()
 	await wait_frames(2)

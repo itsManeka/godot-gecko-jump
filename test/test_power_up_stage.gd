@@ -7,7 +7,7 @@ extends GutTest
 
 const STAGE_SCENE := "res://scenes/Stage.tscn"
 # Altura do teleporte acima da plataforma de pouso: ~20 frames de queda com a gravidade do Player
-const ALTURA_QUEDA_PX := 30.0
+const ALTURA_QUEDA_PX := 60.0
 
 var _stage: Node = null
 var _sem_derrota_original := false

@@ -24,8 +24,8 @@ func after_each() -> void:
 	Global.set_iniciado(false)
 
 
-func _abrir(lista: Array[GameMode], altura: float = 320.0) -> void:
-	_tela.aplicar_layout(Vector2(180.0, altura), Rect2(0.0, 0.0, 180.0, altura))
+func _abrir(lista: Array[GameMode], altura: float = 640.0) -> void:
+	_tela.aplicar_layout(Vector2(360.0, altura), Rect2(0.0, 0.0, 360.0, altura))
 	assert_true(_tela.abrir(lista[0], lista), "abrir devolve true com o jogo nao iniciado")
 
 
@@ -59,37 +59,50 @@ func _centro(r: Rect2) -> Vector2:
 	return r.get_center()
 
 
-func test_geometria_em_180x320_e_180x400() -> void:
-	# 320: (320 - 229) / 2 = 45,5 -> y0 = 46 (grade inteira); 400: 85,5 -> 86
-	for caso in [[320.0, 46.0], [400.0, 86.0]]:
-		_tela.aplicar_layout(Vector2(180.0, caso[0]), Rect2(0.0, 0.0, 180.0, caso[0]))
+func test_geometria_em_360x640_e_360x800() -> void:
+	# 640: (640 - 458) / 2 = 91 -> y0 = 91 (grade inteira); 800: 171
+	for caso in [[640.0, 91.0], [800.0, 171.0]]:
+		_tela.aplicar_layout(Vector2(360.0, caso[0]), Rect2(0.0, 0.0, 360.0, caso[0]))
 		var y0: float = caso[1]
-		assert_eq(_tela.rect_titulo(), Rect2(0.0, y0, 180.0, 30.0), "titulo em %s" % caso[0])
-		assert_eq(_tela.rect_imagem(), Rect2(58.0, y0 + 42.0, 64.0, 64.0), "imagem 64x64 em %s" % caso[0])
-		assert_eq(_tela.rect_seta_esq(), Rect2(4.0, y0 + 62.0, 24.0, 24.0), "seta esq x 4-28 y 62-86 em %s" % caso[0])
-		assert_eq(_tela.rect_seta_dir(), Rect2(152.0, y0 + 62.0, 24.0, 24.0), "seta dir x 152-176 em %s" % caso[0])
-		assert_eq(_tela.rect_nome(), Rect2(0.0, y0 + 114.0, 180.0, 17.0), "nome y 114-131 em %s" % caso[0])
-		assert_eq(_tela.rect_descricao(), Rect2(10.0, y0 + 135.0, 160.0, 34.0), "descricao y 135-169 em %s" % caso[0])
-		assert_eq(_tela.rect_ok(), Rect2(34.0, y0 + 197.0, 112.0, 32.0), "OK x 34-146 y 197-229 em %s" % caso[0])
+		assert_eq(_tela.rect_titulo(), Rect2(0.0, y0, 360.0, 60.0), "titulo em %s" % caso[0])
+		assert_eq(_tela.rect_imagem(), Rect2(116.0, y0 + 84.0, 128.0, 128.0), "imagem 128x128 em %s" % caso[0])
+		assert_eq(_tela.rect_seta_esq(), Rect2(8.0, y0 + 124.0, 48.0, 48.0), "seta esq x 8-56 y 124-172 em %s" % caso[0])
+		assert_eq(_tela.rect_seta_dir(), Rect2(304.0, y0 + 124.0, 48.0, 48.0), "seta dir x 304-352 em %s" % caso[0])
+		assert_eq(_tela.rect_nome(), Rect2(0.0, y0 + 228.0, 360.0, 34.0), "nome y 228-262 em %s" % caso[0])
+		assert_eq(_tela.rect_descricao(), Rect2(20.0, y0 + 270.0, 320.0, 68.0), "descricao y 270-338 em %s" % caso[0])
+		assert_eq(_tela.rect_ok(), Rect2(68.0, y0 + 394.0, 224.0, 64.0), "OK x 68-292 y 394-458 em %s" % caso[0])
 
 
-func test_arrasto_limiar_16px_e_faixa() -> void:
+# C832: ModosScreen (bloco de 458 px) cabe em 640 e na safe area
+func test_c832_bloco_de_458_cabe_em_640_e_na_safe_area() -> void:
+	var tela := Rect2(0.0, 0.0, 360.0, 640.0)
+	_tela.aplicar_layout(Vector2(360.0, 640.0), Rect2(0.0, 0.0, 360.0, 640.0))
+	for r in [_tela.rect_titulo(), _tela.rect_imagem(), _tela.rect_seta_esq(), _tela.rect_seta_dir(), _tela.rect_nome(), _tela.rect_descricao(), _tela.rect_ok()]:
+		assert_true(tela.encloses(r), "C832: retangulo %s dentro de 360x640" % str(r))
+	var safe := Rect2(0.0, 40.0, 360.0, 588.0)
+	_tela.aplicar_layout(Vector2(360.0, 640.0), safe)
+	for r in [_tela.rect_titulo(), _tela.rect_imagem(), _tela.rect_seta_esq(), _tela.rect_seta_dir(), _tela.rect_nome(), _tela.rect_descricao(), _tela.rect_ok()]:
+		assert_true(safe.encloses(r), "C832: retangulo %s dentro da safe area" % str(r))
+	assert_eq(_tela.rect_ok().end.y - _tela.rect_titulo().position.y, 458.0, "C832: bloco de 458 px")
+
+
+func test_arrasto_limiar_32px_e_faixa() -> void:
 	_abrir([_modo_a, _modo_b] as Array[GameMode])
 	var faixa := _tela.rect_faixa_arrasto()
-	assert_eq(faixa, Rect2(30.0, 46.0 + 42.0, 120.0, 127.0), "faixa x 30-150 y 42-169")
+	assert_eq(faixa, Rect2(60.0, 91.0 + 84.0, 240.0, 254.0), "faixa x 60-300 y 84-338")
 	var inicio := _centro(faixa)
-	_arrastar_de(inicio, -15.0)
-	assert_eq(_tela.modo_exibido().id, _modo_a.id, "15 px nao troca")
-	_arrastar_de(inicio, -16.0)
-	assert_eq(_tela.modo_exibido().id, _modo_b.id, "16 px troca")
-	_arrastar_de(inicio, 16.0)
-	assert_eq(_tela.modo_exibido().id, _modo_a.id, "16 px para o outro lado volta")
-	# iniciado fora da faixa (acima, y 41 relativo) nao troca
+	_arrastar_de(inicio, -31.0)
+	assert_eq(_tela.modo_exibido().id, _modo_a.id, "31 px nao troca")
+	_arrastar_de(inicio, -32.0)
+	assert_eq(_tela.modo_exibido().id, _modo_b.id, "32 px troca")
+	_arrastar_de(inicio, 32.0)
+	assert_eq(_tela.modo_exibido().id, _modo_a.id, "32 px para o outro lado volta")
+	# iniciado fora da faixa (acima, y 83 relativo) nao troca
 	var fora := Vector2(inicio.x, faixa.position.y - 1.0)
-	_arrastar_de(fora, -40.0)
+	_arrastar_de(fora, -80.0)
 	assert_eq(_tela.modo_exibido().id, _modo_a.id, "iniciado fora da faixa nao troca")
 	# borda interna da faixa troca
-	_arrastar_de(Vector2(faixa.position.x, faixa.position.y), -16.0)
+	_arrastar_de(Vector2(faixa.position.x, faixa.position.y), -32.0)
 	assert_eq(_tela.modo_exibido().id, _modo_b.id, "iniciado no canto da faixa troca")
 
 
@@ -116,39 +129,39 @@ func test_setas_ciclo_e_lista_de_um() -> void:
 	_abrir(sozinho)
 	_tocar(_centro(_tela.rect_seta_dir()))
 	_tocar(_centro(_tela.rect_seta_esq()))
-	_arrastar_de(_centro(_tela.rect_faixa_arrasto()), -40.0)
+	_arrastar_de(_centro(_tela.rect_faixa_arrasto()), -80.0)
 	assert_eq(_tela.modo_exibido().id, _modo_a.id, "lista de 1 segue no mesmo modo")
 	assert_eq(_mudancas.size(), 0, "lista de 1 nao emite modo_mudou")
 
 
-func test_indicador_n_marcas_so_a_atual_8x4() -> void:
+func test_indicador_n_marcas_so_a_atual_16x8() -> void:
 	var sozinho: Array[GameMode] = [_modo_a]
 	_abrir(sozinho)
 	var marcas := _tela.rect_marcas()
 	assert_eq(marcas.size(), 1, "N = 1 gera 1 marca")
-	assert_eq(marcas[0].size, Vector2(8.0, 4.0), "a unica marca e a atual 8x4")
+	assert_eq(marcas[0].size, Vector2(16.0, 8.0), "a unica marca e a atual 16x8")
 	_abrir([_modo_a, _modo_b] as Array[GameMode])
 	marcas = _tela.rect_marcas()
 	assert_eq(marcas.size(), 2, "N = 2 gera 2 marcas")
-	assert_eq(marcas[0].size, Vector2(8.0, 4.0), "a atual (1a) e 8x4")
-	assert_eq(marcas[1].size, Vector2(4.0, 4.0), "a outra e 4x4")
+	assert_eq(marcas[0].size, Vector2(16.0, 8.0), "a atual (1a) e 16x8")
+	assert_eq(marcas[1].size, Vector2(8.0, 8.0), "a outra e 8x8")
 	_tocar(_centro(_tela.rect_seta_dir()))
 	marcas = _tela.rect_marcas()
-	assert_eq(marcas[0].size, Vector2(4.0, 4.0), "depois da troca a 1a e 4x4")
-	assert_eq(marcas[1].size, Vector2(8.0, 4.0), "depois da troca a 2a e 8x4")
+	assert_eq(marcas[0].size, Vector2(8.0, 8.0), "depois da troca a 1a e 8x8")
+	assert_eq(marcas[1].size, Vector2(16.0, 8.0), "depois da troca a 2a e 16x8")
 
 
-func test_c714_indicador_com_modos_reais_5_marcas_em_release_e_6_com_teste_atual_8x4_no_zen() -> void:
+func test_c714_indicador_com_modos_reais_5_marcas_em_release_e_6_com_teste_atual_16x8_no_zen() -> void:
 	for incluir_teste: bool in [false, true]:
 		var modos := GameModes.lista(incluir_teste)
 		var indice_zen: int = modos.find(GameModes.zen())
 		assert_eq(indice_zen, 3, "C714: o Zen e o 4o modo (teste=%s)" % incluir_teste)
-		_tela.aplicar_layout(Vector2(180.0, 320.0), Rect2(0.0, 0.0, 180.0, 320.0))
+		_tela.aplicar_layout(Vector2(360.0, 640.0), Rect2(0.0, 0.0, 360.0, 640.0))
 		assert_true(_tela.abrir(GameModes.zen(), modos), "abrir no Zen devolve true")
 		var marcas := _tela.rect_marcas()
 		assert_eq(marcas.size(), 6 if incluir_teste else 5, "C714: marcas = modos da lista (teste=%s)" % incluir_teste)
 		for i in marcas.size():
-			var esperado := Vector2(8.0, 4.0) if i == indice_zen else Vector2(4.0, 4.0)
+			var esperado := Vector2(16.0, 8.0) if i == indice_zen else Vector2(8.0, 8.0)
 			assert_eq(marcas[i].size, esperado, "C714: marca %d (teste=%s)" % [i, incluir_teste])
 		_tela.fechar()
 

@@ -19,8 +19,8 @@ func run():
 	# teste grava o user://desafio_diario.cfg real (vale tambem quando T6 ligar a Stage sem caminho injetado).
 	DirAccess.remove_absolute(DIARIO_TEST_PATH)
 	DiarioStoreScript.isolar_caminho_padrao(DIARIO_TEST_PATH)
-	# Janela da suite com area visivel fixa em 180x320 (content_scale_aspect KEEP): cena instanciada na raiz
+	# Janela da suite com area visivel fixa em 360x640 (content_scale_aspect KEEP): cena instanciada na raiz
 	# le altura e layout de VisibleArea e nao depende do tamanho da janela headless.
 	var raiz := Engine.get_main_loop().root as Window
-	raiz.content_scale_size = Vector2i(180, 320)
+	raiz.content_scale_size = Vector2i(360, 640)
 	raiz.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_KEEP

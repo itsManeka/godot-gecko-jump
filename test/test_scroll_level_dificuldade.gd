@@ -18,7 +18,7 @@ func after_each() -> void:
 
 func _spawn() -> void:
 	var sv := SubViewport.new()
-	sv.size = Vector2i(180, 400)
+	sv.size = Vector2i(360, 800)
 	add_child_autofree(sv)
 	_scroll = load(SCROLL).instantiate()
 	sv.add_child(_scroll)
@@ -60,11 +60,11 @@ func test_scroll_avanca_snapshot_vezes_delta_lido_a_cada_frame() -> void:
 # C175
 func test_estagio_0_avanca_20_por_delta_e_linhas_iniciais_intactas() -> void:
 	await _spawn()
-	assert_eq(_scroll.running_platforms.get_child_count(), 9, "altura 400: 9 linhas iniciais")
+	assert_eq(_scroll.running_platforms.get_child_count(), 9, "altura 800 (400 em 1x): 9 linhas iniciais")
 	Global.iniciado = true
 	var y0: float = _scroll.running_platforms.position.y
 	_scroll._physics_process(DELTA)
-	assert_almost_eq(_scroll.running_platforms.position.y - y0, 20.0 * DELTA, 0.0001, "sem estado: 20 * delta")
+	assert_almost_eq(_scroll.running_platforms.position.y - y0, 40.0 * DELTA, 0.0001, "sem estado: 40 * delta (scroll do estagio 0 em 2x)")
 	_scroll.dificuldade = _estado()
 	var y1: float = _scroll.running_platforms.position.y
 	_scroll._physics_process(DELTA)
@@ -77,7 +77,7 @@ func test_linhas_do_tscn_no_estagio_0_e_novas_recebem_estado_antes_do_add_child(
 	var estado := _estado()
 	var antigas: Array = _scroll.running_platforms.get_children()
 	_scroll.dificuldade = estado
-	_scroll.create_new_running_platform(-60.0)
+	_scroll.create_new_running_platform(-120.0)
 	await wait_process_frames(2)
 	var novas: Array = []
 	for c in _scroll.running_platforms.get_children():
@@ -88,4 +88,4 @@ func test_linhas_do_tscn_no_estagio_0_e_novas_recebem_estado_antes_do_add_child(
 	assert_almost_eq(absf(novas[0].speed), 100.0, 0.0001, "speed lida do snapshot no _ready: estado injetado antes do add_child")
 	for c in antigas:
 		assert_null(c.dificuldade, "linha anterior a injecao nao tem estado")
-		assert_almost_eq(absf(c.speed), 60.0, 0.0001, "linha anterior a injecao nasceu no estagio 0")
+		assert_almost_eq(absf(c.speed), 120.0, 0.0001, "linha anterior a injecao nasceu no estagio 0")

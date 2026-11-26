@@ -4,8 +4,8 @@ extends GutTest
 # Curva propria do teste (nao le o .tres de producao): estagio 3 liga as duas mecanicas com largura 44.
 
 const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
-const LARGURA_ESTAGIO_3 := 44.0
-const LARGURA_PADRAO := 60.0
+const LARGURA_ESTAGIO_3 := 88.0
+const LARGURA_PADRAO := 118.948 # forma da cena em 2x (59.474 x 2); nominal 120
 
 var _cor_original: Enums.COLOR
 
@@ -99,20 +99,20 @@ func test_estagio_3_cria_plataformas_de_44_com_crumble_e_estagio_0_de_60_sem_mod
 	var estreitas := _plataformas(gerador)
 	assert_gt(estreitas.size(), 1, "linha nasce preenchida")
 	for p in estreitas:
-		assert_eq(_largura(p), LARGURA_ESTAGIO_3, "estagio 3: largura 44")
+		assert_eq(_largura(p), LARGURA_ESTAGIO_3, "estagio 3: largura 88")
 		assert_true(_tem(p, PlatformCrumble), "estagio 3: PlatformCrumble")
 		assert_true(_tem(p, PlatformNarrower), "estagio 3: PlatformNarrower")
 
-	# Forma da cena sem modificador (o 60 nominal e 59.47 no .tscn)
+	# Forma da cena sem modificador (o 120 nominal e 118.95 no .tscn)
 	var base: Platform = autofree(load("res://scenes/Platform.tscn").instantiate())
 	var largura_cena: float = (base.get_node("CollisionShape2D").shape as RectangleShape2D).size.x
-	assert_almost_eq(largura_cena, LARGURA_PADRAO, 1.0, "forma da cena ~60")
+	assert_almost_eq(largura_cena, LARGURA_PADRAO, 1.0, "forma da cena ~120")
 
 	var normal := _gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, _estado(false))
 	normal.new_platform()
 	assert_gt(_plataformas(normal).size(), 1, "linha nasce preenchida")
 	for p in _plataformas(normal):
-		assert_eq(_largura(p), largura_cena, "estagio 0: largura da cena (60 nominal), sem set_largura")
+		assert_eq(_largura(p), largura_cena, "estagio 0: largura da cena (120 nominal), sem set_largura")
 		assert_eq(p._modificadores.size(), 0, "estagio 0: lista vazia")
 
 
@@ -123,7 +123,7 @@ func test_linha_estatica_do_gerador_inicial_recebe_narrower_e_nunca_crumble() ->
 	for p in iniciais:
 		assert_true(_tem(p, PlatformNarrower), "inicial: PlatformNarrower")
 		assert_false(_tem(p, PlatformCrumble), "inicial: nunca PlatformCrumble")
-		assert_eq(_largura(p), LARGURA_ESTAGIO_3, "inicial: largura 44")
+		assert_eq(_largura(p), LARGURA_ESTAGIO_3, "inicial: largura 88")
 
 	var comum := _gerador(Enums.PLATFORM_TYPE.STATIC, _estado(true), false)
 	for p in _plataformas(comum):
@@ -131,9 +131,9 @@ func test_linha_estatica_do_gerador_inicial_recebe_narrower_e_nunca_crumble() ->
 
 
 func test_largura_nao_altera_espacamento_nem_distancia_de_saida() -> void:
-	assert_eq(MovingRowFill.DISTANCIA_SAIDA, 60.2995, "DISTANCIA_SAIDA igual ao baseline")
-	var spawn_x := 210.0
-	var esperado: Array[float] = MovingRowFill.initial_xs(spawn_x, true, MovingRowFill.LARGURA_PADRAO, 60.0)
+	assert_eq(MovingRowFill.DISTANCIA_SAIDA, 120.599, "DISTANCIA_SAIDA igual ao baseline (2x de 60.2995)")
+	var spawn_x := 420.0
+	var esperado: Array[float] = MovingRowFill.initial_xs(spawn_x, true, MovingRowFill.LARGURA_PADRAO, 120.0)
 	assert_gt(esperado.size(), 0, "baseline tem posicoes")
 
 	var gerador := _gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, _estado(true))
@@ -153,4 +153,4 @@ func test_largura_nao_altera_espacamento_nem_distancia_de_saida() -> void:
 	xs_normal.sort()
 	assert_eq(xs, xs_normal, "estagio 3 e estagio 0 geram os mesmos x")
 	for p in _plataformas(gerador):
-		assert_eq(_largura(p), LARGURA_ESTAGIO_3, "largura 44 sem mexer nos x")
+		assert_eq(_largura(p), LARGURA_ESTAGIO_3, "largura 88 sem mexer nos x")

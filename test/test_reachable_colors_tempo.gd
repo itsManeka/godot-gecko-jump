@@ -3,9 +3,9 @@ extends GutTest
 # ReachableColors com dimensao de tempo: janela da cicladora, tempo de pulo, forcar_cor_cicladora, entradas com ciclo.
 
 const PlayerFisica := preload("res://scenes/Player.gd")
-const LARGURA := 180.0
+const LARGURA := 360.0
 const Y_REF := 200.0
-const Y_LINHA := Y_REF - 50.0
+const Y_LINHA := Y_REF - 100.0
 const PERIODO := 3.0
 # Tolerancia declarada de tempo_de_pulo contra a simulacao frame a frame: 1 frame de fisica.
 const TOLERANCIA_PULO := 1.0 / 60.0 + 1e-6
@@ -112,7 +112,7 @@ func _simula_pulo(scroll: float) -> float:
 
 
 func test_tempo_de_pulo_bate_com_simulacao_frame_a_frame() -> void:
-	for scroll in [0.0, 20.0, 45.0, 90.0, 160.0]:
+	for scroll in [0.0, 40.0, 90.0, 180.0, 320.0]:
 		var esperado := _simula_pulo(scroll)
 		assert_gt(esperado, 0.0, "simulacao alcanca a linha (scroll %s)" % scroll)
 		assert_almost_eq(ReachableColors.tempo_de_pulo(scroll), esperado, TOLERANCIA_PULO, "scroll %s" % scroll)
@@ -120,7 +120,7 @@ func test_tempo_de_pulo_bate_com_simulacao_frame_a_frame() -> void:
 
 func test_tempo_de_pulo_sem_scroll_e_o_apice_do_pulo_e_diminui_com_o_scroll() -> void:
 	assert_almost_eq(ReachableColors.tempo_de_pulo(0.0), 25.0 / 60.0, TOLERANCIA_PULO, "apice = 25 ticks")
-	assert_lt(ReachableColors.tempo_de_pulo(90.0), ReachableColors.tempo_de_pulo(0.0), "scroll maior chega antes")
+	assert_lt(ReachableColors.tempo_de_pulo(180.0), ReachableColors.tempo_de_pulo(0.0), "scroll maior chega antes")
 
 
 # --- C249: forcar_cor_cicladora ---

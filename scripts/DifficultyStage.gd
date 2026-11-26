@@ -3,11 +3,11 @@
 class_name DifficultyStage
 extends Resource
 
-const SCROLL_PADRAO: float = 20.0
-const SPEED_PADRAO: float = 60.0
+const SCROLL_PADRAO: float = 40.0
+const SPEED_PADRAO: float = 120.0
 const K_PADRAO: int = 3
 const PROPORCAO_PADRAO: float = 1.0 / 3.0
-const LARGURA_PLATAFORMA_PADRAO: float = 60.0
+const LARGURA_PLATAFORMA_PADRAO: float = 120.0
 const ATRASO_DESMORONAR_PADRAO: float = 1.0
 const PROPORCAO_CICLADORAS_PADRAO: float = 0.0
 const PERIODO_CICLO_PADRAO: float = 3.0

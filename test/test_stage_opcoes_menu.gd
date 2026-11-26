@@ -3,9 +3,9 @@ extends GutTest
 # Origem menu da tela de Opcoes na Stage real: botao Opcoes entre Play e Last, inicio suspenso com a tela aberta,
 # Voltar devolve o menu com foco no botao. Valores de layout do handoff (secao 11), nunca recalculados da implementacao.
 const STAGE_SCENE := "res://scenes/Stage.tscn"
-const VISIVEL := Vector2(180.0, 320.0)
-const SAFE_TOTAL := Rect2(0.0, 0.0, 180.0, 320.0)
-const SAFE_COM_TOPO := Rect2(0.0, 20.0, 180.0, 294.0)
+const VISIVEL := Vector2(360.0, 640.0)
+const SAFE_TOTAL := Rect2(0.0, 0.0, 360.0, 640.0)
+const SAFE_COM_TOPO := Rect2(0.0, 40.0, 360.0, 588.0)
 
 
 var _modo_original: TouchMode.Modo = TouchMode.padrao()
@@ -83,9 +83,9 @@ func test_com_a_tela_aberta_jump_e_toque_nao_iniciam() -> void:
 	await wait_process_frames(3)
 	assert_false(stage.started, "jump nao inicia com a tela aberta")
 	Input.action_release("jump")
-	stage._input(_toque(true, Vector2(20.0, 100.0)))
+	stage._input(_toque(true, Vector2(40.0, 200.0)))
 	assert_false(stage.started, "toque na Stage nao inicia com a tela aberta")
-	await _toque_real(true, Vector2(20.0, 100.0))
+	await _toque_real(true, Vector2(40.0, 200.0))
 	assert_false(stage.started, "toque real nao inicia com a tela aberta")
 
 
@@ -108,7 +108,7 @@ func test_voltar_restaura_o_menu_com_foco_no_botao_e_o_inicio_volta() -> void:
 func test_toque_real_em_ver_tutorial_abre_o_tutorial_reaberto_sem_iniciar() -> void:
 	var stage := await _novo_stage()
 	_abrir_pelo_botao(stage)
-	assert_true(stage.options_screen.rect_ver_tutorial() == Rect2(34, 218, 112, 32), "Ver tutorial y[218,250] em 180x320")
+	assert_true(stage.options_screen.rect_ver_tutorial() == Rect2(68, 436, 224, 64), "Ver tutorial y[436,500] em 360x640")
 	var centro: Vector2 = stage.options_screen.rect_ver_tutorial().get_center()
 	await _toque_real(true, centro)
 	await _toque_real(false, centro)
@@ -158,21 +158,21 @@ func test_botao_some_ao_iniciar_e_nao_aparece_apos_a_derrota() -> void:
 func test_retangulo_do_botao_bate_com_o_handoff_e_a_folga_ate_play_e_last() -> void:
 	var stage := await _novo_stage()
 	var r: Rect2 = stage.opcoes_botao.rect_botao()
-	assert_eq(r.position, Vector2(46.0, 189.0), "origem em 180x320")
-	assert_eq(r.end, Vector2(134.0, 213.0), "fim em 180x320")
-	assert_eq(r.position.y - 173.0, 16.0, "folga ate o Play")
-	assert_eq(230.0 - r.end.y, 17.0, "folga ate o Last")
-	var play := Rect2(stage.playbutton.offset_left, stage.playbutton.offset_top, 56.0, 26.0)
+	assert_eq(r.position, Vector2(92.0, 378.0), "origem em 360x640")
+	assert_eq(r.end, Vector2(268.0, 426.0), "fim em 360x640")
+	assert_eq(r.position.y - 346.0, 32.0, "folga ate o Play")
+	assert_eq(460.0 - r.end.y, 34.0, "folga ate o Last")
+	var play := Rect2(stage.playbutton.offset_left, stage.playbutton.offset_top, 112.0, 52.0)
 	assert_false(r.intersects(play), "sem sobrepor o Play")
-	var last := Rect2(0.0, stage.lastscore.offset_top, 180.0, 17.0)
+	var last := Rect2(0.0, stage.lastscore.offset_top, 360.0, 34.0)
 	assert_false(r.intersects(last), "sem sobrepor o Last")
 	var hint: TouchHint = stage.touch_hint
 	assert_false(r.intersects(hint.rect_bloco(TouchHint.Lado.ESQUERDA)), "sem sobrepor a dica esquerda")
 	assert_false(r.intersects(hint.rect_bloco(TouchHint.Lado.DIREITA)), "sem sobrepor a dica direita")
 	stage.apply_layout(VISIVEL, SAFE_COM_TOPO)
 	var rs: Rect2 = stage.opcoes_botao.rect_botao()
-	assert_eq(rs.position, Vector2(46.0, 209.0), "origem com s_top 20")
-	assert_eq(rs.end, Vector2(134.0, 233.0), "fim com s_top 20")
+	assert_eq(rs.position, Vector2(92.0, 418.0), "origem com s_top 40")
+	assert_eq(rs.end, Vector2(268.0, 466.0), "fim com s_top 40")
 
 
 func test_toque_no_retangulo_do_botao_nao_inicia_a_partida() -> void:

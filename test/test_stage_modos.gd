@@ -1,13 +1,15 @@
 extends GutTest
 
-# f523 T8: botao Modo e tela Modos na Stage real. Valores de layout do handoff (Modo 113-137, Play 147-173), nunca
-# recalculados da implementacao.
+# f523 T8: botao Modo e tela Modos na Stage real. Valores de layout do handoff em 2x (Modo 226-274, Play 294-346),
+# nunca recalculados da implementacao.
 const STAGE_SCENE := "res://scenes/Stage.tscn"
-const VISIVEL := Vector2(180.0, 320.0)
-const SAFE_TOTAL := Rect2(0.0, 0.0, 180.0, 320.0)
-const ALTO := Vector2(180.0, 400.0)
-const SAFE_ALTO := Rect2(0.0, 0.0, 180.0, 400.0)
-const PLAY_CENTRO := Vector2(90.0, 160.0)
+const VISIVEL := Vector2(360.0, 640.0)
+const SAFE_TOTAL := Rect2(0.0, 0.0, 360.0, 640.0)
+const ALTO := Vector2(360.0, 800.0)
+const SAFE_ALTO := Rect2(0.0, 0.0, 360.0, 800.0)
+const PLAY_CENTRO := Vector2(180.0, 320.0)
+# FaixaPlacar do HUD (T4): y 460..530
+const FAIXA_PLACAR := Rect2(0.0, 460.0, 360.0, 70.0)
 
 var _modo_original: StringName = GameModes.ID_CLASSICO
 var _teste_original: bool = false
@@ -131,7 +133,7 @@ func test_c605_play_inicia_apos_fechar_e_toque_no_modo_nao_inicia() -> void:
 	assert_false(stage.modos_screen.esta_aberta(), "OK fechou a tela")
 	assert_false(stage.started, "fechar a tela nao inicia")
 	await _toque_real(true, PLAY_CENTRO)
-	assert_true(stage.started, "toque no Play (y 147-173) inicia a partida depois de fechar")
+	assert_true(stage.started, "toque no Play (y 294-346) inicia a partida depois de fechar")
 
 
 func test_c606_telas_modos_e_opcoes_se_excluem_e_modos_nao_abre_com_started() -> void:
@@ -149,6 +151,28 @@ func test_c606_telas_modos_e_opcoes_se_excluem_e_modos_nao_abre_com_started() ->
 	stage._on_Play_button_down()
 	stage._abrir_modos_do_menu()
 	assert_false(stage.modos_screen.esta_aberta(), "Modos nao abre com a partida iniciada")
+
+
+# C831: "Modo: <nome>" de todos os modos cabe em ModoBotao.LARGURA (fonte 32 medida) e os botoes ficam centrados
+# em x = 180 sem tocar a FaixaPlacar (y 460..530)
+func test_c831_rotulos_de_modo_cabem_no_botao_e_botoes_centrados_sem_sobrepor_a_faixa_placar() -> void:
+	assert_eq(ModoBotao.LARGURA, 224.0, "C831: ModoBotao.LARGURA = 224")
+	for modo in GameModes.lista(true):
+		var texto: String = "> " + ModoBotao.PREFIXO + modo.rotulo
+		var largura := UiHelpers.FONTE.get_string_size(texto, HORIZONTAL_ALIGNMENT_LEFT, -1, ModoBotao.TAMANHO_TEXTO).x
+		assert_lte(largura, ModoBotao.LARGURA, "C831: '%s' (%s px) cabe em 224" % [texto, largura])
+	var modo_botao := ModoBotao.new()
+	add_child_autofree(modo_botao)
+	modo_botao.aplicar_layout(VISIVEL, SAFE_TOTAL)
+	var opcoes := OpcoesBotao.new()
+	add_child_autofree(opcoes)
+	opcoes.aplicar_layout(VISIVEL, SAFE_TOTAL)
+	assert_eq(modo_botao.rect_botao().get_center().x, 180.0, "C831: Modo centrado em x = 180")
+	assert_eq(opcoes.rect_botao().get_center().x, 180.0, "C831: Opcoes centrado em x = 180")
+	assert_eq(modo_botao.rect_botao().get_center().y, 250.0, "C831: Modo com centro visual em y = 250")
+	assert_eq(opcoes.rect_botao().get_center().y, 402.0, "C831: Opcoes com centro visual em y = 402")
+	assert_false(modo_botao.rect_botao().intersects(FAIXA_PLACAR), "C831: Modo nao sobrepoe a FaixaPlacar")
+	assert_false(opcoes.rect_botao().intersects(FAIXA_PLACAR), "C831: Opcoes nao sobrepoe a FaixaPlacar")
 
 
 func test_ui_up_com_foco_no_opcoes_volta_ao_play() -> void:
@@ -175,10 +199,10 @@ func test_c607_ordem_dos_filhos_nao_rouba_o_play_e_layout_repassado_aos_dois() -
 	assert_gt(modos_i, modo_i, "ModosScreen depois do ModoBotao")
 	assert_lt(modos_i, stage.options_screen.get_index(), "ModosScreen antes da tela de Opcoes")
 	assert_lt(modos_i, stage.tutorial_revisao.get_index(), "ModosScreen antes da revisao do tutorial")
-	var play := Rect2(stage.playbutton.offset_left, stage.playbutton.offset_top, 56.0, 26.0)
+	var play := Rect2(stage.playbutton.offset_left, stage.playbutton.offset_top, 112.0, 52.0)
 	assert_false(stage.modo_botao.rect_botao().intersects(play), "botao Modo nao cobre o Play")
 	stage.apply_layout(ALTO, SAFE_ALTO)
-	assert_eq(stage.modo_botao.rect_botao(), Rect2(34.0, 113.0, 112.0, 24.0), "botao Modo com 180x400")
-	assert_eq(stage.modos_screen.rect_ok(), Rect2(34.0, 283.0, 112.0, 32.0), "OK da tela com 180x400 (bloco centrado)")
+	assert_eq(stage.modo_botao.rect_botao(), Rect2(68.0, 226.0, 224.0, 48.0), "botao Modo com 360x800")
+	assert_eq(stage.modos_screen.rect_ok(), Rect2(68.0, 565.0, 224.0, 64.0), "OK da tela com 360x800 (bloco centrado)")
 	await _toque_real(true, PLAY_CENTRO)
 	assert_true(stage.started, "o toque no Play nao e roubado pelo botao Modo")

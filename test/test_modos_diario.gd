@@ -6,12 +6,12 @@ extends GutTest
 # derrota simulada nao escreve em best_score_* (C765). Indicador do seletor e largura do rotulo do botao (C762).
 # Recordes isolados pelo pre-run do GUT; nada toca user:// real.
 const STAGE_SCENE := "res://scenes/Stage.tscn"
-const VISIVEL := Vector2(180.0, 320.0)
-const SAFE := Rect2(0.0, 0.0, 180.0, 320.0)
+const VISIVEL := Vector2(360.0, 640.0)
+const SAFE := Rect2(0.0, 0.0, 360.0, 640.0)
 const SEMENTE := 20261
 const LINHAS_CRIADAS := 6
-const X_QUEDA := 20.0
-const Y_QUEDA := 360.0
+const X_QUEDA := 40.0
+const Y_QUEDA := 720.0
 
 var _stage: Node = null
 var _p: Node = null
@@ -131,9 +131,9 @@ func _cair() -> void:
 	_stage._on_CheckPlayer_body_exited(_p)
 
 
-# C762: indicador do seletor com os modos reais — 5 marcas em release (6 com o teste), a atual (Diario) 8x4 —
-# e o rotulo "Modo: Diario" cabe nos 112 px do botao do menu (mesma medida de largura dos rotulos existentes).
-func test_c762_indicador_5_marcas_e_rotulo_do_botao_diario_cabe_em_112px() -> void:
+# C762: indicador do seletor com os modos reais — 5 marcas em release (6 com o teste), a atual (Diario) 16x8 —
+# e o rotulo "Modo: Diario" cabe nos 224 px do botao do menu (mesma medida de largura dos rotulos existentes).
+func test_c762_indicador_5_marcas_e_rotulo_do_botao_diario_cabe_em_224px() -> void:
 	var tela := ModosScreen.new()
 	add_child_autofree(tela)
 	for incluir_teste: bool in [false, true]:
@@ -145,7 +145,7 @@ func test_c762_indicador_5_marcas_e_rotulo_do_botao_diario_cabe_em_112px() -> vo
 		var marcas := tela.rect_marcas()
 		assert_eq(marcas.size(), 6 if incluir_teste else 5, "C762: marcas = modos da lista (teste=%s)" % incluir_teste)
 		for i in marcas.size():
-			var esperado := Vector2(8.0, 4.0) if i == indice_diario else Vector2(4.0, 4.0)
+			var esperado := Vector2(16.0, 8.0) if i == indice_diario else Vector2(8.0, 8.0)
 			assert_eq(marcas[i].size, esperado, "C762: marca %d (teste=%s)" % [i, incluir_teste])
 		tela.fechar()
 	var botao := ModoBotao.new()
@@ -166,7 +166,7 @@ func test_c762_indicador_5_marcas_e_rotulo_do_botao_diario_cabe_em_112px() -> vo
 		).x
 		assert_true(
 			largura <= ModoBotao.LARGURA,
-			"C762: 'Modo: %s' (%.1f px) cabe nos 112 px (mesmo teste de largura dos rotulos existentes)" % [modo.rotulo, largura]
+			"C762: 'Modo: %s' (%.1f px) cabe nos 224 px (mesmo teste de largura dos rotulos existentes)" % [modo.rotulo, largura]
 		)
 
 

@@ -65,7 +65,7 @@ func test_c454_global_aplica_lenta_respeitando_a_trava() -> void:
 func _nova_frame_lenta(lenta: bool) -> LevelUpFrame:
 	var f := LevelUpFrame.new()
 	add_child_autofree(f)
-	f.aplicar_layout(Vector2(180.0, 320.0), Rect2(Vector2.ZERO, Vector2(180.0, 320.0)))
+	f.aplicar_layout(Vector2(360.0, 640.0), Rect2(Vector2.ZERO, Vector2(360.0, 640.0)))
 	f.lenta = lenta
 	return f
 

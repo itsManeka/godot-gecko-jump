@@ -97,13 +97,13 @@ func test_canais_layout_e_cor_movel_divergem_entre_si() -> void:
 		)
 
 
-# C479: indice por y local: -10 -> 0, -60 -> 1, 40 -> -1, 190 -> -4 (valores do requisito,
+# C479: indice por y local: -20 -> 0, -120 -> 1, 80 -> -1, 380 -> -4 (valores do requisito em 360x640,
 # formula InitialRows.Y_TOPO/ESPACAMENTO; indice negativo valido).
 func test_indice_por_y_local_valores_do_requisito() -> void:
-	assert_eq(RowSeed.indice_do_y(-10.0), 0, "y -10 (topo) deveria ter indice 0")
-	assert_eq(RowSeed.indice_do_y(-60.0), 1, "y -60 (1a linha do scroll) deveria ter indice 1")
-	assert_eq(RowSeed.indice_do_y(40.0), -1, "y 40 (2a linha do .tscn) deveria ter indice -1")
-	assert_eq(RowSeed.indice_do_y(190.0), -4, "y 190 (5a linha do .tscn) deveria ter indice -4")
+	assert_eq(RowSeed.indice_do_y(-20.0), 0, "y -20 (topo) deveria ter indice 0")
+	assert_eq(RowSeed.indice_do_y(-120.0), 1, "y -120 (1a linha do scroll) deveria ter indice 1")
+	assert_eq(RowSeed.indice_do_y(80.0), -1, "y 80 (2a linha do .tscn) deveria ter indice -1")
+	assert_eq(RowSeed.indice_do_y(380.0), -4, "y 380 (5a linha do .tscn) deveria ter indice -4")
 
 
 # Linha k do scroll (k >= 0) nasce em Y_TOPO - ESPACAMENTO * (k + 1) e recebe indice k + 1.
@@ -117,9 +117,9 @@ func test_linhas_do_scroll_recebem_indice_k_mais_1() -> void:
 		)
 
 
-# As 5 linhas do .tscn (y -10, 40, 90, 140, 190) recebem indices 0, -1, -2, -3, -4.
+# As 5 linhas do .tscn (y -20, 80, 180, 280, 380) recebem indices 0, -1, -2, -3, -4.
 func test_linhas_do_tscn_recebem_indices_zero_a_menos_quatro() -> void:
-	var ys := [-10.0, 40.0, 90.0, 140.0, 190.0]
+	var ys := [-20.0, 80.0, 180.0, 280.0, 380.0]
 	var esperados := [0, -1, -2, -3, -4]
 	for i in ys.size():
 		assert_eq(

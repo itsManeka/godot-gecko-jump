@@ -6,16 +6,16 @@ extends GutTest
 # varios frames (sem gravidade/pulo): o y do gecko so muda pelo avanco da camera e pelo que o teste faz.
 
 const STAGE := "res://scenes/Stage.tscn"
-const ALTURA := 320
+const ALTURA := 640
 const PASSO := 1.0 / 60.0
 const EPS := 0.0001
-# excesso(100, 128) do criterio de aceite do 01 (T1): gecko 28 px acima do limite com altura 320
-const EXCESSO_01 := 28.0
-# Excesso de 1 frame de pulo (o pior caso que o pulo mede) e o cenario do repro (y global -35,4, acima do topo)
-const EXCESSO_PULO := 4.0
-const Y_REPRO := -35.4
-# Altura cujo limite (133,2) fica acima do y em float32: unico caso do f531 com residuo positivo
-const ALTURA_COM_RESIDUO := 333
+# excesso(200, 256) (2x do criterio de aceite do 01 em 180x320): gecko 56 px acima do limite com altura 640
+const EXCESSO_01 := 56.0
+# Excesso de 1 frame de pulo (o pior caso que o pulo mede) e o cenario do repro (y global -70,8, acima do topo)
+const EXCESSO_PULO := 8.0
+const Y_REPRO := -70.8
+# Altura cujo limite (266,4) fica acima do y em float32: unico caso do f531 com residuo positivo
+const ALTURA_COM_RESIDUO := 666
 var _sv: SubViewport
 var _stage: Node
 var _scroll: Node
@@ -58,12 +58,12 @@ func _teto_justo(excesso: float) -> int:
 	return geometricos + CameraFollow.DURACAO_FRAMES + 1
 
 
-# Stage real em SubViewport 180x320. Com `com_curva` false o scroll da curva fica desligado (valor exato do excesso);
-# com `com_curva` true vale o scroll do estagio 0 (20 px/s). Player e Stage seguem com physics ligado: a ordem de
+# Stage real em SubViewport 360x640. Com `com_curva` false o scroll da curva fica desligado (valor exato do excesso);
+# com `com_curva` true vale o scroll do estagio 0 (40 px/s). Player e Stage seguem com physics ligado: a ordem de
 # processamento (Player antes da Stage) e parte do que se verifica.
 func _spawn(com_curva: bool = false, altura: int = ALTURA) -> void:
 	_sv = SubViewport.new()
-	_sv.size = Vector2i(180, altura)
+	_sv.size = Vector2i(360, altura)
 	add_child_autofree(_sv)
 	_stage = load(STAGE).instantiate()
 	_sv.add_child(_stage)
@@ -154,7 +154,7 @@ func test_c434_avanco_soma_curva_e_excesso_nunca_menor_que_a_curva() -> void:
 		n += 1
 
 	var delta: float = _scroll.running_platforms.position.y - plataformas_antes
-	assert_almost_eq(delta, curva * n + EXCESSO_01, 0.1, "C434: o avanco e a soma da curva de cada frame com o excesso")
+	assert_almost_eq(delta, curva * n + EXCESSO_01, 0.2, "C434: o avanco e a soma da curva de cada frame com o excesso")
 	assert_gte(delta, curva * n, "C434: o avanco nunca e menor que a curva de dificuldade")
 	assert_almost_eq(_p.global_position.y, _limite(), EPS, "C434: o gecko tambem chega ao limite")
 
@@ -176,18 +176,18 @@ func test_c435_menu_com_gecko_acima_do_limite_nao_move_nada() -> void:
 	assert_almost_eq(_scroll.position_scrolled, scrolled_antes, 0.0001, "C435: no menu position_scrolled nao avanca")
 
 
-# C437: gecko abaixo do limite: o avanco do frame e so a curva (20 px/s no estagio 0), sem excesso
+# C437: gecko abaixo do limite: o avanco do frame e so a curva (40 px/s no estagio 0), sem excesso
 func test_c437_gecko_abaixo_do_limite_avanca_so_a_curva() -> void:
 	await _spawn(true)
 	_stage._on_Play_button_down()
-	_p.global_position.y = _limite() + 30.0
+	_p.global_position.y = _limite() + 60.0
 	_p.velocity.y = 0.0
 	var plataformas_antes: float = _scroll.running_platforms.position.y
 
 	await wait_physics_frames(1)
 
 	var delta: float = _scroll.running_platforms.position.y - plataformas_antes
-	assert_almost_eq(delta, 20.0 * PASSO, 0.05, "C437: abaixo do limite so a curva de 20 px/s move o mundo")
+	assert_almost_eq(delta, 40.0 * PASSO, 0.1, "C437: abaixo do limite so a curva de 40 px/s move o mundo")
 
 
 # Gecko `excesso` px acima do limite numa Stage de `altura` px: converge ao limite dessa altura em <= `max_frames`
@@ -223,10 +223,10 @@ func _parado_no_limite_nao_avanca(altura: int, frames: int) -> void:
 	assert_eq(_scroll.running_platforms.position.y, plataformas_antes, "f531 altura %d: as plataformas nao se movem com o gecko parado no limite" % altura)
 
 
-# f531: so a 333 (limite 133,2) deixa residuo positivo: o float32 arredonda para baixo. 462 (184,8) e 517 (206,8)
-# arredondam para cima (excesso 0); 320 e 400 tem limite exato. Todas entram como guarda.
+# f531: so a 666 (limite 266,4) deixa residuo positivo: o float32 arredonda para baixo. 924 (369,6) e 1034 (413,6)
+# arredondam para cima (excesso 0); 640 e 800 tem limite exato. Todas entram como guarda.
 func test_f531_gecko_parado_no_limite_nao_acumula_residuo_de_float() -> void:
-	for altura in [462, 333, 517, 320, 400]:
+	for altura in [924, 666, 1034, 640, 800]:
 		await _parado_no_limite_nao_avanca(altura, 600)
 		if is_instance_valid(_sv):
 			_sv.queue_free()
@@ -247,35 +247,35 @@ func test_f531_excesso_acima_do_piso_avanca_e_abaixo_do_piso_nao() -> void:
 	assert_gt(_scroll.position_scrolled, scrolled_antes, "f531: excesso acima do piso continua avancando")
 
 
-# C438: altura 320, limite 128
-func test_c438_altura_320_gecko_acima_do_limite_converge_a_128() -> void:
-	await _converge_ao_limite(320, EXCESSO_01, _teto_justo(EXCESSO_01), "C438")
-	assert_almost_eq(_p.global_position.y, 128.0, EPS, "C438: limite da altura 320 e 128")
+# C438: altura 640, limite 256
+func test_c438_altura_640_gecko_acima_do_limite_converge_a_256() -> void:
+	await _converge_ao_limite(640, EXCESSO_01, _teto_justo(EXCESSO_01), "C438")
+	assert_almost_eq(_p.global_position.y, 256.0, EPS, "C438: limite da altura 640 e 256")
 
 
-# C439: altura 400, limite 160
-func test_c439_altura_400_gecko_acima_do_limite_converge_a_160() -> void:
-	await _converge_ao_limite(400, EXCESSO_01, _teto_justo(EXCESSO_01), "C439")
-	assert_almost_eq(_p.global_position.y, 160.0, EPS, "C439: limite da altura 400 e 160")
+# C439: altura 800, limite 320
+func test_c439_altura_800_gecko_acima_do_limite_converge_a_320() -> void:
+	await _converge_ao_limite(800, EXCESSO_01, _teto_justo(EXCESSO_01), "C439")
+	assert_almost_eq(_p.global_position.y, 320.0, EPS, "C439: limite da altura 800 e 320")
 
 
-# C440: altura 462, limite 184.8
-func test_c440_altura_462_gecko_acima_do_limite_converge_a_184_8() -> void:
-	await _converge_ao_limite(462, EXCESSO_01, _teto_justo(EXCESSO_01), "C440")
-	assert_almost_eq(_p.global_position.y, 184.8, EPS, "C440: limite da altura 462 e 184.8")
+# C440: altura 924, limite 369.6
+func test_c440_altura_924_gecko_acima_do_limite_converge_a_369_6() -> void:
+	await _converge_ao_limite(924, EXCESSO_01, _teto_justo(EXCESSO_01), "C440")
+	assert_almost_eq(_p.global_position.y, 369.6, EPS, "C440: limite da altura 924 e 369.6")
 
 
-# C441: excesso de 160 px (> ESPACAMENTO): ao fim do easing as linhas novas nascem sem buraco, a ESPACAMENTO uma da outra.
+# C441: excesso de 320 px (> ESPACAMENTO): ao fim do easing as linhas novas nascem sem buraco, a ESPACAMENTO uma da outra.
 # Player sem fisica: a gravidade de 40 frames tiraria parte do excesso (o teste mede a geracao, nao a queda)
 func test_c441_avanco_grande_cria_linhas_sem_buraco() -> void:
 	await _spawn()
 	_stage._on_Play_button_down()
 	_p.set_physics_process(false)
 	var antes: Array = _scroll.running_platforms.get_children()
-	_p.global_position.y = _limite() - 160.0
+	_p.global_position.y = _limite() - 320.0
 	_p.velocity.y = 0.0
 
-	await _frames_ate_limite(_teto(160.0))
+	await _frames_ate_limite(_teto(320.0))
 	await wait_process_frames(1)
 
 	var ys: Array = []
@@ -283,7 +283,7 @@ func test_c441_avanco_grande_cria_linhas_sem_buraco() -> void:
 		if not antes.has(filho):
 			ys.append(filho.position.y)
 	ys.sort()
-	var esperadas: int = int(floor((160.0 + 0.0001) / InitialRows.ESPACAMENTO))
+	var esperadas: int = int(floor((320.0 + 0.0001) / InitialRows.ESPACAMENTO))
 	assert_eq(ys.size(), esperadas, "C441: uma linha nova por ESPACAMENTO de excesso")
 	for i in range(1, ys.size()):
 		assert_almost_eq(ys[i] - ys[i - 1], InitialRows.ESPACAMENTO, 0.0001, "C441: linhas consecutivas sem buraco")
@@ -357,7 +357,7 @@ func test_c503_gecko_nunca_abaixo_do_topo_no_caso_realista_e_no_do_repro() -> vo
 # Segunda Stage (referencia), sem scroll da curva e com o Player sem fisica; devolve [stage, scroll, player]
 func _stage_referencia() -> Array:
 	var sv := SubViewport.new()
-	sv.size = Vector2i(180, ALTURA)
+	sv.size = Vector2i(360, ALTURA)
 	add_child_autofree(sv)
 	var st: Node = load(STAGE).instantiate()
 	sv.add_child(st)
@@ -390,7 +390,7 @@ func test_c504_linhas_novas_iguais_a_referencia_do_excesso_inteiro() -> void:
 	ref_stage._on_Play_button_down()
 	_p.set_physics_process(false)
 
-	for excesso in [EXCESSO_01, 70.0, 160.0, EXCESSO_PULO]:
+	for excesso in [EXCESSO_01, 140.0, 320.0, EXCESSO_PULO]:
 		_p.global_position.y = _limite() - excesso
 		ref_p.global_position.y = _limite() - excesso
 		# referencia: o comportamento anterior ao easing, com o excesso inteiro num frame so
@@ -416,7 +416,7 @@ func test_c504_linhas_novas_iguais_a_referencia_do_excesso_inteiro() -> void:
 # C505: tree.paused no meio do easing congela as tres grandezas; ao despausar termina o restante e fecha no limite
 func test_c505_pausa_no_meio_do_easing_congela_e_ao_despausar_fecha_no_limite() -> void:
 	await _spawn()
-	await _iniciar_com_gecko_acima(40.0)
+	await _iniciar_com_gecko_acima(80.0)
 	await _frame()
 	var y_pausa: float = _p.global_position.y
 	var plataformas_pausa: float = _scroll.running_platforms.position.y
@@ -432,7 +432,7 @@ func test_c505_pausa_no_meio_do_easing_congela_e_ao_despausar_fecha_no_limite() 
 	assert_eq(_scroll.position_scrolled, scrolled_pausa, "C505: position_scrolled nao avanca pausado")
 
 	get_tree().paused = false
-	await _frames_ate_limite(_teto(40.0))
+	await _frames_ate_limite(_teto(80.0))
 
 	assert_almost_eq(_p.global_position.y, _limite(), EPS, "C505: ao despausar o restante termina no limite")
 
@@ -487,23 +487,23 @@ func test_c508_curva_soma_por_cima_da_parcela_no_frame() -> void:
 	await _frame()
 
 	var delta: float = _scroll.running_platforms.position.y - plataformas_antes
-	assert_almost_eq(delta, curva + parcela, 0.05, "C508: o avanco do frame e curva + parcela")
+	assert_almost_eq(delta, curva + parcela, 0.1,"C508: o avanco do frame e curva + parcela")
 	assert_gte(delta, curva, "C508: o avanco nunca e menor que a curva")
 
 
-# C509: altura 320 (limite 128), excesso de 4 px converge em <= DURACAO_FRAMES
-func test_c509_altura_320_excesso_de_4_px_converge_ao_limite_em_duracao_frames() -> void:
-	await _converge_ao_limite(320, EXCESSO_PULO, CameraFollow.DURACAO_FRAMES, "C509")
-	assert_almost_eq(_p.global_position.y, CameraFollow.limite_y(320.0), EPS, "C509: limite da altura 320")
+# C509: altura 640 (limite 256), excesso de 8 px converge em <= DURACAO_FRAMES
+func test_c509_altura_640_excesso_de_8_px_converge_ao_limite_em_duracao_frames() -> void:
+	await _converge_ao_limite(640, EXCESSO_PULO, CameraFollow.DURACAO_FRAMES, "C509")
+	assert_almost_eq(_p.global_position.y, CameraFollow.limite_y(640.0), EPS, "C509: limite da altura 640")
 
 
-# C510: altura 400 (limite 160), idem
-func test_c510_altura_400_excesso_de_4_px_converge_ao_limite_em_duracao_frames() -> void:
-	await _converge_ao_limite(400, EXCESSO_PULO, CameraFollow.DURACAO_FRAMES, "C510")
-	assert_almost_eq(_p.global_position.y, CameraFollow.limite_y(400.0), EPS, "C510: limite da altura 400")
+# C510: altura 800 (limite 320), idem
+func test_c510_altura_800_excesso_de_8_px_converge_ao_limite_em_duracao_frames() -> void:
+	await _converge_ao_limite(800, EXCESSO_PULO, CameraFollow.DURACAO_FRAMES, "C510")
+	assert_almost_eq(_p.global_position.y, CameraFollow.limite_y(800.0), EPS, "C510: limite da altura 800")
 
 
-# C511: altura 462 (limite 184,8), idem
-func test_c511_altura_462_excesso_de_4_px_converge_ao_limite_em_duracao_frames() -> void:
-	await _converge_ao_limite(462, EXCESSO_PULO, CameraFollow.DURACAO_FRAMES, "C511")
-	assert_almost_eq(_p.global_position.y, CameraFollow.limite_y(462.0), EPS, "C511: limite da altura 462")
+# C511: altura 924 (limite 369,6), idem
+func test_c511_altura_924_excesso_de_8_px_converge_ao_limite_em_duracao_frames() -> void:
+	await _converge_ao_limite(924, EXCESSO_PULO, CameraFollow.DURACAO_FRAMES, "C511")
+	assert_almost_eq(_p.global_position.y, CameraFollow.limite_y(924.0), EPS, "C511: limite da altura 924")

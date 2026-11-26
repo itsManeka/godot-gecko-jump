@@ -2,8 +2,8 @@ extends GutTest
 
 # Overlay de pausa (PauseOverlay): layout do handoff 9.2 (valores literais da tabela, nao da formula do codigo),
 # alvos de toque, foco por teclado/joypad, toque (soltar dentro aciona, fundo consumido) e a acao `pause`.
-const ALTA := Vector2(180.0, 400.0)
-const PEQUENA := Vector2(180.0, 320.0)
+const ALTA := Vector2(360.0, 800.0)
+const PEQUENA := Vector2(360.0, 640.0)
 
 var _retomou: int = 0
 var _abriu_opcoes: int = 0
@@ -52,22 +52,35 @@ func _toque(pos: Vector2, pressed: bool, index: int = 0) -> InputEventScreenTouc
 
 func test_c181_retangulos_batem_com_a_tabela_do_handoff_9_2() -> void:
 	var o := _novo(PEQUENA)
-	assert_true(o.rect_continuar() == Rect2(34, 147, 112, 32), "180x320: Continuar x[34,146] y[147,179]")
-	assert_true(o.rect_opcoes() == Rect2(34, 187, 112, 32), "180x320: Opcoes x[34,146] y[187,219]")
+	assert_true(o.rect_continuar() == Rect2(68, 294, 224, 64), "360x640: Continuar x[68,292] y[294,358]")
+	assert_true(o.rect_opcoes() == Rect2(68, 374, 224, 64), "360x640: Opcoes x[68,292] y[374,438]")
 	var alta := _novo(ALTA)
-	assert_true(alta.rect_continuar() == Rect2(34, 187, 112, 32), "180x400: Continuar x[34,146] y[187,219]")
-	assert_true(alta.rect_opcoes() == Rect2(34, 227, 112, 32), "180x400: Opcoes x[34,146] y[227,259]")
-	var entalhe := _novo(PEQUENA, Rect2(0, 20, 180, 294))
-	assert_true(entalhe.rect_continuar() == Rect2(34, 154, 112, 32), "s_top 20 / s_bottom 6 (y0 = 108): Continuar y[154,186]")
-	assert_true(entalhe.rect_opcoes() == Rect2(34, 194, 112, 32), "s_top 20 / s_bottom 6 (y0 = 108): Opcoes y[194,226]")
+	assert_true(alta.rect_continuar() == Rect2(68, 374, 224, 64), "360x800: Continuar x[68,292] y[374,438]")
+	assert_true(alta.rect_opcoes() == Rect2(68, 454, 224, 64), "360x800: Opcoes x[68,292] y[454,518]")
+	var entalhe := _novo(PEQUENA, Rect2(0, 40, 360, 588))
+	assert_true(entalhe.rect_continuar() == Rect2(68, 308, 224, 64), "s_top 40 / s_bottom 12 (y0 = 216): Continuar y[308,372]")
+	assert_true(entalhe.rect_opcoes() == Rect2(68, 388, 224, 64), "s_top 40 / s_bottom 12 (y0 = 216): Opcoes y[388,452]")
 
 
-func test_c182_alvos_de_24_px_e_8_px_entre_botoes() -> void:
+# C832: PauseOverlay (bloco de 236 px sem Sair) cabe em 640 e na safe area
+func test_c832_bloco_de_236_cabe_em_640_e_na_safe_area() -> void:
+	var tela := Rect2(0.0, 0.0, 360.0, 640.0)
+	var o := _novo(PEQUENA)
+	assert_true(tela.encloses(o.rect_continuar()), "Continuar dentro de 360x640")
+	assert_true(tela.encloses(o.rect_opcoes()), "Opcoes dentro de 360x640")
+	var safe := Rect2(0, 40, 360, 588)
+	var entalhe := _novo(PEQUENA, safe)
+	assert_true(safe.encloses(entalhe.rect_continuar()), "Continuar dentro da safe area")
+	assert_true(safe.encloses(entalhe.rect_opcoes()), "Opcoes dentro da safe area")
+	assert_eq(entalhe.rect_opcoes().end.y - (entalhe.rect_continuar().position.y - 92.0), 236.0, "altura do bloco sem Sair = 236")
+
+
+func test_c182_alvos_de_48_px_e_16_px_entre_botoes() -> void:
 	for tamanho in [PEQUENA, ALTA]:
 		var o := _novo(tamanho)
-		assert_gte(o.rect_continuar().size.y, 24.0, "Continuar com altura >= 24")
-		assert_gte(o.rect_opcoes().size.y, 24.0, "Opcoes com altura >= 24")
-		assert_true(o.rect_opcoes().position.y - o.rect_continuar().end.y == 8.0, "8 px entre Continuar e Opcoes")
+		assert_gte(o.rect_continuar().size.y, 48.0, "Continuar com altura >= 48")
+		assert_gte(o.rect_opcoes().size.y, 48.0, "Opcoes com altura >= 48")
+		assert_true(o.rect_opcoes().position.y - o.rect_continuar().end.y == 16.0, "16 px entre Continuar e Opcoes")
 
 
 func test_c183_foco_inicial_circula_e_accept_aciona_o_focado() -> void:
@@ -119,18 +132,19 @@ func test_c185_acao_pause_com_overlay_aberto_emite_retomar() -> void:
 	assert_eq(_retomou, 1, "pause com overlay fechado nao emite retomar")
 
 
-# f527 T6 (D5): com Sair o bloco cresce de 118 para 158 px; o terceiro botao segue o estilo 112x32 com 8 px de
-# espaco, centrado igual nas telas do handoff 9.2 (valores literais, nao da formula do codigo).
+# f527 T6 (D5): com Sair o bloco cresce de 236 para 316 px; o terceiro botao segue o estilo 224x64 com 16 px de
+# espaco, centrado igual nas telas 2x do handoff 9.2 (valores literais, nao da formula do codigo).
 func test_f527_t6_layout_do_zen_tem_sair_112x32_no_bloco_de_158() -> void:
 	var o := _novo_zen(PEQUENA)
-	assert_eq(o.rect_sair(), Rect2(34, 207, 112, 32), "180x320: Sair x[34,146] y[207,239]")
-	assert_eq(o.rect_sair().position.y - o.rect_opcoes().end.y, 8.0, "8 px entre Opcoes e Sair")
-	assert_eq(o.rect_sair().size, o.rect_opcoes().size, "Sair no mesmo tamanho 112x32 dos outros botoes")
+	assert_eq(o.rect_sair(), Rect2(68, 414, 224, 64), "360x640: Sair x[68,292] y[414,478]")
+	assert_eq(o.rect_sair().position.y - o.rect_opcoes().end.y, 16.0, "16 px entre Opcoes e Sair")
+	assert_eq(o.rect_sair().size, o.rect_opcoes().size, "Sair no mesmo tamanho 224x64 dos outros botoes")
 	var alta := _novo_zen(ALTA)
-	assert_eq(alta.rect_sair(), Rect2(34, 247, 112, 32), "180x400: Sair x[34,146] y[247,279]")
-	var entalhe := _novo_zen(PEQUENA, Rect2(0, 20, 180, 294))
-	assert_eq(entalhe.rect_sair(), Rect2(34, 214, 112, 32), "s_top 20 / s_bottom 6 (y0 = 88): Sair y[214,246]")
-	assert_lt(entalhe.rect_sair().end.y, 314.0, "Sair dentro da safe area")
+	assert_eq(alta.rect_sair(), Rect2(68, 494, 224, 64), "360x800: Sair x[68,292] y[494,558]")
+	var entalhe := _novo_zen(PEQUENA, Rect2(0, 40, 360, 588))
+	assert_eq(entalhe.rect_sair(), Rect2(68, 428, 224, 64), "s_top 40 / s_bottom 12 (y0 = 176): Sair y[428,492]")
+	assert_lt(entalhe.rect_sair().end.y, 628.0, "Sair dentro da safe area")
+	assert_eq(entalhe.rect_sair().end.y - 176.0, 316.0, "bloco com Sair = 316")
 
 
 # C736 [f527 T6]: teclado/gamepad percorre os 3 botoes na ordem Continuar, Opcoes, Sair (depois wrap de volta ao

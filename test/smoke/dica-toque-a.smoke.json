@@ -11,6 +11,6 @@
     { "expect": { "state": "playing" }, "timeout_ms": 3000 },
     { "drag": [300, 1000, 460, 1000, 150] },
     { "wait": 200 },
-    { "expect": { "player.x": { "gt": 100 }, "state": "playing" }, "timeout_ms": 3000 }
+    { "expect": { "player.x": { "gt": 200 }, "state": "playing" }, "timeout_ms": 3000 }
   ]
 }

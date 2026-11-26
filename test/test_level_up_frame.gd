@@ -2,7 +2,7 @@ extends GutTest
 
 # Moldura de aviso de subida de estagio (LevelUpFrame): N picos de alpha, fim invisivel, interrupcao, reinicio,
 # sem entrada nem texto, safe area injetada e cor branca fora da paleta do jogo.
-const VISIVEL := Vector2(180.0, 320.0)
+const VISIVEL := Vector2(360.0, 640.0)
 const LIMIAR := 0.5
 const TETO_S := 3.0
 const PASSO_S := 0.01
@@ -147,7 +147,7 @@ func test_c347_nao_filtra_mouse_e_nao_tem_texto() -> void:
 
 func test_c348_moldura_respeita_a_safe_area_injetada() -> void:
 	var f := _nova()
-	var safe := Rect2(6.0, 24.0, 160.0, 270.0)
+	var safe := Rect2(12.0, 48.0, 320.0, 540.0)
 	f.aplicar_layout(VISIVEL, safe)
 	assert_true(f.rect_moldura() == safe, "a moldura ocupa a safe injetada, nao o visible_size")
 	assert_false(f.rect_moldura() == Rect2(Vector2.ZERO, VISIVEL), "nao e o retangulo todo")
@@ -203,15 +203,15 @@ func test_fixa_pulsar_zero_nao_acende() -> void:
 	assert_false(f.pulsando(), "n=0 nao pulsa")
 
 
-# Forma da vinheta (f490 T1, D1 = A): alpha de pico 0,5 na borda da safe area, decaindo ate 0 a 20 px para dentro, 0
+# Forma da vinheta (f490 T1, D1 = A): alpha de pico 0,5 na borda da safe area, decaindo ate 0 a 40 px para dentro, 0
 # fora da safe area. Valores esperados vem do spec (D2), nao da implementacao.
 
 func test_c442_miolo_da_safe_e_ponto_fora_dela_nao_desenham() -> void:
 	var f := _nova()
 	var safe := f.rect_moldura()
 	assert_eq(f.intensidade_em(safe.get_center()), 0.0, "centro do miolo transparente")
-	assert_eq(f.intensidade_em(safe.position + Vector2(60.0, 60.0)), 0.0, "miolo longe das bordas segue 0")
-	f.aplicar_layout(VISIVEL, Rect2(6.0, 24.0, 160.0, 270.0))
+	assert_eq(f.intensidade_em(safe.position + Vector2(120.0, 120.0)), 0.0, "miolo longe das bordas segue 0")
+	f.aplicar_layout(VISIVEL, Rect2(12.0, 48.0, 320.0, 540.0))
 	var deslocada := f.rect_moldura()
 	assert_eq(f.intensidade_em(deslocada.get_center()), 0.0, "centro da safe deslocada transparente")
 	assert_eq(f.intensidade_em(Vector2(0.0, deslocada.get_center().y)), 0.0, "ponto fora da safe injetada nao desenha")
@@ -224,18 +224,19 @@ func test_c443_borda_externa_esquerda_tem_alpha_de_pico() -> void:
 	assert_eq(f.intensidade_em(Vector2(safe.position.x, safe.get_center().y)), 0.5, "borda externa esquerda = ALPHA_PICO")
 
 
-func test_c444_intensidade_decresce_para_dentro_e_zera_a_20_px() -> void:
+func test_c444_intensidade_decresce_para_dentro_e_zera_a_40_px() -> void:
 	var f := _nova()
 	var safe := f.rect_moldura()
 	var y := safe.get_center().y
 	var anterior := INF
-	for d in [0.0, 5.0, 10.0, 15.0]:
+	assert_eq(LevelUpFrame.PROFUNDIDADE, 40.0, "PROFUNDIDADE = 40 (2x)")
+	for d in [0.0, 10.0, 20.0, 30.0]:
 		var v := f.intensidade_em(Vector2(safe.position.x + d, y))
-		assert_almost_eq(v, 0.5 * (1.0 - d / 20.0), 0.0001, "amostra a %s px segue o gradiente do spec" % d)
+		assert_almost_eq(v, 0.5 * (1.0 - d / 40.0), 0.0001, "amostra a %s px segue o gradiente do spec" % d)
 		assert_lte(v, anterior, "amostra a %s px nao cresce para dentro" % d)
 		anterior = v
-	assert_eq(f.intensidade_em(Vector2(safe.position.x + 20.0, y)), 0.0, "zera a 20 px (PROFUNDIDADE)")
-	assert_eq(f.intensidade_em(Vector2(safe.position.x + 25.0, y)), 0.0, "segue 0 alem da PROFUNDIDADE")
+	assert_eq(f.intensidade_em(Vector2(safe.position.x + 40.0, y)), 0.0, "zera a 40 px (PROFUNDIDADE)")
+	assert_eq(f.intensidade_em(Vector2(safe.position.x + 50.0, y)), 0.0, "segue 0 alem da PROFUNDIDADE")
 
 
 func test_c445_borda_esquerda_acende_a_2_px_dentro() -> void:
@@ -264,7 +265,7 @@ func test_c448_borda_de_baixo_acende_a_2_px_dentro() -> void:
 
 func test_c449_forma_acompanha_a_safe_area_deslocada() -> void:
 	var f := _nova()
-	f.aplicar_layout(VISIVEL, Rect2(6.0, 24.0, 160.0, 270.0))
+	f.aplicar_layout(VISIVEL, Rect2(12.0, 48.0, 320.0, 540.0))
 	var safe := f.rect_moldura()
 	assert_eq(f.intensidade_em(Vector2(safe.position.x, safe.get_center().y)), 0.5, "borda externa da safe deslocada = ALPHA_PICO")
 	assert_eq(f.intensidade_em(Vector2(0.0, safe.get_center().y)), 0.0, "x = 0 (borda se a safe fosse a origem) nao acende")

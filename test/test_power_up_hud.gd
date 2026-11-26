@@ -83,15 +83,15 @@ func test_segundos_teto_do_restante_e_barra_proporcional_encolhe_pela_direita() 
 	assert_eq(hud.texto_segundos(), "4", "4,0 s mostra 4 (inteiro exato nao sobe)")
 	_estado()._restante = DURACAO / 2.0
 	hud.atualizar()
-	assert_almost_eq(hud.rect_barra_cheia().size.x, 20.0, 0.001, "metade do tempo = 20 px de 40")
-	assert_eq(hud.rect_barra_cheia().position.x, 22.0, "barra comeca em x 22")
+	assert_almost_eq(hud.rect_barra_cheia().size.x, 40.0, 0.001, "metade do tempo = 40 px de 80")
+	assert_eq(hud.rect_barra_cheia().position.x, 44.0, "barra comeca em x 44")
 	var direita_metade: float = hud.rect_barra_cheia().end.x
 	_estado()._restante = DURACAO / 4.0
 	hud.atualizar()
-	assert_almost_eq(hud.rect_barra_cheia().size.x, 10.0, 0.001, "um quarto do tempo = 10 px de 40")
-	assert_eq(hud.rect_barra_cheia().position.x, 22.0, "x esquerdo fixo: encolhe pela direita")
+	assert_almost_eq(hud.rect_barra_cheia().size.x, 20.0, 0.001, "um quarto do tempo = 20 px de 80")
+	assert_eq(hud.rect_barra_cheia().position.x, 44.0, "x esquerdo fixo: encolhe pela direita")
 	assert_lt(hud.rect_barra_cheia().end.x, direita_metade, "a borda direita recua com o tempo")
-	assert_eq(hud.rect_barra().size, Vector2(40.0, 4.0), "moldura da barra segue 40x4")
+	assert_eq(hud.rect_barra().size, Vector2(80.0, 8.0), "area da barra segue 80x8")
 
 
 # C559: ao expirar a faixa some por inteiro; sem carga o slot da carga e ausente, com carga o "+" aparece
@@ -117,36 +117,62 @@ func test_expirar_oculta_a_faixa_e_carga_so_aparece_com_carga() -> void:
 	_estado().coletar(FakeCarga.new())
 	hud.atualizar()
 	assert_true(hud.carga_visivel(), "com carga o '+' aparece")
-	assert_eq(hud.rect_carga(), Rect2(90.0, 30.0, 16.0, 16.0), "slot da carga em x 90-106")
+	assert_eq(hud.rect_carga(), Rect2(180.0, 60.0, 32.0, 32.0), "slot da carga em x 180-212")
 	assert_false(hud.icone_visivel(), "a carga nao acende o icone do temporizado")
 	_estado().consumir_carga()
 	hud.atualizar()
 	assert_false(hud.carga_visivel(), "carga gasta: slot some")
 
 
-# C560: retangulos iguais em 180x320 e 180x400 (y0 = s_top + 30) e reposicionados por apply_layout
-func test_retangulos_iguais_em_320_e_400_e_seguem_o_topo_da_safe_area() -> void:
+# C560: retangulos iguais em 360x640 e 360x800 (y0 = s_top + 60) e reposicionados por apply_layout
+func test_retangulos_iguais_em_640_e_800_e_seguem_o_topo_da_safe_area() -> void:
 	_stage = await _novo_stage()
 	var hud := _hud()
-	_stage.call("apply_layout", Vector2(180.0, 320.0), Rect2(0.0, 0.0, 180.0, 320.0))
-	var em_320: Array[Rect2] = [
+	_stage.call("apply_layout", Vector2(360.0, 640.0), Rect2(0.0, 0.0, 360.0, 640.0))
+	var em_640: Array[Rect2] = [
 		hud.rect_faixa(), hud.rect_icone(), hud.rect_barra(), hud.rect_segundos(), hud.rect_carga()
 	]
-	_stage.call("apply_layout", Vector2(180.0, 400.0), Rect2(0.0, 0.0, 180.0, 400.0))
-	var em_400: Array[Rect2] = [
+	_stage.call("apply_layout", Vector2(360.0, 800.0), Rect2(0.0, 0.0, 360.0, 800.0))
+	var em_800: Array[Rect2] = [
 		hud.rect_faixa(), hud.rect_icone(), hud.rect_barra(), hud.rect_segundos(), hud.rect_carga()
 	]
-	assert_eq(em_400, em_320, "mesma medida em 180x320 e 180x400")
-	assert_eq(em_320[0], Rect2(0.0, 30.0, 180.0, 16.0), "faixa x 0-180, y 30-46")
-	assert_eq(em_320[1], Rect2(2.0, 30.0, 16.0, 16.0), "icone x 2-18")
-	assert_eq(em_320[2], Rect2(22.0, 36.0, 40.0, 4.0), "barra x 22-62, y 36-40")
-	assert_eq(em_320[3], Rect2(66.0, 30.0, 16.0, 16.0), "segundos x 66-82")
-	assert_eq(em_320[4], Rect2(90.0, 30.0, 16.0, 16.0), "carga x 90-106")
-	# safe area com topo em 24: a faixa desce junto (y0 = s_top + 30)
-	_stage.call("apply_layout", Vector2(180.0, 400.0), Rect2(0.0, 24.0, 180.0, 376.0))
-	assert_eq(hud.rect_faixa().position.y, 54.0, "y0 = s_top + 30")
-	assert_eq(hud.rect_icone().position.y, 54.0, "icone acompanha a safe area")
-	assert_eq(hud.rect_barra().position.y, 60.0, "barra acompanha a safe area")
+	assert_eq(em_800, em_640, "mesma medida em 360x640 e 360x800")
+	assert_eq(em_640[0], Rect2(0.0, 60.0, 360.0, 32.0), "faixa x 0-360, y 60-92")
+	assert_eq(em_640[1], Rect2(4.0, 60.0, 32.0, 32.0), "icone x 4-36")
+	assert_eq(em_640[2], Rect2(44.0, 72.0, 80.0, 8.0), "barra x 44-124, y 72-80")
+	assert_eq(em_640[3], Rect2(132.0, 60.0, 32.0, 32.0), "segundos x 132-164")
+	assert_eq(em_640[4], Rect2(180.0, 60.0, 32.0, 32.0), "carga x 180-212")
+	# safe area com topo em 48: a faixa desce junto (y0 = s_top + 60)
+	_stage.call("apply_layout", Vector2(360.0, 800.0), Rect2(0.0, 48.0, 360.0, 752.0))
+	assert_eq(hud.rect_faixa().position.y, 108.0, "y0 = s_top + 60")
+	assert_eq(hud.rect_icone().position.y, 108.0, "icone acompanha a safe area")
+	assert_eq(hud.rect_barra().position.y, 120.0, "barra acompanha a safe area")
+
+
+# C828: moldura da barra de 2 px por fora dos 80x8; segundos e relogio nao passam de x=360 na fonte 32; desenhos em 32x32
+func test_c828_moldura_relogio_e_desenhos_contidos_em_2x() -> void:
+	_stage = await _novo_stage()
+	var hud := _hud()
+	_stage.call("apply_layout", Vector2(360.0, 640.0), Rect2(0.0, 0.0, 360.0, 640.0))
+	var barra: Control = hud._barra
+	assert_eq(barra.size, Vector2(84.0, 12.0), "moldura de 2 px por fora de 80x8")
+	assert_eq(barra.position, Vector2(42.0, 70.0), "moldura comeca 2 px antes da barra")
+	assert_lte(hud.rect_segundos().end.x, 360.0, "segundos dentro de x=360")
+	assert_lte(hud.rect_relogio().end.x, 360.0, "relogio dentro de x=360")
+	var fonte: Font = UiHelpers.FONTE
+	var largura_relogio: float = fonte.get_string_size("0:59", HORIZONTAL_ALIGNMENT_LEFT, -1, UiHelpers.TAMANHO_TEXTO).x
+	assert_lte(largura_relogio, hud.rect_relogio().size.x, "0:59 cabe na caixa do relogio na fonte 32")
+	assert_lte(hud.rect_relogio().position.x + largura_relogio, 360.0, "0:59 nao passa de x=360")
+	assert_eq(PowerUpDesenho.TAM, 32.0, "TAM do desenho = 32")
+	assert_eq(PowerUpIcone.TAMANHO_PX, 32, "TAMANHO_PX do icone = 32")
+	var caixa := Rect2(0.0, 0.0, 32.0, 32.0)
+	for nome in [&"camaleao", &"desacelera", &"segunda_chance", &"fake_sem_forma"]:
+		for c: Dictionary in PowerUpDesenho.comandos(nome):
+			if c["forma"] == &"poly":
+				for p: Vector2 in c["pontos"]:
+					assert_true(caixa.has_point(p) or p.x == 32.0 or p.y == 32.0, "ponto %s de %s dentro de 32x32" % [p, nome])
+			else:
+				assert_true(caixa.encloses(c["rect"]), "rect %s de %s dentro de 32x32" % [c["rect"], nome])
 
 
 # C561: card do tutorial aberto oculta a faixa inteira (mesmo com fake ativo) e ao fechar ela volta
@@ -211,7 +237,7 @@ func test_forma_do_icone_distinta_por_tipo_e_desenho_so_em_branco_e_preto() -> v
 		assert_false(cores_plataforma.has(cor), "nunca a cor de uma plataforma: %s" % cor)
 
 
-# C617 [mutacao]: comandos_barra() so muda quando a largura inteira (ceil, 0..40 px) muda; restantes com a mesma
+# C617 [mutacao]: comandos_barra() so muda quando a largura inteira (ceil, 0..80 px) muda; restantes com a mesma
 # largura inteira reusam o mesmo array (sem reconstruir a cada frame)
 func test_comandos_barra_so_reconstroi_quando_a_largura_inteira_muda() -> void:
 	_stage = await _novo_stage()
@@ -220,26 +246,26 @@ func test_comandos_barra_so_reconstroi_quando_a_largura_inteira_muda() -> void:
 	_estado()._restante = 5.1
 	hud.atualizar()
 	var primeiro: Array = hud.comandos_barra()
-	assert_almost_eq(hud.rect_barra_cheia().size.x, 20.4, 0.001, "fixture: 5,1 s = 20,4 px (ceil 21)")
+	assert_almost_eq(hud.rect_barra_cheia().size.x, 40.8, 0.001, "fixture: 5,1 s = 40,8 px (ceil 41)")
+	_estado()._restante = 5.12
+	hud.atualizar()
+	assert_true(is_same(primeiro, hud.comandos_barra()), "mesma largura inteira (41 px): nao reconstroi")
 	_estado()._restante = 5.2
 	hud.atualizar()
-	assert_true(is_same(primeiro, hud.comandos_barra()), "mesma largura inteira (21 px): nao reconstroi")
-	_estado()._restante = 5.3
-	hud.atualizar()
-	assert_false(is_same(primeiro, hud.comandos_barra()), "largura inteira mudou (22 px): reconstroi")
-	assert_eq(hud.comandos_barra()[1]["rect"].size.x, 22.0, "a parte branca usa a largura inteira nova")
+	assert_false(is_same(primeiro, hud.comandos_barra()), "largura inteira mudou (42 px): reconstroi")
+	assert_eq(hud.comandos_barra()[1]["rect"].size.x, 42.0, "a parte branca usa a largura inteira nova")
 
 
-# C618: rect_barra_cheia() esvazia pela direita; extremos: restante cheio -> 40 px, restante 0 -> 0 px
+# C618: rect_barra_cheia() esvazia pela direita; extremos: restante cheio -> 80 px, restante 0 -> 0 px
 func test_rect_barra_cheia_esvazia_pela_direita_nos_extremos() -> void:
 	_stage = await _novo_stage()
 	var hud := _hud()
 	_estado().coletar(FakeA.new())
 	_estado()._restante = DURACAO
 	hud.atualizar()
-	assert_eq(hud.rect_barra_cheia().size.x, 40.0, "restante cheio: 40 px")
-	assert_eq(hud.rect_barra_cheia().position.x, 22.0, "restante cheio: x esquerdo em 22")
+	assert_eq(hud.rect_barra_cheia().size.x, 80.0, "restante cheio: 80 px")
+	assert_eq(hud.rect_barra_cheia().position.x, 44.0, "restante cheio: x esquerdo em 44")
 	_estado()._restante = 0.0
 	hud.atualizar()
 	assert_eq(hud.rect_barra_cheia().size.x, 0.0, "restante 0: 0 px")
-	assert_eq(hud.rect_barra_cheia().position.x, 22.0, "restante 0: x esquerdo fixo em 22 (esvazia pela direita)")
+	assert_eq(hud.rect_barra_cheia().position.x, 44.0, "restante 0: x esquerdo fixo em 44 (esvazia pela direita)")

@@ -57,27 +57,29 @@ animations = [ {
 } ]
 
 [sub_resource type="RectangleShape2D" id=8]
-size = Vector2( 10.27544, 28.5186 )
+size = Vector2( 20.55088, 57.0372 )
 
 [sub_resource type="RectangleShape2D" id=9]
-size = Vector2( 9.96012, 4.38558 )
+size = Vector2( 19.92024, 8.77116 )
 
 [node name="Player" type="CharacterBody2D"]
 collision_mask = 2
 script = ExtResource( 2 )
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2( 2, 2 )
 sprite_frames = SubResource( 7 )
 animation = "idle"
 playing = true
 
 [node name="Ghost" type="AnimatedSprite2D" parent="."]
 visible = false
+scale = Vector2( 2, 2 )
 sprite_frames = SubResource( 7 )
 animation = "idle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2( 0.420929, -0.561234 )
+position = Vector2( 0.841858, -1.122468 )
 rotation = 3.14159
 shape = SubResource( 8 )
 one_way_collision = true
@@ -90,7 +92,7 @@ collision_layer = 0
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="DetectorPlataforma"]
-position = Vector2( 0.26004, 11.8436 )
+position = Vector2( 0.52008, 23.6872 )
 shape = SubResource( 9 )
 
 [node name="JumpAudio" type="AudioStreamPlayer" parent="."]

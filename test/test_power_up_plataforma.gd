@@ -13,21 +13,22 @@ const TIPO_B: StringName = &"outro"
 
 # Sequencia literal (golden) com a SEMENTE e o estado de _estado(), sem o sorteio de power-up. Regenerada quando a
 # mistura da seed em RowSeed passou a ser aritmetica int64 propria (estavel entre plataformas): mesma seed, outro layout.
+# f565 T7: regenerado pela producao 360x640 (estaticas em 10/180/350, spawns 420 e -60, speed 120 do estagio 0).
 # Uma string por linha: tipo|speed|x:cor:mecanicas por plataforma.
 const LAYOUT_HEAD: Array[String] = [
-	"1|60.00|131.0:2:,52.0:3:,-27.0:3:,210.0:2:",
-	"1|60.00|131.0:2:,52.0:1:,-27.0:0:,210.0:2:",
-	"0|60.00|5.0:1:,90.0:2:,175.0:0:",
-	"2|-60.00|49.0:2:,128.0:3:,207.0:1:,-30.0:2:",
-	"0|60.00|5.0:0:,90.0:1:,175.0:0:",
-	"2|-60.00|49.0:2:,128.0:3:,207.0:1:,-30.0:2:",
-	"1|60.00|131.0:2:,52.0:0:,-27.0:0:,210.0:2:",
-	"2|-83.75|56.5:2:PlatformSineMotion,143.1:3:PlatformSineMotion,-30.0:0:PlatformColorCycle+PlatformSineMotion",
-	"0|80.00|5.0:2:PlatformColorCycle,90.0:0:PlatformColorCycle,175.0:0:",
-	"0|80.00|5.0:3:,90.0:2:,175.0:3:PlatformColorCycle",
-	"0|80.00|5.0:1:,90.0:1:PlatformColorCycle,175.0:1:",
-	"2|-81.68|55.8:2:PlatformColorCycle+PlatformSineMotion,141.5:3:PlatformColorCycle,-30.0:0:PlatformSineMotion",
-	"0|80.00|5.0:1:PlatformBlink,90.0:3:PlatformColorCycle,175.0:2:PlatformColorCycle",
+	"1|120.00|262.0:2:,104.0:3:,-54.0:3:,420.0:2:",
+	"1|120.00|262.0:2:,104.0:1:,-54.0:0:,420.0:2:",
+	"0|120.00|10.0:1:,180.0:2:,350.0:0:",
+	"2|-120.00|98.0:2:,256.0:3:,414.0:1:,-60.0:2:",
+	"0|120.00|10.0:0:,180.0:1:,350.0:0:",
+	"2|-120.00|98.0:2:,256.0:3:,414.0:1:,-60.0:2:",
+	"1|120.00|262.0:2:,104.0:0:,-54.0:0:,420.0:2:",
+	"2|-83.75|86.6:2:PlatformSineMotion,233.1:3:PlatformSineMotion,379.7:0:PlatformColorCycle+PlatformSineMotion,-60.0:2:PlatformColorCycle",
+	"0|80.00|10.0:2:PlatformColorCycle,180.0:0:PlatformColorCycle,350.0:0:",
+	"0|80.00|10.0:3:,180.0:2:,350.0:3:PlatformColorCycle",
+	"0|80.00|10.0:1:,180.0:1:PlatformColorCycle,350.0:1:",
+	"2|-81.68|85.7:2:PlatformColorCycle+PlatformSineMotion,231.3:3:PlatformColorCycle,377.0:0:PlatformSineMotion,-60.0:2:PlatformColorCycle+PlatformSineMotion",
+	"0|80.00|10.0:1:PlatformBlink,180.0:3:PlatformColorCycle,350.0:2:PlatformColorCycle",
 ]
 
 var _cor_original: Enums.COLOR
@@ -246,9 +247,9 @@ func test_c550_icone_node2d_sem_colisao_16x16_centrado_base_2px_acima_e_global_p
 			assert_false(icone is CollisionObject2D, "icone nao e corpo de colisao")
 			assert_eq(icone.get_children().size(), 0, "icone sem filhos (sem CollisionShape2D)")
 			assert_eq(icone.position.x, 0.0, "icone centrado no x da plataforma")
-			var topo: float = p.sprite.position.y + p.sprite.offset.y - p.sprite.texture.get_height() / 2.0
-			assert_eq(icone.position.y + 8.0, topo - 2.0, "base do icone 2 px acima do topo da plataforma")
-			assert_eq(icone.get("tamanho"), Vector2(16, 16), "icone 16x16")
+			var topo: float = p.sprite.position.y + (p.sprite.offset.y - p.sprite.texture.get_height() / 2.0) * p.sprite.scale.y
+			assert_eq(icone.position.y + 16.0, topo - 4.0, "base do icone 4 px (2 px em 1x) acima do topo da plataforma")
+			assert_eq(icone.get("tamanho"), Vector2(32, 32), "icone 32x32 (16x16 em 1x)")
 			verificadas += 1
 	assert_gt(verificadas, 0, "ao menos um icone verificado")
 

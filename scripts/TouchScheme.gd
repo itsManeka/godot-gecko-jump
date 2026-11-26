@@ -7,7 +7,7 @@ extends RefCounted
 # dedos estao ativos (index desconhecido e ignorado) e do cancelamento.
 
 # Largura visivel atual (a TouchControls atualiza antes de cada press) e zonas mortas (botao de pausa, Pular do tutorial).
-var largura_visivel: float = 180.0
+var largura_visivel: float = 360.0
 var zonas_mortas: Array[Rect2] = []
 
 # Dedos aceitos e ainda na tela (index -> true).

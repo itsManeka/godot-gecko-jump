@@ -97,12 +97,12 @@ func _ready():
 		Enums.PLATFORM_TYPE.STATIC:
 			create_static_platforms()
 		Enums.PLATFORM_TYPE.MOVE_TO_LEFT:
-			# Nasce a direita (x da cena, 210) e anda para a esquerda
+			# Nasce a direita (x da cena, 420) e anda para a esquerda
 			_variar_speed(snapshot)
 			preencher_linha()
 		Enums.PLATFORM_TYPE.MOVE_TO_RIGHT:
-			# Nasce a esquerda (x = -30) e anda para a direita
-			check_generate.position.x = -30
+			# Nasce a esquerda (x = -60) e anda para a direita
+			check_generate.position.x = -60
 			_variar_speed(snapshot)
 			speed *= -1
 			preencher_linha()
@@ -129,7 +129,7 @@ func _on_Timer_timeout():
 
 # Cria um conjunto de 3 plataformas estáticas
 func create_static_platforms():
-	var position_x = 5
+	var position_x = 10
 	var cores: Array = []
 	_piscantes_na_linha = 0
 	# Plataformas criadas (add_child ao fim): se a linha ficar sem nenhuma plana (sem piscar e sem ciclar) a ultima
@@ -155,7 +155,7 @@ func create_static_platforms():
 		elif platform.obter_ciclo() == null:
 			planas += 1
 		criadas.append(platform)
-		position_x += 85
+		position_x += 170
 	if planas == 0 and ultima_pisca != null:
 		_neutralizar_pisca(ultima_pisca)
 	for platform in criadas:

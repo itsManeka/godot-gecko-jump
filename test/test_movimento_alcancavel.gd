@@ -6,7 +6,7 @@ extends GutTest
 #              sentido), empilhados em y distintos (nao se enxergam pela layer do CheckGenerate). Pior caso de
 #              espacamento: proporcao_oscilantes forcada a 1.0 (toda vizinha oscila, cada uma com a propria fase).
 #   C292:      gerador real (_cor_movel) criando N plataformas, cor do gecko mudando no meio; janela de K.
-#   C293:      simulacao pura com a amplitude maxima aplicada ao x (borda do filtro [0, 180]).
+#   C293:      simulacao pura com a amplitude maxima aplicada ao x (borda do filtro [0, 360]).
 #   C294:      modelo fisico do pulo (padrao de test_difficulty_alcance_fisico.gd) com a speed do pior caso.
 
 const CURVA_PATH := "res://ressources/curva_dificuldade.tres"
@@ -16,10 +16,10 @@ const SEMENTES := [20261110, 20261111, 20261112]
 const FRAMES_MEDIDA := 360
 # Nascida ha menos que isto ainda pode nao ter saido do CheckGenerate (slowest: speed 61 -> ~60 ticks + oscilacao)
 const FRAMES_PARA_SAIR := 150
-const ALTURA_ENTRE_GERADORES := 25.0
+const ALTURA_ENTRE_GERADORES := 50.0
 const PLATAFORMAS_POR_GERADOR := 40
 const EPS_PROGRESSO := 0.001
-const LARGURA_JOGAVEL := 180.0
+const LARGURA_JOGAVEL := 360.0
 const MARGEM_VERTICAL := 5.0
 const LINHAS_SIMULADAS := 120
 
@@ -109,7 +109,7 @@ func _iniciar_medida(indice: int, estagio: DifficultyStage, semente: int, tipo: 
 	gerador.dificuldade = _estado_so_do_estagio(estagio)
 	gerador.rng = _rng(semente)
 	gerador.position = Vector2(0, 20.0 + ALTURA_ENTRE_GERADORES * linha)
-	var spawn_x: float = 210.0 if tipo == Enums.PLATFORM_TYPE.MOVE_TO_LEFT else -30.0
+	var spawn_x: float = 420.0 if tipo == Enums.PLATFORM_TYPE.MOVE_TO_LEFT else -60.0
 	var registro := {
 		"rotulo": "E%d semente %d %s" % [indice, semente, "esq" if tipo == Enums.PLATFORM_TYPE.MOVE_TO_LEFT else "dir"],
 		"gerador": gerador,

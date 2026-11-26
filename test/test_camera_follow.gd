@@ -6,25 +6,48 @@ extends GutTest
 const CameraFollowScript := preload("res://scripts/CameraFollow.gd")
 
 
-# C429: limite_y(320) == 128 (fracao 0,40 da altura visivel)
-func test_limite_y_altura_320_e_128() -> void:
-	assert_almost_eq(CameraFollowScript.limite_y(320.0), 128.0, 0.0001)
+# C429: limite_y(640) == 256 (fracao 0,40 da altura visivel 360x640)
+func test_limite_y_altura_640_e_256() -> void:
+	assert_almost_eq(CameraFollowScript.limite_y(640.0), 256.0, 0.0001)
 
 
-# C430: limite_y(400) == 160 (proporcional, altura de test_scroll_level_altura.gd)
-func test_limite_y_altura_400_e_160() -> void:
-	assert_almost_eq(CameraFollowScript.limite_y(400.0), 160.0, 0.0001)
+# C430: limite_y(800) == 320 (proporcional, altura de test_scroll_level_altura.gd)
+func test_limite_y_altura_800_e_320() -> void:
+	assert_almost_eq(CameraFollowScript.limite_y(800.0), 320.0, 0.0001)
 
 
-# C431: limite_y(462) == 184.8 (fracao 0,40, comparado com tolerancia)
-func test_limite_y_altura_462_e_184_8() -> void:
-	assert_almost_eq(CameraFollowScript.limite_y(462.0), 184.8, 0.0001)
+# C431: limite_y(924) == 369.6 (fracao 0,40, comparado com tolerancia)
+func test_limite_y_altura_924_e_369_6() -> void:
+	assert_almost_eq(CameraFollowScript.limite_y(924.0), 369.6, 0.0001)
 
 
-# C427: acima do limite devolve 28; acima do topo com y negativo devolve 163.4
+# C427: acima do limite devolve 56; acima do topo com y negativo devolve 326.8
 func test_excesso_gecko_acima_do_limite_e_do_topo_y_negativo() -> void:
-	assert_eq(CameraFollowScript.excesso(100.0, 128.0), 28.0)
-	assert_almost_eq(CameraFollowScript.excesso(-35.4, 128.0), 163.4, 0.0001)
+	assert_eq(CameraFollowScript.excesso(200.0, 256.0), 56.0)
+	assert_almost_eq(CameraFollowScript.excesso(-70.8, 256.0), 326.8, 0.0001)
+
+
+# C814: passo minimo dobrado (2.0 px) e paridade de ticks com a base 180x320 (passo 1.0 px):
+# o numero de frames ate o snap do easing em 2x o excesso e igual ao de 1x com o passo original.
+func test_passo_minimo_dobrado_e_paridade_de_ticks_com_180x320() -> void:
+	assert_eq(CameraFollowScript.PASSO_MINIMO_PX, 2.0, "PASSO_MINIMO_PX dobra para 2.0 (base 360x640)")
+	for excesso in [0.5, 4.0, 37.5, 80.0]:
+		assert_eq(
+			_frames_com_passo(excesso * 2.0, CameraFollowScript.PASSO_MINIMO_PX),
+			_frames_com_passo(excesso, 1.0),
+			"frames ate o snap do excesso %s em 2x == 1x (passo 1.0)" % excesso
+		)
+
+
+# Frames ate zerar o excesso com DURACAO_FRAMES e um piso de passo dado (mesma formula de parcela()).
+func _frames_com_passo(excesso: float, passo: float) -> int:
+	var restante: float = excesso
+	var frames: int = 0
+	while restante > 0.0 and frames < 1000:
+		var p: float = minf(restante, maxf(restante / float(CameraFollowScript.DURACAO_FRAMES), passo))
+		restante -= p
+		frames += 1
+	return frames
 
 
 # Aplica parcela(restante) e desce o restante ate zerar (ou ate o teto de iteracoes).
@@ -97,5 +120,5 @@ func test_parcela_monotona_e_positiva_enquanto_resta_excesso() -> void:
 
 # C428: no limite e abaixo do limite nunca e negativo
 func test_excesso_no_limite_e_abaixo_nunca_negativo() -> void:
-	assert_eq(CameraFollowScript.excesso(128.0, 128.0), 0.0)
-	assert_eq(CameraFollowScript.excesso(200.0, 128.0), 0.0)
+	assert_eq(CameraFollowScript.excesso(256.0, 256.0), 0.0)
+	assert_eq(CameraFollowScript.excesso(400.0, 256.0), 0.0)

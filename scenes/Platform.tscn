@@ -4,10 +4,10 @@
 [ext_resource path="res://scenes/Platform.gd" type="Script" id=2]
 
 [sub_resource type="RectangleShape2D" id=1]
-size = Vector2( 59.474, 10.86262 )
+size = Vector2( 118.948, 21.72524 )
 
 [sub_resource type="RectangleShape2D" id=2]
-size = Vector2( 60.297, 10.24324 )
+size = Vector2( 120.594, 20.48648 )
 
 [node name="Platform" type="CharacterBody2D"]
 collision_layer = 2
@@ -15,21 +15,23 @@ collision_mask = 0
 script = ExtResource( 2 )
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2( 2, 2 )
 texture = ExtResource( 1 )
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2( 0.10511, 0.42045 )
+position = Vector2( 0.21022, 0.8409 )
 shape = SubResource( 1 )
 one_way_collision = true
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
-position = Vector2( 0.157669, 0.438627 )
-scale = Vector2( 3.2021, 0.570859 )
+position = Vector2( 0.315338, 0.877254 )
+scale = Vector2( 6.4042, 1.6 )
 
 [node name="AreaCheck" type="Area2D" parent="."]
 collision_layer = 4
 collision_mask = 4
 
 [node name="CollisionPolygon2D" type="CollisionShape2D" parent="AreaCheck"]
+position = Vector2( -0.025216, 0.72774 )
 shape = SubResource( 2 )
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_VisibilityNotifier2D_screen_exited"]

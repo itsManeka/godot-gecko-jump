@@ -46,12 +46,14 @@ func test_c466_fora_da_faixa_cai_no_padrao_e_extremos_sao_validos() -> void:
 	assert_eq(TouchTuning.sensibilidade_de_valor(1.0), 1.0, "1,0 e valor valido")
 
 
-func test_c467_padrao_reproduz_6px_de_zona_morta_e_24px_de_flick_e_extremos_mapeiam() -> void:
-	# G1: 1,0x = comportamento de hoje (6 px / 24 px); sensibilidade maior = limiares menores. Maxima 2,0x ->
-	# 3 px / 12 px; minima 0,5x -> 12 px / 48 px. Literais derivados da decisao do G1, nao da implementacao.
-	assert_eq(TouchTuning.zona_morta_a(PADRAO), 6.0, "padrao: zona morta de 6 px (comportamento de hoje)")
-	assert_eq(TouchTuning.flick_dy_min_a(PADRAO), 24.0, "padrao: flick dy minimo de 24 px (comportamento de hoje)")
-	assert_eq(TouchTuning.zona_morta_a(MAXIMA), 3.0, "sensibilidade maxima: zona morta de 3 px")
-	assert_eq(TouchTuning.flick_dy_min_a(MAXIMA), 12.0, "sensibilidade maxima: flick dy minimo de 12 px")
-	assert_eq(TouchTuning.zona_morta_a(MINIMA), 12.0, "sensibilidade minima: zona morta de 12 px")
-	assert_eq(TouchTuning.flick_dy_min_a(MINIMA), 48.0, "sensibilidade minima: flick dy minimo de 48 px")
+func test_c467_padrao_reproduz_12px_de_zona_morta_e_48px_de_flick_e_extremos_mapeiam() -> void:
+	# G1 em 360x640 (2x): 1,0x = 12 px / 48 px; sensibilidade maior = limiares menores. Maxima 2,0x ->
+	# 6 px / 24 px; minima 0,5x -> 24 px / 96 px. Literais derivados do plano, nao da implementacao.
+	assert_eq(TouchTuning.zona_morta_a(PADRAO), 12.0, "padrao: zona morta de 12 px (2x)")
+	assert_eq(TouchTuning.flick_dy_min_a(PADRAO), 48.0, "padrao: flick dy minimo de 48 px (2x)")
+	assert_eq(TouchTuning.zona_morta_a(MAXIMA), 6.0, "sensibilidade maxima: zona morta de 6 px")
+	assert_eq(TouchTuning.flick_dy_min_a(MAXIMA), 24.0, "sensibilidade maxima: flick dy minimo de 24 px")
+	assert_eq(TouchTuning.zona_morta_a(MINIMA), 24.0, "sensibilidade minima: zona morta de 24 px")
+	assert_eq(TouchTuning.flick_dy_min_a(MINIMA), 96.0, "sensibilidade minima: flick dy minimo de 96 px")
+	assert_eq(TouchTuning.REARME_VELOCIDADE_PX_MS, 0.10, "rearme: velocidade 0.10 px/ms (2x)")
+	assert_eq(TouchTuning.REARME_RECUO_PX, 24.0, "rearme: recuo de 24 px (2x)")

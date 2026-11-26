@@ -5,7 +5,7 @@ extends GutTest
 const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
 const SPEED_BASE := 80.0
 const VARIACAO := 0.25
-const SPAWN_MOVE_TO_LEFT := 210.0
+const SPAWN_MOVE_TO_LEFT := 420.0
 # Janela de medicao do espacamento: ~5 periodos do ciclo (79 ticks a 60 Hz, mais curto em speed maior) + folga
 const FRAMES_MEDICAO := 79 * 5 + 30
 const TOLERANCIA_PX := 2.0

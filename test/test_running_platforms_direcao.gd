@@ -4,8 +4,8 @@ extends GutTest
 # direita); MOVE_TO_RIGHT anda para a direita (x aumenta, nasce a esquerda). Mede position.x apos N ticks de fisica.
 
 const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
-const SPAWN_DIREITA := 210.0
-const SPAWN_ESQUERDA := -30.0
+const SPAWN_DIREITA := 420.0
+const SPAWN_ESQUERDA := -60.0
 const TICKS := 20
 
 
@@ -72,7 +72,7 @@ func test_move_to_left_nasce_a_direita() -> void:
 	add_child_autofree(gerador)
 
 	assert_almost_eq(gerador.check_generate.position.x, SPAWN_DIREITA, 0.001, "MOVE_TO_LEFT: ponto de nascimento a direita")
-	assert_not_null(_do_nascimento(gerador, SPAWN_DIREITA), "MOVE_TO_LEFT: primeira plataforma aparece em x=210")
+	assert_not_null(_do_nascimento(gerador, SPAWN_DIREITA), "MOVE_TO_LEFT: primeira plataforma aparece em x=420")
 
 
 func test_move_to_right_nasce_a_esquerda() -> void:
@@ -80,4 +80,4 @@ func test_move_to_right_nasce_a_esquerda() -> void:
 	add_child_autofree(gerador)
 
 	assert_almost_eq(gerador.check_generate.position.x, SPAWN_ESQUERDA, 0.001, "MOVE_TO_RIGHT: ponto de nascimento a esquerda")
-	assert_not_null(_do_nascimento(gerador, SPAWN_ESQUERDA), "MOVE_TO_RIGHT: primeira plataforma aparece em x=-30")
+	assert_not_null(_do_nascimento(gerador, SPAWN_ESQUERDA), "MOVE_TO_RIGHT: primeira plataforma aparece em x=-60")

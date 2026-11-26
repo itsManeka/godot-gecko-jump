@@ -23,19 +23,19 @@ const COR_FUNDO: Color = UiHelpers.COR_FUNDO_OVERLAY
 const COR_BOTAO: Color = Color("#5b8a4a")
 
 # Medidas em px logicos (handoff 9.2); f527 T6 (D5): com Sair o bloco cresce de 118 para 158 px
-const BLOCO_ALTURA: float = 118.0
-const BLOCO_ALTURA_COM_SAIR: float = 158.0
-const TITULO_ALTURA: float = 30.0
-const TITULO_ESPACO: float = 16.0
-const BOTAO_ALTURA: float = 32.0
-const BOTAO_LARGURA: float = 112.0
-const BOTAO_ESPACO: float = 8.0
-const LARGURA: float = 180.0
+const BLOCO_ALTURA: float = 236.0
+const BLOCO_ALTURA_COM_SAIR: float = 316.0
+const TITULO_ALTURA: float = 60.0
+const TITULO_ESPACO: float = 32.0
+const BOTAO_ALTURA: float = 64.0
+const BOTAO_LARGURA: float = 224.0
+const BOTAO_ESPACO: float = 16.0
+const LARGURA: float = 360.0
 const TAMANHO_TITULO: int = UiHelpers.TAMANHO_TITULO
 const TAMANHO_CONTINUAR: int = UiHelpers.TAMANHO_TEXTO
 const TAMANHO_OPCOES: int = UiHelpers.TAMANHO_TEXTO
-const CONTORNO_TITULO: int = 2
-const CONTORNO_BOTAO: int = 1
+const CONTORNO_TITULO: int = 4
+const CONTORNO_BOTAO: int = 2
 # Acima do botao de pausa (7.4)
 const CAMADA: int = 10
 
@@ -79,7 +79,7 @@ func _ready() -> void:
 		var moldura := Panel.new()
 		moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		moldura.focus_mode = Control.FOCUS_NONE
-		moldura.add_theme_stylebox_override("panel", UiHelpers.estilo(Color(0, 0, 0, 0), 2, COR_CONTORNO, UiHelpers.RAIO_BOTAO))
+		moldura.add_theme_stylebox_override("panel", UiHelpers.estilo(Color(0, 0, 0, 0), 4, COR_CONTORNO, UiHelpers.RAIO_BOTAO))
 		add_child(moldura)
 		_molduras.append(moldura)
 		var painel := Panel.new()
@@ -145,8 +145,8 @@ func aplicar_layout(visible_size: Vector2, safe: Rect2) -> void:
 		var r: Rect2 = _rects[b]
 		_paineis[b].position = r.position
 		_paineis[b].size = r.size
-		_molduras[b].position = r.position - Vector2(1.0, 1.0)
-		_molduras[b].size = r.size + Vector2(2.0, 2.0)
+		_molduras[b].position = r.position - Vector2(2.0, 2.0)
+		_molduras[b].size = r.size + Vector2(4.0, 4.0)
 		_rotulos[b].size = r.size
 	_atualizar_visual()
 
@@ -275,13 +275,13 @@ func _atualizar_visual() -> void:
 			_molduras[b].visible = false
 			continue
 		var pressed: bool = _pressionado == b
-		_paineis[b].add_theme_stylebox_override("panel", UiHelpers.estilo(COR_BOTAO, 2 if pressed else 1, COR_CONTORNO, UiHelpers.RAIO_BOTAO))
+		_paineis[b].add_theme_stylebox_override("panel", UiHelpers.estilo(COR_BOTAO, 4 if pressed else 2, COR_CONTORNO, UiHelpers.RAIO_BOTAO))
 		_molduras[b].visible = _foco == b
 		_rotulos[b].text = ("> " if _foco == b else "") + TEXTOS[b]
-		_rotulos[b].position = Vector2(0.0, 1.0 if pressed else 0.0)
+		_rotulos[b].position = Vector2(0.0, 2.0 if pressed else 0.0)
 
 
-# Altura do bloco (handoff 9.2): 118 com Continuar/Opcoes; 158 com o Sair (f527 T6, D5)
+# Altura do bloco (handoff 9.2, 2x): 236 com Continuar/Opcoes; 316 com o Sair (f527 T6, D5)
 func _altura_bloco() -> float:
 	return BLOCO_ALTURA_COM_SAIR if permite_sair else BLOCO_ALTURA
 

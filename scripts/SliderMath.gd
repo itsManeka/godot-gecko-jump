@@ -2,15 +2,15 @@ class_name SliderMath
 extends RefCounted
 
 # Matematica pura do slider de volume da tela de Opcoes (handoff 10.2 e 10.3), sem cena.
-# Valor inteiro de 0 a 100; a trilha vai de x = 16 a x = 164 (148 de largura).
+# Valor inteiro de 0 a 100; a trilha vai de x = 32 a x = 328 (296 de largura; 32 + 296 + 32 = 360).
 
-const X_MIN: float = 16.0
-const LARGURA_TRILHA: float = 148.0
+const X_MIN: float = 32.0
+const LARGURA_TRILHA: float = 296.0
 const VALOR_MAX: int = 100
 const PASSO: int = 5
 
 
-# Posicao horizontal do dedo -> valor 0-100 (x limitado a [16, 164]).
+# Posicao horizontal do dedo -> valor 0-100 (x limitado a [32, 328]).
 static func valor_de_x(x: float) -> int:
 	return roundi(clampf((x - X_MIN) / LARGURA_TRILHA, 0.0, 1.0) * VALOR_MAX)
 

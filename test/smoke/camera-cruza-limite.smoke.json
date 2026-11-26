@@ -2,7 +2,7 @@
   "path": "index.html?seed=472&tutorial=visto&toque=b",
   "viewport": [720, 1280],
   "boot_ms": 6000,
-  "notes": "f530: o gecko cruza o limite de topo da camera (y=128 de 320 logicos, viewport 720x1280 = 4x) jogando a regra real (sem semderrota, sem power-up). Cada pulo espera alvo.alinhado true (ha plataforma da cor do gecko na linha de cima ao alcance do pulo reto; so existe com o gecko pousado) e toca reto com o dedo direito (metade x >= 360). O roteiro NAO usa alvo.dx (nao desloca o gecko): o toque e sempre reto e depende de a seed 472 manter alinhado true; qualquer mudanca de geracao de linhas/RNG pode quebra-lo. So 3 pousos sao forcados por toque (o 4o expect alvo.alinhado, antes do corte, nao e seguido de toque). Sem toque depois do corte, o expect de vida (player.y gte 0, playing, alive) vem logo apos o do corte e antes dos shots. Medido na T1: em repouso o y e 169-180 antes de cruzar e 145-152 depois; o corte e player.y lt 160, lido logo apos o pouso (no ar a camera segura o y em 128-137, e o poll de 100 ms nao pega o apice).",
+  "notes": "f530: o gecko cruza o limite de topo da camera (y=256 de 640 logicos, viewport 720x1280 = 2x) jogando a regra real (sem semderrota, sem power-up). Cada pulo espera alvo.alinhado true (ha plataforma da cor do gecko na linha de cima ao alcance do pulo reto; so existe com o gecko pousado) e toca reto com o dedo direito (metade x >= 360). O roteiro NAO usa alvo.dx (nao desloca o gecko): o toque e sempre reto e depende de a seed 472 manter alinhado true; qualquer mudanca de geracao de linhas/RNG pode quebra-lo. So 3 pousos sao forcados por toque (o 4o expect alvo.alinhado, antes do corte, nao e seguido de toque). Sem toque depois do corte, o expect de vida (player.y gte 0, playing, alive) vem logo apos o do corte e antes dos shots. Em repouso o y era 169-180 antes de cruzar e 145-152 depois em 180x320 (medido na T1); dobrado em 360x640 vira ~338-360 e ~290-304 (medicao real no T10). O corte e player.y lt 320, lido logo apos o pouso (no ar a camera segura o y em 256-274, e o poll de 100 ms nao pega o apice).",
   "steps": [
     { "expect": { "state": "menu" }, "timeout_ms": 3000 },
     { "tap": [360, 640] },
@@ -14,7 +14,7 @@
     { "expect": { "alvo.alinhado": true }, "timeout_ms": 6000 },
     { "touches": [{ "from": [540, 1000], "ms": 150 }] },
     { "expect": { "alvo.alinhado": true }, "timeout_ms": 6000 },
-    { "expect": { "player.y": { "lt": 160 } }, "timeout_ms": 3000 },
+    { "expect": { "player.y": { "lt": 320 } }, "timeout_ms": 3000 },
     { "expect": { "player.y": { "gte": 0 }, "state": "playing", "player.alive": true }, "timeout_ms": 3000 },
     { "shots": 3, "every": 100, "name": "cruzou-limite", "moving": true },
     { "shots": 3, "every": 100, "name": "camera-cruza-fim", "moving": true }

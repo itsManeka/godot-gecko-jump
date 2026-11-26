@@ -2,7 +2,7 @@ extends GutTest
 
 # f528 T6 (C775-C788): bloqueio de inicio, gasto da tentativa, resultado do dia e UI do menu no Diario.
 # Mesmo padrao do test_stage_diario_seed.gd: modo e relogio injetados ANTES do add_child (o _enter_tree le
-# os dois), Stage na raiz com layout fixo 180x320 e a recarga espiada pela seam `recarregar_cena` (o GUT
+# os dois), Stage na raiz com layout fixo 360x640 e a recarga espiada pela seam `recarregar_cena` (o GUT
 # nao pode trocar a cena do proprio runner; a Stage que o reload real instanciaria e simulada instanciando
 # outra com o modo persistido). O store do dia vive no caminho isolado pelo gut_pre_run (como o options
 # store): cada teste comeca com ele limpo e nenhum teste grava o user://desafio_diario.cfg real.
@@ -16,10 +16,10 @@ const STAGE_SCENE := "res://scenes/Stage.tscn"
 const DIA_BASE := 19675
 # Caminho isolado pelo gut_pre_run (nenhum teste grava o user:// real); limpo em before_each/after_each
 const CAMINHO_STORE := "user://desafio_diario_test_suite.cfg"
-const VISIVEL := Vector2(180.0, 320.0)
-const SAFE := Rect2(0.0, 0.0, 180.0, 320.0)
-const X_QUEDA := 20.0
-const Y_QUEDA := 360.0
+const VISIVEL := Vector2(360.0, 640.0)
+const SAFE := Rect2(0.0, 0.0, 360.0, 640.0)
+const X_QUEDA := 40.0
+const Y_QUEDA := 720.0
 
 var _modo_original: StringName
 var _dia_inicial_original: int
@@ -165,7 +165,7 @@ func test_C778_segunda_tentativa_toque_no_fundo_nao_inicia() -> void:
 	var stage := _stage_diario(DIA_BASE)
 	var toque := InputEventScreenTouch.new()
 	toque.pressed = true
-	toque.position = Vector2(90.0, 200.0)
+	toque.position = Vector2(180.0, 400.0)
 	stage._input(toque)
 	assert_false(stage.started, "C778: 2a tentativa: o toque no fundo (_input) nao inicia")
 	assert_eq(_recargas.size(), 0, "C778: dia ja jogado: nenhuma recarga pedida")
@@ -183,7 +183,7 @@ func test_C779_play_desabilitado_com_texto_do_dia_seguindo_o_predicado_nos_dois_
 	assert_eq(stage.playbutton.text, "Ja jogado hoje", "C779: com o texto do dia (D3)")
 	assert_eq(stage.playbutton.disabled, not stage._pode_iniciar(), "C779: o estado do botao e o mesmo predicado da acao")
 	var largura_texto: float = stage.playbutton.get_theme_font("font").get_string_size(
-		"Ja jogado hoje", HORIZONTAL_ALIGNMENT_LEFT, -1, 16
+		"Ja jogado hoje", HORIZONTAL_ALIGNMENT_LEFT, -1, 32
 	).x
 	assert_true(
 		largura_texto <= stage.playbutton.size.x,

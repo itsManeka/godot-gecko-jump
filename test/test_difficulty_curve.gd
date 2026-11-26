@@ -26,8 +26,8 @@ func test_curva_de_producao_carrega_com_ao_menos_2_estagios() -> void:
 
 func test_progresso_zero_e_o_comportamento_atual() -> void:
 	var s := _curva.avaliar(0, 0)
-	assert_almost_eq(s.get_scroll(), 20.0, EPS)
-	assert_almost_eq(s.get_speed_moveis(), 60.0, EPS)
+	assert_almost_eq(s.get_scroll(), 40.0, EPS)
+	assert_almost_eq(s.get_speed_moveis(), 120.0, EPS)
 	assert_eq(s.get_k(), 3)
 	assert_almost_eq(s.get_proporcao_estaticas(), 1.0 / 3.0, EPS)
 
@@ -154,7 +154,7 @@ func test_k_e_inteiro_floor_e_no_minimo_3() -> void:
 func test_estagio_0_sem_mecanicas_e_nomes_conhecidos_pelo_registro() -> void:
 	var e0: DifficultyStage = _curva.estagios[0]
 	assert_eq(e0.mecanicas.size(), 0, "estagio 0 sem mecanicas")
-	assert_almost_eq(e0.largura_plataforma, 60.0, EPS, "estagio 0 com largura 60 (antes da curva)")
+	assert_almost_eq(e0.largura_plataforma, 120.0, EPS, "estagio 0 com largura 120 (2x da resolucao 360x640)")
 	for i in range(_curva.estagios.size()):
 		var e: DifficultyStage = _curva.estagios[i]
 		var snap := DifficultySnapshot.new(e.scroll, e.speed_moveis, e.k, e.proporcao_estaticas, e.mecanicas)
@@ -209,13 +209,13 @@ func _curva_duas_larguras() -> DifficultyCurve:
 	return curva
 
 
-func test_estagio_sem_campos_novos_devolve_largura_60_e_atraso_1() -> void:
-	assert_almost_eq(DifficultyStage.new().largura_plataforma, 60.0, EPS, "default do estagio")
+func test_estagio_sem_campos_novos_devolve_largura_120_e_atraso_1() -> void:
+	assert_almost_eq(DifficultyStage.new().largura_plataforma, 120.0, EPS, "default do estagio")
 	assert_almost_eq(DifficultyStage.new().atraso_desmoronar, 1.0, EPS, "default do estagio")
 	var curva := DifficultyCurve.new()
 	curva.estagios = [DifficultyStage.new()]
 	var s := curva.avaliar(0.0, 0.0)
-	assert_almost_eq(s.get_largura_plataforma(), 60.0, EPS)
+	assert_almost_eq(s.get_largura_plataforma(), 120.0, EPS)
 	assert_almost_eq(s.get_atraso_desmoronar(), 1.0, EPS)
 
 
@@ -235,21 +235,21 @@ func test_teto_devolve_largura_e_atraso_do_ultimo_estagio() -> void:
 	assert_almost_eq(s.get_atraso_desmoronar(), 0.8, EPS)
 
 
-func test_curva_sem_estagios_devolve_largura_60_e_atraso_1() -> void:
+func test_curva_sem_estagios_devolve_largura_120_e_atraso_1() -> void:
 	var s := DifficultyCurve.new().avaliar(5.0, 5.0)
-	assert_almost_eq(s.get_largura_plataforma(), 60.0, EPS)
+	assert_almost_eq(s.get_largura_plataforma(), 120.0, EPS)
 	assert_almost_eq(s.get_atraso_desmoronar(), 1.0, EPS)
 
 
-func test_snapshot_sem_argumentos_devolve_largura_60_e_atraso_1() -> void:
+func test_snapshot_sem_argumentos_devolve_largura_120_e_atraso_1() -> void:
 	var s := DifficultySnapshot.new()
-	assert_almost_eq(s.get_largura_plataforma(), 60.0, EPS)
+	assert_almost_eq(s.get_largura_plataforma(), 120.0, EPS)
 	assert_almost_eq(s.get_atraso_desmoronar(), 1.0, EPS)
 	# Posicional ate o 4o parametro continua valido; os campos novos caem no default.
 	var posicional := DifficultySnapshot.new(30.0, 90.0, 4, 0.5)
 	assert_almost_eq(posicional.get_scroll(), 30.0, EPS)
 	assert_almost_eq(posicional.get_proporcao_estaticas(), 0.5, EPS)
-	assert_almost_eq(posicional.get_largura_plataforma(), 60.0, EPS)
+	assert_almost_eq(posicional.get_largura_plataforma(), 120.0, EPS)
 	assert_almost_eq(posicional.get_atraso_desmoronar(), 1.0, EPS)
 
 
@@ -452,34 +452,34 @@ func test_estagios_de_movimento_com_valores_aprovados_e_antigos_intactos() -> vo
 	assert_almost_eq(e1.proporcao_oscilantes, 0.0, EPS, "E1 oscilantes padrao")
 	assert_almost_eq(e1.proporcao_vai_e_vem, 0.0, EPS, "E1 vai-e-vem padrao")
 	# E2 liga seno (6 px, 2,5 s, 0,4); speed por linha repetida do E1.
-	assert_almost_eq(e2.amplitude_movimento, 6.0, EPS, "E2 amplitude 6 (G1)")
+	assert_almost_eq(e2.amplitude_movimento, 12.0, EPS, "E2 amplitude 12 (G1, 2x)")
 	assert_almost_eq(e2.periodo_movimento, 2.5, EPS, "E2 periodo 2,5 (G1)")
 	assert_almost_eq(e2.proporcao_oscilantes, 0.4, EPS, "E2 oscilantes 0,4 (G1)")
 	assert_almost_eq(e2.proporcao_vai_e_vem, 0.0, EPS, "E2 sem vai-e-vem")
 	assert_almost_eq(e2.variacao_speed_linha, 0.15, EPS, "E2 repete variacao do E1")
 	# E3 liga vai-e-vem (8 px, 2,5 s, 0,5; vai-e-vem 0,5); seno e speed por linha repetidos.
-	assert_almost_eq(e3.amplitude_movimento, 8.0, EPS, "E3 amplitude 8 (G1)")
+	assert_almost_eq(e3.amplitude_movimento, 16.0, EPS, "E3 amplitude 16 (G1, 2x)")
 	assert_almost_eq(e3.periodo_movimento, 2.5, EPS, "E3 periodo 2,5 (G1)")
 	assert_almost_eq(e3.proporcao_oscilantes, 0.5, EPS, "E3 oscilantes 0,5 (G1)")
 	assert_almost_eq(e3.proporcao_vai_e_vem, 0.5, EPS, "E3 vai-e-vem 0,5 (G1)")
 	assert_almost_eq(e3.variacao_speed_linha, 0.15, EPS, "E3 repete variacao do E1")
 	# Valores antigos dos 4 estagios intactos.
-	assert_almost_eq(e0.scroll, 20.0, EPS, "E0 scroll antigo")
-	assert_almost_eq(e1.scroll, 26.0, EPS, "E1 scroll antigo")
-	assert_almost_eq(e2.scroll, 33.0, EPS, "E2 scroll antigo")
-	assert_almost_eq(e3.scroll, 40.0, EPS, "E3 scroll antigo")
-	assert_almost_eq(e0.speed_moveis, 60.0, EPS, "E0 speed antiga")
-	assert_almost_eq(e1.speed_moveis, 72.0, EPS, "E1 speed antiga")
-	assert_almost_eq(e2.speed_moveis, 86.0, EPS, "E2 speed antiga")
-	assert_almost_eq(e3.speed_moveis, 100.0, EPS, "E3 speed antiga")
+	assert_almost_eq(e0.scroll, 40.0, EPS, "E0 scroll 2x")
+	assert_almost_eq(e1.scroll, 52.0, EPS, "E1 scroll 2x")
+	assert_almost_eq(e2.scroll, 66.0, EPS, "E2 scroll 2x")
+	assert_almost_eq(e3.scroll, 80.0, EPS, "E3 scroll 2x")
+	assert_almost_eq(e0.speed_moveis, 120.0, EPS, "E0 speed 2x")
+	assert_almost_eq(e1.speed_moveis, 144.0, EPS, "E1 speed 2x")
+	assert_almost_eq(e2.speed_moveis, 172.0, EPS, "E2 speed 2x")
+	assert_almost_eq(e3.speed_moveis, 200.0, EPS, "E3 speed 2x")
 	assert_eq(e0.k, 3, "E0 k antigo")
 	assert_eq(e1.k, 4, "E1 k antigo")
 	assert_eq(e2.k, 5, "E2 k antigo")
 	assert_eq(e3.k, 6, "E3 k antigo")
-	assert_almost_eq(e0.largura_plataforma, 60.0, EPS, "E0 largura antiga")
-	assert_almost_eq(e1.largura_plataforma, 56.0, EPS, "E1 largura antiga")
-	assert_almost_eq(e2.largura_plataforma, 50.0, EPS, "E2 largura antiga")
-	assert_almost_eq(e3.largura_plataforma, 44.0, EPS, "E3 largura antiga")
+	assert_almost_eq(e0.largura_plataforma, 120.0, EPS, "E0 largura 2x")
+	assert_almost_eq(e1.largura_plataforma, 112.0, EPS, "E1 largura 2x")
+	assert_almost_eq(e2.largura_plataforma, 100.0, EPS, "E2 largura 2x")
+	assert_almost_eq(e3.largura_plataforma, 88.0, EPS, "E3 largura 2x")
 	assert_almost_eq(e3.proporcao_cicladoras, 0.3, EPS, "E3 proporcao do ciclo antiga")
 	assert_almost_eq(e3.periodo_ciclo, 3.0, EPS, "E3 periodo do ciclo antigo")
 	# Ordem original de mecanicas preservada; os nomes novos so acrescidos no fim.

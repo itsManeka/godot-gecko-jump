@@ -10,12 +10,13 @@ extends GutTest
 const SCROLL := "res://scenes/ScrollLevel.tscn"
 const SEMENTE_A := 4242
 const SEMENTE_B := 977
-# 12 passos de 125 px = 1500 px = 30 linhas de scroll alem das 9 iniciais do viewport 400 (39 no total)
-const PASSO := 125.0
+# 12 passos de 250 px = 3000 px = 30 linhas de scroll (100 px cada) alem das 9 iniciais do viewport 800 (39 no total).
+# Os nomes ALTURA_400/ALTURA_640 sao os de 1x: em 360x640 valem 800 e 1280.
+const PASSO := 250.0
 const PASSOS := 12
 const LINHAS_SCROLL := 30
-const ALTURA_400 := 400
-const ALTURA_640 := 640
+const ALTURA_400 := 800
+const ALTURA_640 := 1280
 
 var _scroll: Node
 var _cor_original: Enums.COLOR
@@ -47,7 +48,7 @@ func after_each() -> void:
 # (5 do .tscn via _enter_tree, extras de _ready e as do scroll).
 func _spawn(altura: int, semente = null) -> void:
 	var sv := SubViewport.new()
-	sv.size = Vector2i(180, altura)
+	sv.size = Vector2i(360, altura)
 	add_child_autofree(sv)
 	_scroll = load(SCROLL).instantiate()
 	if semente != null:

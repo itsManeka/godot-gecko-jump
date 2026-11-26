@@ -138,20 +138,20 @@ func test_press_antes_da_pausa_solto_depois_nao_aciona_nada() -> void:
 	var stage := await _novo_stage()
 	stage.touch_controls.relogio = Callable(self, "_relogio")
 	_agora_ms = 1000
-	_toque(stage, true, Vector2(45.0, 100.0))
+	_toque(stage, true, Vector2(90.0, 200.0))
 	assert_true(stage.touch_controls.gesto_ativo(), "precondicao: o press e um gesto em curso")
 	stage._pausar()
 	stage._retomar()
 	assert_false(stage.touch_controls.gesto_ativo(), "a pausa descartou o press pendente")
 	_agora_ms = 1500
-	_toque(stage, false, Vector2(45.0, 100.0))
+	_toque(stage, false, Vector2(90.0, 200.0))
 	assert_false(_alguma_acao_pressionada(), "release apos a retomada nao aciona nenhuma acao")
 	assert_false(stage.touch_controls.gesto_ativo(), "sem press pendente")
 
 
 func test_pausa_cancela_o_gesto_em_curso_e_solta_as_acoes() -> void:
 	var stage := await _novo_stage()
-	_toque(stage, true, Vector2(45.0, 100.0))
+	_toque(stage, true, Vector2(90.0, 200.0))
 	assert_true(stage.touch_controls.gesto_ativo(), "precondicao: gesto em curso")
 	stage._pausar()
 	assert_false(stage.touch_controls.gesto_ativo(), "gesto em curso cancelado pela pausa")
@@ -160,18 +160,18 @@ func test_pausa_cancela_o_gesto_em_curso_e_solta_as_acoes() -> void:
 
 func test_toque_no_botao_de_pausa_nunca_vira_gesto_de_jogo() -> void:
 	var stage := await _novo_stage()
-	var safe := Rect2(0.0, 20.0, 180.0, 294.0)
-	stage.apply_layout(Vector2(180.0, 320.0), safe)
+	var safe := Rect2(0.0, 40.0, 360.0, 588.0)
+	stage.apply_layout(Vector2(360.0, 640.0), safe)
 	var alvo: Vector2 = stage.pause_botao.rect_botao().get_center()
-	assert_eq(stage.pause_botao.rect_botao().position.y, 22.0, "botao deslocado por s_top")
+	assert_eq(stage.pause_botao.rect_botao().position.y, 44.0, "botao deslocado por s_top")
 	_toque(stage, true, alvo)
 	assert_false(stage.touch_controls.gesto_ativo(), "toque no botao nao vira press de jogo")
 	assert_false(_alguma_acao_pressionada(), "toque no botao nao aciona nenhuma acao de jogo")
 	_toque(stage, false, alvo)
 	# Fora da zona (mesmo x/y sem deslocamento de s_top) o toque ainda e de jogo
-	_toque(stage, true, Vector2(14.0, 60.0))
+	_toque(stage, true, Vector2(28.0, 120.0))
 	assert_true(stage.touch_controls.gesto_ativo(), "toque fora do botao segue sendo gesto de jogo")
-	_toque(stage, false, Vector2(14.0, 60.0))
+	_toque(stage, false, Vector2(28.0, 120.0))
 	assert_false(stage.touch_controls.gesto_ativo(), "soltar encerra o gesto")
 
 
@@ -322,7 +322,7 @@ func test_toque_no_fundo_com_overlay_aberto_nao_chega_ao_jogo() -> void:
 	stage.partida_iniciada.connect(func() -> void: partidas.append(1))
 	await _acao_pause()
 	assert_true(stage.pause_overlay.esta_aberto(), "precondicao: overlay aberto")
-	var fundo := Vector2(170.0, 300.0)
+	var fundo := Vector2(340.0, 600.0)
 	await _toque_real(fundo, true)
 	await _toque_real(fundo, false)
 	assert_false(stage.touch_controls.gesto_ativo(), "toque no fundo com overlay aberto nao gera gesto de jogo")

@@ -6,10 +6,10 @@ signal add_point
 signal power_up_coletado(tipo)
 
 # Constantes de movimento e física
-const SPEED = 80                    # Velocidade horizontal do jogador
-const GRAVITY = 10                  # Força da gravidade aplicada por frame
-const JUMP_POWER = -250             # Força do pulo (negativa para ir para cima)
-const GHOST_HALF_WIDTH = 16.0       # Meia largura visual do gecko (frame 32x32): o fantasma aparece quando ela cruza a borda
+const SPEED = 160                   # Velocidade horizontal do jogador
+const GRAVITY = 20                  # Força da gravidade aplicada por frame
+const JUMP_POWER = -500             # Força do pulo (negativa para ir para cima)
+const GHOST_HALF_WIDTH = 32.0       # Meia largura visual do gecko (frame 32x32 a escala 2 = 64): o fantasma aparece quando ela cruza a borda
 const ESPERA_MAXIMA_S = 0.6         # Quanto o gecko pode esperar apos o pouso na linha de cima e ainda ter a cor valida
 
 # Cor atual do jogador (definida no editor)

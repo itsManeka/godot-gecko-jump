@@ -3,7 +3,7 @@ extends GutTest
 # Botao de pausa por toque (PauseBotao): retangulo do handoff 7.1, visibilidade do predicado 7.2 e arbitragem
 # do toque 7.3 (aciona ao soltar dentro; fora/entrada por arraste/saida por arraste nao pausam).
 # Valores esperados vem do handoff, nunca da formula do codigo. Layout injetado, sem janela.
-const PEQUENA := Vector2(180.0, 320.0)
+const PEQUENA := Vector2(360.0, 640.0)
 const STAGE_SCRIPT := "res://scenes/Stage.gd"
 
 
@@ -60,32 +60,34 @@ func _arraste(pos: Vector2, idx: int = 0) -> InputEventScreenDrag:
 	return e
 
 
-func test_retangulo_sem_safe_area_e_x2_26_y2_26() -> void:
+# C832: PauseBotao 48x48 em (4, 4 + s_top)
+func test_c832_retangulo_sem_safe_area_e_48x48_em_4_4() -> void:
 	var b := _novo_botao()
 	var r := b.rect_botao()
-	assert_eq(r.position, Vector2(2.0, 2.0), "origem do retangulo com s_* = 0 deve ser (2, 2)")
-	assert_eq(r.end, Vector2(26.0, 26.0), "fim do retangulo com s_* = 0 deve ser (26, 26)")
+	assert_eq(r.position, Vector2(4.0, 4.0), "origem do retangulo com s_* = 0 deve ser (4, 4)")
+	assert_eq(r.size, Vector2(48.0, 48.0), "tamanho do retangulo deve ser 48x48")
+	assert_eq(r.end, Vector2(52.0, 52.0), "fim do retangulo com s_* = 0 deve ser (52, 52)")
 
 
-func test_retangulo_com_s_top_20_e_y22_46() -> void:
-	var b := _novo_botao(Rect2(0.0, 20.0, 180.0, 300.0))
+func test_c832_retangulo_com_s_top_40_e_y44_92() -> void:
+	var b := _novo_botao(Rect2(0.0, 40.0, 360.0, 600.0))
 	var r := b.rect_botao()
-	assert_eq(r.position, Vector2(2.0, 22.0), "origem com s_top = 20 deve ser (2, 22)")
-	assert_eq(r.end, Vector2(26.0, 46.0), "fim com s_top = 20 deve ser (26, 46)")
+	assert_eq(r.position, Vector2(4.0, 44.0), "origem com s_top = 40 deve ser (4, 44)")
+	assert_eq(r.end, Vector2(52.0, 92.0), "fim com s_top = 40 deve ser (52, 92)")
 
 
 func test_retangulo_com_s_left_soma_no_x() -> void:
-	var b := _novo_botao(Rect2(10.0, 0.0, 170.0, 320.0))
+	var b := _novo_botao(Rect2(20.0, 0.0, 340.0, 640.0))
 	var r := b.rect_botao()
-	assert_eq(r.position.x, 12.0, "x inicial com s_left = 10 deve ser 12")
-	assert_eq(r.end.x, 36.0, "x final com s_left = 10 deve ser 36")
+	assert_eq(r.position.x, 24.0, "x inicial com s_left = 20 deve ser 24")
+	assert_eq(r.end.x, 72.0, "x final com s_left = 20 deve ser 72")
 
 
-func test_folga_de_15_px_ate_o_placar() -> void:
+func test_folga_de_30_px_ate_o_placar() -> void:
 	var b := _novo_botao()
 	var stage = load(STAGE_SCRIPT)
-	var placar_x: float = 180.0 - stage.HUD_RIGHT_MARGIN - stage.POINTS_WIDTH
-	assert_eq(placar_x - b.rect_botao().end.x, 15.0, "folga ate o placar com s_* = 0 deve ser 15 px")
+	var placar_x: float = 360.0 - stage.HUD_RIGHT_MARGIN - stage.POINTS_WIDTH
+	assert_eq(placar_x - b.rect_botao().end.x, 30.0, "folga ate o placar com s_* = 0 deve ser 30 px")
 
 
 func test_oculto_no_menu() -> void:

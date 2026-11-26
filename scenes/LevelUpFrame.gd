@@ -10,7 +10,7 @@ extends CanvasLayer
 const COR: Color = Color(1.0, 1.0, 1.0, 1.0)
 # Vinheta (D1 = A): alpha de pico na borda da safe area e profundidade do gradiente para dentro, em px logicos
 const ALPHA_PICO: float = 0.5
-const PROFUNDIDADE: float = 20.0
+const PROFUNDIDADE: float = 40.0
 # Um pulso dura 0,3 s: acende rapido, apaga em fade, pausa curta entre pulsos (3 pulsos < 1 s)
 const SUBIDA_S: float = 0.06
 const QUEDA_S: float = 0.19

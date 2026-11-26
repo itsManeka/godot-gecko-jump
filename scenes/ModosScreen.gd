@@ -1,8 +1,8 @@
 class_name ModosScreen
 extends CanvasLayer
 
-# Tela Modos (carrossel, handoff-power-ups-e-modos): fundo escuro, titulo, imagem 64x64 do modo, setas, nome, descricao,
-# indicador de N marcas e botao OK, num bloco de 229 px centrado na altura util. Montada por codigo; a Stage a instancia
+# Tela Modos (carrossel, handoff-power-ups-e-modos): fundo escuro, titulo, imagem 128x128 do modo, setas, nome, descricao,
+# indicador de N marcas e botao OK, num bloco de 458 px centrado na altura util. Montada por codigo; a Stage a instancia
 # e injeta o layout (`aplicar_layout`). O modo exibido ja e o selecionado: OK so fecha (sinal `fechado` com o modo).
 # Troca por seta ou por arrasto horizontal >= LIMIAR_ARRASTO iniciado na faixa do carrossel (sinal `modo_mudou`).
 # Todo toque/clique com a tela aberta e consumido (nao vaza ao Play). So abre com o jogo nao iniciado.
@@ -20,37 +20,37 @@ const COR_MARCA: Color = Color(1.0, 1.0, 1.0, 1.0)
 const CAMADA: int = 11
 
 # Medidas em px logicos, relativas ao topo do bloco (handoff)
-const LARGURA: float = 180.0
-const ALTURA_BLOCO: float = 229.0
-const TITULO_ALTURA: float = 30.0
-const IMAGEM_X: float = 58.0
-const IMAGEM_Y: float = 42.0
-const IMAGEM_LADO: float = 64.0
-const SETA_LADO: float = 24.0
-const SETA_ESQ_X: float = 4.0
-const SETA_DIR_X: float = 152.0
-const SETA_Y: float = 62.0
-const NOME_Y: float = 114.0
-const NOME_ALTURA: float = 17.0
-const DESC_X: float = 10.0
-const DESC_Y: float = 135.0
-const DESC_LARGURA: float = 160.0
-const DESC_ALTURA: float = 34.0
-const MARCA_Y: float = 181.0
-const MARCA_ALTURA: float = 4.0
-const MARCA_LARGURA: float = 4.0
-const MARCA_ATUAL_LARGURA: float = 8.0
-const MARCA_ESPACO: float = 4.0
-const OK_X: float = 34.0
-const OK_Y: float = 197.0
-const OK_LARGURA: float = 112.0
-const OK_ALTURA: float = 32.0
-# Faixa do carrossel onde o arrasto vale (x 30-150, y 42-169) e deslocamento horizontal minimo que troca o modo
-const FAIXA_X: float = 30.0
-const FAIXA_Y: float = 42.0
-const FAIXA_LARGURA: float = 120.0
-const FAIXA_ALTURA: float = 127.0
-const LIMIAR_ARRASTO: float = 16.0
+const LARGURA: float = 360.0
+const ALTURA_BLOCO: float = 458.0
+const TITULO_ALTURA: float = 60.0
+const IMAGEM_X: float = 116.0
+const IMAGEM_Y: float = 84.0
+const IMAGEM_LADO: float = 128.0
+const SETA_LADO: float = 48.0
+const SETA_ESQ_X: float = 8.0
+const SETA_DIR_X: float = 304.0
+const SETA_Y: float = 124.0
+const NOME_Y: float = 228.0
+const NOME_ALTURA: float = 34.0
+const DESC_X: float = 20.0
+const DESC_Y: float = 270.0
+const DESC_LARGURA: float = 320.0
+const DESC_ALTURA: float = 68.0
+const MARCA_Y: float = 362.0
+const MARCA_ALTURA: float = 8.0
+const MARCA_LARGURA: float = 8.0
+const MARCA_ATUAL_LARGURA: float = 16.0
+const MARCA_ESPACO: float = 8.0
+const OK_X: float = 68.0
+const OK_Y: float = 394.0
+const OK_LARGURA: float = 224.0
+const OK_ALTURA: float = 64.0
+# Faixa do carrossel onde o arrasto vale (x 60-300, y 84-338) e deslocamento horizontal minimo que troca o modo
+const FAIXA_X: float = 60.0
+const FAIXA_Y: float = 84.0
+const FAIXA_LARGURA: float = 240.0
+const FAIXA_ALTURA: float = 254.0
+const LIMIAR_ARRASTO: float = 32.0
 
 const TEXTO_TITULO: String = "Modos"
 const TEXTO_OK: String = "OK"
@@ -75,7 +75,7 @@ var _rect_descricao: Rect2 = Rect2()
 var _rect_ok: Rect2 = Rect2()
 var _rect_faixa: Rect2 = Rect2()
 var _marcas: Array[Rect2] = []
-var _tamanho: Vector2 = Vector2(LARGURA, 320.0)
+var _tamanho: Vector2 = Vector2(LARGURA, 640.0)
 var _y0: float = 0.0
 var _modos: Array[GameMode] = []
 var _indice: int = 0
@@ -87,7 +87,7 @@ var _pressionado: int = Alvo.FUNDO
 
 func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	aplicar_layout(Vector2(LARGURA, 320.0), Rect2(0.0, 0.0, LARGURA, 320.0))
+	aplicar_layout(Vector2(LARGURA, 640.0), Rect2(0.0, 0.0, LARGURA, 640.0))
 
 
 func _ready() -> void:
@@ -98,15 +98,15 @@ func _ready() -> void:
 	_fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_fundo.focus_mode = Control.FOCUS_NONE
 	add_child(_fundo)
-	_titulo = UiHelpers.novo_label(TEXTO_TITULO, UiHelpers.TAMANHO_TITULO, 2, HORIZONTAL_ALIGNMENT_CENTER)
+	_titulo = UiHelpers.novo_label(TEXTO_TITULO, UiHelpers.TAMANHO_TITULO, 4, HORIZONTAL_ALIGNMENT_CENTER)
 	add_child(_titulo)
 	_imagem = _novo_panel(_estilo_imagem())
 	add_child(_imagem)
 	_seta_esq = _novo_botao("<")
 	_seta_dir = _novo_botao(">")
-	_nome_lbl = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 1, HORIZONTAL_ALIGNMENT_CENTER)
+	_nome_lbl = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 2, HORIZONTAL_ALIGNMENT_CENTER)
 	add_child(_nome_lbl)
-	_desc_lbl = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 1, HORIZONTAL_ALIGNMENT_CENTER)
+	_desc_lbl = UiHelpers.novo_label("", UiHelpers.TAMANHO_TEXTO, 2, HORIZONTAL_ALIGNMENT_CENTER)
 	_desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_desc_lbl.clip_text = true
 	add_child(_desc_lbl)
@@ -203,7 +203,7 @@ func rect_faixa_arrasto() -> Rect2:
 	return _rect_faixa
 
 
-# Retangulos das N marcas do indicador (a do modo exibido tem 8x4, as demais 4x4).
+# Retangulos das N marcas do indicador (a do modo exibido tem 16x8, as demais 8x8).
 func rect_marcas() -> Array[Rect2]:
 	return _marcas
 
@@ -331,7 +331,7 @@ func _verificar_arrasto(toque: Dictionary, pos: Vector2) -> void:
 	_trocar(1 if dx < 0.0 else -1)
 
 
-# Marcas centradas na largura: N = tamanho da lista, a atual 8x4 e as demais 4x4.
+# Marcas centradas na largura: N = tamanho da lista, a atual 16x8 e as demais 8x8.
 func _calcular_marcas() -> void:
 	_marcas.clear()
 	var n := _modos.size()
@@ -387,9 +387,9 @@ func _atualizar_visual() -> void:
 
 
 func _novo_botao(texto: String) -> Panel:
-	var painel := _novo_panel(UiHelpers.estilo_opcoes(COR_BOTAO, 1, COR_CONTORNO, COR_BOTAO))
+	var painel := _novo_panel(UiHelpers.estilo_opcoes(COR_BOTAO, 2, COR_CONTORNO, COR_BOTAO))
 	add_child(painel)
-	var rotulo := UiHelpers.novo_label(texto, UiHelpers.TAMANHO_TEXTO, 1, HORIZONTAL_ALIGNMENT_CENTER)
+	var rotulo := UiHelpers.novo_label(texto, UiHelpers.TAMANHO_TEXTO, 2, HORIZONTAL_ALIGNMENT_CENTER)
 	painel.add_child(rotulo)
 	return painel
 
@@ -402,17 +402,17 @@ func _colocar_botao(painel: Panel, r: Rect2) -> void:
 
 func _estilizar_botao(painel: Panel, pressionado: bool) -> void:
 	painel.add_theme_stylebox_override(
-		"panel", UiHelpers.estilo_opcoes(COR_BOTAO, 2 if pressionado else 1, COR_CONTORNO, COR_BOTAO)
+		"panel", UiHelpers.estilo_opcoes(COR_BOTAO, 4 if pressionado else 2, COR_CONTORNO, COR_BOTAO)
 	)
-	(painel.get_child(0) as Label).position = Vector2(0.0, 1.0 if pressionado else 0.0)
+	(painel.get_child(0) as Label).position = Vector2(0.0, 2.0 if pressionado else 0.0)
 
 
-# Placeholder da imagem do modo: moldura branca de 1 px sobre #5b8a4a (token ausente: imagem de modo 64x64).
+# Placeholder da imagem do modo: moldura branca de 2 px sobre #5b8a4a (provisorio ate a f561: imagem de modo 128x128).
 func _estilo_imagem() -> StyleBoxFlat:
 	var estilo := StyleBoxFlat.new()
 	estilo.bg_color = COR_BOTAO
 	estilo.border_color = COR_MOLDURA
-	estilo.set_border_width_all(1)
+	estilo.set_border_width_all(2)
 	return estilo
 
 

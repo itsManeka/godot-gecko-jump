@@ -1,7 +1,7 @@
 extends GutTest
 
 # f458 T9: RunningPlatforms le speed, K e proporcao do estado de dificuldade injetado (`dificuldade`). Speed e proporcao
-# no nascimento da linha; K relido a cada plataforma criada. Sem estado injetado = estagio 0 (60, K 3, 1/3).
+# no nascimento da linha; K relido a cada plataforma criada. Sem estado injetado = estagio 0 (120, K 3, 1/3).
 
 const GERADOR_SCENE := "res://scenes/RunningPlatforms.tscn"
 
@@ -133,7 +133,7 @@ func test_proporcao_zero_do_snapshot_nao_gera_linha_estatica() -> void:
 func test_sem_dificuldade_injetado_usa_o_estagio_zero() -> void:
 	var gerador := _gerador(Enums.PLATFORM_TYPE.MOVE_TO_LEFT, null)
 	for p in _plataformas(gerador):
-		assert_eq(p.speed, 60.0, "sem estado: speed 60")
+		assert_eq(p.speed, 120.0, "sem estado: speed 120")
 	var snap: DifficultySnapshot = gerador._snapshot()
 	assert_eq(snap.get_k(), 3, "sem estado: K 3")
 	assert_almost_eq(snap.get_proporcao_estaticas(), 1.0 / 3.0, 0.0001, "sem estado: proporcao 1/3")

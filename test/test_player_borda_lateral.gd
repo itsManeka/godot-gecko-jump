@@ -24,11 +24,11 @@ func _spawn(px: float, py: float) -> void:
 
 # C44: limites estritos. x == width fica; x > width volta por width; x < 0 entra por width.
 func test_wrap_x_limites_e_valores_exatos() -> void:
-	assert_almost_eq(PLAYER_SCRIPT.wrap_x(180.5, 180.0), 0.5, 0.0001, "180.5 -> 0.5")
-	assert_almost_eq(PLAYER_SCRIPT.wrap_x(-0.5, 180.0), 179.5, 0.0001, "-0.5 -> 179.5")
-	assert_eq(PLAYER_SCRIPT.wrap_x(0.0, 180.0), 0.0, "0 fica (limite estrito)")
-	assert_eq(PLAYER_SCRIPT.wrap_x(180.0, 180.0), 180.0, "180 fica (limite estrito)")
-	assert_eq(PLAYER_SCRIPT.wrap_x(90.0, 180.0), 90.0, "meio da tela inalterado")
+	assert_almost_eq(PLAYER_SCRIPT.wrap_x(360.5, 360.0), 0.5, 0.0001, "360.5 -> 0.5")
+	assert_almost_eq(PLAYER_SCRIPT.wrap_x(-0.5, 360.0), 359.5, 0.0001, "-0.5 -> 359.5")
+	assert_eq(PLAYER_SCRIPT.wrap_x(0.0, 360.0), 0.0, "0 fica (limite estrito)")
+	assert_eq(PLAYER_SCRIPT.wrap_x(360.0, 360.0), 360.0, "360 fica (limite estrito)")
+	assert_eq(PLAYER_SCRIPT.wrap_x(180.0, 360.0), 180.0, "meio da tela inalterado")
 
 # C45: gecko caindo sem plataforma cruzando 180 com ui_right. Os ticks sao dirigidos aqui (engine
 # nao processa o Player), entao cada leitura e exatamente um passo de fisica: antes do teleporte a
@@ -36,7 +36,7 @@ func test_wrap_x_limites_e_valores_exatos() -> void:
 func test_teleporte_preserva_velocity_y() -> void:
 	_p = add_child_autofree(load(PLAYER).instantiate())
 	_p.set_physics_process(false)
-	_p.position = Vector2(170.0, 100.0)
+	_p.position = Vector2(340.0, 100.0)
 	await wait_physics_frames(1)
 	Input.action_press("ui_right")
 	var x_antes: float = _p.position.x
@@ -47,7 +47,7 @@ func test_teleporte_preserva_velocity_y() -> void:
 	for i in 60:
 		_p._physics_process(TICK)
 		var vy_agora: float = _p.velocity.y
-		if not teleportou and _p.position.x < x_antes - 90.0:
+		if not teleportou and _p.position.x < x_antes - 180.0:
 			teleportou = true
 			vy_teleporte = vy_agora
 			vy_tick_anterior = vy_antes
@@ -55,7 +55,7 @@ func test_teleporte_preserva_velocity_y() -> void:
 			assert_eq(vy_agora - vy_antes, PLAYER_SCRIPT.GRAVITY, "queda avanca 1 GRAVITY por tick antes do teleporte")
 		vy_antes = vy_agora
 		x_antes = _p.position.x
-	assert_true(teleportou, "gecko deve cruzar 180 e reaparecer perto de 0")
+	assert_true(teleportou, "gecko deve cruzar 360 e reaparecer perto de 0")
 	assert_eq(vy_teleporte - vy_tick_anterior, PLAYER_SCRIPT.GRAVITY, "velocity.y no teleporte continua a queda (nao zerada)")
 
 # C46: sem Global.iniciado, ou com end == true, o early return de _physics_process impede o wrap.
@@ -81,22 +81,22 @@ func _spawn_quieto(px: float) -> void:
 func _ghost() -> AnimatedSprite2D:
 	return _p.get_node("Ghost") as AnimatedSprite2D
 
-# C47: offset e visibilidade. x=10 -> fantasma em +180 (global 190); x=170 -> -180 (global -10); x=90 invisivel;
-# bordas da meia largura (16 px): 16 nao cruza, 15.9 cruza; 164 nao cruza, 164.1 cruza.
+# C47: offset e visibilidade. x=10 -> fantasma em +360 (global 370); x=350 -> -360 (global -10); x=180 invisivel;
+# bordas da meia largura (32 px): 32 nao cruza, 31.9 cruza; 328 nao cruza, 328.1 cruza.
 func test_fantasma_offset_e_visibilidade_na_costura() -> void:
 	_spawn_quieto(10.0)
 	_p._process(0.0)
 	var g := _ghost()
 	assert_true(g.visible, "x=10 cruza a borda esquerda: fantasma visivel")
-	assert_almost_eq(g.global_position.x, 190.0, 0.0001, "x=10 -> fantasma em x=190 (offset +180)")
-	_p.position.x = 170.0
+	assert_almost_eq(g.global_position.x, 370.0, 0.0001, "x=10 -> fantasma em x=370 (offset +360)")
+	_p.position.x = 350.0
 	_p._process(0.0)
-	assert_true(g.visible, "x=170 cruza a borda direita: fantasma visivel")
-	assert_almost_eq(g.global_position.x, -10.0, 0.0001, "x=170 -> fantasma em x=-10 (offset -180)")
-	_p.position.x = 90.0
+	assert_true(g.visible, "x=350 cruza a borda direita: fantasma visivel")
+	assert_almost_eq(g.global_position.x, -10.0, 0.0001, "x=350 -> fantasma em x=-10 (offset -360)")
+	_p.position.x = 180.0
 	_p._process(0.0)
-	assert_false(g.visible, "x=90 longe das bordas: fantasma invisivel")
-	for caso in [[16.0, false], [15.9, true], [164.0, false], [164.1, true]]:
+	assert_false(g.visible, "x=180 longe das bordas: fantasma invisivel")
+	for caso in [[32.0, false], [31.9, true], [328.0, false], [328.1, true]]:
 		_p.position.x = caso[0]
 		_p._process(0.0)
 		assert_eq(g.visible, caso[1], "x=%s -> visivel=%s" % [caso[0], caso[1]])
@@ -147,11 +147,11 @@ func _setup_plat(px: float, speed: float, gx: float, cor: int = Enums.COLOR.AMAR
 	_pl.color = cor
 	_p = add_child_autofree(load(PLAYER).instantiate())
 	_p.color = cor
-	_p.position = Vector2(gx, 180)
+	_p.position = Vector2(gx, 140)
 	await wait_physics_frames(1)
 	_pl.player_color_changed(cor)
 
-# Roda n frames e devolve: fora (frames com x fora de [0,180]), teleportes, x e y logo apos o 1o
+# Roda n frames e devolve: fora (frames com x fora de [0,360]), teleportes, x e y logo apos o 1o
 # teleporte, menor/maior x depois dele e y final.
 func _trace(n: int, action: String = "") -> Dictionary:
 	if action != "":
@@ -161,9 +161,9 @@ func _trace(n: int, action: String = "") -> Dictionary:
 	for i in n:
 		await wait_physics_frames(1)
 		var x: float = _p.position.x
-		if x < 0.0 or x > 180.0:
+		if x < 0.0 or x > 360.0:
 			r["fora"] += 1
-		if absf(x - x_ant) > 90.0:
+		if absf(x - x_ant) > 180.0:
 			r["teleportes"] += 1
 			if r["teleportes"] == 1:
 				r["x_tp"] = x
@@ -175,44 +175,44 @@ func _trace(n: int, action: String = "") -> Dictionary:
 	r["y_fim"] = _p.position.y
 	return r
 
-# C50: ui_right segurado cruza 180 e reaparece perto de 0; x sempre em [0,180].
+# C50: ui_right segurado cruza 360 e reaparece perto de 0; x sempre em [0,360].
 func test_wrap_direita_com_input() -> void:
-	await _setup_plat(150.0, 0.0, 150.0)
+	await _setup_plat(300.0, 0.0, 300.0)
 	var r := await _trace(300, "ui_right")
-	assert_eq(r["fora"], 0, "x nunca sai de [0,180]")
+	assert_eq(r["fora"], 0, "x nunca sai de [0,360]")
 	assert_gt(r["teleportes"], 0, "gecko cruzou a borda direita")
-	assert_lt(r["min_pos"], 20.0, "reaparece perto de 0")
+	assert_lt(r["min_pos"], 40.0, "reaparece perto de 0")
 
-# C51: ui_left segurado cruza 0 e reaparece perto de 180.
+# C51: ui_left segurado cruza 0 e reaparece perto de 360.
 func test_wrap_esquerda_com_input() -> void:
-	await _setup_plat(30.0, 0.0, 30.0)
+	await _setup_plat(60.0, 0.0, 60.0)
 	var r := await _trace(300, "ui_left")
-	assert_eq(r["fora"], 0, "x nunca sai de [0,180]")
+	assert_eq(r["fora"], 0, "x nunca sai de [0,360]")
 	assert_gt(r["teleportes"], 0, "gecko cruzou a borda esquerda")
-	assert_gt(r["max_pos"], 160.0, "reaparece perto de 180")
+	assert_gt(r["max_pos"], 320.0, "reaparece perto de 360")
 
 # C52: sem input, plataforma arrasta o gecko para a direita; teleporta e cai.
 func test_wrap_arrasto_plataforma_direita_sem_input() -> void:
-	await _setup_plat(150.0, -60.0, 150.0)
+	await _setup_plat(300.0, -120.0, 300.0)
 	var r := await _trace(300)
-	assert_eq(r["fora"], 0, "x nunca sai de [0,180]")
+	assert_eq(r["fora"], 0, "x nunca sai de [0,360]")
 	assert_gt(r["teleportes"], 0, "arrasto cruzou a borda direita")
-	assert_lt(r["x_tp"], 20.0, "reaparece perto de 0")
+	assert_lt(r["x_tp"], 40.0, "reaparece perto de 0")
 	assert_gt(r["y_fim"], r["y_tp"], "sem chao do outro lado, cai depois do teleporte")
 
 # C53: sem input, plataforma arrasta o gecko para a esquerda; teleporta e cai.
 func test_wrap_arrasto_plataforma_esquerda_sem_input() -> void:
-	await _setup_plat(30.0, 60.0, 30.0)
+	await _setup_plat(60.0, 120.0, 60.0)
 	var r := await _trace(300)
-	assert_eq(r["fora"], 0, "x nunca sai de [0,180]")
+	assert_eq(r["fora"], 0, "x nunca sai de [0,360]")
 	assert_gt(r["teleportes"], 0, "arrasto cruzou a borda esquerda")
-	assert_gt(r["x_tp"], 160.0, "reaparece perto de 180")
+	assert_gt(r["x_tp"], 320.0, "reaparece perto de 360")
 	assert_gt(r["y_fim"], r["y_tp"], "sem chao do outro lado, cai depois do teleporte")
 
-# C54: controle, plataforma parada e sem input: x estavel em 90, sem teleporte.
+# C54: controle, plataforma parada e sem input: x estavel em 180, sem teleporte.
 func test_controle_plataforma_parada_sem_teleporte() -> void:
-	await _setup_plat(90.0, 0.0, 90.0)
+	await _setup_plat(180.0, 0.0, 180.0)
 	var r := await _trace(120)
 	assert_eq(r["teleportes"], 0, "nenhum teleporte espurio")
-	assert_eq(r["fora"], 0, "x dentro de [0,180]")
-	assert_almost_eq(_p.position.x, 90.0, 5.0, "x estavel perto de 90")
+	assert_eq(r["fora"], 0, "x dentro de [0,360]")
+	assert_almost_eq(_p.position.x, 180.0, 5.0, "x estavel perto de 180")

@@ -7,10 +7,10 @@ const PLAYER := "res://scenes/Player.tscn"
 const PLATFORM := "res://scenes/Platform.tscn"
 const STAGE := "res://scenes/Stage.tscn"
 const PLAYER_SCRIPT := preload("res://scenes/Player.gd")
-# Faixa de derrota: topo na altura visivel (320), espessura 20 (y 320..340). O corpo do gecko tem 28,5 de altura
-# (meia 14,3): em y = altura + 16 ele fica dentro da faixa e fora de qualquer faixa deslocada para cima (<= 320).
-const VISIBLE_H := 320.0
-const CHECK_Y := VISIBLE_H + 16.0
+# Faixa de derrota: topo na altura visivel (640), espessura 40 (y 640..680). O corpo do gecko tem 57 de altura
+# (meia 28,5): em y = altura + 32 ele fica dentro da faixa e fora de qualquer faixa deslocada para cima (<= 640).
+const VISIBLE_H := 640.0
+const CHECK_Y := VISIBLE_H + 32.0
 var _p: Node
 var _pl: Node
 var _stage: Node
@@ -54,7 +54,7 @@ func _spawn_stage() -> void:
 	var scroll: Node = _stage.get_node("ScrollLevel")
 	_stage.remove_child(scroll)
 	scroll.free()
-	_stage.apply_layout(Vector2(180.0, VISIBLE_H), Rect2(0.0, 0.0, 180.0, VISIBLE_H))
+	_stage.apply_layout(Vector2(360.0, VISIBLE_H), Rect2(0.0, 0.0, 360.0, VISIBLE_H))
 	_p = _stage.get_node("Node2D/Player")
 	_p.set_physics_process(false)
 	_stage._on_Play_button_down()
@@ -70,32 +70,47 @@ func _place_in_check(px: float, py: float) -> void:
 # C55: pouso so pela posicao real. Fantasma visivel em x=-2; plataforma so sob o fantasma nao segura o gecko.
 func test_pouso_so_pela_posicao_real() -> void:
 	var cor := Enums.COLOR.AMARELO
-	_spawn_platform(0.0, 200.0, 0.0, cor)
-	_spawn_player(178.0, 150.0, cor)
+	_spawn_platform(0.0, 400.0, 0.0, cor)
+	_spawn_player(356.0, 300.0, cor)
 	await wait_physics_frames(1)
 	_pl.player_color_changed(cor)
 	_p._process(0.0)
-	assert_true(_p.get_node("Ghost").visible, "x=178: fantasma visivel do outro lado")
+	assert_true(_p.get_node("Ghost").visible, "x=356: fantasma visivel do outro lado")
 	await _step(40)
 	assert_false(_p.is_on_floor(), "plataforma so sob o fantasma (x=0) nao segura o gecko")
-	assert_gt(_p.position.y, 260.0, "gecko segue caindo")
-	assert_almost_eq(_p.position.x, 178.0, 0.5, "posicao real nao muda")
+	assert_gt(_p.position.y, 520.0, "gecko segue caindo")
+	assert_almost_eq(_p.position.x, 356.0, 0.5, "posicao real nao muda")
 
 func test_pouso_na_plataforma_sob_a_posicao_real() -> void:
 	var cor := Enums.COLOR.AMARELO
-	_spawn_platform(178.0, 200.0, 0.0, cor)
-	_spawn_player(178.0, 150.0, cor)
+	_spawn_platform(356.0, 400.0, 0.0, cor)
+	_spawn_player(356.0, 300.0, cor)
 	await wait_physics_frames(1)
 	_pl.player_color_changed(cor)
 	await _step(40)
-	assert_true(_p.is_on_floor(), "plataforma sob x=178 segura o gecko")
-	assert_lt(_p.position.y, 200.0, "gecko ficou acima da plataforma")
+	assert_true(_p.is_on_floor(), "plataforma sob x=356 segura o gecko")
+	assert_lt(_p.position.y, 400.0, "gecko ficou acima da plataforma")
+
+# C824: o fantasma alinha em x e x -/+ 360 (borda GHOST_HALF_WIDTH = 32 dos dois lados)
+func test_ghost_alinha_em_x_mais_ou_menos_360() -> void:
+	_spawn_player(20.0, 300.0, Enums.COLOR.AMARELO)
+	_p._process(0.0)
+	var ghost: Node2D = _p.get_node("Ghost")
+	assert_true(ghost.visible, "x=20: fantasma visivel")
+	assert_almost_eq(_p.position.x + ghost.position.x, 380.0, 0.0001, "fantasma em x + 360")
+	_p.position.x = 340.0
+	_p._process(0.0)
+	assert_true(ghost.visible, "x=340: fantasma visivel")
+	assert_almost_eq(_p.position.x + ghost.position.x, -20.0, 0.0001, "fantasma em x - 360")
+	_p.position.x = 180.0
+	_p._process(0.0)
+	assert_false(ghost.visible, "x=180: fantasma oculto")
 
 # C56: Ghost e descendentes sem colisao; fantasma sobre plataforma da mesma cor nao pontua nem pousa.
 func test_fantasma_sem_colisao_nem_pontuacao() -> void:
 	var cor := Enums.COLOR.AMARELO
-	_spawn_platform(0.0, 200.0, 0.0, cor)
-	_spawn_player(178.0, 150.0, cor)
+	_spawn_platform(0.0, 400.0, 0.0, cor)
+	_spawn_player(356.0, 300.0, cor)
 	await wait_physics_frames(1)
 	_pl.player_color_changed(cor)
 	var ghost: Node = _p.get_node("Ghost")
@@ -111,25 +126,25 @@ func test_fantasma_sem_colisao_nem_pontuacao() -> void:
 
 # C57: plataforma nao tem wrap, segue a trajetoria alem de x=180.
 func test_plataforma_nao_faz_wrap() -> void:
-	_spawn_platform(170.0, 200.0, -60.0, Enums.COLOR.AMARELO)
+	_spawn_platform(340.0, 400.0, -120.0, Enums.COLOR.AMARELO)
 	await wait_physics_frames(1)
 	var x_ant: float = _pl.position.x
 	for i in 40:
 		await wait_physics_frames(1)
 		assert_true(_pl.position.x >= x_ant - 0.001, "plataforma nunca volta (sem teleporte)")
 		x_ant = _pl.position.x
-	assert_gt(_pl.position.x, 190.0, "plataforma passou de x=180 e segue para a direita")
+	assert_gt(_pl.position.x, 380.0, "plataforma passou de x=360 e segue para a direita")
 
 # C58: o teleporte da costura nao tira o corpo da CheckPlayer (sem derrota falsa), nos dois lados.
 func test_checkplayer_sem_derrota_falsa_na_costura_direita() -> void:
 	_spawn_stage()
 	var check: Area2D = _stage.get_node("CheckPlayer")
 	watch_signals(check)
-	await _place_in_check(180.9, CHECK_Y)
+	await _place_in_check(360.9, CHECK_Y)
 	Input.action_press("ui_right")
 	_p.set_physics_process(true)
 	await wait_physics_frames(1)
-	assert_lt(_p.position.x, 10.0, "gecko teleportou para perto de x=0")
+	assert_lt(_p.position.x, 20.0, "gecko teleportou para perto de x=0")
 	assert_signal_not_emitted(check, "body_exited", "teleporte nao sai da CheckPlayer")
 	assert_false(_p.is_end(), "sem derrota falsa na costura direita")
 
@@ -141,7 +156,7 @@ func test_checkplayer_sem_derrota_falsa_na_costura_esquerda() -> void:
 	Input.action_press("ui_left")
 	_p.set_physics_process(true)
 	await wait_physics_frames(1)
-	assert_gt(_p.position.x, 170.0, "gecko teleportou para perto de x=180")
+	assert_gt(_p.position.x, 340.0, "gecko teleportou para perto de x=360")
 	assert_signal_not_emitted(check, "body_exited", "teleporte nao sai da CheckPlayer")
 	assert_false(_p.is_end(), "sem derrota falsa na costura esquerda")
 
@@ -150,7 +165,7 @@ func test_checkplayer_derrota_por_queda_preservada() -> void:
 	_spawn_stage()
 	var check: Area2D = _stage.get_node("CheckPlayer")
 	watch_signals(check)
-	await _place_in_check(90.0, CHECK_Y)
+	await _place_in_check(180.0, CHECK_Y)
 	assert_false(_p.is_end(), "dentro da CheckPlayer ainda nao perdeu")
 	_p.set_physics_process(true)
 	await _step(30)
@@ -163,8 +178,8 @@ func test_arrasto_sem_input_termina_em_game_over() -> void:
 	_spawn_stage()
 	var cor := Enums.COLOR.AMARELO
 	_p.color = cor
-	_spawn_platform(150.0, 200.0, -60.0, cor)
-	_p.position = Vector2(150.0, 180.0)
+	_spawn_platform(300.0, 400.0, -120.0, cor)
+	_p.position = Vector2(300.0, 360.0)
 	await wait_physics_frames(1)
 	_pl.player_color_changed(cor)
 	_p.set_physics_process(true)
@@ -174,13 +189,13 @@ func test_arrasto_sem_input_termina_em_game_over() -> void:
 	for i in 400:
 		_p.can_change_color = false
 		await wait_physics_frames(1)
-		if _p.position.x < 0.0 or _p.position.x > 180.0:
+		if _p.position.x < 0.0 or _p.position.x > 360.0:
 			fora += 1
-		if absf(_p.position.x - x_ant) > 90.0:
+		if absf(_p.position.x - x_ant) > 180.0:
 			teleportou = true
 		x_ant = _p.position.x
 		if _p.is_end():
 			break
-	assert_eq(fora, 0, "x nunca sai de [0,180]")
+	assert_eq(fora, 0, "x nunca sai de [0,360]")
 	assert_true(teleportou, "arrasto levou o gecko a costura (teleporte)")
 	assert_true(_p.is_end(), "gecko caiu e a CheckPlayer encerrou a partida")

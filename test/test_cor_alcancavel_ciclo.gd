@@ -14,8 +14,8 @@ const CURVA_PATH := "res://ressources/curva_dificuldade.tres"
 const EPS_PROGRESSO := 0.001
 const SEEDS := [20261110, 20261111, 20261112]
 const LINHAS := 120
-const LARGURA := 180.0
-const ALTURA_TELA := 320.0
+const LARGURA := 360.0
+const ALTURA_TELA := 640.0
 const Y_BASE := 10000.0
 # Pousos depois do nascimento em que uma linha movel ainda cria plataformas no spawn (valor de modelagem, como no
 # test_cor_alcancavel_simulacao).
@@ -123,7 +123,7 @@ func _criar_movel(
 func _linha_inicial(y: float, rng: RandomNumberGenerator) -> Dictionary:
 	var cores: Array = StaticPlatformColors.sortear(Enums.COR_INICIAL, rng)
 	var plataformas: Array = []
-	var xs: Array = [30.0, 90.0, 150.0]
+	var xs: Array = [60.0, 180.0, 300.0]
 	for i in xs.size():
 		plataformas.append(_plataforma(xs[i], cores[i], null))
 	return {"y": y, "tipo": "estatica", "plataformas": plataformas, "historico": []}
@@ -133,7 +133,7 @@ func _nova_linha(y: float, cor_gecko: int, rng: RandomNumberGenerator, snap: Dif
 	var tipo: int = PlatformTypePicker.resolve(Enums.PLATFORM_TYPE.RANDOM_ALL, rng, snap.get_proporcao_estaticas())
 	if tipo == Enums.PLATFORM_TYPE.STATIC:
 		var plataformas: Array = []
-		for x in [30.0, 90.0, 150.0]:
+		for x in [60.0, 180.0, 300.0]:
 			var cor: int = Enums.get_random_color(rng)
 			var ciclo: PlatformColorCycle = _sorteia_ciclo(cor, cor_gecko, rng, snap)
 			plataformas.append(_plataforma(x, cor, ciclo, _idade_sorteada(ciclo, rng)))
@@ -354,9 +354,9 @@ func test_c264_cicladora_travada_nao_quebra_a_previsao_das_demais_linhas() -> vo
 		rng.seed = 20261120
 		var ciclo_pouso := PlatformColorCycle.new()
 		ciclo_pouso.iniciar(Enums.COLOR.AMARELO, periodo, rng)
-		var linha_pouso: Dictionary = {"y": _y_da_linha(0), "plataformas": [_plataforma(90.0, Enums.COLOR.AMARELO, ciclo_pouso)]}
+		var linha_pouso: Dictionary = {"y": _y_da_linha(0), "plataformas": [_plataforma(180.0, Enums.COLOR.AMARELO, ciclo_pouso)]}
 		var acima: Array = []
-		for x in [30.0, 90.0, 150.0]:
+		for x in [60.0, 180.0, 300.0]:
 			var ciclo := PlatformColorCycle.new()
 			ciclo.iniciar(Enums.COR_INICIAL, periodo, rng)
 			acima.append(_plataforma(x, Enums.COR_INICIAL, ciclo))

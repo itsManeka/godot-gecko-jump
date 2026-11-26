@@ -106,9 +106,9 @@ func test_modo_desligado_moveis_mantem_speed_60_e_menos_60() -> void:
 	assert_gt(_plataformas(esquerda).size(), 0, "MOVE_TO_LEFT criou plataformas")
 	assert_gt(_plataformas(direita).size(), 0, "MOVE_TO_RIGHT criou plataformas")
 	for p in _plataformas(esquerda):
-		assert_eq(p.speed, 60, "MOVE_TO_LEFT com modo desligado: speed 60")
+		assert_eq(p.speed, 120, "MOVE_TO_LEFT com modo desligado: speed 120 (60 em 1x)")
 	for p in _plataformas(direita):
-		assert_eq(p.speed, -60, "MOVE_TO_RIGHT com modo desligado: speed -60")
+		assert_eq(p.speed, -120, "MOVE_TO_RIGHT com modo desligado: speed -120 (-60 em 1x)")
 
 
 func test_modo_desligado_janela_de_k_continua_valendo() -> void:
@@ -138,9 +138,9 @@ func test_modo_desligado_janela_de_k_continua_valendo() -> void:
 func _player_com_candidatas(cor_candidata: int, com_candidatas: bool) -> Node:
 	var player: Node = add_child_autofree(load(PLAYER_SCENE).instantiate())
 	var atual: Platform = add_child_autofree(load(PLATFORM_SCENE).instantiate())
-	atual.position = Vector2(90, 200)
+	atual.position = Vector2(180, 200)
 	if com_candidatas:
-		for x in [30, 90, 150]:
+		for x in [60, 180, 300]:
 			var cima: Platform = add_child_autofree(load(PLATFORM_SCENE).instantiate())
 			cima.set_color(cor_candidata)
 			cima.position = Vector2(x, 200 - InitialRows.ESPACAMENTO)

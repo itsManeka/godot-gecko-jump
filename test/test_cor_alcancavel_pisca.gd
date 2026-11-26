@@ -25,8 +25,8 @@ const EPS_PROGRESSO := 0.001
 # lacuna da alcancabilidade registrada na issue #52 do repo, que as traz de volta ao corrigir.
 const SEEDS := [20261122, 20261123, 20261124]
 const LINHAS := 120
-const LARGURA := 180.0
-const ALTURA_TELA := 320.0
+const LARGURA := 360.0
+const ALTURA_TELA := 640.0
 const Y_BASE := 10000.0
 # Linhas ja criadas acima do pouso (a tela mostra varias): as piscantes envelhecem antes de o gecko chegar nelas.
 const LINHAS_A_FRENTE := 8
@@ -38,7 +38,7 @@ const PLATAFORMAS_POR_GERADOR := 40
 # C329
 const FRAMES_MEDIDA := 360
 const FRAMES_PARA_SAIR := 150
-const ALTURA_ENTRE_GERADORES := 25.0
+const ALTURA_ENTRE_GERADORES := 50.0
 const TICKS := 12
 
 var _cor_original: Enums.COLOR
@@ -469,7 +469,7 @@ func _iniciar_medida(indice: int, estagio: DifficultyStage, semente: int, tipo: 
 	gerador.dificuldade = _estado_so_do_estagio(estagio)
 	gerador.rng = _rng(semente)
 	gerador.position = Vector2(0, 20.0 + ALTURA_ENTRE_GERADORES * linha)
-	var spawn_x: float = 210.0 if tipo == Enums.PLATFORM_TYPE.MOVE_TO_LEFT else -30.0
+	var spawn_x: float = 420.0 if tipo == Enums.PLATFORM_TYPE.MOVE_TO_LEFT else -60.0
 	var registro := {
 		"rotulo": "E%d semente %d %s" % [indice, semente, "esq" if tipo == Enums.PLATFORM_TYPE.MOVE_TO_LEFT else "dir"],
 		"gerador": gerador,
