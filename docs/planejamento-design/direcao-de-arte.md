@@ -62,7 +62,7 @@ Entraram no `palette.gpl` conforme cada peça foi desenhada e aprovada pelo dono
 | Gecko azul | `#353880` (linha), `#5c5fc8`, `#5991ff` (base), `#61aff9`, `#9ec1ed` (brilho); luz `#a6c8ff`; barriga `#b2c8ea` / `#e2eefa` | A plataforma azul reusa esses tons mais `#3a5ad6` (sombra do gelo, mais fria que `#5c5fc8`) |
 | Grama da plataforma verde | `#22604a` (linha), `#52ba56`, base = âncora `#79cf5a`, `#a2ec5c`, `#e0f592` (brilho) | Cobertura derramando na borda da terra |
 | Terra / rocha orgânica (4 plataformas) | `#472b1b` (sombra), `#784b2e` (base), `#a87349` (luz), `#c99a5e` (brilho) | Os 3 primeiros tons são `terra_sombra` / `terra_base` / `terra_luz` da tabela abaixo; `terra_brilho` é o tom novo |
-| Cobertura e cogumelos da plataforma vermelha | `#7c182f` (linha), `#cd294c`, `#ff443e` (base), `#ff7a62`, `#f49c89` (brilho); talo `#f3c3a5` / `#ffe9d6` | Rampa a reconferir quando o gecko vermelho final chegar (pendente do dono) |
+| Cobertura e cogumelos da plataforma vermelha | `#7c182f` (linha), `#cd294c`, `#ff443e` (base), `#ff7a62`, `#f49c89` (brilho); talo `#f3c3a5` / `#ffe9d6` | Rampa conferida contra o gecko vermelho promovido (r12d refinado); reconferencia da plataforma vermelha fica para a feature de plataformas |
 
 #### Rampas aprovadas: menu (seção 5.3)
 
@@ -172,15 +172,15 @@ Imagem gerada por IA entra **só como inspiração** (`assets/src/refs/_inspirac
 | Estilo geral 16-bit | `assets/src/ref-estilo-dono.jpg` | Identidade luminosa SNES/GBA, contorno `#052018` e sombreado quente |
 | Gecko mestre (idle) | `assets/src/refs/gecko-idle-mestre.aseprite` / `.png` | Ref mestra `64×64` acabada pelo dono: rampa, contorno, luz e proporções (seções 1.2 e 1.5) |
 | Gecko verde, amarelo e azul | `assets/src/refs/gecko-verde.*`, `gecko-amarelo.*`, `gecko-azul.*` (`.aseprite` + `.png`) | Variantes aprovadas pelo dono com marca `#41` própria (brotinho, manchas solares, cristais de gelo) |
-| Gecko vermelho | (sem arquivo em `assets/src/refs/` ainda) | **Pendente do acabamento do dono no Aseprite**; chega com rampa no `palette.gpl` e nova rodada da prova cinza |
+| Gecko vermelho | `assets/src/refs/gecko-vermelho.*` (`.aseprite` + `.png`) | Variante promovida do r12d refinado pelo dono, com crista de lóbulos no topo e na nuca; rampa no `palette.gpl` e incluida na prova cinza |
 | Plataformas | `assets/src/refs/plataforma-amarelo.*`, `plataforma-verde.*`, `plataforma-azul.*`, `plataforma-vermelho.*` (`.aseprite` + `.png`) | 4 ilhotas aprovadas; a azul é a versão com gelo clareado (a versão anterior da plataforma azul fica preservada em `assets/src/_orig/plataforma-azul-r15.*`) |
-| Prova cinza `#41` | `assets/src/refs/prova-cinza-41.png` (gerada por `assets/src/prova_cinza_41.py`) | Prancha em escala de cinza aprovada pelo dono, com o gecko vermelho marcado **pendente** |
+| Prova cinza `#41` | `assets/src/refs/prova-cinza-41.png` (gerada por `assets/src/prova_cinza_41.py`) | Prancha em escala de cinza aprovada pelo dono, com o gecko vermelho incluido |
 | Rascunho do menu | `assets/src/refs/menu-rascunho.aseprite` / `.png` | Rascunho aprovado do menu (seção 5.3); o dono faz o acabamento |
 | Inspiração de clima | `assets/src/refs/_inspiracao/pixel-cozy.png`, `pixel-bg.png` | Só referência (origem/licença desconhecida); não entra no jogo |
 | Inspiração de IA | `assets/src/refs/_inspiracao-ia/` | `gecko-bipede-chibi-ref.jpg` (+ `_stand.png`), `ilhotas-powerups-ref.jpg`, `biomas-4-estagios-ref.jpg`, `menu-mockup-ref.jpg`: composição e clima, não pixel art de produção |
 | Power-ups, tiles de bioma e kit UI | (ainda sem arte) | Ref na feature de execução |
 
-O catálogo, a prova cinza e a rampa da plataforma vermelha fecham juntos quando o gecko vermelho do dono chegar.
+O catálogo e a prova cinza das 4 variantes incluem o gecko vermelho promovido; a rampa da plataforma vermelha segue para reconferência.
 
 O arquivo `assets/src/direcao-arte.aseprite` foi removido: os arquivos de `assets/src/refs/` o substituem.
 
@@ -233,12 +233,12 @@ Nenhuma informação essencial de gameplay depende exclusivamente de matiz. Cada
 | **Amarelo** (`#f6db61`) | **Mel Dourado / Florzinhas** | Cobertura de **mel dourado pingando** pela borda da terra + **micro-florzinhas** discretas (`4–6 px`) no topo (sem confundir com obstáculo) | **Manchas solares** circulares sutis (`amarelo_sombra`) no flanco/dorso, preservando a silhueta chibi bípede | **Círculos / brilhos dourados** (`8×8 px` redondos + mini-estrelas) | Mini-ilhota mel `64×24` + mini-gecko manchas `24×32` + rótulo `"amarelo"` |
 | **Verde** (`#79cf5a`) | **Grama / Folhinhas** | Cobertura de **grama verde** derramando na borda + **folhinhas e vinhas** curtas caindo na terra e brotos discretos no topo | **Brotinho de 2 folhas** nascendo no topo da cabeça, preservando a silhueta chibi bípede | **Folhas / gotas suaves** (`10×6 px` inclinadas caindo em leve arco) | Mini-ilhota grama `64×24` + mini-gecko brotinho `24×32` + rótulo `"verde"` |
 | **Azul** (`#5987e9`) | **Gelo / Cristal** | Cobertura de **gelo azul** derramando na borda + **micro-cristais angulares** discretos (`6–8 px`, `azul_luz`) no topo | **Cristais de gelo** angulares sutis no dorso/cabeça sem deformar os olhões nem a cauda espiral | **Losangos / cristais** (`10×10 px` em diamante com núcleo `azul_luz`) | Mini-ilhota gelo `64×24` + mini-gecko cristais `24×32` + rótulo `"azul"` |
-| **Vermelho** (`#ec4848`) | **Rubro / Cogumelos** | Cobertura **vermelha** derramando na borda + **micro-cogumelos** vermelhos com pintas brancas (`6–8 px`) no topo | **Espinhos dorsais fofos** curtos e arredondados ao longo do dorso sem poluir a silhueta | **Triângulos / faíscas** (`8×8 px` triangulares subindo rapidamente) | Mini-ilhota cogumelos `64×24` + mini-gecko espinhos `24×32` + rótulo `"vermelho"` |
+| **Vermelho** (`#ec4848`) | **Rubro / Cogumelos** | Cobertura **vermelha** derramando na borda + **micro-cogumelos** vermelhos com pintas brancas (`6–8 px`) no topo | **Crista de lóbulos** vermelhos no topo e na nuca da cabeça (não espinhos dorsais), sem poluir a silhueta | **Triângulos / faíscas** (`8×8 px` triangulares subindo rapidamente) | Mini-ilhota cogumelos `64×24` + mini-gecko crista `24×32` + rótulo `"vermelho"` |
 
 ### Regras de preservação do `#41`
 
 1. **Fim do tingimento chapado (`modulate`):** tanto o Gecko quanto as ilhotas abandonam o tingimento de sprite branco por `Enums.get_cor(...)`. Cada variante é desenhada diretamente com sua rampa de 3 cores + contorno `ink_contorno` (`#052018`), preservando olhos grandes (`#fffdf5` + pupila/espiral `#052018`), base de terra (`terra_luz/base/sombra`), brilhos quentes e marcas táteis sem lavagem de cor.
-2. **Validação obrigatória em escala de cinza:** a prancha em escala de cinza `assets/src/refs/prova-cinza-41.png` (gerada por `assets/src/prova_cinza_41.py`, luma Rec.601; critério: diferença média absoluta `>= 10` ou `XOR >= 5%` entre cada par) comprova que as 4 ilhotas e os camaleões bípedes chibi são diferenciáveis mesmo sem saturação cromática. O dono aprovou a prancha com o gecko vermelho marcado **pendente**: o script roda de novo quando o gecko vermelho final chegar. A plataforma azul teve o gelo clareado para separar do vermelho em cinza (original em `assets/src/_orig/plataforma-azul-r15.*`).
+2. **Validação obrigatória em escala de cinza:** a prancha em escala de cinza `assets/src/refs/prova-cinza-41.png` (gerada por `assets/src/prova_cinza_41.py`, luma Rec.601; critério: diferença média absoluta `>= 10` ou `XOR >= 5%` entre cada par) comprova que as 4 ilhotas e os camaleões bípedes chibi são diferenciáveis mesmo sem saturação cromática. A prancha inclui o gecko vermelho promovido (r12d refinado); o script regera a prancha quando qualquer uma das 4 folhas mudar. A plataforma azul teve o gelo clareado para separar do vermelho em cinza (original em `assets/src/_orig/plataforma-azul-r15.*`).
 3. **Tutorial bilíngue cor + padrão:** em `scenes/TutorialCard.gd`, os retângulos chapados das amostras (`=` igual / `X` diferente) e dos 4 quadrados da legenda passam a exibir mini-sprites das ilhotas e do gecko com suas marcas reais acompanhados dos nomes (`amarelo`, `verde`, `azul`, `vermelho`).
 
 ---
@@ -249,7 +249,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
 
 ### 3.1 Gecko (`scenes/Player.tscn`, `scenes/Player.gd`)
 
-- **Design do personagem (`assets/src/refs/_inspiracao-ia/gecko-bipede-chibi-ref.jpg` e `assets/src/ref-estilo-dono.jpg`):** camaleão **bípede (em pé sobre as duas patas traseiras) em todas as poses**, com proporção **chibi `1:1` cabeça/corpo**, **olhões grandes esbugalhados com pupilas levemente desalinhadas** (`#fffdf5` + `#052018`) para uma expressão fofa e confusa, **cauda enrolada em espiral**, contorno limpo `#052018` e sombreado quente em 3 tons. As marcas `#41` sutis por cor (manchas solares no amarelo, brotinho de 2 folhas na cabeça no verde, cristais de gelo no dorso/cabeça no azul e espinhos dorsais fofos no vermelho) preservam intacta a silhueta chibi bípede.
+- **Design do personagem (`assets/src/refs/_inspiracao-ia/gecko-bipede-chibi-ref.jpg` e `assets/src/ref-estilo-dono.jpg`):** camaleão **bípede (em pé sobre as duas patas traseiras) em todas as poses**, com proporção **chibi `1:1` cabeça/corpo**, **olhões grandes esbugalhados com pupilas levemente desalinhadas** (`#fffdf5` + `#052018`) para uma expressão fofa e confusa, **cauda enrolada em espiral**, contorno limpo `#052018` e sombreado quente em 3 tons. As marcas `#41` sutis por cor (manchas solares no amarelo, brotinho de 2 folhas na cabeça no verde, cristais de gelo no dorso/cabeça no azul e crista de lóbulos no topo e na nuca no vermelho) preservam intacta a silhueta chibi bípede.
 - **Tamanho do frame:** **`64×64 px`** exatos (`2×` sobre `32×32 px`), pivô no centro `(32, 32)`. Prepara e preserva proporcionalmente na migração `360×640`:
   - **`GHOST_HALF_WIDTH = 32.0`** (`2×` de `16.0`) para wrap horizontal contínuo nas bordas de `PlayArea.LARGURA = 360`;
   - `CollisionShape2D` do corpo e `DetectorPlataforma` escalados `2×` na entrega de migração para `360×640`, mantendo a base do pé alinhada ao mesmo ponto de contato em todas as poses (`y = 60` do frame `64×64`, `y = +28 px` a partir do pivô).

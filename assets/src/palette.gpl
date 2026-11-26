@@ -102,3 +102,5 @@ Columns: 8
  74  88 120	menu card corpo
 106 122 156	menu card luz
 154 168 198	menu card brilho
+# Rubor do gecko vermelho (r12d refinado; o #f07f86 da mestra some na pele vermelha)
+255 179 193	vermelho rubor
