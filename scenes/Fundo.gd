@@ -19,6 +19,11 @@ const LARGURA_TELA: float = 360.0
 const DURACAO_CROSSFADE: float = 1.2
 # Tolerancia ao somar deltas fixos: a soma que chega a duracao (menos EPS) fecha o crossfade em 1/0 exatos
 const EPS_CROSSFADE: float = 0.000001
+# Particulas ambientais (T7): quantidade por bioma (e3 tem mais), deriva lenta (px/s) e seed fixa do layout
+const PARTICULAS_POR_BIOMA: Array[int] = [9, 9, 9, 12]
+const VELOCIDADE_PARTICULA: float = 8.0
+const SEMENTE_PARTICULAS: int = 559
+const LADO_PARTICULA: float = 8.0
 
 # Bioma ativo (alvo do crossfade); indice em FundoBiomas
 var bioma: int = 0
@@ -41,6 +46,14 @@ var _ceus: Array = []
 # Por bioma e por camada (c0, c1, c2): os Sprite2D dos tiles
 var _tiles: Array = []
 var _altura_tela: float = 0.0
+# Seed do layout das particulas (constante por padrao: mesma seed = mesmas posicoes)
+var semente_particulas: int = SEMENTE_PARTICULAS
+# Por bioma: os Sprite2D das particulas
+var _particulas: Array = []
+# Por bioma e por particula: Vector3(x, y inicial, fator de velocidade)
+var _particulas_base: Array = []
+# Tempo de deriva acumulado (s): so cresce com a partida iniciada e a arvore nao pausada
+var _deriva: float = 0.0
 # Opacidade de cada grupo (bioma)
 var _alfa: Array[float] = []
 var _fade_ativo: bool = false
@@ -74,6 +87,20 @@ func definir_texturas(texturas: Array) -> void:
 func _process(delta: float) -> void:
 	atualizar()
 	avancar_crossfade(delta)
+	avancar_particulas(delta)
+
+
+# Deriva das particulas: so com a partida iniciada e a arvore nao pausada (o Zen deriva; menu e pausa param)
+func avancar_particulas(delta: float) -> void:
+	if not Global.is_iniciado() or get_tree().paused:
+		return
+	_deriva += maxf(delta, 0.0)
+	_posicionar_particulas()
+
+
+# Sprites das particulas do grupo (-1 = bioma ativo)
+func particulas(grupo: int = -1) -> Array:
+	return _particulas[_grupo_valido(grupo)]
 
 
 # Le o delta do scroll e acumula quando a partida esta ativa; sempre registra o ultimo valor lido (o scroll que
@@ -197,9 +224,51 @@ func reconstruir() -> void:
 				lista.append(_novo_sprite(textura))
 			camadas.append(lista)
 		_tiles.append(camadas)
+	_reconstruir_particulas()
 	_normalizar_alfas()
 	atualizar_posicoes()
+	_posicionar_particulas()
 	_aplicar_alfas()
+
+
+# Recria as particulas de todos os grupos (layout pela seed, sem acumular as anteriores); acima das camadas, sem colisao
+func _reconstruir_particulas() -> void:
+	for lista: Array in _particulas:
+		for sprite: Sprite2D in lista:
+			remove_child(sprite)
+			sprite.queue_free()
+	_particulas = []
+	_particulas_base = []
+	var fonte := RandomNumberGenerator.new()
+	fonte.seed = semente_particulas
+	for g in range(_tabela.size()):
+		var quantidade: int = PARTICULAS_POR_BIOMA[mini(g, PARTICULAS_POR_BIOMA.size() - 1)]
+		var sprites: Array = []
+		var bases: Array = []
+		for i in range(quantidade):
+			sprites.append(_novo_sprite(FundoBiomas.particula(g)))
+			bases.append(
+				Vector3(
+					fonte.randf_range(0.0, LARGURA_TELA - LADO_PARTICULA),
+					fonte.randf_range(0.0, _altura_tela),
+					fonte.randf_range(0.6, 1.4)
+				)
+			)
+		_particulas.append(sprites)
+		_particulas_base.append(bases)
+
+
+# Posicao de cada particula pela deriva vigente (cai devagar e reenvolve na altura da tela)
+func _posicionar_particulas() -> void:
+	if _altura_tela <= 0.0:
+		return
+	for g in range(_particulas.size()):
+		var sprites: Array = _particulas[g]
+		var bases: Array = _particulas_base[g]
+		for i in range(sprites.size()):
+			var base: Vector3 = bases[i]
+			var y: float = fposmod(base.y + _deriva * VELOCIDADE_PARTICULA * base.z, _altura_tela)
+			(sprites[i] as Sprite2D).position = Vector2(base.x, y)
 
 
 # Posiciona o ceu (fixo no topo) e os tiles de cada camada de cada grupo pelo offset vigente
@@ -276,6 +345,8 @@ func _aplicar_alfas() -> void:
 		var sprites: Array = [_ceus[g]]
 		for lista: Array in _tiles[g]:
 			sprites.append_array(lista)
+		if g < _particulas.size():
+			sprites.append_array(_particulas[g])
 		for sprite: Sprite2D in sprites:
 			sprite.modulate.a = alfa
 			sprite.visible = alfa > 0.0
