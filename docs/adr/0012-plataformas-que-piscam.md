@@ -58,7 +58,7 @@ Restricoes que moldam a decisao:
   ([ADR 0010](0010-plataformas-cicladoras.md)), aplicada tambem ao reaparecer.
 - **Fantasma, nao sumico total.** Invisivel = fantasma: alfa baixo no proprio no da plataforma, sem colisao. Ela
   continua no lugar, para o jogador saber onde volta. O alfa fica no no, nao em `sprite.modulate`, que e o canal de
-  cor e aviso da cicladora.
+  cor e aviso da cicladora (hoje o alfa do piscante continua no no raiz, e o alfa do aviso fica em `Visual.modulate`, ver [ADR 0016](0016-visual-da-plataforma-ninepatch.md)).
 - **Aviso sem trocar de matiz.** Nos ultimos `aviso_pisca` segundos do visivel, o alfa alterna entre dois niveis em
   cadencia mais rapida que a da cicladora, mantendo a cor. O aviso nao depende de cor para ser lido e nao se confunde
   com a troca de cor da cicladora. Sem icone.

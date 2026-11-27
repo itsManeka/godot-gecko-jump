@@ -20,3 +20,4 @@ antigo como "superado por".
 | [0013](0013-modos-de-toque-alternaveis.md)             | Modos de toque alternaveis: A e B selecionaveis, B padrao                         | aceito                                                     |
 | [0014](0014-power-ups-e-modos-de-jogo.md)              | 3 power-ups e 5 modos de jogo no seletor; seed do Desafio diario por data UTC     | aceito                                                     |
 | [0015](0015-direcao-de-arte-fonte-comercial-e-audio-dinamico.md) | Direcao de arte, fonte comercial livre (`m5x7`), menu remodelado e audio dinamico | aceito                                                     |
+| [0016](0016-visual-da-plataforma-ninepatch.md)         | Visual da plataforma em `NinePatchRect`, cor por textura e canais visuais por dono | aceito; evolui o visual de 0009 e 0012                     |

@@ -85,7 +85,7 @@ Os demais ADRs seguintes **permanecem aceitos integralmente**:
   - plataformas como **ilhotas flutuantes de terra/rocha** (`36-44 px` de altura visual, 9-slice `120/112/100/88 px` —
     `2x` de `60/56/50/44 px`, endcaps `20 px`, topo pisavel e `ICONE_FOLGA = 4.0 px` proporcionais) com cobertura
     colorida derramando na borda, micro-ornamentos no topo (grama/folhas, mel/florzinhas, gelo/cristais,
-    vermelho/cogumelos), 3 estagios de rachadura e faixa arco-iris na ciclagem (canais isolados de `PlatformBlink`);
+    vermelho/cogumelos), 3 estagios de rachadura e faixa arco-iris na ciclagem (canais isolados de `PlatformBlink`; nota: a faixa ficou fora da entrega, o aviso da ciclagem e a troca de textura, ver [ADR 0016](0016-visual-da-plataforma-ninepatch.md));
   - gecko **`64x64 px`** (`GHOST_HALF_WIDTH = 32.0`), **bipede (em pe sobre as duas patas traseiras) em todas as
     poses** (`idle`, `run`, `jump`, `fall`, `lose`, `color_change`), em **perfil 3/4 lateral**, com proporcao **chibi
     `1:1` cabeca/corpo**, crista na cabeca, olhos grandes saltados na lateral com pupilas levemente desalinhadas
