@@ -47,6 +47,8 @@ signal partida_iniciada
 var fundo: Fundo = null
 # Fonte do sorteio de bioma do Zen (f559 T6): seam de teste, setada ANTES do add_child; null = o Fundo cria a propria
 var fundo_rng: RandomNumberGenerator = null
+# Nevoa reativa na base (f559 T8, filha da Stage, criada em _ready antes da moldura de subida de estagio)
+var nevoa: Nevoa = null
 # Camada de toque (filha da Stage, criada em _ready)
 var touch_controls: TouchControls = null
 # Dica visual das zonas de toque (filha da Stage, criada em _ready)
@@ -261,6 +263,10 @@ func _ready():
 	touch_hint = TouchHint.new()
 	touch_hint.player = player
 	add_child(touch_hint)
+	# Nevoa da base (CanvasLayer 0, so desenho): criada antes da moldura, entao fica abaixo dela e do HUD; acima do fundo
+	nevoa = Nevoa.new()
+	nevoa.jogador = player
+	add_child(nevoa)
 	# Moldura de subida de estagio (CanvasLayer 0: acima do jogo, abaixo do HUD layer 1 e da pausa layer 10); nasce apagada.
 	# Pausavel (herda o modo da Stage): pausar a arvore congela o pulso.
 	level_up_frame = LevelUpFrame.new()
@@ -632,6 +638,8 @@ func _fechar_modos(modo: GameMode) -> void:
 	regra = atual.regra
 	# f559 T6: entrar no Zen sorteia o bioma, sair volta ao do estagio (so quando o valor muda)
 	fundo.definir_sorteio(regra is ZenRule)
+	# f559 T8: nevoa oculta no Zen e reavaliada com o modo ja gravado em Global
+	nevoa.reavaliar()
 	power_ups_habilitados = _power_ups_base and regra.power_ups_habilitados()
 	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
 	if scroll_level != null:
@@ -708,6 +716,8 @@ func _mostrar_menu(valor: bool) -> void:
 	if valor:
 		# f528 T6: menu de volta a aparecer (Opcoes/Modos fecharam): UI do dia reavaliada (C787/C779)
 		_aplicar_ui_dia()
+		# f559 T8: nevoa reavaliada com o modo vigente
+		nevoa.reavaliar()
 		opcoes_botao.mostrar()
 		modo_botao.mostrar()
 	else:
