@@ -167,8 +167,12 @@ func _aplicar_visual_da_cor() -> void:
 	ghost.modulate = Color.WHITE
 
 func _frames_da_cor(cor_id) -> SpriteFrames:
+	return load(caminho_frames_da_cor(cor_id)) as SpriteFrames
+
+# Caminho unico do SpriteFrames de cada cor (res://ressources/gecko_<cor>.tres)
+static func caminho_frames_da_cor(cor_id) -> String:
 	var nome: String = str(Enums.COLOR.find_key(int(cor_id))).to_lower()
-	return load("res://ressources/gecko_%s.tres" % nome) as SpriteFrames
+	return "res://ressources/gecko_%s.tres" % nome
 
 # Troca o SpriteFrames sem perder a animacao, o quadro e o progresso; o fantasma nunca toca sozinho
 func _trocar_frames(no: AnimatedSprite2D, frames: SpriteFrames, manter_tocando: bool) -> void:

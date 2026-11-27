@@ -32,8 +32,16 @@ func after_each() -> void:
 	Global.platforms = []
 	Global.iniciado = false
 
+# Oraculo independente do Player: os 4 caminhos esperados escritos por extenso
+const CAMINHOS_ESPERADOS := {
+	Enums.COLOR.AMARELO: "res://ressources/gecko_amarelo.tres",
+	Enums.COLOR.VERDE: "res://ressources/gecko_verde.tres",
+	Enums.COLOR.AZUL: "res://ressources/gecko_azul.tres",
+	Enums.COLOR.VERMELHO: "res://ressources/gecko_vermelho.tres",
+}
+
 func _frames_da_cor(cor_id: int) -> SpriteFrames:
-	return load("res://ressources/gecko_%s.tres" % str(Enums.COLOR.find_key(cor_id)).to_lower()) as SpriteFrames
+	return load(CAMINHOS_ESPERADOS[cor_id]) as SpriteFrames
 
 func _outra_cor(cor_id: int) -> int:
 	var cores: Array = Enums.COLOR.values()
@@ -93,6 +101,11 @@ func _spawn_quieto(px: float) -> void:
 	_p.set_physics_process(false)
 	_p.set_process(false)
 	_p.position = Vector2(px, 100.0)
+
+func test_caminho_frames_da_cor_confere_os_4_caminhos_esperados() -> void:
+	assert_eq(CAMINHOS_ESPERADOS.size(), 4, "o oraculo cobre as 4 cores")
+	for cor_id: int in Enums.COLOR.values():
+		assert_eq(PLAYER_SCRIPT.caminho_frames_da_cor(cor_id), CAMINHOS_ESPERADOS[cor_id], "cor %s: caminho dos frames" % cor_id)
 
 # C856: set_color troca sprite_frames de Player e Ghost por cor (4 distintos), mantem animation/frame e deixa WHITE
 func test_set_color_troca_sprite_frames_do_player_e_do_ghost_e_deixa_modulate_branco() -> void:
@@ -189,16 +202,35 @@ func test_fisica_do_pouso_nao_depende_da_color_change() -> void:
 func test_sinal_tardio_de_color_change_interrompida_nao_afeta_a_nova() -> void:
 	await _montar()
 	await _esperar_pouso()
+	assert_eq(_p.sprite.animation, &"color_change", "precondicao: 1o pouso toca color_change")
 	Input.action_press("ui_right")
 	await wait_physics_frames(2)
 	assert_eq(_p.sprite.animation, &"run", "precondicao: run interrompeu a 1a color_change")
+	# O fim da 1a chega tarde, com a animacao ja em run: nao pode trocar a animacao nem limpar nada
 	_p.sprite.animation_finished.emit()
 	assert_eq(_p.sprite.animation, &"run", "sinal tardio com animation run nao troca a animacao")
 	Input.action_release("ui_right")
-	_p.change_color_random()
+	# 2o pouso real: plataforma solida para o gecko (a cor dele e a dela), gecko solto sobre ela e detector rearmado
+	_p.set_color(_pl.color)
+	_pl.player_color_changed(_p.color)
+	_p.position = Vector2(180, 140)
+	_p.velocity = Vector2.ZERO
+	_p.on_ground = false
+	await wait_physics_frames(1)
+	assert_false(_p.is_on_floor(), "precondicao: o gecko esta no ar antes do 2o pouso (is_on_floor so vale pelo ultimo move_and_slide)")
+	_p._on_DetectorPlataforma_body_entered(_pl)
+	for i in 180:
+		if _pontos >= 2:
+			break
+		await wait_physics_frames(1)
+	assert_eq(_pontos, 2, "o 2o pouso pontuou")
 	assert_eq(_p.sprite.animation, &"color_change", "2o pouso com troca de cor toca color_change")
 	await wait_physics_frames(1)
 	assert_eq(_p.sprite.animation, &"color_change", "a flag da 2a color_change segue ativa: idle espera")
+	# A 2a color_change termina sozinha: so o fim dela devolve a idle
+	await wait_for_signal(_p.sprite.animation_finished, 2.0)
+	await wait_physics_frames(1)
+	assert_eq(_p.sprite.animation, &"idle", "so o fim da 2a color_change volta a idle")
 
 # C863: o reaparecimento (resgate) nao dispara color_change
 func test_reaparecer_sobre_nao_dispara_color_change() -> void:
