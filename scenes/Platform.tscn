@@ -28,6 +28,18 @@ patch_margin_left = 20
 patch_margin_right = 20
 axis_stretch_horizontal = 1
 
+[node name="OverlayRachadura" type="NinePatchRect" parent="Visual"]
+visible = false
+mouse_filter = 2
+focus_mode = 0
+offset_left = -60.0
+offset_top = -16.0
+offset_right = 60.0
+offset_bottom = 24.0
+patch_margin_left = 20
+patch_margin_right = 20
+axis_stretch_horizontal = 1
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2( 0.21022, 0.8409 )
 shape = SubResource( 1 )

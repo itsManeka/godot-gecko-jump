@@ -23,6 +23,11 @@ const PISCA_ALFA_FANTASMA := 0.2
 const PISCA_AVISO_ALFA_BAIXO := 0.35
 const PISCA_AVISO_FASES_POR_S := 20.0
 
+# Rachadura: estagio 1 ao iniciar (atraso > AVISO_TREMOR_S), 2 em _tempo_restante <= AVISO_TREMOR_S, 3 em <= 0.1
+const RACHADURA_ESTAGIO_3_S := 0.1
+# Rng do burst de pedacos (nulo = RandomNumberGenerator novo no colapso; o teste injeta a semente)
+var rng_pedacos: RandomNumberGenerator = null
+var _estagio_rachadura := 0
 # Verdadeiro depois que o desmoronamento termina (colisao desligada de vez)
 var desmoronada := false
 var _travada := false
@@ -51,6 +56,7 @@ var desvio_vx: float = 0.0
 # Visual.modulate.a = pulso do aviso da cicladora, Platform.modulate.a = piscante, Visual.position.x = tremor.
 @onready var visual: Node2D = $Visual
 @onready var corpo: NinePatchRect = $Visual/Corpo
+@onready var overlay: NinePatchRect = $Visual/OverlayRachadura
 @onready var shape = $CollisionShape2D
 
 # Inicializa a plataforma
@@ -132,6 +138,9 @@ func set_largura(largura: float) -> void:
 	# O NinePatchRect (pontas 20/20, miolo TILE) cobre a largura pedida em px logicos, sem scale; fica centrado em x
 	corpo.size.x = largura
 	corpo.position.x = -largura / 2.0
+	# O overlay de rachadura acompanha a largura do corpo
+	overlay.size.x = largura
+	overlay.position.x = -largura / 2.0
 
 # Inicia a contagem do desmoronamento (uma vez); ao fim a colisao some de vez e a plataforma sai da arvore
 func iniciar_desmoronamento(atraso: float) -> void:
@@ -140,18 +149,42 @@ func iniciar_desmoronamento(atraso: float) -> void:
 	_desmoronando = true
 	_atraso_total = atraso
 	_tempo_restante = atraso
+	if atraso > AVISO_TREMOR_S:
+		_definir_estagio_rachadura(1)
 
 func _avancar_desmoronamento(delta: float) -> void:
+	if desmoronada:
+		return
 	_tempo_restante -= delta
 	if _tempo_restante <= 0.0:
 		_desmoronando = false
 		desmoronada = true
 		shape.disabled = true
 		visual.position.x = 0.0
+		_emitir_pedacos()
 		queue_free()
 		return
+	if _tempo_restante <= RACHADURA_ESTAGIO_3_S:
+		_definir_estagio_rachadura(3)
+	elif _tempo_restante <= AVISO_TREMOR_S:
+		_definir_estagio_rachadura(2)
 	if _tempo_restante <= minf(AVISO_TREMOR_S, _atraso_total):
 		visual.position.x = TREMOR_AMPLITUDE if int(_tempo_restante * 40.0) % 2 == 0 else -TREMOR_AMPLITUDE
+
+# Estagio da rachadura no overlay (0 = invisivel); o overlay e o unico dono desse canal visual
+func _definir_estagio_rachadura(estagio: int) -> void:
+	_estagio_rachadura = estagio
+	overlay.texture = PlatformVisuais.rachadura(estagio)
+	overlay.visible = estagio > 0
+
+# Burst one-shot de pedacos no pai (sobrevive a liberacao da plataforma); sem pai = sem burst
+func _emitir_pedacos() -> void:
+	var pai := get_parent()
+	if pai == null:
+		return
+	if rng_pedacos == null:
+		rng_pedacos = RandomNumberGenerator.new()
+	PlatformPedacos.emitir(pai, global_position, corpo.size.x, color, rng_pedacos)
 
 # Processa o movimento da plataforma
 func _physics_process(delta):
