@@ -43,6 +43,8 @@ const CTX_INICIADO: String = PartidaCtx.INICIADO
 const CTX_TEMPO: String = PartidaCtx.TEMPO
 # Disparado a cada inicio efetivo da partida (a guarda de started impede repeticao)
 signal partida_iniciada
+# Fundo de gameplay (f559 T5, filho da Stage, criado em _ready)
+var fundo: Fundo = null
 # Camada de toque (filha da Stage, criada em _ready)
 var touch_controls: TouchControls = null
 # Dica visual das zonas de toque (filha da Stage, criada em _ready)
@@ -240,6 +242,10 @@ func _ready():
 		check.body_exited.disconnect(ao_sair_da_faixa)
 	check.body_exited.connect(ao_sair_da_faixa, CONNECT_DEFERRED)
 
+	# Fundo (CanvasLayer layer -1: abaixo do jogo, do level_up_frame e do HUD); le o delta de position_scrolled
+	fundo = Fundo.new()
+	fundo.scroll_level = scroll_level
+	add_child(fundo)
 	# Camada de toque de um polegar (criada por codigo; inerte fora de partida em curso)
 	touch_controls = TouchControls.new()
 	touch_controls.player = player
