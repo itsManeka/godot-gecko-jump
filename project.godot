@@ -84,4 +84,4 @@ enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 textures/canvas_textures/default_texture_filter=0
 2d/snap/snap_2d_vertices_to_pixel=true
 2d/snap/snap_2d_transforms_to_pixel=true
-environment/defaults/default_clear_color=Color(0.341176, 0.65098, 0.623529, 1)
+environment/defaults/default_clear_color=Color(0.1216, 0.1529, 0.2196, 1)

@@ -45,6 +45,8 @@ const CTX_TEMPO: String = PartidaCtx.TEMPO
 signal partida_iniciada
 # Fundo de gameplay (f559 T5, filho da Stage, criado em _ready)
 var fundo: Fundo = null
+# Fonte do sorteio de bioma do Zen (f559 T6): seam de teste, setada ANTES do add_child; null = o Fundo cria a propria
+var fundo_rng: RandomNumberGenerator = null
 # Camada de toque (filha da Stage, criada em _ready)
 var touch_controls: TouchControls = null
 # Dica visual das zonas de toque (filha da Stage, criada em _ready)
@@ -245,6 +247,10 @@ func _ready():
 	# Fundo (CanvasLayer layer -1: abaixo do jogo, do level_up_frame e do HUD); le o delta de position_scrolled
 	fundo = Fundo.new()
 	fundo.scroll_level = scroll_level
+	# Bioma: estagio da dificuldade (inclui ?progresso=) ou, no Zen, 1 sorteado na partida (f559 T6)
+	fundo.dificuldade = dificuldade
+	fundo.sorteia_bioma = regra is ZenRule
+	fundo.rng = fundo_rng
 	add_child(fundo)
 	# Camada de toque de um polegar (criada por codigo; inerte fora de partida em curso)
 	touch_controls = TouchControls.new()
@@ -472,9 +478,13 @@ func _posicao_atual() -> Vector2i:
 
 # Subida de estagio em partida: a moldura pulsa N vezes (N = estagio novo). Depois da derrota nao pulsa.
 func _on_estagio_mudou(novo: int) -> void:
-	if ultimo_estado.get("state", "") == GameState.STATE_LOST:
+	if _partida_perdida():
 		return
+	fundo.ao_mudar_estagio(novo)
 	level_up_frame.pulsar(novo)
+
+func _partida_perdida() -> bool:
+	return ultimo_estado.get("state", "") == GameState.STATE_LOST
 
 func _aviso_atual() -> bool:
 	return level_up_frame != null and level_up_frame.pulsando()
@@ -620,6 +630,8 @@ func _fechar_modos(modo: GameMode) -> void:
 	# Fronteira antes de trocar a regra: `regra` ainda e a do modo anterior ao OK
 	var recarregar := atual.regra.usa_seed_do_dia() != regra.usa_seed_do_dia()
 	regra = atual.regra
+	# f559 T6: entrar no Zen sorteia o bioma, sair volta ao do estagio (so quando o valor muda)
+	fundo.definir_sorteio(regra is ZenRule)
 	power_ups_habilitados = _power_ups_base and regra.power_ups_habilitados()
 	var scroll_level: ScrollLevel = get_node_or_null("ScrollLevel") as ScrollLevel
 	if scroll_level != null:
