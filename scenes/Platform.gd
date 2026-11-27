@@ -130,7 +130,7 @@ func _consumir_power_up() -> StringName:
 	return tipo
 
 # Largura da colisao e do visual; o shape e duplicado por instancia (o sub_resource da cena e compartilhado).
-# Sem scale no corpo; AreaCheck e o notifier ficam como estao.
+# Sem scale no corpo; AreaCheck fica como esta; o notifier so tem `scale.y` fixo na cena para cobrir a altura do visual (ADR 0016).
 func set_largura(largura: float) -> void:
 	var forma: RectangleShape2D = (shape.shape as RectangleShape2D).duplicate()
 	forma.size.x = largura

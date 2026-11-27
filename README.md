@@ -17,12 +17,13 @@ _Um jogo de plataforma colorido e dinâmico desenvolvido em Godot Engine!_
 
 ### 🎯 Objetivo
 
-- **Pular apenas nas plataformas da mesma cor** que o Gecko
+- **Pular apenas nas plataformas da mesma cor** que o Gecko — cada cor tem também um padrão próprio (mel e flores,
+  grama, gelo e cristais, cobertura e cogumelos), para dar para jogar sem depender só da cor
 - **Ganhar pontos** a cada plataforma nova que tocar
 - **Mudar de cor automaticamente** após cada pulo bem-sucedido — a cor nova sempre existe numa plataforma da linha de cima
 - **Sobreviver** o máximo de tempo possível descendo pelas plataformas
 - **Aguentar a dificuldade**: com o tempo as plataformas ficam mais estreitas e, mais adiante, desmoronam pouco depois
-  do pouso (tremem antes de cair); no estagio mais alto algumas trocam de cor sozinhas, piscando na proxima cor logo
+  do pouso (tremem e racham antes de cair em pedaços); no estagio mais alto algumas trocam de cor sozinhas, piscando na proxima cor logo
   antes da troca (enquanto o gecko esta em cima, a cor fica parada); mais adiante, as linhas passam a andar em velocidades diferentes e algumas plataformas oscilam para os lados
 - **Bater o recorde**: a maior pontuação fica salva e continua lá quando você abre o jogo de novo
 

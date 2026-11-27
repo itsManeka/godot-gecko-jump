@@ -47,7 +47,7 @@ one_way_collision = true
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
 position = Vector2( 0.315338, 0.877254 )
-scale = Vector2( 6.4042, 4.8 )
+scale = Vector2( 6.4042, 2.5 )
 
 [node name="AreaCheck" type="Area2D" parent="."]
 collision_layer = 4

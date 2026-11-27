@@ -46,7 +46,7 @@ Restricoes que moldam a decisao:
 - **Largura por shape duplicado.** `Platform.set_largura(w)` duplica o `RectangleShape2D` da instancia e ajusta so
   `size.x`; o sub-recurso da cena nao muda. O visual recorta o `Sprite2D` com `region_rect` centrado na largura
   (sem escala; no visual, substituido pelo `NinePatchRect` da [ADR 0016](0016-visual-da-plataforma-ninepatch.md)). **Nao** se usa `scale` no corpo fisico. `AreaCheck` e `VisibleOnScreenNotifier2D` ficam com o tamanho
-  original, porque definem margens do gerador, nao a largura da plataforma.
+  original (a altura do notifier mudou pela excecao da [ADR 0016](0016-visual-da-plataforma-ninepatch.md); a largura continua original), porque definem margens do gerador, nao a largura da plataforma.
 - **Largura e atraso lidos no nascimento**, como velocidade: a linha mantem o valor enquanto estiver na tela.
   Mecanica liga e desliga na fronteira do estagio (ela nao interpola); largura e atraso interpolam como scroll e
   velocidade.

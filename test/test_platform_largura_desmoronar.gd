@@ -7,6 +7,8 @@ const GERADOR_CENA := "res://scenes/RunningPlatforms.tscn"
 # Retangulo visual nominal da plataforma: peca 96x40 (NinePatchRect, prefab com 120 de largura), sem scale
 const VISUAL_W := 120.0
 const VISUAL_H := 40.0
+# Folga vertical maxima do notifier alem do visual: cobre o offset de alinhamento sem atrasar a saida da tela
+const NOTIFIER_FOLGA_MAX_Y := 16.0
 # Pontas 20/20 e altura da peca; a superficie (linha y=6 da peca) fica a 4 px abaixo do centro nominal: corpo.position.y = -20 + 4
 const MARGEM := 20
 const CORPO_Y := -16.0
@@ -136,6 +138,7 @@ func test_area_check_e_check_generate_somam_a_distancia_de_saida_e_notifier_cobr
 	assert_gte(ret.end.x, VISUAL_W / 2.0 - 1.0, "notifier cobre a borda direita visual")
 	assert_lte(ret.position.y, -VISUAL_H / 2.0 + 1.0, "notifier cobre o topo visual")
 	assert_gte(ret.end.y, VISUAL_H / 2.0 - 1.0, "notifier cobre a base visual")
+	assert_lte(ret.size.y, VISUAL_H + NOTIFIER_FOLGA_MAX_Y, "notifier nao passa muito da altura do visual")
 	# O NinePatchRect real (deslocado 4 px para a superficie bater com a colisao) tambem fica dentro do notifier
 	var corpo: NinePatchRect = p.get_node("Visual/Corpo")
 	assert_lte(ret.position.y, corpo.position.y, "notifier cobre o topo do NinePatchRect")

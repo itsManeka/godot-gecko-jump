@@ -90,9 +90,7 @@ func test_tempo_restante_ate_03_mostra_o_estagio_2_e_acima_de_03_segue_no_estagi
 func test_tempo_restante_ate_01_mostra_o_estagio_3_ainda_na_arvore_e_sem_desmoronar() -> void:
 	var p := _nova()
 	p.iniciar_desmoronamento(0.5)
-	p._physics_process(0.2)
-	p._physics_process(0.2)  # 0.1 aprox: ainda estagio 2 ou 3
-	p._physics_process(0.02)  # ~0.08
+	p._physics_process(0.42)  # 0.5 - 0.42 = 0.08 <= 0.1: estagio 3
 	_afirmar_estagio(p, 3)
 	assert_false(p.desmoronada, "estagio 3 ainda nao e o colapso")
 	assert_true(p.is_inside_tree(), "plataforma ainda na arvore no estagio 3")
