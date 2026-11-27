@@ -15,7 +15,7 @@ Base técnica evoluída (`ADR 0015` sobre `ADR 0002`): largura lógica fixa de *
 - **Hierarquia visual obrigatória (preservando contraste sobre biomas luminosos):**
   1. **Primeiro plano (gameplay — Gecko, ilhotas flutuantes, power-ups):** alta saturação, brilhos especulares claros (`*_luz`), base orgânica de terra/rocha (`terra_luz`/`terra_base`/`terra_sombra`) e **contorno escuro nítido `1 px` (`#052018`)** ao redor de toda a silhueta.
   2. **Interface (HUD, botões, cards):** cores próprias de UI (`#3d6b35`, `#9c521b`, `#1f2738`) que nunca dependem das 4 cores das plataformas, com texto em `#fffdf5` / `#d4e0e6`. Sobre fundos claros dos biomas luminosos (`e1` Céu Azul e Nuvens, `e2` Pôr do Sol e trechos claros de `e0` água/cachoeira), o HUD usa obrigatoriamente **contorno `#052018`** e **faixa translúcida `#052018` a `70%`** para garantir contraste `>= 4.5:1`.
-  3. **Fundo (4 biomas luminosos e partículas ambientais):** paleta luminosa estilo SNES/GBA com contraste interno suave entre camadas de parallax (`<= 2.2:1`) e **ausência de contorno escuro `#052018`** nos elementos de cenário, permitindo que o primeiro plano contornado salte visualmente mesmo contra céu claro ou pôr do sol.
+  3. **Fundo (4 biomas luminosos e partículas ambientais):** paleta luminosa estilo SNES/GBA com contraste interno suave entre camadas de parallax (`<= 2.7:1`, teto do menu aprovado) e **ausência de contorno escuro `#052018`** nos elementos de cenário, permitindo que o primeiro plano contornado salte visualmente mesmo contra céu claro ou pôr do sol.
 
 ### 1.2 Paleta de trabalho
 
@@ -159,7 +159,7 @@ No menu remodelado, o cartão do placar `Last`/`Best` usa painel sólido `#1f273
 
 Conforme `ADR 0004`, a arte é pixel art desenhada de verdade, na grade e na paleta de trabalho, e o acabamento final é do dono no Aseprite local (`assets/src/` permanece fora do `.pck` via `assets/src/.gdignore`):
 
-1. **Desenho no Aseprite (agente `pixel-artist`, modelo opus):** o agente desenha cada peça pixel a pixel na grade de destino (`64×64`, `96×40`, `32×32`, `128×128`, `360×480`), com a paleta de trabalho (`assets/src/palette.gpl`), contorno `#052018` e rampas por material, medindo a estrutura contra a ref do dono e não contra a rodada anterior. Entrega os arquivos editáveis **`.aseprite`** com camadas/tags e a exportação **PNG** sem interpolação (`Nearest`).
+1. **Desenho no Aseprite (agente `pixel-artist`, modelo opus):** o agente desenha cada peça pixel a pixel na grade de destino (`64×64`, `96×40`, `32×32`, `128×128`, `360×1034` do céu do fundo e `360×H`, com `H >= 960`, das camadas do fundo), com a paleta de trabalho (`assets/src/palette.gpl`), contorno `#052018` e rampas por material, medindo a estrutura contra a ref do dono e não contra a rodada anterior. Entrega os arquivos editáveis **`.aseprite`** com camadas/tags e a exportação **PNG** sem interpolação (`Nearest`).
 2. **Ref do dono como âncora:** a ref mestra `assets/src/refs/gecko-idle-mestre.aseprite` (idle `64×64` acabado pelo dono) e o estilo de `assets/src/ref-estilo-dono.jpg` mandam em toda peça nova (seção 1.5).
 3. **Acabamento manual do dono:** revisão final quadro a quadro, ajuste fino de expressões/silhuetas e aprovação no jogo antes do embarque no `.pck`. Peça cuja rodada não converge pode ser acabada pelo dono a partir da melhor prova.
 
@@ -331,7 +331,7 @@ Toda a produção segue o pipeline de rascunho em 2 etapas + acabamento manual (
 
 ### 4.1 Mapeamento dos 4 biomas aos estágios (`ressources/curva_dificuldade.tres`)
 
-Todos os 4 biomas (`assets/src/refs/_inspiracao-ia/biomas-4-estagios-ref.jpg`) adotam paleta luminosa 16-bit SNES/GBA com **contraste interno suave (`<= 2.2:1`)** e **sem contorno `#052018`**, mantendo separação imediata em relação às ilhotas, power-ups e gecko contornados em `#052018`.
+Todos os 4 biomas (`assets/src/refs/_inspiracao-ia/biomas-4-estagios-ref.jpg`) adotam paleta luminosa 16-bit SNES/GBA com **contraste interno suave (`<= 2.7:1`)** e **sem contorno `#052018`**, mantendo separação imediata em relação às ilhotas, power-ups e gecko contornados em `#052018`.
 
 | Estágio | `progresso_inicio` | Bioma luminoso | Cores da paleta usadas no fundo | Camada 1 (longe, `0.15×`) | Camada 2 (média, `0.30×`) | Camada 3 (partículas ambientais) |
 |---|---:|---|---|---|---|---|
@@ -344,13 +344,13 @@ Todos os 4 biomas (`assets/src/refs/_inspiracao-ia/biomas-4-estagios-ref.jpg`) a
 
 1. **Modos com progressão de estágio (`Classico`, `Tempo`, `Diario` e `Puro` durante `e0..e3`):**
    - Ao receber o sinal `dificuldade.estagio_mudou(novo)` (`0 -> 1 -> 2 -> 3`), o controlador de fundo executa **crossfade suave de `1.2 s`** entre o bioma atual e o novo bioma (interpolação de opacidade entre grupos de camadas, mantendo o scroll vertical contínuo sem pulo de posição).
-2. **Alternância cíclica por distância nos modos sem estágio fixo (`Zen`) e pós-platô (`Puro` / `Classico` após `e3`):**
-   - No modo **`Zen`** (`fator_scroll_forcado = 0.0`, sem avanço de estágio na curva de dificuldade) — e igualmente em **`Puro`** ou **`Classico`** após atingir o platô `e3` — o cenário não fica estático indefinidamente: o controlador monitora `ScrollLevel.position_scrolled` (que avança tanto pelo scroll da curva quanto pelo `avancar_camera` da issue `#46`) e a cada **`2.400 px` lógicos acumulados** (`2×` sobre `1.200 px` da base `180×320`, ~24 linhas de plataformas) promove uma **transição cíclica suave** (`e0 -> e1 -> e2 -> e3 -> e0`) com crossfade estendido de **`1.8 s`**.
-3. **Arquitetura modular em loop vertical (`640 px` até `924+ px` em `keep_width`):**
-   - Todas as camadas de parallax vivem em `z_index < 0` (sempre abaixo de plataformas, gecko, névoa e HUD).
-   - **Camada 0 (base de céu):** `ColorRect` / textura gradiente vertical dithered `360×480 px` preenchida em toda a altura visível (`visible_size.y`), velocidade `0.05×`.
-   - **Camadas 1 e 2 (parallax):** tiles verticais sem costura **`360×480 px`** (ou `360×360 px` para detalhes médios), configurados com `repeat_size = Vector2(0, 480)` e `repeat_times = 3` (cobrindo `1.440 px` verticais contínuos, garantindo zero bordas descobertas em `360×640`, `360×800` e `360×924+`).
-   - **Produção enxuta:** cada bioma precisa de apenas 2 tiles compactos (`360×480`) + 1 sprite de partícula (`8×8`), evitando sobrecarga de acabamento manual no Aseprite.
+2. **Modo sem estágio fixo (`Zen`):** `fator_scroll_forcado = 0.0` e não há avanço de estágio na curva de dificuldade. Ao início de cada partida, o sorteio de `FundoBiomas` escolhe **1 bioma** (`e0..e3`) e o mantém até o fim da partida, sem crossfade e sem troca por estágio; a partida seguinte pode sortear outro. Não existe ciclo por distância: o fundo do Zen fica parado, como o menu e a pausa.
+3. **Contrato de camadas (`640 px` até `924+ px` em `keep_width`):**
+   - O fundo vive em `CanvasLayer` com `layer < 0` (sempre abaixo de plataformas, gecko, névoa e HUD).
+   - **Camada de céu:** textura `360×1034 px` fixa no topo da tela, fator `0` (não rola e não se repete), cobrindo a altura máxima de aparelho previsto.
+   - **Camadas c0, c1 e c2 (parallax):** textura `360×H px` com `H >= 960`, livre por arquivo; fatores `0.05`, `0.15` e `0.30`. O wrap vertical acontece na altura da própria textura, e o offset é arredondado para inteiro na hora de desenhar.
+   - **Produção:** cada bioma tem 4 texturas de fundo (céu + c0/c1/c2), 1 sprite de partícula `8×8` e as 2 faixas de névoa comuns (`360×64`, seção 4.3).
+   - Os limites medidos do fundo (legibilidade, costura e repetição) vêm do oráculo de fundo da pipeline de arte de cenário, ainda por definir; nenhum número é fixado aqui.
 4. **Cor das barras laterais em janela larga (`1280×720`, `1920×1080`):**
    - Em janela paisagem desktop/Web (`stretch/aspect = "keep_width"`), a área fora da coluna lógica de `360 px` exibe `rendering/environment/defaults/default_clear_color`.
    - O `default_clear_color` em `project.godot:87` passa a **`painel_escuro` `#1f2738`** (`Color(0.1216, 0.1529, 0.2196, 1.0)`), emoldurando a coluna de jogo com tom neutro-escuro coerente com todos os 4 biomas luminosos e com o painel de UI.
@@ -403,7 +403,7 @@ Todos os controles (`assets/src/refs/_inspiracao-ia/menu-mockup-ref.jpg`) migram
 | **Painéis e cards** (`CardPlacar`, `TutorialCard`, telas `Modos` e `Opcoes`) | Peça mestre `48×48 px`, `patch_margin = 8 px`. Borda externa `2 px` `ink_contorno`, filete interno `2 px` `nevoa_brilho`, fundo `painel_escuro` `#1f2738` | `CardPlacar` no menu usa `painel_escuro` sólido (contraste `14.67:1`); fundo de tela cheia dos overlays usa `ink_contorno` `#052018` a `70%` |
 | **Sliders (`OptionsScreen`)** | Trilho `296×12 px` em `ink_contorno` com borda `2 px` `ui_texto_sec`; preenchimento pixel art em `ui_btn_luz` `#5b8a4a`; cursor `24×32 px` (`28×40 px` ao arrastar) em `branco_texto` com 2 ranhuras verticais `ui_desabilitado` e contorno `ink_contorno` | Mantém proporção `2×` das medidas de `scenes/OptionsScreen.gd`, rótulo `"mudo"` em `0`, cursor alargado ao arrastar e moldura + `"> "` no foco |
 | **`PauseBotao` (`48×48`)** | 9-slice do botão padrão (`48×48`) em `x[s_left + 4, s_left + 52]`, `y[s_top + 4, s_top + 52]` | Glifo pixel art de 2 barras `6×24 px` em `branco_texto` com contorno `ink_contorno` (`+2 px` em Y no `pressed`); oculto fora de partida ativa |
-| **`LevelUpFrame`** | Vinheta de borda (`PROFUNDIDADE = 40 px` dentro da `safe_area`) + cantoneiras pixel art sutis `16×16 px` nos 4 cantos | Pulsa `N` vezes (`N = estagio novo`) em `amarelo_luz` / `branco_texto` (`ALPHA_PICO = 0.5`), sem texto, `MOUSE_FILTER_IGNORE` e congelado na pausa (`ADR 0008`) |
+| **`LevelUpFrame`** | Vinheta de borda (`PROFUNDIDADE = 40 px` dentro da `safe_area`); sem cantoneiras nesta etapa (`16×16 px`, adiadas) | Pulsa `N` vezes (`N = estagio novo`) em `amarelo_luz` / `branco_texto` (`ALPHA_PICO = 0.5`), sem texto, `MOUSE_FILTER_IGNORE` e congelado na pausa (`ADR 0008`) |
 | **`TouchHint`** | Linha divisória em `x = 180` (traço `4 px` liga / `4 px` desliga em `branco_texto` a `60%` com sombra `2 px` `ink_contorno`); setas direcionais pixel art `48×48` (`branco_texto` + contorno `ink_contorno`) | Faixa `COR_FUNDO_OVERLAY` atrás das 2 linhas de texto (`32 px`), preservando proporcionalmente `2×` os retângulos e regras de fade-out de `scenes/TouchHint.gd` |
 | **`TutorialCard`** | Card `328 px` de largura (`296 px` de conteúdo útil em `360×640`) com 9-slice de painel e botão `Pular`/`Voltar` no estilo padrão | Amostras `=` / `X` e legenda `2×2` exibem mini-sprites acessíveis (`#41`, seção 2) com nomes por escrito, mantendo toda linha `<= 296 px` em `32 px` |
 
@@ -552,14 +552,14 @@ A trilha acompanha a escalada visual dos 4 biomas (`ressources/curva_dificuldade
 
 | Variação / Recurso | Arquivo esperado (`sounds/`) | Loop | Contexto e caráter musical |
 |---|---|---|---|
-| **Estágio `e0`** (*Floresta e Cachoeira*) | `music_e0_floresta.ogg` | `loop = true` | Tema principal chiptune leve e convidativo (melodia principal + baixo triângulo suave); usado também no menu inicial e como base calma no modo `Zen`. |
+| **Estágio `e0`** (*Floresta e Cachoeira*) | `music_e0_floresta.ogg` | `loop = true` | Tema principal chiptune leve e convidativo (melodia principal + baixo triângulo suave); usado também no menu inicial. |
 | **Estágio `e1`** (*Céu Azul e Nuvens*) | `music_e1_ceu_nuvens.ogg` | `loop = true` | Acrescenta arpejo fluido e percussão leve mantendo a mesma grade rítmica de `e0`. |
 | **Estágio `e2`** (*Pôr do Sol*) | `music_e2_por_do_sol.ogg` | `loop = true` | Expande a harmonia com contracanto brilhante e condução rítmica mais firme. |
 | **Estágio `e3`** (*Noite Estrelada e Aurora*) | `music_e3_noite_aurora.ogg` | `loop = true` | Variação de clímax de alta energia com linhas rápidas de sintetizador retrô. |
 | **Stinger de transição** *(opcional/harmonizado)* | `stinger_stage_up.ogg` | `loop = false` | Frase musical de 1–2 tempos (ou integrada ao aviso `#43` sem disputar o mesmo espectro) marcando a mudança de variação. |
 
 - **Formato técnico:** **Ogg Vorbis (`.ogg`)**, `44.1 kHz`, `loop = true` nas 4 variações (`e0..e3`), masterizado em torno de **`-14 LUFS`** para deixar folga confortável aos SFX (`-3 dBFS` pico).
-- **Modos sem progressão fixa (`Zen`) e pós-platô:** no `Zen`, a música permanece na variação calma (`e0`, ou alterna suavemente entre `e0` e `e1` sem stinger de tensão ao ciclar biomas por distância); em `Classico` / `Puro` após `e3`, mantém `e3` (ou acompanha o ciclo de biomas com crossfade longo de `1.8 s`).
+- **Modos sem progressão fixa (`Zen`) e pós-platô:** no `Zen`, a música acompanha o bioma sorteado da partida (1 bioma por partida, `e0..e3`, sem troca durante a partida) e não leva stinger de tensão; em `Classico` / `Puro` após `e3`, mantém `e3`.
 
 #### Arquitetura no Godot 4.7.2: `AudioStreamInteractive` + fallback `AudioStreamSynchronized`
 

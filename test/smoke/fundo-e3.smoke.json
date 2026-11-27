@@ -1,0 +1,15 @@
+{
+  "path": "index.html?seed=531&tutorial=visto&progresso=1.0",
+  "viewport": [360, 640],
+  "boot_ms": 6000,
+  "notes": "Bioma e3 do fundo (f559 T6): modo com estagio (Classico) entra com ?progresso=1.0 e o estagio 3 (e3 Noite Estrelada e Aurora) e confirmado pela ponte antes do print. Sem semderrota: a queda pode acontecer, mas nenhum expect de state vem depois do print. Print do bioma e3 com a nevoa visivel (modo nao e Zen).",
+  "steps": [
+    { "expect": { "state": "menu" }, "timeout_ms": 3000 },
+    { "down": "Space" },
+    { "wait": 150 },
+    { "up": "Space" },
+    { "expect": { "state": "playing" }, "timeout_ms": 3000 },
+    { "expect": { "dificuldade.estagio": { "gte": 3 } }, "timeout_ms": 8000 },
+    { "shots": 1, "name": "fundo-e3", "moving": false }
+  ]
+}

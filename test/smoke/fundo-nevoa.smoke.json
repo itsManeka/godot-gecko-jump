@@ -1,0 +1,22 @@
+{
+  "path": "index.html?seed=530&tutorial=visto&modos=teste",
+  "viewport": [360, 640],
+  "boot_ms": 6000,
+  "notes": "Nevoa do fundo (f559 T8), sem semderrota: a nevoa aparece no menu do Classico (modo com estagio, 28 px) e some ao trocar para o Zen (sorteio de bioma e do Zen nao sao presumidos aqui). Seleciona Zen pelo seletor (Modo [180,250], seta direita x3 [328,240], OK [180,518]; mesmas coordenadas da modo-zen.smoke.json). A prova de visibilidade fica no print e no teste GUT test_nevoa.gd (sem chave nova na ponte).",
+  "steps": [
+    { "expect": { "state": "menu", "modo": "classico" }, "timeout_ms": 3000 },
+    { "shots": 1, "name": "nevoa-menu-classico", "moving": false },
+    { "click": [180, 250] },
+    { "wait": 300 },
+    { "click": [328, 240] },
+    { "wait": 300 },
+    { "click": [328, 240] },
+    { "wait": 300 },
+    { "click": [328, 240] },
+    { "wait": 300 },
+    { "click": [180, 518] },
+    { "wait": 300 },
+    { "expect": { "state": "menu", "modo": "zen" }, "timeout_ms": 3000 },
+    { "shots": 1, "name": "nevoa-menu-zen-oculta", "moving": false }
+  ]
+}

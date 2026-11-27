@@ -12,6 +12,8 @@ const ROTEIROS: Array[String] = [
 	"dica-toque",
 	"estagio",
 	"estagio-alto",
+	"fundo-e3",
+	"fundo-nevoa",
 	"gecko",
 	"janela-larga-1280x720",
 	"pausa-foco",
