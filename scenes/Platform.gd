@@ -7,7 +7,7 @@ class_name Platform
 # Cor da plataforma (definida no editor)
 @export var color: Enums.COLOR = Enums.COLOR.AMARELO
 
-# Tremor horizontal do sprite nos ultimos segundos do atraso de desmoronamento
+# Tremor horizontal do Visual nos ultimos segundos do atraso de desmoronamento
 const AVISO_TREMOR_S := 0.3
 const TREMOR_AMPLITUDE := 2.0
 # Aviso de troca de cor (nos ultimos segundos do ciclo): alterna cor atual/proxima a ~6 Hz e pulsa o alfa
@@ -18,7 +18,7 @@ const AVISO_ALFA_BAIXO := 0.55
 const CAMADA_GECKO := 1
 # Plataforma que pisca: invisivel = fantasma (alfa baixo, sem colisao); aviso = flicker de alfa (10 ciclos/s = 20 fases/s,
 # ver PISCA_AVISO_FASES_POR_S) mantendo a cor.
-# O alfa vive no proprio no (nao em sprite.modulate, canal de cor/aviso da cicladora).
+# O alfa vive no proprio no (nao em Visual.modulate, canal do aviso da cicladora).
 const PISCA_ALFA_FANTASMA := 0.2
 const PISCA_AVISO_ALFA_BAIXO := 0.35
 const PISCA_AVISO_FASES_POR_S := 20.0
@@ -47,8 +47,10 @@ const ICONE_FOLGA := 4.0
 # Desvio horizontal (px/s, negativo = esquerda) somado a `speed` pelo modificador de movimento; 0 = sem efeito
 var desvio_vx: float = 0.0
 
-# Referencias aos nós filhos
-@onready var sprite = $Sprite2D
+# Referencias aos nós filhos. Canais visuais, um dono cada: textura de `corpo` = cor (_aplicar_cor/aviso),
+# Visual.modulate.a = pulso do aviso da cicladora, Platform.modulate.a = piscante, Visual.position.x = tremor.
+@onready var visual: Node2D = $Visual
+@onready var corpo: NinePatchRect = $Visual/Corpo
 @onready var shape = $CollisionShape2D
 
 # Inicializa a plataforma
@@ -56,7 +58,7 @@ func _ready():
 	# Movimento livre (MOTION_MODE_FLOATING), sem logica de chao: a plataforma so desliza no eixo X
 	motion_mode = MOTION_MODE_FLOATING
 	Global.add_platform(self)
-	sprite.modulate = Enums.get_cor(color)
+	_aplicar_textura(color)
 	# Os nos filhos so existem aqui: o ao_criar dos modificadores (ex.: set_largura) roda neste ponto
 	for modificador in _modificadores:
 		modificador.ao_criar(self, _snapshot)
@@ -74,7 +76,7 @@ func definir_modificadores(lista: Array, snapshot: DifficultySnapshot) -> void:
 	_snapshot = snapshot
 
 # Power-up sorteado pelo gerador (vazio = nenhum). Com tipo, a plataforma ganha um icone filho (Node2D sem colisao);
-# o gerador chama antes do add_child e o icone se posiciona no _ready (o sprite so existe ali).
+# o gerador chama antes do add_child e o icone se posiciona no _ready (o Visual so existe ali).
 func definir_power_up(tipo: StringName) -> void:
 	tipo_power_up = tipo
 	if tipo == &"":
@@ -84,12 +86,16 @@ func definir_power_up(tipo: StringName) -> void:
 	icone_power_up = icone
 	add_child(icone)
 
-# Icone centrado no x da plataforma, com a base ICONE_FOLGA px acima do topo do sprite
+# Topo real do NinePatchRect no espaco da Platform (inclui o offset vertical que alinha a superficie da peca ao topo da
+# colisao: hoje -16). O Visual nao tem scale.
+func topo_visual() -> float:
+	return visual.position.y + corpo.position.y
+
+# Icone centrado no x da plataforma, com a base ICONE_FOLGA px acima do topo do visual
 func _posicionar_icone() -> void:
 	if icone_power_up == null:
 		return
-	var topo: float = sprite.position.y + sprite.offset.y - (sprite.texture.get_height() * sprite.scale.y) / 2.0
-	icone_power_up.position = Vector2(0.0, topo - ICONE_FOLGA - PowerUpIcone.TAMANHO_PX / 2.0)
+	icone_power_up.position = Vector2(0.0, topo_visual() - ICONE_FOLGA - PowerUpIcone.TAMANHO_PX / 2.0)
 
 
 # f522 T3 (C603): so com o efeito de cor livre ativo a regra vigente e aplicada no nascimento (piscar oculto
@@ -123,12 +129,9 @@ func set_largura(largura: float) -> void:
 	var forma: RectangleShape2D = (shape.shape as RectangleShape2D).duplicate()
 	forma.size.x = largura
 	shape.shape = forma
-	var tex_w: float = sprite.texture.get_width()
-	var tex_h: float = sprite.texture.get_height()
-	# O sprite tem escala visual (2x provisorio): a largura pedida e em px logicos, a regiao e em px de textura
-	var visivel: float = minf(largura / sprite.scale.x, tex_w)
-	sprite.region_enabled = true
-	sprite.region_rect = Rect2((tex_w - visivel) / 2.0, 0.0, visivel, tex_h)
+	# O NinePatchRect (pontas 20/20, miolo TILE) cobre a largura pedida em px logicos, sem scale; fica centrado em x
+	corpo.size.x = largura
+	corpo.position.x = -largura / 2.0
 
 # Inicia a contagem do desmoronamento (uma vez); ao fim a colisao some de vez e a plataforma sai da arvore
 func iniciar_desmoronamento(atraso: float) -> void:
@@ -144,11 +147,11 @@ func _avancar_desmoronamento(delta: float) -> void:
 		_desmoronando = false
 		desmoronada = true
 		shape.disabled = true
-		sprite.position.x = 0.0
+		visual.position.x = 0.0
 		queue_free()
 		return
 	if _tempo_restante <= minf(AVISO_TREMOR_S, _atraso_total):
-		sprite.position.x = TREMOR_AMPLITUDE if int(_tempo_restante * 40.0) % 2 == 0 else -TREMOR_AMPLITUDE
+		visual.position.x = TREMOR_AMPLITUDE if int(_tempo_restante * 40.0) % 2 == 0 else -TREMOR_AMPLITUDE
 
 # Processa o movimento da plataforma
 func _physics_process(delta):
@@ -234,8 +237,13 @@ func _aplicar_cor(nova: int) -> void:
 	_cor_pendente = -1
 	_tempo_aviso = 0.0
 	_em_aviso_visual = false
-	sprite.modulate = Enums.get_cor(color)
+	_aplicar_textura(color)
+	visual.modulate = Color.WHITE
 	player_color_changed(Global.cor_gecko)
+
+# A cor da plataforma e a textura do corpo (peca propria por cor), nunca o modulate
+func _aplicar_textura(cor: int) -> void:
+	corpo.texture = PlatformVisuais.textura(cor)
 
 # Verdadeiro se a cor `nova` tornaria a plataforma solida para o gecko que ainda sobrepoe o corpo dela
 func _gecko_prenderia(nova: int) -> bool:
@@ -262,14 +270,14 @@ func _atualizar_aviso(delta: float) -> void:
 		if _em_aviso_visual:
 			_em_aviso_visual = false
 			_tempo_aviso = 0.0
-			sprite.modulate = Enums.get_cor(color)
+			_aplicar_textura(color)
+			visual.modulate = Color.WHITE
 		return
 	_em_aviso_visual = true
 	_tempo_aviso += delta
 	var fase_proxima := int(_tempo_aviso * AVISO_FASES_POR_S) % 2 == 1
-	var cor_aviso := Enums.get_cor(ciclo.proxima_cor() if fase_proxima else color)
-	cor_aviso.a = AVISO_ALFA_BAIXO if fase_proxima else 1.0
-	sprite.modulate = cor_aviso
+	_aplicar_textura(ciclo.proxima_cor() if fase_proxima else color)
+	visual.modulate = Color(1.0, 1.0, 1.0, AVISO_ALFA_BAIXO if fase_proxima else 1.0)
 
 # Modificador de piscar desta plataforma (nulo se nao for piscante)
 func obter_pisca() -> PlatformBlink:

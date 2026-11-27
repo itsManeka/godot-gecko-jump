@@ -247,7 +247,8 @@ func test_c550_icone_node2d_sem_colisao_16x16_centrado_base_2px_acima_e_global_p
 			assert_false(icone is CollisionObject2D, "icone nao e corpo de colisao")
 			assert_eq(icone.get_children().size(), 0, "icone sem filhos (sem CollisionShape2D)")
 			assert_eq(icone.position.x, 0.0, "icone centrado no x da plataforma")
-			var topo: float = p.sprite.position.y + (p.sprite.offset.y - p.sprite.texture.get_height() / 2.0) * p.sprite.scale.y
+			var topo: float = p.topo_visual()
+			assert_eq(topo, -16.0, "topo do visual = topo do NinePatchRect (-16)")
 			assert_eq(icone.position.y + 16.0, topo - 4.0, "base do icone 4 px (2 px em 1x) acima do topo da plataforma")
 			assert_eq(icone.get("tamanho"), Vector2(32, 32), "icone 32x32 (16x16 em 1x)")
 			verificadas += 1

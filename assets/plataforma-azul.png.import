@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdpmdsv7v0mkx"
-path="res://.godot/imported/GeckoPlataforma.png-0ff43c9b9b7a6fe8cf525bd5f9706cde.ctex"
+uid="uid://biy4wrto73kca"
+path="res://.godot/imported/plataforma-azul.png-eb14c5dda1b58415f8eced65157bf6a8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/GeckoPlataforma.png"
-dest_files=["res://.godot/imported/GeckoPlataforma.png-0ff43c9b9b7a6fe8cf525bd5f9706cde.ctex"]
+source_file="res://assets/plataforma-azul.png"
+dest_files=["res://.godot/imported/plataforma-azul.png-eb14c5dda1b58415f8eced65157bf6a8.ctex"]
 
 [params]
 

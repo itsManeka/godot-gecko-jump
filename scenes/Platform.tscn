@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://assets/GeckoPlataforma.png" type="Texture2D" id=1]
+[ext_resource path="res://assets/plataforma-amarelo.png" type="Texture2D" id=1]
 [ext_resource path="res://scenes/Platform.gd" type="Script" id=2]
 
 [sub_resource type="RectangleShape2D" id=1]
@@ -14,9 +14,19 @@ collision_layer = 2
 collision_mask = 0
 script = ExtResource( 2 )
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2( 2, 2 )
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Corpo" type="NinePatchRect" parent="Visual"]
+mouse_filter = 2
+focus_mode = 0
+offset_left = -60.0
+offset_top = -16.0
+offset_right = 60.0
+offset_bottom = 24.0
 texture = ExtResource( 1 )
+patch_margin_left = 20
+patch_margin_right = 20
+axis_stretch_horizontal = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2( 0.21022, 0.8409 )
@@ -25,7 +35,7 @@ one_way_collision = true
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
 position = Vector2( 0.315338, 0.877254 )
-scale = Vector2( 6.4042, 1.6 )
+scale = Vector2( 6.4042, 4.8 )
 
 [node name="AreaCheck" type="Area2D" parent="."]
 collision_layer = 4

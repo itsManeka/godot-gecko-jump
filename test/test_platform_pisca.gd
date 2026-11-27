@@ -207,18 +207,30 @@ func test_desmoronada_nunca_volta_a_ter_colisao_nem_exibe_aviso() -> void:
 	assert_true(p.shape.disabled, "desmoronada nao reativa")
 
 
-func test_que_caem_piscante_mantem_tremor_colisao_e_cor_do_sprite() -> void:
+# C887 [mutacao]: tremor so em Visual.position.x, dentro da janela AVISO_TREMOR_S; zera ao fim
+func test_que_caem_piscante_mantem_tremor_colisao_e_cor_da_textura() -> void:
 	var p := _nova(0.0, [PlatformCrumble.new()])
 	Global.cor_gecko = p.color
 	p.player_color_changed(p.color)
+	var corpo_pos: Vector2 = p.corpo.position
+	var pos_antes := p.position
 	p.iniciar_desmoronamento(1.0)
-	p._physics_process(0.8)
-	assert_ne(p.sprite.position.x, 0.0, "tremor do desmoronar segue")
+	p._physics_process(0.5)
+	assert_eq(p.visual.position.x, 0.0, "antes da janela de tremor: sem tremor")
+	p._physics_process(0.3)
+	assert_ne(p.visual.position.x, 0.0, "tremor do desmoronar segue")
+	assert_lte(absf(p.visual.position.x), Platform.TREMOR_AMPLITUDE, "tremor dentro da amplitude")
+	assert_eq(p.position, pos_antes, "Platform nao treme")
+	assert_eq(p.corpo.position, corpo_pos, "NinePatchRect nao muda de posicao")
 	assert_false(p.shape.disabled, "visivel: colisao de antes")
+	p._physics_process(0.3)
+	assert_true(p.desmoronada, "atraso esgotado")
+	assert_eq(p.visual.position.x, 0.0, "tremor zerado ao fim")
 	var q := _nova(2.5)
 	q._physics_process(0.06)
 	assert_almost_eq(q.modulate.a, Platform.PISCA_AVISO_ALFA_BAIXO, 0.001, "aviso do piscar no alfa do no")
-	assert_eq(q.sprite.modulate, Enums.get_cor(q.color), "sprite.modulate fica com a cor")
+	assert_eq(q.visual.modulate, Color.WHITE, "Visual.modulate fica branco")
+	assert_eq(q.corpo.texture, PlatformVisuais.textura(q.color), "textura fica com a cor")
 
 
 func test_obter_pisca_devolve_a_instancia_anexada_e_null_sem_ela() -> void:
