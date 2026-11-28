@@ -1,0 +1,9 @@
+{
+  "identidade": {
+    "amarelo": "#f6db61",
+    "verde": "#79cf5a",
+    "azul": "#5987e9",
+    "vermelho": "#ec4848"
+  },
+  "prefixo_personagem": "gecko"
+}
